@@ -19,10 +19,11 @@ class SnappyPageScrollPhysics extends PageScrollPhysics {
   bool get allowImplicitScrolling => true;
 
   @override
-  double get minFlingVelocity => 400; // Lower threshold = easier to trigger page change
+  double get minFlingVelocity => 400;
+  // Lower threshold = easier to trigger page change
 
   @override
-  double get minFlingDistance => 20; // Can trigger page change with shorter swipes
+  double get minFlingDistance => 20;
 
   @override
   Tolerance get tolerance => const Tolerance(
@@ -35,8 +36,10 @@ class SnappyPageScrollPhysics extends PageScrollPhysics {
     ScrollMetrics position,
     double velocity,
   ) {
-    // If velocity is very low (dragging slowly or interrupting), still commit to the next page
-    if (velocity.abs() >= tolerance.velocity || (position.pixels - position.minScrollExtent).abs() > minFlingDistance) {
+    // If velocity very low (dragging slowly or interrupting),
+    // still commit to next page
+    if (velocity.abs() >= tolerance.velocity ||
+        (position.pixels - position.minScrollExtent).abs() > minFlingDistance) {
       // Ensure we always move to the next/previous page even with low velocity
       final targetPage = _getTargetPage(position, velocity);
       final target = targetPage * position.viewportDimension;
@@ -59,7 +62,8 @@ class SnappyPageScrollPhysics extends PageScrollPhysics {
   int _getTargetPage(ScrollMetrics position, double velocity) {
     final page = position.pixels / position.viewportDimension;
     final currentPage = page.floor();
-    final maxPage = (position.maxScrollExtent / position.viewportDimension).floor();
+    final maxPage = (position.maxScrollExtent / position.viewportDimension)
+        .floor();
 
     // If there's any velocity in a direction, commit to that direction
     if (velocity.abs() > minFlingVelocity) {

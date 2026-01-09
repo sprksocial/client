@@ -1,18 +1,22 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/utils/uri_converter.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/utils/uri_converter.dart';
 
 part 'sound_models.freezed.dart';
 part 'sound_models.g.dart';
 
 AudioRecord _audioRecordFromJson(dynamic json) {
   if (json is! Map<String, dynamic>) {
-    throw Exception('Expected Map<String, dynamic> but got ${json.runtimeType}');
+    throw Exception(
+      'Expected Map<String, dynamic> but got ${json.runtimeType}',
+    );
   }
 
-  final jsonWithType = json.containsKey(r'$type') ? json : {...json, r'$type': 'so.sprk.sound.audio'};
+  final jsonWithType = json.containsKey(r'$type')
+      ? json
+      : {...json, r'$type': 'so.sprk.sound.audio'};
 
   final record = Record.fromJson(jsonWithType);
   if (record is AudioRecord) {
@@ -31,7 +35,8 @@ abstract class AudioDetails with _$AudioDetails {
     String? title,
   }) = _AudioDetails;
 
-  factory AudioDetails.fromJson(Map<String, dynamic> json) => _$AudioDetailsFromJson(json);
+  factory AudioDetails.fromJson(Map<String, dynamic> json) =>
+      _$AudioDetailsFromJson(json);
 }
 
 @freezed
@@ -41,7 +46,8 @@ abstract class AudioView with _$AudioView {
     @AtUriConverter() required AtUri uri,
     required String cid,
     required ProfileViewBasic author,
-    @JsonKey(fromJson: _audioRecordFromJson, toJson: _audioRecordToJson) required AudioRecord record,
+    @JsonKey(fromJson: _audioRecordFromJson, toJson: _audioRecordToJson)
+    required AudioRecord record,
     required String title,
     @UriConverter() required Uri coverArt,
     required DateTime indexedAt,
@@ -52,7 +58,8 @@ abstract class AudioView with _$AudioView {
   }) = _AudioView;
   const AudioView._();
 
-  factory AudioView.fromJson(Map<String, dynamic> json) => _$AudioViewFromJson(json);
+  factory AudioView.fromJson(Map<String, dynamic> json) =>
+      _$AudioViewFromJson(json);
 }
 
 @freezed
@@ -64,7 +71,8 @@ abstract class AudioPostsResponse with _$AudioPostsResponse {
     String? cursor,
   }) = _AudioPostsResponse;
 
-  factory AudioPostsResponse.fromJson(Map<String, dynamic> json) => _$AudioPostsResponseFromJson(json);
+  factory AudioPostsResponse.fromJson(Map<String, dynamic> json) =>
+      _$AudioPostsResponseFromJson(json);
 }
 
 @freezed
@@ -75,10 +83,10 @@ abstract class TrendingAudiosResponse with _$TrendingAudiosResponse {
     String? cursor,
   }) = _TrendingAudiosResponse;
 
-  factory TrendingAudiosResponse.fromJson(Map<String, dynamic> json) => _$TrendingAudiosResponseFromJson(json);
+  factory TrendingAudiosResponse.fromJson(Map<String, dynamic> json) =>
+      _$TrendingAudiosResponseFromJson(json);
 }
 
-/// Result from video upload containing the processed video blob and optional extracted audio
 class VideoUploadResult {
   VideoUploadResult({
     required this.videoBlob,

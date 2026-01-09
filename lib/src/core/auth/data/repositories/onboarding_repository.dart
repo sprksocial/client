@@ -1,5 +1,5 @@
 import 'package:bluesky/app_bsky_actor_profile.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
 
 abstract class OnboardingRepository {
   /// Checks if the current user has a Spark profile
@@ -9,7 +9,11 @@ abstract class OnboardingRepository {
   Future<ActorProfileRecord?> getBskyProfile();
 
   /// Creates a Spark actor profile with custom values
-  Future<void> createSparkProfile({required String displayName, required String description, dynamic avatar});
+  Future<void> createSparkProfile({
+    required String displayName,
+    required String description,
+    dynamic avatar,
+  });
 
   /// Fetches the list of DIDs that the user follows on Bluesky
   Future<FollowsResponse> getBskyFollows({String? cursor});

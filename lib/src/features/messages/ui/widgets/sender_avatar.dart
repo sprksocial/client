@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
-import 'package:sparksocial/src/features/messages/ui/pages/chat_page.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/features/messages/ui/pages/chat_page.dart';
 
 class SenderAvatar extends StatelessWidget {
-  const SenderAvatar({required this.isCurrentUser, required this.otherUserAvatar, required this.otherUserHandle, super.key});
+  const SenderAvatar({
+    required this.isCurrentUser,
+    required this.otherUserAvatar,
+    required this.otherUserHandle,
+    super.key,
+  });
 
   final bool isCurrentUser;
   final String? otherUserAvatar;

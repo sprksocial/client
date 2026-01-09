@@ -4,23 +4,23 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/design_system/theme/color_scheme.dart';
-import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/build_stickers.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_progress_alert.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/filter/filter_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_editor_bottom_section.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_editor_header.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/paint/paint_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/text/text_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/text/text_editor_color_picker.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
+import 'package:spark/src/core/design_system/theme/color_scheme.dart';
+import 'package:spark/src/core/design_system/theme/text_theme.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/build_stickers.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_progress_alert.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/filter/filter_editor_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_bottom_section.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_header.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/paint/paint_editor_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_color_picker.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
 
 class VideoEditorConfigsBuilder {
   const VideoEditorConfigsBuilder._();
@@ -50,7 +50,8 @@ class VideoEditorConfigsBuilder {
       designMode: platformDesignMode,
       dialogConfigs: DialogConfigs(
         widgets: DialogWidgets(
-          loadingDialog: (message, configs) => VideoProgressAlert(taskId: taskId),
+          loadingDialog: (message, configs) =>
+              VideoProgressAlert(taskId: taskId),
         ),
       ),
       theme: ThemeData(
@@ -131,7 +132,8 @@ class VideoEditorConfigsBuilder {
         ),
         widgets: PaintEditorWidgets(
           appBar: (paintEditor, rebuildStream) => null,
-          colorPicker: (paintEditor, rebuildStream, currentColor, setColor) => null,
+          colorPicker: (paintEditor, rebuildStream, currentColor, setColor) =>
+              null,
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
@@ -164,7 +166,9 @@ class VideoEditorConfigsBuilder {
         style: TextEditorStyle(
           textFieldMargin: const EdgeInsets.only(top: kToolbarHeight),
           bottomBarBackground: AppColors.grey800,
-          bottomBarMainAxisAlignment: !useMaterialDesign ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.start,
+          bottomBarMainAxisAlignment: !useMaterialDesign
+              ? MainAxisAlignment.spaceEvenly
+              : MainAxisAlignment.start,
         ),
         widgets: TextEditorWidgets(
           appBar: (textEditor, rebuildStream) => null,
@@ -236,15 +240,16 @@ class VideoEditorConfigsBuilder {
           background: AppColors.greyBlack,
         ),
         widgets: FilterEditorWidgets(
-          slider: (editorState, rebuildStream, value, onChanged, onChangeEnd) => ReactiveWidget(
-            stream: rebuildStream,
-            builder: (_) => Slider(
-              onChanged: onChanged,
-              onChangeEnd: onChangeEnd,
-              value: value,
-              activeColor: AppColors.primary400,
-            ),
-          ),
+          slider: (editorState, rebuildStream, value, onChanged, onChangeEnd) =>
+              ReactiveWidget(
+                stream: rebuildStream,
+                builder: (_) => Slider(
+                  onChanged: onChanged,
+                  onChangeEnd: onChangeEnd,
+                  value: value,
+                  activeColor: AppColors.primary400,
+                ),
+              ),
           appBar: (editorState, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
@@ -308,7 +313,9 @@ class VideoEditorConfigsBuilder {
         style: EmojiEditorStyle(
           backgroundColor: Colors.transparent,
           textStyle: DefaultEmojiTextStyle.copyWith(
-            fontFamily: !kIsWeb ? null : GoogleFonts.notoColorEmoji().fontFamily,
+            fontFamily: !kIsWeb
+                ? null
+                : GoogleFonts.notoColorEmoji().fontFamily,
             fontSize: useMaterialDesign ? 48 : 30,
           ),
           bottomActionBarConfig: const BottomActionBarConfig(enabled: false),

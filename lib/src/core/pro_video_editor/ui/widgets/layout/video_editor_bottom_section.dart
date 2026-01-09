@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_toolbar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_toolbar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 class VideoEditorBottomSection extends StatelessWidget {
   const VideoEditorBottomSection({

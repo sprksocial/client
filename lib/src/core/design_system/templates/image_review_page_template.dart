@@ -1,18 +1,18 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/toggles/toggle.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/glass_input.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/toggle.dart';
+import 'package:spark/src/core/design_system/components/molecules/glass_input.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/shapes.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 /// Design-only template for the Image Review flow.
 ///
-/// The template composes page chrome and common sections using the design system.
+/// The template composes page chrome & common sections with the design system.
 /// Content-heavy areas (image pager and description) are provided as slots.
 class ImageReviewPageTemplate extends StatelessWidget {
   const ImageReviewPageTemplate({
@@ -74,7 +74,10 @@ class ImageReviewPageTemplate extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: backgroundColor ?? colorScheme.surface,
         elevation: 0,
-        leading: AppLeadingButton(color: theme.textTheme.titleLarge?.color, tooltip: 'Back'),
+        leading: AppLeadingButton(
+          color: theme.textTheme.titleLarge?.color,
+          tooltip: 'Back',
+        ),
         title: Text(
           title,
         ),
@@ -103,7 +106,9 @@ class ImageReviewPageTemplate extends StatelessWidget {
                         SizedBox(
                           width: double.infinity,
                           child: LongButton(
-                            label: canAddMore ? 'Add More Images ($imagesCount/$maxImages)' : 'Image Limit Reached',
+                            label: canAddMore
+                                ? 'Add More Images ($imagesCount/$maxImages)'
+                                : 'Image Limit Reached',
                             onPressed: canAddMore ? onAddMore : null,
                           ),
                         ),
@@ -139,7 +144,10 @@ class ImageReviewPageTemplate extends StatelessWidget {
                         child: const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.greyWhite),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.greyWhite,
+                          ),
                         ),
                       )
                     : LongButton(label: postLabel, onPressed: onPost),
@@ -173,8 +181,14 @@ class _ImagePager extends StatelessWidget {
   Widget build(BuildContext context) {
     if (imagePaths.isEmpty) return const SizedBox.shrink();
     final radius = BorderRadiusGeometry.circular(AppShapes.squircleRadius);
-    final side = BorderSide(width: AppShapes.squircleBorderWidth, color: Colors.white.withAlpha(AppShapes.squircleBorderAlpha));
-    final ShapeBorder shape = RoundedSuperellipseBorder(side: side, borderRadius: radius);
+    final side = BorderSide(
+      width: AppShapes.squircleBorderWidth,
+      color: Colors.white.withAlpha(AppShapes.squircleBorderAlpha),
+    );
+    final ShapeBorder shape = RoundedSuperellipseBorder(
+      side: side,
+      borderRadius: radius,
+    );
 
     return AspectRatio(
       aspectRatio: 1,
@@ -207,18 +221,32 @@ class _ImagePager extends StatelessWidget {
                           bottom: 8,
                           left: 8,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withAlpha(150),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.white.withAlpha(38)),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(38),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.edit, color: AppColors.greyWhite, size: 16),
+                                const Icon(
+                                  Icons.edit,
+                                  color: AppColors.greyWhite,
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 6),
-                                Text('Tap to edit', style: AppTypography.textSmallBold.copyWith(color: AppColors.greyWhite)),
+                                Text(
+                                  'Tap to edit',
+                                  style: AppTypography.textSmallBold.copyWith(
+                                    color: AppColors.greyWhite,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -233,15 +261,26 @@ class _ImagePager extends StatelessWidget {
                               GestureDetector(
                                 onTap: () => onAltEdit(index),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withAlpha(100),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.white.withAlpha(38)),
+                                    border: Border.all(
+                                      color: Colors.white.withAlpha(38),
+                                    ),
                                   ),
                                   child: Row(
                                     children: [
-                                      Text('ALT', style: AppTypography.textSmallBold.copyWith(color: AppColors.greyWhite)),
+                                      Text(
+                                        'ALT',
+                                        style: AppTypography.textSmallBold
+                                            .copyWith(
+                                              color: AppColors.greyWhite,
+                                            ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -255,9 +294,14 @@ class _ImagePager extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.black.withAlpha(100),
-                                    border: Border.all(color: Colors.white.withAlpha(38)),
+                                    border: Border.all(
+                                      color: Colors.white.withAlpha(38),
+                                    ),
                                   ),
-                                  child: AppIcons.cancel(size: 18, color: AppColors.greyWhite),
+                                  child: AppIcons.cancel(
+                                    size: 18,
+                                    color: AppColors.greyWhite,
+                                  ),
                                 ),
                               ),
                             ],
@@ -272,7 +316,10 @@ class _ImagePager extends StatelessWidget {
                 Positioned(
                   bottom: 10,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withAlpha(100),
                       borderRadius: BorderRadius.circular(10),
@@ -280,7 +327,9 @@ class _ImagePager extends StatelessWidget {
                     ),
                     child: Text(
                       '${currentPage + 1} / ${imagePaths.length}',
-                      style: AppTypography.textExtraSmallMedium.copyWith(color: AppColors.greyWhite),
+                      style: AppTypography.textExtraSmallMedium.copyWith(
+                        color: AppColors.greyWhite,
+                      ),
                     ),
                   ),
                 ),
@@ -316,7 +365,9 @@ class _DescriptionSection extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: Text(
             '$count/$maxChars',
-            style: AppTypography.textSmallMedium.copyWith(color: Colors.white.withAlpha(160)),
+            style: AppTypography.textSmallMedium.copyWith(
+              color: Colors.white.withAlpha(160),
+            ),
           ),
         ),
       ],
@@ -346,10 +397,15 @@ class _CrossPostSection extends StatelessWidget {
             border: Border.all(color: Colors.white.withAlpha(24)),
           ),
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 2,
+            ),
             title: Text(
               'Post to Bluesky',
-              style: AppTypography.textMediumBold.copyWith(color: AppColors.greyWhite),
+              style: AppTypography.textMediumBold.copyWith(
+                color: AppColors.greyWhite,
+              ),
             ),
             trailing: Toggle(value: value, onChanged: onChanged),
             onTap: () => onChanged(!value),
@@ -368,12 +424,19 @@ class _CrossPostSection extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.info_outline, color: AppColors.rajah500, size: 20),
+                const Icon(
+                  Icons.info_outline,
+                  color: AppColors.rajah500,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Bluesky supports a maximum of 4 images. Your Bluesky post will link to the full Spark post instead.',
-                    style: AppTypography.textSmallMedium.copyWith(color: AppColors.rajah500),
+                    'Bluesky supports a maximum of 4 images. '
+                    'Your Bluesky post will link to the Spark post instead.',
+                    style: AppTypography.textSmallMedium.copyWith(
+                      color: AppColors.rajah500,
+                    ),
                   ),
                 ),
               ],

@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
-import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
-import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
-import 'package:sparksocial/src/features/comments/ui/widgets/emoji_picker.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
+import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/comments/providers/comment_input_provider.dart';
+import 'package:spark/src/features/comments/providers/comment_input_state.dart';
+import 'package:spark/src/features/comments/ui/widgets/emoji_picker.dart';
+import 'package:spark/src/features/profile/providers/profile_provider.dart';
 
 class CommentInputWidget extends ConsumerStatefulWidget {
   const CommentInputWidget({
@@ -49,7 +49,9 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(commentInputProvider(textController, imagePicker));
-    final notifier = ref.read(commentInputProvider(textController, imagePicker).notifier);
+    final notifier = ref.read(
+      commentInputProvider(textController, imagePicker).notifier,
+    );
     final session = ref.watch(authProvider).session;
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
@@ -61,14 +63,18 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
           // Emoji Picker is always displayed at the top
           EmojiPicker(
             onEmojiSelected: notifier.insertEmoji,
-            isDarkMode: Theme.of(context).colorScheme.brightness == Brightness.dark,
+            isDarkMode:
+                Theme.of(context).colorScheme.brightness == Brightness.dark,
           ),
 
           const SizedBox(height: 8),
 
           // Updated input row with centered alignment
           Container(
-            decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(32)),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(32),
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: Row(
               children: [
@@ -76,7 +82,8 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                   imageUrl: ref
                       .read(profileProvider(did: session?.did ?? ''))
                       .when(
-                        data: (profileData) => profileData.profile?.avatar?.toString() ?? '',
+                        data: (profileData) =>
+                            profileData.profile?.avatar?.toString() ?? '',
                         error: (error, stackTrace) => '',
                         loading: () => '',
                       ),
@@ -99,7 +106,9 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                     context: context,
                     notifier: notifier,
                     textColor: Theme.of(context).colorScheme.onSurface,
-                    placeholderColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 128),
+                    placeholderColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 128),
                   ),
                 ),
               ],
@@ -158,14 +167,18 @@ class _TextField extends StatelessWidget {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               )
             : IconButton(
                 icon: Icon(
                   FluentIcons.send_24_filled,
                   size: 20,
-                  color: state.canSubmit ? Theme.of(context).colorScheme.primary : placeholderColor,
+                  color: state.canSubmit
+                      ? Theme.of(context).colorScheme.primary
+                      : placeholderColor,
                 ),
                 onPressed: () {
                   if (state.canSubmit) {
@@ -222,8 +235,14 @@ class _AttachmentButton extends StatelessWidget {
       visualDensity: VisualDensity.compact,
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       onPressed: enabled ? () => notifier.pickImages(context) : null,
-      tooltip: enabled ? 'Add image (1 max)' : (state.isPosting ? 'Posting...' : 'Maximum images reached'),
-      icon: Icon(FluentIcons.image_24_regular, size: 24, color: Theme.of(context).colorScheme.primary),
+      tooltip: enabled
+          ? 'Add image (1 max)'
+          : (state.isPosting ? 'Posting...' : 'Maximum images reached'),
+      icon: Icon(
+        FluentIcons.image_24_regular,
+        size: 24,
+        color: Theme.of(context).colorScheme.primary,
+      ),
     );
   }
 }
@@ -255,9 +274,21 @@ class _SelectedImagesPreview extends StatelessWidget {
                   height: 72,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 26), blurRadius: 4, offset: const Offset(0, 2))],
-                    image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                      width: 0.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 26),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                    image: DecorationImage(
+                      image: FileImage(File(imageFile.path)),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 // ALT Button (bottom right)
@@ -271,7 +302,10 @@ class _SelectedImagesPreview extends StatelessWidget {
                       onTap: () async {
                         final result = await showDialog<String>(
                           context: context,
-                          builder: (context) => AltTextEditorDialog(imageFile: imageFile.path, initialAltText: alt ?? ''),
+                          builder: (context) => AltTextEditorDialog(
+                            imageFile: imageFile.path,
+                            initialAltText: alt ?? '',
+                          ),
                         );
                         if (result != null) {
                           notifier.updateAltText(imageFile.path, result.trim());
@@ -279,14 +313,25 @@ class _SelectedImagesPreview extends StatelessWidget {
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         child: Row(
                           children: [
-                            Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 14),
+                            Icon(
+                              FluentIcons.image_alt_text_20_regular,
+                              color: Colors.white,
+                              size: 14,
+                            ),
                             SizedBox(width: 2),
                             Text(
                               'ALT',
-                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -306,7 +351,11 @@ class _SelectedImagesPreview extends StatelessWidget {
                       customBorder: const CircleBorder(),
                       child: Container(
                         padding: const EdgeInsets.all(2),
-                        child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
+                        child: const Icon(
+                          FluentIcons.dismiss_16_filled,
+                          color: Colors.white,
+                          size: 12,
+                        ),
                       ),
                     ),
                   ),

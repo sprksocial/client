@@ -23,7 +23,10 @@ class VideoProgressAlert extends StatelessWidget {
           child: Theme(
             data: Theme.of(context),
             child: AlertDialog(
-              contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 16,
+                horizontal: 20,
+              ),
               content: ConstrainedBox(
                 constraints: const BoxConstraints(minWidth: 260),
                 child: _buildProgressBody(),
@@ -44,7 +47,9 @@ class VideoProgressAlert extends StatelessWidget {
           tween: Tween<double>(begin: 0, end: progress),
           duration: const Duration(milliseconds: 300),
           builder: (context, animatedValue, _) {
-            final percent = (animatedValue * 100).clamp(0, 100).toStringAsFixed(0);
+            final percent = (animatedValue * 100)
+                .clamp(0, 100)
+                .toStringAsFixed(0);
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -55,7 +60,9 @@ class VideoProgressAlert extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      CircularProgressIndicator(value: animatedValue == 0 ? null : animatedValue),
+                      CircularProgressIndicator(
+                        value: animatedValue == 0 ? null : animatedValue,
+                      ),
                     ],
                   ),
                 ),
@@ -66,7 +73,12 @@ class VideoProgressAlert extends StatelessWidget {
                   children: [
                     const Text('Exporting video…'),
                     const SizedBox(height: 6),
-                    Text('$percent%', style: const TextStyle(fontFeatures: [FontFeature.tabularFigures()])),
+                    Text(
+                      '$percent%',
+                      style: const TextStyle(
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
                   ],
                 ),
               ],

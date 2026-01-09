@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class GlassFollowButton extends StatelessWidget {
   const GlassFollowButton({
@@ -45,7 +45,10 @@ class GlassFollowButton extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Text(isFollowing ? unfollowText : followText, style: AppTypography.textExtraSmallMedium),
+              child: Text(
+                isFollowing ? unfollowText : followText,
+                style: AppTypography.textExtraSmallMedium,
+              ),
             ),
           ),
         ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/circle_icon_button.dart';
-import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/circle_icon_button.dart';
+import 'package:spark/src/core/design_system/theme/text_theme.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoFullscreenPreviewPage extends StatefulWidget {
@@ -20,10 +20,12 @@ class VideoFullscreenPreviewPage extends StatefulWidget {
   final void Function(double progress) onSeek;
 
   @override
-  State<VideoFullscreenPreviewPage> createState() => _VideoFullscreenPreviewPageState();
+  State<VideoFullscreenPreviewPage> createState() =>
+      _VideoFullscreenPreviewPageState();
 }
 
-class _VideoFullscreenPreviewPageState extends State<VideoFullscreenPreviewPage> {
+class _VideoFullscreenPreviewPageState
+    extends State<VideoFullscreenPreviewPage> {
   bool _controlsVisible = true;
 
   @override
@@ -164,9 +166,12 @@ class _OverlayControls extends StatelessWidget {
                     builder: (context, _) {
                       final duration = videoTimelineState.videoDuration;
                       final isDurationValid = duration.inMilliseconds > 0;
-                      final progress = isDurationValid ? videoTimelineState.progress.clamp(0.0, 1.0) : 0.0;
+                      final progress = isDurationValid
+                          ? videoTimelineState.progress.clamp(0.0, 1.0)
+                          : 0.0;
                       final currentPosition = Duration(
-                        milliseconds: (progress * duration.inMilliseconds).round(),
+                        milliseconds: (progress * duration.inMilliseconds)
+                            .round(),
                       );
 
                       return Column(
@@ -177,13 +182,19 @@ class _OverlayControls extends StatelessWidget {
                               CircleIconButton(
                                 onPressed: onTogglePlay,
                                 icon: Icon(
-                                  videoTimelineState.isPlaying ? Icons.pause : Icons.play_arrow,
+                                  videoTimelineState.isPlaying
+                                      ? Icons.pause
+                                      : Icons.play_arrow,
                                   size: 22,
                                 ),
-                                backgroundColor: AppColors.greyBlack.withAlpha(140),
+                                backgroundColor: AppColors.greyBlack.withAlpha(
+                                  140,
+                                ),
                                 iconColor: AppColors.greyWhite,
                                 size: 40,
-                                semanticLabel: videoTimelineState.isPlaying ? 'Pause' : 'Play',
+                                semanticLabel: videoTimelineState.isPlaying
+                                    ? 'Pause'
+                                    : 'Play',
                               ),
                               const SizedBox(width: 10),
                               Text(
@@ -201,8 +212,12 @@ class _OverlayControls extends StatelessWidget {
                           SliderTheme(
                             data: SliderTheme.of(context).copyWith(
                               trackHeight: 3,
-                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                              thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 6,
+                              ),
+                              overlayShape: const RoundSliderOverlayShape(
+                                overlayRadius: 14,
+                              ),
                               activeTrackColor: AppColors.primary400,
                               inactiveTrackColor: AppColors.grey700,
                               thumbColor: AppColors.greyWhite,

@@ -4,10 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/stories/ui/pages/story_page.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/stories/ui/pages/story_page.dart';
 
 @RoutePage()
 class AuthorStoriesPage extends ConsumerStatefulWidget {
@@ -36,7 +36,8 @@ class AuthorStoriesPage extends ConsumerStatefulWidget {
   ConsumerState<AuthorStoriesPage> createState() => _AuthorStoriesPageState();
 }
 
-class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with TickerProviderStateMixin {
+class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
+    with TickerProviderStateMixin {
   late final PageController _pageController;
   late final List<AnimationController> _progressControllers;
   int _currentStoryIndex = 0;
@@ -48,7 +49,10 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
   @override
   void initState() {
     super.initState();
-    _currentStoryIndex = widget.initialStoryIndex.clamp(0, widget.stories.length - 1);
+    _currentStoryIndex = widget.initialStoryIndex.clamp(
+      0,
+      widget.stories.length - 1,
+    );
     _pageController = PageController(initialPage: _currentStoryIndex);
     _initializeProgressControllers();
     _startCurrentStory();
@@ -66,7 +70,10 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
   void _initializeProgressControllers() {
     _progressControllers = List.generate(
       widget.stories.length,
-      (_) => AnimationController(duration: const Duration(seconds: 5), vsync: this),
+      (_) => AnimationController(
+        duration: const Duration(seconds: 5),
+        vsync: this,
+      ),
     );
   }
 
@@ -74,7 +81,9 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
     if (_currentStoryIndex >= widget.stories.length) return;
 
     if (!_isCurrentStoryLoading) {
-      _progressControllers[_currentStoryIndex].forward().whenComplete(_nextStory);
+      _progressControllers[_currentStoryIndex].forward().whenComplete(
+        _nextStory,
+      );
     }
   }
 
@@ -84,7 +93,8 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
 
   void _resume() {
     final controller = _progressControllers[_currentStoryIndex];
-    if (controller.status != AnimationStatus.completed && !_isCurrentStoryLoading) {
+    if (controller.status != AnimationStatus.completed &&
+        !_isCurrentStoryLoading) {
       controller.forward();
     }
   }
@@ -116,7 +126,10 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
         _currentStoryIndex++;
         _isCurrentStoryLoading = true;
       });
-      _pageController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
       return;
     }
 
@@ -136,7 +149,10 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
         _currentStoryIndex--;
         _isCurrentStoryLoading = true;
       });
-      _pageController.previousPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
       return;
     }
 
@@ -246,7 +262,9 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                       final story = widget.stories[index];
                       return StoryPage(
                         story: story,
-                        onLoadingStateChanged: index == _currentStoryIndex ? _onStoryLoadingStateChanged : null,
+                        onLoadingStateChanged: index == _currentStoryIndex
+                            ? _onStoryLoadingStateChanged
+                            : null,
                       );
                     },
                   ),
@@ -258,7 +276,9 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                       children: List.generate(widget.stories.length, (index) {
                         return Expanded(
                           child: Container(
-                            margin: EdgeInsets.only(right: index < widget.stories.length - 1 ? 4 : 0),
+                            margin: EdgeInsets.only(
+                              right: index < widget.stories.length - 1 ? 4 : 0,
+                            ),
                             child: AnimatedBuilder(
                               animation: _progressControllers[index],
                               builder: (context, child) {
@@ -273,7 +293,10 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                                 return LinearProgressIndicator(
                                   value: value,
                                   backgroundColor: Colors.white.withAlpha(76),
-                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
                                   minHeight: 2,
                                 );
                               },
@@ -309,7 +332,11 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                               child: CachedNetworkImage(
                                 imageUrl: widget.author.avatar.toString(),
                                 fit: BoxFit.cover,
-                                errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                    ),
                               ),
                             ),
                           ),
@@ -320,14 +347,22 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.author.displayName ?? widget.author.handle,
-                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                widget.author.displayName ??
+                                    widget.author.handle,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 _timeAgo(widget.stories[_currentStoryIndex]),
-                                style: const TextStyle(color: Colors.white70, fontSize: 14),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
                               ),
                             ],
                           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class Tag extends StatelessWidget {
   final String mainText;
@@ -37,7 +37,12 @@ class Tag extends StatelessWidget {
           children: [
             Text(mainText, style: AppTypography.textMediumMedium),
             const SizedBox(width: 5),
-            Text(secondaryText, style: AppTypography.textExtraSmallMedium.copyWith(color: AppColors.grey300)),
+            Text(
+              secondaryText,
+              style: AppTypography.textExtraSmallMedium.copyWith(
+                color: AppColors.grey300,
+              ),
+            ),
           ],
         ),
       ),

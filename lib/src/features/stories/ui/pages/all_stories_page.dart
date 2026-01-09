@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/features/stories/ui/pages/author_stories_page.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/features/stories/ui/pages/author_stories_page.dart';
 
 @RoutePage()
 class AllStoriesPage extends StatefulWidget {
@@ -30,7 +30,10 @@ class _AllStoriesPageState extends State<AllStoriesPage> {
   void initState() {
     super.initState();
     _authorsList = widget.storiesByAuthor.entries.toList();
-    _currentAuthorIndex = widget.initialAuthorIndex.clamp(0, _authorsList.length - 1);
+    _currentAuthorIndex = widget.initialAuthorIndex.clamp(
+      0,
+      _authorsList.length - 1,
+    );
     _pageController = PageController(initialPage: _currentAuthorIndex);
   }
 
@@ -53,7 +56,9 @@ class _AllStoriesPageState extends State<AllStoriesPage> {
             return AuthorStoriesPage(
               author: entry.key,
               stories: entry.value,
-              initialStoryIndex: index == _currentAuthorIndex ? (widget.initialStoryIndex ?? 0) : 0,
+              initialStoryIndex: index == _currentAuthorIndex
+                  ? (widget.initialStoryIndex ?? 0)
+                  : 0,
               onPreviousAuthor: index > 0
                   ? () => _pageController.previousPage(
                       duration: const Duration(milliseconds: 250),

@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/stories/providers/story_auto_delete_provider.dart';
-import 'package:sparksocial/src/features/stories/providers/story_manager_provider.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
+import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
 
 @RoutePage()
 class StoryManagerPage extends ConsumerWidget {
@@ -25,7 +25,11 @@ class StoryManagerPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _deleteStory(BuildContext context, WidgetRef ref, int index) async {
+  Future<void> _deleteStory(
+    BuildContext context,
+    WidgetRef ref,
+    int index,
+  ) async {
     final notifier = ref.read(storyManagerProvider.notifier);
     final stories = ref.read(storyManagerProvider).value?.stories ?? [];
     if (index >= stories.length) return;
@@ -37,7 +41,10 @@ class StoryManagerPage extends ConsumerWidget {
             title: const Text('Delete Story'),
             content: const Text('Are you sure you want to delete this story?'),
             actions: [
-              TextButton(onPressed: () => Navigator.of(ctx).maybePop(false), child: const Text('Cancel')),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).maybePop(false),
+                child: const Text('Cancel'),
+              ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).maybePop(true),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -50,7 +57,9 @@ class StoryManagerPage extends ConsumerWidget {
     if (!shouldDelete) return;
     await notifier.deleteStory(story);
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Story deleted')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Story deleted')));
     }
   }
 
@@ -75,7 +84,10 @@ class StoryManagerPage extends ConsumerWidget {
               itemCount: 1 + data.stories.length, // header + stories
               itemBuilder: (ctx, i) {
                 if (i == 0) {
-                  return _AutoDeleteHeader(autoDeletePref: autoDeletePref, ref: ref);
+                  return _AutoDeleteHeader(
+                    autoDeletePref: autoDeletePref,
+                    ref: ref,
+                  );
                 }
                 final storyIndex = i - 1;
                 if (data.stories.isEmpty) {
@@ -115,7 +127,8 @@ class StoryManagerPage extends ConsumerWidget {
                                 width: 56,
                                 height: 56,
                                 alignment: Alignment.center,
-                                color: theme.colorScheme.surfaceContainerHighest,
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
                                 child: const Icon(Icons.image_not_supported),
                               ),
                             ),
@@ -125,16 +138,26 @@ class StoryManagerPage extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Story ${data.stories.length - storyIndex}', style: theme.textTheme.titleMedium),
+                                Text(
+                                  'Story ${data.stories.length - storyIndex}',
+                                  style: theme.textTheme.titleMedium,
+                                ),
                                 const SizedBox(height: 4),
-                                Text('Posted $ageStr ago', style: theme.textTheme.bodySmall),
+                                Text(
+                                  'Posted $ageStr ago',
+                                  style: theme.textTheme.bodySmall,
+                                ),
                               ],
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
                             tooltip: 'Delete',
-                            onPressed: () => _deleteStory(context, ref, storyIndex),
+                            onPressed: () =>
+                                _deleteStory(context, ref, storyIndex),
                           ),
                         ],
                       ),
@@ -153,7 +176,8 @@ class StoryManagerPage extends ConsumerWidget {
               Text('Error: $err'),
               const SizedBox(height: 12),
               ElevatedButton(
-                onPressed: () => ref.read(storyManagerProvider.notifier).refresh(),
+                onPressed: () =>
+                    ref.read(storyManagerProvider.notifier).refresh(),
                 child: const Text('Retry'),
               ),
             ],
@@ -177,7 +201,9 @@ class _AutoDeleteHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
+        ),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -188,16 +214,22 @@ class _AutoDeleteHeader extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Auto-delete stories',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               autoDeletePref.when(
                 data: (enabled) => Switch(
                   value: enabled,
                   onChanged: (v) async {
-                    await ref.read(storyAutoDeletePrefProvider.notifier).setEnabled(v);
+                    await ref
+                        .read(storyAutoDeletePrefProvider.notifier)
+                        .setEnabled(v);
                     if (v) {
-                      final f = ref.refresh(storyAutoDeleteExecutorProvider.future);
+                      final f = ref.refresh(
+                        storyAutoDeleteExecutorProvider.future,
+                      );
                       await f;
                       await ref.read(storyManagerProvider.notifier).refresh();
                     }
@@ -218,8 +250,13 @@ class _AutoDeleteHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Stories are public and stored on your PDS indefinitely. Enable this so the app auto deletes them forever after 24h. Enabling this will also execute an initial cleanup of any stories older than 24h.',
-            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            'Stories are public and stored on your PDS indefinitely. Enable '
+            'this so the app auto deletes them forever after 24h. Enabling '
+            'this will also execute an initial cleanup of any stories older '
+            'than 24h.',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),

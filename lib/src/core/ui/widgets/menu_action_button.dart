@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/options_panel.dart';
 
 class MenuActionButton extends StatelessWidget {
   const MenuActionButton({
@@ -35,7 +35,9 @@ class MenuActionButton extends StatelessWidget {
           onPressed!();
         }
       },
-      onDelete: isCurrentUserAuthor && onDeletePressed != null ? onDeletePressed : null,
+      onDelete: isCurrentUserAuthor && onDeletePressed != null
+          ? onDeletePressed
+          : null,
       isProfile: isProfile,
     );
   }
@@ -45,7 +47,9 @@ class MenuActionButton extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     // Use white icon color if it's on a video, otherwise use theme-based color
-    final iconColor = isOnVideo ? AppColors.white : (isDark ? AppColors.white : AppColors.black);
+    final iconColor = isOnVideo
+        ? AppColors.white
+        : (isDark ? AppColors.white : AppColors.black);
 
     return InkWell(
       onTap: () => _showOptionsMenu(context),
@@ -54,7 +58,11 @@ class MenuActionButton extends StatelessWidget {
       child: SizedBox(
         width: isCompact ? 28 : 36,
         height: isCompact ? 28 : 36,
-        child: Icon(Icons.more_horiz, color: iconColor, size: isCompact ? 16 : 25),
+        child: Icon(
+          Icons.more_horiz,
+          color: iconColor,
+          size: isCompact ? 16 : 25,
+        ),
       ),
     );
   }

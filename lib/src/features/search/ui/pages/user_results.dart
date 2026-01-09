@@ -2,10 +2,10 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/search/providers/search_provider.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/search/providers/search_provider.dart';
 
 class UserResults extends ConsumerStatefulWidget {
   const UserResults({super.key});
@@ -14,7 +14,8 @@ class UserResults extends ConsumerStatefulWidget {
   ConsumerState<UserResults> createState() => _UserResultsState();
 }
 
-class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAliveClientMixin {
+class _UserResultsState extends ConsumerState<UserResults>
+    with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -34,7 +35,8 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       // Trigger pagination when close to the bottom
       ref.read(searchProvider.notifier).loadMoreUsers();
     }
@@ -98,7 +100,9 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
               Icon(
                 Icons.people_outline,
                 size: 64,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -111,7 +115,9 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
               Text(
                 'Enter a search term to find users',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
                 ),
               ),
             ],
@@ -130,7 +136,9 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
               Icon(
                 Icons.person_search,
                 size: 64,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -143,7 +151,9 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
               Text(
                 'Try searching with different keywords',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
                 ),
               ),
             ],
@@ -152,7 +162,9 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
       );
     }
 
-    final itemCount = state.isLoadingMore ? state.searchResults.length + 1 : state.searchResults.length;
+    final itemCount = state.isLoadingMore
+        ? state.searchResults.length + 1
+        : state.searchResults.length;
 
     return ListView.builder(
       controller: _scrollController,
@@ -180,10 +192,17 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
             userHandle: '@${actor.handle}',
             description: actor.description ?? '',
             isFollowing: isFollowing,
-            onFollow: () => ref.read(searchProvider.notifier).followUser(actor.did),
-            onUnfollow: () =>
-                ref.read(searchProvider.notifier).unfollowUser(actor.did, actor.viewer?.following ?? AtUri.parse('')),
-            showFollowButton: !ref.read(searchProvider.notifier).isCurrentUser(actor.did),
+            onFollow: () =>
+                ref.read(searchProvider.notifier).followUser(actor.did),
+            onUnfollow: () => ref
+                .read(searchProvider.notifier)
+                .unfollowUser(
+                  actor.did,
+                  actor.viewer?.following ?? AtUri.parse(''),
+                ),
+            showFollowButton: !ref
+                .read(searchProvider.notifier)
+                .isCurrentUser(actor.did),
             onTap: () {
               if (actor.did.isNotEmpty) {
                 context.router.push(

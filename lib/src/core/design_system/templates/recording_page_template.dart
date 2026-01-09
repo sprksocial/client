@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/recording_button.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/recording_timer.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/molecules/recording_button.dart';
+import 'package:spark/src/core/design_system/components/molecules/recording_timer.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class RecordingPageTemplate extends StatelessWidget {
   const RecordingPageTemplate({
@@ -33,7 +33,6 @@ class RecordingPageTemplate extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
 
     // Calculate scale based on camera aspect ratio and screen aspect ratio
-    // For camera package v0.7.0+, this is: size.aspectRatio * camera.aspectRatio
     var scale = size.aspectRatio * aspectRatio;
 
     // To prevent scaling down, invert the value if scale < 1
@@ -145,7 +144,10 @@ class _BottomOverlay extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            if (onFlipCamera != null) _FlipCameraButton(onPressed: onFlipCamera!) else const SizedBox(width: 72),
+            if (onFlipCamera != null)
+              _FlipCameraButton(onPressed: onFlipCamera!)
+            else
+              const SizedBox(width: 72),
             recordingButton,
             const SizedBox(width: 72),
           ],

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/toggles/toggle.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/glass_input.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/toggle.dart';
+import 'package:spark/src/core/design_system/components/molecules/glass_input.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/shapes.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 /// Design-only template for the Video Review flow.
 ///
@@ -31,7 +31,8 @@ class VideoReviewPageTemplate extends StatelessWidget {
   });
 
   final String title;
-  final VoidCallback onBack; // Kept for API symmetry; AppLeadingButton handles back internally.
+  final VoidCallback
+  onBack; // Kept for API symmetry; AppLeadingButton handles back internally.
   final Widget videoPreview;
   final VoidCallback onAltEdit;
   final TextEditingController descriptionController;
@@ -55,7 +56,10 @@ class VideoReviewPageTemplate extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: backgroundColor ?? colorScheme.surface,
         elevation: 0,
-        leading: AppLeadingButton(color: theme.textTheme.titleLarge?.color, tooltip: 'Back'),
+        leading: AppLeadingButton(
+          color: theme.textTheme.titleLarge?.color,
+          tooltip: 'Back',
+        ),
         title: Text(title),
         centerTitle: false,
       ),
@@ -106,7 +110,10 @@ class VideoReviewPageTemplate extends StatelessWidget {
                         child: const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.greyWhite),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.greyWhite,
+                          ),
                         ),
                       )
                     : LongButton(label: postLabel, onPressed: onPost),
@@ -137,7 +144,10 @@ class _VideoPreview extends StatelessWidget {
       width: AppShapes.squircleBorderWidth,
       color: Colors.white.withAlpha(AppShapes.squircleBorderAlpha),
     );
-    final ShapeBorder shape = RoundedSuperellipseBorder(side: side, borderRadius: radius);
+    final ShapeBorder shape = RoundedSuperellipseBorder(
+      side: side,
+      borderRadius: radius,
+    );
 
     return AspectRatio(
       aspectRatio: aspectRatio,
@@ -156,13 +166,21 @@ class _VideoPreview extends StatelessWidget {
                 child: GestureDetector(
                   onTap: onAltEdit,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withAlpha(100),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.white.withAlpha(38)),
                     ),
-                    child: Text('ALT', style: AppTypography.textSmallBold.copyWith(color: AppColors.greyWhite)),
+                    child: Text(
+                      'ALT',
+                      style: AppTypography.textSmallBold.copyWith(
+                        color: AppColors.greyWhite,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -198,7 +216,9 @@ class _DescriptionSection extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: Text(
             '$count/$maxChars',
-            style: AppTypography.textSmallMedium.copyWith(color: Colors.white.withAlpha(160)),
+            style: AppTypography.textSmallMedium.copyWith(
+              color: Colors.white.withAlpha(160),
+            ),
           ),
         ),
       ],
@@ -227,7 +247,9 @@ class _CrossPostSection extends StatelessWidget {
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         title: Text(
           'Post to Bluesky',
-          style: AppTypography.textMediumBold.copyWith(color: AppColors.greyWhite),
+          style: AppTypography.textMediumBold.copyWith(
+            color: AppColors.greyWhite,
+          ),
         ),
         trailing: Toggle(value: value, onChanged: onChanged),
         onTap: () => onChanged(!value),

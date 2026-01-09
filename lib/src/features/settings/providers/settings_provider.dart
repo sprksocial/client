@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/storage/preferences/default_preferences.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/storage/preferences/default_preferences.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/settings/providers/settings_state.dart';
 
 part 'settings_provider.g.dart';
 
@@ -67,17 +67,28 @@ class Settings extends _$Settings {
       if (savedFeeds.isEmpty) {
         try {
           final modServiceDid = _defaultModServiceDid;
-          final defaultPrefs = DefaultPreferences.defaultPreferences(modServiceDid: modServiceDid);
+          final defaultPrefs = DefaultPreferences.defaultPreferences(
+            modServiceDid: modServiceDid,
+          );
           await _prefRepository.putPreferences(defaultPrefs);
 
           // Reload preferences after setting defaults
           final updatedPreferences = await _prefRepository.getPreferences();
-          final updatedSavedFeeds = _getSavedFeedsFromPreferences(updatedPreferences);
-          final updatedFeeds = await _feedRepository.getFeedsFromSavedFeeds(updatedSavedFeeds);
-          final updatedActiveFeed = _getActiveFeedFromFeeds(updatedFeeds, updatedSavedFeeds);
+          final updatedSavedFeeds = _getSavedFeedsFromPreferences(
+            updatedPreferences,
+          );
+          final updatedFeeds = await _feedRepository.getFeedsFromSavedFeeds(
+            updatedSavedFeeds,
+          );
+          final updatedActiveFeed = _getActiveFeedFromFeeds(
+            updatedFeeds,
+            updatedSavedFeeds,
+          );
 
           // Update liked feeds based on viewer state
-          final likedFeeds = updatedFeeds.where((feed) => feed.view?.viewer?.like != null).toList();
+          final likedFeeds = updatedFeeds
+              .where((feed) => feed.view?.viewer?.like != null)
+              .toList();
 
           state = SettingsState(
             activeFeed: updatedActiveFeed,
@@ -96,11 +107,14 @@ class Settings extends _$Settings {
       final activeFeed = _getActiveFeedFromFeeds(feeds, savedFeeds);
 
       _logger.d(
-        'Settings loaded - activeFeed: ${activeFeed.config.value}, feeds: ${feeds.map((f) => f.config.value).join(', ')}',
+        'Settings loaded - activeFeed: ${activeFeed.config.value}, '
+        'feeds: ${feeds.map((f) => f.config.value).join(', ')}',
       );
 
       // Update liked feeds based on viewer state
-      final likedFeeds = feeds.where((feed) => feed.view?.viewer?.like != null).toList();
+      final likedFeeds = feeds
+          .where((feed) => feed.view?.viewer?.like != null)
+          .toList();
 
       state = SettingsState(
         activeFeed: activeFeed,
@@ -117,19 +131,26 @@ class Settings extends _$Settings {
   /// Likes a feed generator
   Future<void> likeFeed(Feed feed) async {
     if (feed.view != null) {
-      final likeRef = await _feedRepository.likePost(feed.view!.cid, feed.view!.uri);
+      final likeRef = await _feedRepository.likePost(
+        feed.view!.cid,
+        feed.view!.uri,
+      );
 
       // Update the feed with the like information
       final updatedFeed = Feed(
         type: feed.type,
         config: feed.config,
         view: feed.view?.copyWith(
-          viewer: feed.view!.viewer?.copyWith(like: likeRef.uri) ?? GeneratorViewerState(like: likeRef.uri),
+          viewer:
+              feed.view!.viewer?.copyWith(like: likeRef.uri) ??
+              GeneratorViewerState(like: likeRef.uri),
         ),
       );
 
       // Update feeds list
-      final updatedFeeds = state.feeds.map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f).toList();
+      final updatedFeeds = state.feeds
+          .map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f)
+          .toList();
 
       // Add to liked feeds if not already there
       final likedFeeds = [...state.likedFeeds];
@@ -161,10 +182,14 @@ class Settings extends _$Settings {
       );
 
       // Update feeds list
-      final updatedFeeds = state.feeds.map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f).toList();
+      final updatedFeeds = state.feeds
+          .map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f)
+          .toList();
 
       // Remove from liked feeds
-      final likedFeeds = state.likedFeeds.where((f) => f.config.id != updatedFeed.config.id).toList();
+      final likedFeeds = state.likedFeeds
+          .where((f) => f.config.id != updatedFeed.config.id)
+          .toList();
 
       state = state.copyWith(
         feeds: updatedFeeds,
@@ -193,9 +218,17 @@ class Settings extends _$Settings {
   /// Updates preferences with new feeds list
   Future<void> _updateFeedsInPreferences(List<Feed> feeds) async {
     final preferences = await _prefRepository.getPreferences();
-    final updatedPreferences = preferences.preferences.where((pref) => !pref.isSavedFeedsPref(pref)).toList();
-    updatedPreferences.add(Preference.savedFeedsPref(items: feeds.map((feed) => feed.config).toList()));
-    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+    final updatedPreferences = preferences.preferences
+        .where((pref) => !pref.isSavedFeedsPref(pref))
+        .toList();
+    updatedPreferences.add(
+      Preference.savedFeedsPref(
+        items: feeds.map((feed) => feed.config).toList(),
+      ),
+    );
+    await _prefRepository.putPreferences(
+      Preferences(preferences: updatedPreferences),
+    );
   }
 
   /// Adds a feed to feeds list
@@ -221,7 +254,9 @@ class Settings extends _$Settings {
       throw Exception('Cannot delete the Following feed');
     }
 
-    final updatedFeeds = state.feeds.where((f) => f.config.id != feed.config.id).toList();
+    final updatedFeeds = state.feeds
+        .where((f) => f.config.id != feed.config.id)
+        .toList();
     await _updateFeedsInPreferences(updatedFeeds);
     state = state.copyWith(feeds: updatedFeeds);
   }
@@ -253,7 +288,7 @@ class Settings extends _$Settings {
   // Helper methods for working with Preferences
 
   List<SavedFeed> _getSavedFeedsFromPreferences(Preferences preferences) {
-    // Extract feeds from the preferences list (fromJson doesn't populate savedFeeds)
+    // Extract feeds from preferences (fromJson doesn't populate savedFeeds)
     final savedFeeds = <SavedFeed>[];
     for (final pref in preferences.preferences) {
       pref.mapOrNull(
@@ -293,7 +328,8 @@ class Settings extends _$Settings {
 
   Future<List<String>> getLabelers() async {
     final preferences = await _prefRepository.getPreferences();
-    var labelers = preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
+    var labelers =
+        preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
 
     // Ensure default mod service labeler is always present
     final modServiceDid = _defaultModServiceDid;
@@ -307,10 +343,16 @@ class Settings extends _$Settings {
         LabelerPrefItem(did: modServiceDid),
         ...(preferences.labelers ?? []),
       ];
-      final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
-      updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isLabelersPref(pref))
+          .toList();
+      updatedPreferences.add(
+        Preference.labelersPref(labelers: updatedLabelers),
+      );
 
-      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+      await _prefRepository.putPreferences(
+        Preferences(preferences: updatedPreferences),
+      );
     }
 
     // Ensure all labelers' label values are set as preferences
@@ -346,10 +388,16 @@ class Settings extends _$Settings {
 
       // Create updated preferences with new labeler
       final updatedLabelers = [...currentLabelers, LabelerPrefItem(did: did)];
-      final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
-      updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isLabelersPref(pref))
+          .toList();
+      updatedPreferences.add(
+        Preference.labelersPref(labelers: updatedLabelers),
+      );
 
-      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+      await _prefRepository.putPreferences(
+        Preferences(preferences: updatedPreferences),
+      );
       _logger.d('Labeler added successfully: $did');
 
       // Fetch and set default label preferences for this labeler
@@ -365,7 +413,10 @@ class Settings extends _$Settings {
     try {
       // Prevent removal of default mod service labeler
       if (did == _defaultModServiceDid) {
-        _logger.w('Attempted to remove default mod service labeler, which is not allowed');
+        _logger.w(
+          'Attempted to remove default mod service labeler, '
+          'which is not allowed',
+        );
         throw Exception('Cannot remove the default mod service labeler');
       }
 
@@ -374,13 +425,21 @@ class Settings extends _$Settings {
       final currentLabelers = preferences.labelers ?? [];
 
       // Remove the labeler
-      final updatedLabelers = currentLabelers.where((labeler) => labeler.did != did).toList();
+      final updatedLabelers = currentLabelers
+          .where((labeler) => labeler.did != did)
+          .toList();
 
       // Create updated preferences
-      final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
-      updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isLabelersPref(pref))
+          .toList();
+      updatedPreferences.add(
+        Preference.labelersPref(labelers: updatedLabelers),
+      );
 
-      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+      await _prefRepository.putPreferences(
+        Preferences(preferences: updatedPreferences),
+      );
       _logger.d('Labeler removed successfully: $did');
     } catch (e) {
       _logger.e('Error removing labeler: $e');
@@ -394,7 +453,8 @@ class Settings extends _$Settings {
       _logger.d('Syncing labelers from server...');
       // Fetch fresh preferences
       final preferences = await _prefRepository.getPreferences();
-      final labelers = preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
+      final labelers =
+          preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
 
       // Ensure default mod service labeler is present
       final modServiceDid = _defaultModServiceDid;
@@ -404,12 +464,20 @@ class Settings extends _$Settings {
           LabelerPrefItem(did: modServiceDid),
           ...(preferences.labelers ?? []),
         ];
-        final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
-        updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
-        await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+        final updatedPreferences = preferences.preferences
+            .where((pref) => !pref.isLabelersPref(pref))
+            .toList();
+        updatedPreferences.add(
+          Preference.labelersPref(labelers: updatedLabelers),
+        );
+        await _prefRepository.putPreferences(
+          Preferences(preferences: updatedPreferences),
+        );
       }
 
-      _logger.d('Syncing label value preferences for ${labelers.length} labelers');
+      _logger.d(
+        'Syncing label value preferences for ${labelers.length} labelers',
+      );
 
       // Ensure all labelers' label values are set as preferences
       await _ensureAllLabelersPoliciesSet(labelers);
@@ -438,9 +506,17 @@ class Settings extends _$Settings {
     );
   }
 
-  Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting) async {
+  Future<void> setLabelPreference(
+    String value,
+    Blurs blurs,
+    Severity severity,
+    bool adultOnly,
+    Setting setting,
+  ) async {
     final preferences = await _prefRepository.getPreferences();
-    final updatedPreferences = preferences.preferences.where((pref) => !pref.isContentLabelPref(pref)).toList();
+    final updatedPreferences = preferences.preferences
+        .where((pref) => !pref.isContentLabelPref(pref))
+        .toList();
     final existingContentPrefs = preferences.contentLabelPrefs ?? [];
     for (final pref in existingContentPrefs) {
       if (pref.label == value) {
@@ -470,19 +546,25 @@ class Settings extends _$Settings {
         ),
       );
     }
-    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+    await _prefRepository.putPreferences(
+      Preferences(preferences: updatedPreferences),
+    );
   }
 
   /// Gets label preferences for a specific labeler
-  Future<Map<String, LabelPreference>> getLabelPreferencesForLabeler(String labelerDid) async {
+  Future<Map<String, LabelPreference>> getLabelPreferencesForLabeler(
+    String labelerDid,
+  ) async {
     final preferences = await _prefRepository.getPreferences();
 
     // Get content label preferences from the main preferences list
     final contentLabelPrefsMap = <String, String>{}; // label -> visibility
     for (final pref in preferences.preferences) {
       final contentLabelPref = pref.mapOrNull(contentLabelPref: (p) => p);
-      if (contentLabelPref != null && contentLabelPref.labelerDid == labelerDid) {
-        contentLabelPrefsMap[contentLabelPref.label] = contentLabelPref.visibility;
+      if (contentLabelPref != null &&
+          contentLabelPref.labelerDid == labelerDid) {
+        contentLabelPrefsMap[contentLabelPref.label] =
+            contentLabelPref.visibility;
       }
     }
 
@@ -492,7 +574,8 @@ class Settings extends _$Settings {
       final prefLabelerDid = pref.labelerDid;
       final prefLabel = pref.label;
       final prefVisibility = pref.visibility;
-      if (prefLabelerDid == labelerDid && !contentLabelPrefsMap.containsKey(prefLabel)) {
+      if (prefLabelerDid == labelerDid &&
+          !contentLabelPrefsMap.containsKey(prefLabel)) {
         contentLabelPrefsMap[prefLabel] = prefVisibility;
       }
     }
@@ -513,7 +596,7 @@ class Settings extends _$Settings {
         value: label,
         blurs: blurs,
         severity: _visibilityToSeverity(visibility),
-        defaultSetting: setting, // This should ideally come from label definitions, but we use current as default
+        defaultSetting: setting, // TODO: should come from label definitions
         setting: setting,
         adultOnly: _isAdultOnlyLabel(label),
       );
@@ -533,19 +616,24 @@ class Settings extends _$Settings {
     final preferences = await _prefRepository.getPreferences();
 
     // Get all non-content-label preferences
-    final updatedPreferences = preferences.preferences.where((pref) => !pref.isContentLabelPref(pref)).toList();
+    final updatedPreferences = preferences.preferences
+        .where((pref) => !pref.isContentLabelPref(pref))
+        .toList();
 
-    // Get all existing content label preferences from the preferences list
-    final existingContentLabelPreferences = preferences.preferences.where((pref) => pref.isContentLabelPref(pref)).toList();
+    // Get all existing content label preferences from preferences
+    final existingContentLabelPreferences = preferences.preferences
+        .where((pref) => pref.isContentLabelPref(pref))
+        .toList();
 
     // Track if we found the preference to update
     var found = false;
 
-    // Preserve all other content label preferences and update the one we're changing
+    // Preserve all other content label prefs & update the one we're changing
     for (final pref in existingContentLabelPreferences) {
       final contentLabelPref = pref.mapOrNull(contentLabelPref: (p) => p);
       if (contentLabelPref != null) {
-        if (contentLabelPref.labelerDid == labelerDid && contentLabelPref.label == value) {
+        if (contentLabelPref.labelerDid == labelerDid &&
+            contentLabelPref.label == value) {
           // Update this specific preference
           updatedPreferences.add(
             Preference.contentLabelPref(
@@ -573,7 +661,9 @@ class Settings extends _$Settings {
       );
     }
 
-    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+    await _prefRepository.putPreferences(
+      Preferences(preferences: updatedPreferences),
+    );
   }
 
   Future<Feed> getActiveFeed() async {
@@ -664,7 +754,9 @@ class Settings extends _$Settings {
           },
           headers: {'atproto-proxy': _sprkRepository.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
         if (result.status != HttpStatus.ok) {
           throw Exception('Failed to retrieve labeler services');
@@ -691,7 +783,8 @@ class Settings extends _$Settings {
 
       final labelValues = labelValuesJson.map((v) => v as String).toList();
 
-      final labelValueDefinitionsJson = policiesJson['labelValueDefinitions'] as List<dynamic>?;
+      final labelValueDefinitionsJson =
+          policiesJson['labelValueDefinitions'] as List<dynamic>?;
       final labelDefinitionMap = <String, Map<String, dynamic>>{};
       if (labelValueDefinitionsJson != null) {
         for (final defJson in labelValueDefinitionsJson) {
@@ -706,15 +799,21 @@ class Settings extends _$Settings {
       final preferences = await _prefRepository.getPreferences();
 
       // Get all existing content label preferences from both sources
-      final existingContentLabelPreferences = preferences.preferences.where((pref) => pref.isContentLabelPref(pref)).toList();
-      final existingContentPrefsFromProperty = preferences.contentLabelPrefs ?? [];
+      final existingContentLabelPreferences = preferences.preferences
+          .where((pref) => pref.isContentLabelPref(pref))
+          .toList();
+      final existingContentPrefsFromProperty =
+          preferences.contentLabelPrefs ?? [];
 
       // Build a map of existing preferences by labelerDid:label
-      final existingPrefsMap = <String, String>{}; // "labelerDid:label" -> "visibility"
+      final existingPrefsMap =
+          <String, String>{}; // "labelerDid:label" -> "visibility"
       for (final pref in existingContentLabelPreferences) {
         final contentLabelPref = pref.mapOrNull(contentLabelPref: (p) => p);
         if (contentLabelPref != null) {
-          existingPrefsMap['${contentLabelPref.labelerDid}:${contentLabelPref.label}'] = contentLabelPref.visibility;
+          existingPrefsMap['${contentLabelPref.labelerDid}:'
+                  '${contentLabelPref.label}'] =
+              contentLabelPref.visibility;
         }
       }
       for (final pref in existingContentPrefsFromProperty) {
@@ -734,7 +833,8 @@ class Settings extends _$Settings {
           String defaultVisibility;
           final definition = labelDefinitionMap[labelValue];
           if (definition != null) {
-            defaultVisibility = definition['defaultSetting'] as String? ?? 'warn';
+            defaultVisibility =
+                definition['defaultSetting'] as String? ?? 'warn';
           } else {
             defaultVisibility = _getDefaultVisibilityForLabel(labelValue);
           }
@@ -752,11 +852,15 @@ class Settings extends _$Settings {
       if (preferencesToAdd.isNotEmpty) {
         // Preserve all existing preferences and add new ones
         final updatedPreferences = [
-          ...preferences.preferences.where((pref) => !pref.isContentLabelPref(pref)),
+          ...preferences.preferences.where(
+            (pref) => !pref.isContentLabelPref(pref),
+          ),
           ...existingContentLabelPreferences,
           ...preferencesToAdd,
         ];
-        await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+        await _prefRepository.putPreferences(
+          Preferences(preferences: updatedPreferences),
+        );
       }
     } catch (e) {
       _logger.e('Error fetching labeler policies for $did: $e');

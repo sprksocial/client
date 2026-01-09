@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/text_button.dart' as ds;
-import 'package:sparksocial/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/text_button.dart'
+    as ds;
+import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   const ProfileActionButtons({

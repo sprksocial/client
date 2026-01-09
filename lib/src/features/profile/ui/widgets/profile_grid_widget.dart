@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/utils/label_utils.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
 /// Builder function that creates slivers for the profile grid
 List<Widget> buildProfileGridSlivers({
@@ -35,14 +35,20 @@ List<Widget> buildProfileGridSlivers({
                   Icon(
                     both
                         ? FluentIcons.grid_24_regular
-                        : (videosOnly ? FluentIcons.video_24_regular : FluentIcons.image_24_regular),
+                        : (videosOnly
+                              ? FluentIcons.video_24_regular
+                              : FluentIcons.image_24_regular),
                     size: 48,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    both ? 'No posts yet' : (videosOnly ? 'No videos yet' : 'No images yet'),
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    both
+                        ? 'No posts yet'
+                        : (videosOnly ? 'No videos yet' : 'No images yet'),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -118,7 +124,9 @@ List<Widget> buildProfileGridSlivers({
               Text('Error loading posts: $error'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.read(profileFeedProvider(profileUri, videosOnly).notifier).refresh(),
+                onPressed: () => ref
+                    .read(profileFeedProvider(profileUri, videosOnly).notifier)
+                    .refresh(),
                 child: const Text('Retry'),
               ),
             ],
@@ -130,7 +138,12 @@ List<Widget> buildProfileGridSlivers({
 }
 
 class ProfileGridTile extends StatefulWidget {
-  const ProfileGridTile({required this.postView, required this.onTap, super.key, this.postSource});
+  const ProfileGridTile({
+    required this.postView,
+    required this.onTap,
+    super.key,
+    this.postSource,
+  });
   final PostView postView;
   final String? postSource;
   final VoidCallback onTap;
@@ -158,7 +171,9 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
 
   Future<void> _checkContentWarning() async {
     final labels = widget.postView.labels ?? [];
-    final shouldBlur = labels.isNotEmpty ? await LabelUtils.shouldBlurContent(labels) : false;
+    final shouldBlur = labels.isNotEmpty
+        ? await LabelUtils.shouldBlurContent(labels)
+        : false;
     if (mounted) {
       setState(() => _shouldBlur = shouldBlur);
     }
@@ -176,7 +191,9 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
         onTap: widget.onTap,
         child: ColoredBox(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
+          child: const Center(
+            child: Icon(FluentIcons.image_off_24_regular, size: 20),
+          ),
         ),
       );
     }
@@ -204,7 +221,9 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
                 borderRadius: BorderRadius.circular(15),
               ),
               child: SvgPicture.asset(
-                widget.postSource == 'bsky' ? 'images/bsky.svg' : 'images/sprk.svg',
+                widget.postSource == 'bsky'
+                    ? 'images/bsky.svg'
+                    : 'images/sprk.svg',
                 width: 12,
                 height: 12,
                 package: 'assets',

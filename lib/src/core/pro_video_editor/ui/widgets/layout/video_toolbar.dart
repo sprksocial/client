@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class VideoToolbar extends StatelessWidget {
   const VideoToolbar({

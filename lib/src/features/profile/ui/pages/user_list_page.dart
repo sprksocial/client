@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/features/profile/providers/user_list_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/user_list_view.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/features/profile/providers/user_list_provider.dart';
+import 'package:spark/src/features/profile/ui/widgets/user_list_view.dart';
 
 enum UserListType { followers, following }
 
@@ -35,15 +35,22 @@ class _UserListPageState extends ConsumerState<UserListPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-      ref.read(userListProvider(did: widget.did, type: widget.type).notifier).fetchMore();
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      ref
+          .read(userListProvider(did: widget.did, type: widget.type).notifier)
+          .fetchMore();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userListAsync = ref.watch(userListProvider(did: widget.did, type: widget.type));
-    final title = widget.type == UserListType.followers ? 'Followers' : 'Following';
+    final userListAsync = ref.watch(
+      userListProvider(did: widget.did, type: widget.type),
+    );
+    final title = widget.type == UserListType.followers
+        ? 'Followers'
+        : 'Following';
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +60,9 @@ class _UserListPageState extends ConsumerState<UserListPage> {
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(userListProvider(did: widget.did, type: widget.type));
-          await ref.read(userListProvider(did: widget.did, type: widget.type).future);
+          await ref.read(
+            userListProvider(did: widget.did, type: widget.type).future,
+          );
         },
         child: userListAsync.when(
           data: (userList) => UserListView(

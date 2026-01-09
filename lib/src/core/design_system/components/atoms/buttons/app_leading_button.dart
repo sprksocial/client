@@ -1,6 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 
 /// Design System leading button that leverages AutoLeadingButton for
 /// smart back/close/drawer behavior while keeping Spark's visual style.
@@ -16,19 +16,24 @@ class AppLeadingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AutoLeadingButton(
-      builder: (BuildContext context, LeadingType leadingType, VoidCallback? action) {
-        // If there's nothing to pop/open, render nothing.
-        if (action == null) return const SizedBox.shrink();
+      builder:
+          (
+            BuildContext context,
+            LeadingType leadingType,
+            VoidCallback? action,
+          ) {
+            // If there's nothing to pop/open, render nothing.
+            if (action == null) return const SizedBox.shrink();
 
-        final theme = Theme.of(context);
-        final iconColor = color ?? theme.textTheme.titleLarge?.color;
+            final theme = Theme.of(context);
+            final iconColor = color ?? theme.textTheme.titleLarge?.color;
 
-        return IconButton(
-          onPressed: action,
-          icon: AppIcons.chevronleft(color: iconColor),
-          tooltip: tooltip ?? 'Back',
-        );
-      },
+            return IconButton(
+              onPressed: action,
+              icon: AppIcons.chevronleft(color: iconColor),
+              tooltip: tooltip ?? 'Back',
+            );
+          },
     );
   }
 }

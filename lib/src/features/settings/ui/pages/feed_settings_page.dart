@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/features/home/providers/feed_settings_visibility_provider.dart';
-import 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
-import 'package:sparksocial/src/features/settings/ui/pages/labeler_management_page.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
+import 'package:spark/src/features/settings/ui/pages/feed_list_page.dart';
+import 'package:spark/src/features/settings/ui/pages/labeler_management_page.dart';
 
 @RoutePage()
 class FeedSettingsPage extends ConsumerStatefulWidget {
@@ -14,7 +14,8 @@ class FeedSettingsPage extends ConsumerStatefulWidget {
   ConsumerState<FeedSettingsPage> createState() => _FeedSettingsPageState();
 }
 
-class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with SingleTickerProviderStateMixin {
+class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   FeedSettingsVisibility? _visibilityNotifier;
 
@@ -22,7 +23,7 @@ class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with Single
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    // Store notifier reference and mark feed settings as visible when page opens
+    // Store notifier reference & mark feed settings as visible when page opens
     // Use post-frame callback to avoid modifying provider during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -57,7 +58,9 @@ class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with Single
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         iconTheme: IconThemeData(color: colorScheme.onSurface),
-        titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(color: colorScheme.onSurface),
+        titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
+          color: colorScheme.onSurface,
+        ),
         title: const Text('Feed Settings'),
         centerTitle: true,
         leading: const AppLeadingButton(),

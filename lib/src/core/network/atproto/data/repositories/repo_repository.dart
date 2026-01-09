@@ -3,25 +3,30 @@ import 'package:atproto/com_atproto_moderation_createreport.dart';
 import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/com_atproto_services.dart';
 import 'package:atproto/core.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/record_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
 
 /// Interface for Repository-related API endpoints
 abstract class RepoRepository {
   /// Get a record from the repository
-  Future<({Record record, RepoStrongRef strongRef})> getRecord({required AtUri uri});
+  Future<({Record record, RepoStrongRef strongRef})> getRecord({
+    required AtUri uri,
+  });
 
   /// Edit a record in the repository
   ///
   /// [uri] The URI of the record to edit
   /// [record] The record data to edit
-  Future<RepoStrongRef> editRecord({required AtUri uri, required Record record});
+  Future<RepoStrongRef> editRecord({
+    required AtUri uri,
+    required Record record,
+  });
 
   /// Create a record in the repository
   ///
   /// [collection] The NSID of the collection to create the record in
   /// [record] The record data to create
   /// [rkey] Optional record key
-  /// [repo] Optional DID of the repo (defaults to current user's DID if not provided)
+  /// [repo] Optional DID of the repo (defaults to current user's DID)
   Future<RepoStrongRef> createRecord({
     required String collection,
     required Map<String, dynamic> record,
@@ -32,8 +37,11 @@ abstract class RepoRepository {
   /// Delete a record from the repository
   ///
   /// [uri] The URI of the record to delete
-  /// [skipBskyCrosspostCleanup] If true, skips attempting to delete Bluesky crosspost
-  Future<void> deleteRecord({required AtUri uri, bool skipBskyCrosspostCleanup = false});
+  /// [skipBskyCrosspostCleanup] If true, skips attempt to delete crosspost
+  Future<void> deleteRecord({
+    required AtUri uri,
+    bool skipBskyCrosspostCleanup = false,
+  });
 
   /// Upload a blob to the repository
   ///
@@ -60,5 +68,8 @@ abstract class RepoRepository {
   /// [service] Optional moderation service to use
   ///
   /// Returns true if the report was successfully created
-  Future<bool> createReport({required ModerationCreateReportInput input, ModerationService? service});
+  Future<bool> createReport({
+    required ModerationCreateReportInput input,
+    ModerationService? service,
+  });
 }

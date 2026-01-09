@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 
 /// Data class representing an avatar in the stack.
 class AvatarData {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 /// Creates text themes using our typography tokens
 /// This ensures consistent typography throughout the app

@@ -47,7 +47,8 @@ class VideoTimelineState extends ChangeNotifier {
   bool get isMuted => _isMuted;
 
   /// Returns the active waveform data based on audio mode.
-  List<double> get activeWaveformData => _useCustomAudio ? _customWaveformData : videoWaveformData;
+  List<double> get activeWaveformData =>
+      _useCustomAudio ? _customWaveformData : videoWaveformData;
 
   /// Returns the name of the active audio track.
   String get activeAudioName {

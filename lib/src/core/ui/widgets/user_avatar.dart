@@ -29,7 +29,8 @@ class UserAvatar extends StatelessWidget {
 
     final effectiveBorderColor = borderColor ?? colorScheme.outline;
     final effectiveBackgroundColor = backgroundColor ?? colorScheme.primary;
-    final effectiveFallbackTextColor = fallbackTextColor ?? colorScheme.onPrimary;
+    final effectiveFallbackTextColor =
+        fallbackTextColor ?? colorScheme.onPrimary;
 
     // If no image URL is provided, show fallback avatar
     if (imageUrl.isEmpty) {
@@ -39,15 +40,24 @@ class UserAvatar extends StatelessWidget {
         decoration: BoxDecoration(
           color: effectiveBackgroundColor,
           shape: BoxShape.circle,
-          border: borderWidth > 0 ? Border.all(color: effectiveBorderColor, width: borderWidth) : null,
+          border: borderWidth > 0
+              ? Border.all(color: effectiveBorderColor, width: borderWidth)
+              : null,
         ),
         child: Center(
           child: username.isNotEmpty
               ? Text(
                   username[0].toUpperCase(),
-                  style: TextStyle(color: effectiveFallbackTextColor, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: effectiveFallbackTextColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 )
-              : Icon(FluentIcons.person_24_regular, size: size * 0.5, color: effectiveFallbackTextColor),
+              : Icon(
+                  FluentIcons.person_24_regular,
+                  size: size * 0.5,
+                  color: effectiveFallbackTextColor,
+                ),
         ),
       );
     }
@@ -58,7 +68,9 @@ class UserAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: borderWidth > 0 ? Border.all(color: effectiveBorderColor, width: borderWidth) : null,
+        border: borderWidth > 0
+            ? Border.all(color: effectiveBorderColor, width: borderWidth)
+            : null,
       ),
       clipBehavior: Clip.antiAlias,
       child: CachedNetworkImage(
@@ -70,9 +82,16 @@ class UserAvatar extends StatelessWidget {
             child: username.isNotEmpty
                 ? Text(
                     username[0].toUpperCase(),
-                    style: TextStyle(color: effectiveFallbackTextColor, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: effectiveFallbackTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   )
-                : Icon(FluentIcons.person_24_regular, size: size * 0.5, color: effectiveFallbackTextColor),
+                : Icon(
+                    FluentIcons.person_24_regular,
+                    size: size * 0.5,
+                    color: effectiveFallbackTextColor,
+                  ),
           ),
         ),
         errorWidget: (context, url, error) => ColoredBox(
@@ -81,9 +100,16 @@ class UserAvatar extends StatelessWidget {
             child: username.isNotEmpty
                 ? Text(
                     username[0].toUpperCase(),
-                    style: TextStyle(color: effectiveFallbackTextColor, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: effectiveFallbackTextColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   )
-                : Icon(FluentIcons.person_24_regular, size: size * 0.5, color: effectiveFallbackTextColor),
+                : Icon(
+                    FluentIcons.person_24_regular,
+                    size: size * 0.5,
+                    color: effectiveFallbackTextColor,
+                  ),
           ),
         ),
       ),

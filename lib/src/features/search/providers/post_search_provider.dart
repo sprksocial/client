@@ -5,12 +5,12 @@ import 'package:bluesky/app_bsky_feed_searchposts.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/search/providers/post_search_state.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/utils/label_utils.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/search/providers/post_search_state.dart';
 
 part 'post_search_provider.g.dart';
 
@@ -18,7 +18,9 @@ part 'post_search_provider.g.dart';
 @riverpod
 class PostSearch extends _$PostSearch {
   Timer? _debounce;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('PostSearchProvider');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'PostSearchProvider',
+  );
   final FeedRepository _feedRepository = GetIt.instance<SprkRepository>().feed;
   final AuthRepository _authRepository = GetIt.instance<AuthRepository>();
 
@@ -34,7 +36,13 @@ class PostSearch extends _$PostSearch {
   /// Update the search query and trigger search with debounce
   void updateQuery(String query) {
     // Update query and reset pagination state
-    state = state.copyWith(query: query, searchResults: [], sprkNextCursor: null, bskyNextCursor: null, error: null);
+    state = state.copyWith(
+      query: query,
+      searchResults: [],
+      sprkNextCursor: null,
+      bskyNextCursor: null,
+      error: null,
+    );
 
     if (query.isEmpty) {
       state = state.copyWith(isLoading: false);
@@ -72,7 +80,8 @@ class PostSearch extends _$PostSearch {
 
       final results = await Future.wait([sprkSearch, bskySearch]);
 
-      final sprkResponse = results[0] as ({String? cursor, List<PostView> posts});
+      final sprkResponse =
+          results[0] as ({String? cursor, List<PostView> posts});
       final bskyResponse = results[1] as XRPCResponse<FeedSearchPostsOutput>;
 
       final bskyPosts = bskyResponse.data.posts
@@ -90,7 +99,9 @@ class PostSearch extends _$PostSearch {
               return PostView.fromJson(postJson);
             } catch (e, stackTrace) {
               final postJson = post.toJson();
-              _logger.e('Failed to convert bsky post ${index + 1}/${bskyResponse.data.posts.length}');
+              _logger.e(
+                'Failed to convert bsky post ${index + 1}/${bskyResponse.data.posts.length}',
+              );
               _logger.e('Post URI: ${post.uri}');
               _logger.e('Post JSON: $postJson');
               _logger.e('Error: $e');
@@ -102,7 +113,9 @@ class PostSearch extends _$PostSearch {
           .cast<PostView>()
           .toList();
 
-      _logger.d('Successfully converted ${bskyPosts.length}/${bskyResponse.data.posts.length} bsky posts');
+      _logger.d(
+        'Successfully converted ${bskyPosts.length}/${bskyResponse.data.posts.length} bsky posts',
+      );
 
       final filteredSprkPosts = await _filterHiddenPosts(sprkResponse.posts);
       final filteredBskyPosts = await _filterHiddenPosts(bskyPosts);
@@ -116,11 +129,14 @@ class PostSearch extends _$PostSearch {
         isLoading: false,
       );
       _logger.d(
-        'Search completed with ${combinedPosts.length} results, sprkNextCursor: ${sprkResponse.cursor}, bskyNextCursor: ${bskyResponse.data.cursor}',
+        'Search completed with ${combinedPosts.length} results, '
+        'sprkNextCursor: ${sprkResponse.cursor}, '
+        'bskyNextCursor: ${bskyResponse.data.cursor}',
       );
 
       // If we have very few results, try to load more immediately
-      if (state.searchResults.length < 10 && (state.sprkNextCursor != null || state.bskyNextCursor != null)) {
+      if (state.searchResults.length < 10 &&
+          (state.sprkNextCursor != null || state.bskyNextCursor != null)) {
         await loadMorePosts();
       }
     } catch (e) {
@@ -150,7 +166,10 @@ class PostSearch extends _$PostSearch {
   Future<void> _loadMorePostsRecursive() async {
     final sprkCursor = state.sprkNextCursor;
     if (sprkCursor != null && sprkCursor.isNotEmpty) {
-      final response = await _feedRepository.searchPosts(state.query, cursor: sprkCursor);
+      final response = await _feedRepository.searchPosts(
+        state.query,
+        cursor: sprkCursor,
+      );
       final filteredPosts = await _filterHiddenPosts(response.posts);
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredPosts],
@@ -193,7 +212,9 @@ class PostSearch extends _$PostSearch {
               return PostView.fromJson(postJson);
             } catch (e, stackTrace) {
               final postJson = post.toJson();
-              _logger.e('Failed to convert bsky post ${index + 1}/${response.data.posts.length}');
+              _logger.e(
+                'Failed to convert bsky post ${index + 1}/${response.data.posts.length}',
+              );
               _logger.e('Post URI: ${post.uri}');
               _logger.e('Post JSON: $postJson');
               _logger.e('Error: $e');
@@ -212,7 +233,7 @@ class PostSearch extends _$PostSearch {
         bskyNextCursor: response.data.cursor,
       );
 
-      // If we still have few results and a cursor, and we actually added new posts, recurse.
+      // If we still have few results and a cursor, & added new posts, recurse
       if (state.searchResults.length < 10 &&
           (state.bskyNextCursor != null && state.bskyNextCursor!.isNotEmpty) &&
           state.searchResults.length > initialCount) {

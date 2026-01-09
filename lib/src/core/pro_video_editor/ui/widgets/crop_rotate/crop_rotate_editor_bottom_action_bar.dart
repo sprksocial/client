@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// A bottom action bar widget for the crop/rotate editor with done, close, undo, and redo buttons.
 class CropRotateEditorBottomActionBar extends StatelessWidget {
@@ -63,7 +63,9 @@ class CropRotateEditorBottomActionBar extends StatelessWidget {
                   onPressed: enableUndo ? undo : null,
                   icon: Icon(
                     configs.mainEditor.icons.undoAction,
-                    color: enableUndo ? foreGroundColor : foreGroundColor.withValues(alpha: 80),
+                    color: enableUndo
+                        ? foreGroundColor
+                        : foreGroundColor.withValues(alpha: 80),
                   ),
                 ),
                 const SizedBox(width: 3),
@@ -72,7 +74,9 @@ class CropRotateEditorBottomActionBar extends StatelessWidget {
                   onPressed: enableRedo ? redo : null,
                   icon: Icon(
                     configs.mainEditor.icons.redoAction,
-                    color: enableRedo ? foreGroundColor : foreGroundColor.withValues(alpha: 80),
+                    color: enableRedo
+                        ? foreGroundColor
+                        : foreGroundColor.withValues(alpha: 80),
                   ),
                 ),
               ],

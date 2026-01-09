@@ -3,12 +3,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/sound/providers/sound_page_provider.dart';
-import 'package:sparksocial/src/features/sound/ui/widgets/sound_header_card.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/sound/providers/sound_page_provider.dart';
+import 'package:spark/src/features/sound/ui/widgets/sound_header_card.dart';
 
 @RoutePage()
 class SoundPage extends ConsumerStatefulWidget {
@@ -39,7 +39,8 @@ class _SoundPageState extends ConsumerState<SoundPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(soundPageProvider(_audioAtUri).notifier).loadMore();
     }
   }
@@ -59,7 +60,8 @@ class _SoundPageState extends ConsumerState<SoundPage> {
       ),
       body: soundState.when(
         data: (state) => RefreshIndicator(
-          onRefresh: () => ref.read(soundPageProvider(_audioAtUri).notifier).refresh(),
+          onRefresh: () =>
+              ref.read(soundPageProvider(_audioAtUri).notifier).refresh(),
           child: CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -103,12 +105,13 @@ class _SoundPageState extends ConsumerState<SoundPage> {
                 SliverPadding(
                   padding: const EdgeInsets.all(5),
                   sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 5,
-                      mainAxisSpacing: 5,
-                      childAspectRatio: 9 / 16,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 5,
+                          childAspectRatio: 9 / 16,
+                        ),
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         if (index >= state.posts.length) {
@@ -118,7 +121,9 @@ class _SoundPageState extends ConsumerState<SoundPage> {
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                             ),
                           );
@@ -132,7 +137,8 @@ class _SoundPageState extends ConsumerState<SoundPage> {
                           ),
                         );
                       },
-                      childCount: state.posts.length + (state.isEndOfNetwork ? 0 : 1),
+                      childCount:
+                          state.posts.length + (state.isEndOfNetwork ? 0 : 1),
                     ),
                   ),
                 ),
@@ -149,7 +155,8 @@ class _SoundPageState extends ConsumerState<SoundPage> {
               Text('Error loading sound: $error'),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => ref.read(soundPageProvider(_audioAtUri).notifier).refresh(),
+                onPressed: () =>
+                    ref.read(soundPageProvider(_audioAtUri).notifier).refresh(),
                 child: const Text('Retry'),
               ),
             ],
@@ -179,7 +186,9 @@ class _SoundPostTile extends StatelessWidget {
         onTap: onTap,
         child: ColoredBox(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
+          child: const Center(
+            child: Icon(FluentIcons.image_off_24_regular, size: 20),
+          ),
         ),
       );
     }

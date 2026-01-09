@@ -5,18 +5,22 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/design_system/templates/image_review_page_template.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/posting/providers/post_story.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/core/design_system/templates/image_review_page_template.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/posting/providers/post_story.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
 @RoutePage()
 class ImageReviewPage extends ConsumerStatefulWidget {
-  const ImageReviewPage({required this.imageFiles, required this.storyMode, super.key});
+  const ImageReviewPage({
+    required this.imageFiles,
+    required this.storyMode,
+    super.key,
+  });
   final List<XFile> imageFiles;
   final bool storyMode;
 
@@ -36,7 +40,10 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   late final FeedRepository _feedRepository;
 
   Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
-    final newImage = await GetIt.I<ProVideoEditorRepository>().openImageEditor(context, imageFile);
+    final newImage = await GetIt.I<ProVideoEditorRepository>().openImageEditor(
+      context,
+      imageFile,
+    );
     // If the user edited the image, replace the original file in the list
     if (newImage != null) {
       if (!mounted) return;
@@ -72,7 +79,10 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     final initialText = _altTexts[path] ?? '';
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => AltTextEditorDialog(imageFile: imageFile.path, initialAltText: initialText),
+      builder: (context) => AltTextEditorDialog(
+        imageFile: imageFile.path,
+        initialAltText: initialText,
+      ),
     );
     if (result == null) return;
     setState(() {
@@ -96,7 +106,12 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to select images: $e'), backgroundColor: Colors.red));
+      ).showSnackBar(
+        SnackBar(
+          content: Text('Failed to select images: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -128,7 +143,12 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         result = asyncResult;
       } else {
         // Post as a regular image post
-        result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);
+        result = await _feedRepository.postImages(
+          description,
+          _imageFiles,
+          _altTexts,
+          crosspostToBsky: crosspostEnabled,
+        );
       }
       return result;
     } catch (e) {
@@ -138,7 +158,12 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       });
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to create post: $e'), backgroundColor: Colors.red));
+      ).showSnackBar(
+        SnackBar(
+          content: Text('Failed to create post: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
     return null;
   }
@@ -185,11 +210,17 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                 context.router.popUntilRoot();
                 final did = ref.read(sessionProvider)?.did;
                 if (did != null) {
-                  ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
-                  ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
+                  ref.invalidate(
+                    profileFeedProvider(AtUri.parse('at://$did'), false),
+                  );
+                  ref.invalidate(
+                    profileFeedProvider(AtUri.parse('at://$did'), true),
+                  );
                 }
                 if (!widget.storyMode) {
-                  context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+                  context.router.push(
+                    StandalonePostRoute(postUri: postRef.uri.toString()),
+                  );
                 }
               }
             },

@@ -1,11 +1,11 @@
 import 'package:bluesky/app_bsky_actor_profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/onboarding_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 
 part 'onboarding_providers.g.dart';
 
@@ -15,7 +15,10 @@ OnboardingRepository onboardingRepository(Ref ref) {
   final repoRepository = GetIt.instance<SprkRepository>().repo;
   final authRepository = GetIt.instance<AuthRepository>();
 
-  return OnboardingRepositoryImpl(repoRepository: repoRepository, authRepository: authRepository);
+  return OnboardingRepositoryImpl(
+    repoRepository: repoRepository,
+    authRepository: authRepository,
+  );
 }
 
 /// Provider to check if the user has a Spark profile
@@ -67,13 +70,21 @@ class OnboardingState extends _$OnboardingState {
   }
 
   /// Create a custom Spark profile
-  Future<void> createCustomProfile({required String displayName, required String description, dynamic avatar}) async {
+  Future<void> createCustomProfile({
+    required String displayName,
+    required String description,
+    dynamic avatar,
+  }) async {
     state = const AsyncLoading();
 
     try {
       final repository = ref.read(onboardingRepositoryProvider);
 
-      await repository.createSparkProfile(displayName: displayName, description: description, avatar: avatar);
+      await repository.createSparkProfile(
+        displayName: displayName,
+        description: description,
+        avatar: avatar,
+      );
 
       state = const AsyncData(null);
     } catch (e, stackTrace) {

@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 
 /// Default preferences to use when setting up a new user
 class DefaultPreferences {
@@ -17,12 +17,14 @@ class DefaultPreferences {
       ),
       SavedFeed(
         type: 'feed',
-        value: 'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids',
+        value:
+            'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids',
         pinned: true,
       ),
       SavedFeed(
         type: 'feed',
-        value: 'at://did:plc:cveom2iroj3mt747sd4qqnr2/so.sprk.feed.generator/discover',
+        value:
+            'at://did:plc:cveom2iroj3mt747sd4qqnr2/so.sprk.feed.generator/discover',
         pinned: true,
       ),
     ];

@@ -1,8 +1,8 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
-import 'package:sparksocial/src/core/utils/logging/log_level.dart';
-import 'package:sparksocial/src/core/utils/logging/log_output.dart';
+import 'package:spark/src/core/utils/logging/log_level.dart';
+import 'package:spark/src/core/utils/logging/log_output.dart';
 
 /// Outputs logs to the console
 class ConsoleOutput implements LogOutput {
@@ -27,7 +27,13 @@ class ConsoleOutput implements LogOutput {
   final bool useColors;
 
   @override
-  void output(LogLevel level, String message, DateTime timestamp, Object? error, StackTrace? stackTrace) {
+  void output(
+    LogLevel level,
+    String message,
+    DateTime timestamp,
+    Object? error,
+    StackTrace? stackTrace,
+  ) {
     final timeString = _formatTime(timestamp);
     final levelString = '[${level.name}]'.padRight(9);
     final prefix = '$timeString $levelString';
@@ -39,14 +45,17 @@ class ConsoleOutput implements LogOutput {
     }
 
     if (useColors && !kIsWeb) {
-      formattedMessage = '${_colorCodes[level] ?? ''}$formattedMessage$_resetColor';
+      formattedMessage =
+          '${_colorCodes[level] ?? ''}$formattedMessage$_resetColor';
     }
 
     // Use developer.log for better integration with DevTools
     developer.log(
       formattedMessage,
       time: timestamp,
-      level: level.value * 100, // Scale to match developer.log levels (multiples of 100)
+      level:
+          level.value *
+          100, // Scale to match developer.log levels (multiples of 100)
       error: error,
       stackTrace: stackTrace,
     );

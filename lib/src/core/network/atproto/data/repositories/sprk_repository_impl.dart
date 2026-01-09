@@ -1,24 +1,24 @@
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/config/app_config.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/config/app_config.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
 // Feature-specific repositories
-import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository_impl.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sound_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/story_repository_impl.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Client for interacting with Spark API endpoints
 class SprkRepositoryImpl implements SprkRepository {
@@ -27,7 +27,9 @@ class SprkRepositoryImpl implements SprkRepository {
   }
   final AuthRepository _authRepository;
   final String _sprkDid;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SprkRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'SprkRepository',
+  );
 
   /// Get the authentication service
   @override

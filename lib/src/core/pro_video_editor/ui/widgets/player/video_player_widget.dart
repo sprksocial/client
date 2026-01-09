@@ -35,7 +35,9 @@ class VideoPlayerWidget extends StatelessWidget {
 }
 
 /// Utility to create a VideoPlayerController from any supported [EditorVideo].
-Future<VideoPlayerController> createVideoPlayerControllerFromEditorVideo(EditorVideo video) async {
+Future<VideoPlayerController> createVideoPlayerControllerFromEditorVideo(
+  EditorVideo video,
+) async {
   if (video.assetPath != null && video.assetPath!.isNotEmpty) {
     return VideoPlayerController.asset(video.assetPath!);
   }

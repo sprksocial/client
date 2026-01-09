@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 
 /// Interface for Feed-related API endpoints
 abstract class LabelerRepository {

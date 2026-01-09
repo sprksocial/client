@@ -31,7 +31,10 @@ class CustomTextField extends StatelessWidget {
         hintText: hintText,
         filled: true,
         fillColor: fillColor ?? colorScheme.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: colorScheme.outline),
@@ -49,7 +52,11 @@ class CustomTextField extends StatelessWidget {
           borderSide: BorderSide(color: colorScheme.error),
         ),
         suffixIcon: onUndo != null
-            ? IconButton(icon: const Icon(Icons.undo, size: 20), onPressed: onUndo, tooltip: 'Revert')
+            ? IconButton(
+                icon: const Icon(Icons.undo, size: 20),
+                onPressed: onUndo,
+                tooltip: 'Revert',
+              )
             : null,
       ),
     );

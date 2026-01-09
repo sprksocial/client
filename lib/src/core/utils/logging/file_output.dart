@@ -3,8 +3,8 @@
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:sparksocial/src/core/utils/logging/log_level.dart';
-import 'package:sparksocial/src/core/utils/logging/log_output.dart';
+import 'package:spark/src/core/utils/logging/log_level.dart';
+import 'package:spark/src/core/utils/logging/log_output.dart';
 import 'package:synchronized/synchronized.dart';
 
 /// Outputs logs to a file
@@ -47,7 +47,13 @@ class FileOutput implements LogOutput {
   }
 
   @override
-  void output(LogLevel level, String message, DateTime timestamp, Object? error, StackTrace? stackTrace) {
+  void output(
+    LogLevel level,
+    String message,
+    DateTime timestamp,
+    Object? error,
+    StackTrace? stackTrace,
+  ) {
     _lock.synchronized(() async {
       if (!_initialized) {
         await initialize();
@@ -117,12 +123,16 @@ class FileOutput implements LogOutput {
     try {
       final now = DateTime.now();
       final timestamp =
-          '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}'
-          '${now.hour.toString().padLeft(2, '0')}${now.minute.toString().padLeft(2, '0')}${now.second.toString().padLeft(2, '0')}';
+          '${now.year}${now.month.toString().padLeft(2, '0')}'
+          '${now.day.toString().padLeft(2, '0')}'
+          '${now.hour.toString().padLeft(2, '0')}'
+          '${now.minute.toString().padLeft(2, '0')}'
+          '${now.second.toString().padLeft(2, '0')}';
 
       final directory = _file!.parent;
       final oldFilePath = _file!.path;
-      final newFilePath = '${directory.path}/${_fileName.split('.').first}.$timestamp.log';
+      final newFilePath =
+          '${directory.path}/${_fileName.split('.').first}.$timestamp.log';
 
       await _file!.rename(newFilePath);
       _file = File(oldFilePath);

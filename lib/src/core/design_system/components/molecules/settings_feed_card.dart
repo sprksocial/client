@@ -1,11 +1,11 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/shapes.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 
 enum SettingsFeedCardMode {
   display,
@@ -81,7 +81,11 @@ class SettingsFeedCard extends StatelessWidget {
     return _buildDisplayMode(context, radius, borderColor);
   }
 
-  Widget _buildDisplayMode(BuildContext context, BorderRadius radius, Color borderColor) {
+  Widget _buildDisplayMode(
+    BuildContext context,
+    BorderRadius radius,
+    Color borderColor,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? AppColors.grey700 : AppColors.grey100;
 
@@ -110,7 +114,11 @@ class SettingsFeedCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEditMode(BuildContext context, BorderRadius radius, Color borderColor) {
+  Widget _buildEditMode(
+    BuildContext context,
+    BorderRadius radius,
+    Color borderColor,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? AppColors.grey700 : AppColors.grey100;
 
@@ -156,7 +164,8 @@ class SettingsFeedCard extends StatelessWidget {
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _buildFallbackAvatar(),
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildFallbackAvatar(),
               )
             : _buildFallbackAvatar(),
       ),
@@ -172,7 +181,9 @@ class SettingsFeedCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(
-        _isTimeline ? FluentIcons.people_24_regular : FluentIcons.feed_24_regular,
+        _isTimeline
+            ? FluentIcons.people_24_regular
+            : FluentIcons.feed_24_regular,
         size: 20,
         color: Colors.white,
       ),
@@ -215,7 +226,8 @@ class SettingsFeedCard extends StatelessWidget {
   }
 
   Widget _buildLikeButton() {
-    if (_isTimeline) return const SizedBox.shrink(); // Don't show like button for timeline
+    // Don't show like button for timeline
+    if (_isTimeline) return const SizedBox.shrink();
 
     return InteractivePressable(
       onTap: _isLiked ? onUnlike : onLike,
@@ -226,7 +238,9 @@ class SettingsFeedCard extends StatelessWidget {
           color: _isLiked ? AppColors.primary600 : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: _isLiked ? AppColors.primary600 : (Colors.grey.withAlpha(100)),
+            color: _isLiked
+                ? AppColors.primary600
+                : (Colors.grey.withAlpha(100)),
           ),
         ),
         child: _isLiked

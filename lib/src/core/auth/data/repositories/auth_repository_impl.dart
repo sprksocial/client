@@ -5,11 +5,11 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:sparksocial/src/core/auth/data/models/login_result.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/storage/storage.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/auth/data/models/login_result.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/storage/storage.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Implementation of the authentication repository for AT Protocol
 class AuthRepositoryImpl implements AuthRepository {
@@ -20,7 +20,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Session? _session;
   ATProto? _atProto;
 
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('AuthRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'AuthRepository',
+  );
 
   final Completer<void> _initCompleter = Completer<void>();
   Future<void> get initializationComplete => _initCompleter.future;
@@ -61,24 +63,33 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
 
-    return pdsUrl.replaceFirst('http://', '').replaceFirst('https://', '').replaceFirst('/', '');
+    return pdsUrl
+        .replaceFirst('http://', '')
+        .replaceFirst('https://', '')
+        .replaceFirst('/', '');
   }
 
   bool _isTokenExpired(Jwt token) {
-    return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
+    return DateTime.now().isAfter(
+      token.exp.subtract(const Duration(minutes: 5)),
+    );
   }
 
   Future<void> _loadSavedSession() async {
     try {
       _logger.d('Loading saved session');
-      final savedSessionJson = await StorageManager.instance.secure.getString(StorageKeys.userSession);
+      final savedSessionJson = await StorageManager.instance.secure.getString(
+        StorageKeys.userSession,
+      );
 
       if (savedSessionJson == null) {
         _logger.d('No saved session found');
         return;
       }
 
-      _session = Session.fromJson(json.decode(savedSessionJson) as Map<String, dynamic>);
+      _session = Session.fromJson(
+        json.decode(savedSessionJson) as Map<String, dynamic>,
+      );
       if (_session == null) {
         _logger.w('Failed to parse saved session');
         return;
@@ -105,13 +116,19 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _logger.i('Refreshing session for user: ${_session!.handle}');
-      var service = _session!.didDoc != null ? _extractPdsDomain(_session!.didDoc!) : null;
+      var service = _session!.didDoc != null
+          ? _extractPdsDomain(_session!.didDoc!)
+          : null;
 
       if (service == null) {
         _logger.d('Fetching DID document from PLC directory');
-        final didDocResponse = await http.get(Uri.parse('https://plc.directory/${_session!.did}'));
+        final didDocResponse = await http.get(
+          Uri.parse('https://plc.directory/${_session!.did}'),
+        );
         if (didDocResponse.statusCode == 200) {
-          service = _extractPdsDomain(json.decode(didDocResponse.body) as Map<String, dynamic>);
+          service = _extractPdsDomain(
+            json.decode(didDocResponse.body) as Map<String, dynamic>,
+          );
         }
       }
 
@@ -121,7 +138,10 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _logger.d('Using service endpoint: $service');
-      final response = await refreshSession(service: service, refreshJwt: _session!.refreshJwt);
+      final response = await refreshSession(
+        service: service,
+        refreshJwt: _session!.refreshJwt,
+      );
 
       if (response.status != HttpStatus.ok) {
         _logger.e('Failed to refresh session: ${response.status}');
@@ -145,7 +165,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       _logger.d('Saving session for user: ${sessionData.handle}');
       final sessionJson = sessionData.toJson();
-      await StorageManager.instance.secure.setString(StorageKeys.userSession, json.encode(sessionJson));
+      await StorageManager.instance.secure.setString(
+        StorageKeys.userSession,
+        json.encode(sessionJson),
+      );
       _logger.d('Session saved successfully');
     } catch (e) {
       _logger.e('Failed to save session', error: e);
@@ -165,7 +188,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<LoginResult> login(String handle, String password, {String? authCode}) async {
+  Future<LoginResult> login(
+    String handle,
+    String password, {
+    String? authCode,
+  }) async {
     try {
       _logger.i('Login attempt for user: $handle');
       final at = ATProto.anonymous(service: 'pds.sprk.so');
@@ -175,17 +202,24 @@ class AuthRepositoryImpl implements AuthRepository {
       _logger
         ..d('Resolved DID: $did')
         ..d('Fetching DID document');
-      final didDocResponse = await http.get(Uri.parse('https://plc.directory/$did'));
+      final didDocResponse = await http.get(
+        Uri.parse('https://plc.directory/$did'),
+      );
 
       if (didDocResponse.statusCode != 200) {
         _logger.e('Failed to fetch DID document: ${didDocResponse.statusCode}');
-        throw Exception('Failed to fetch DID document: ${didDocResponse.statusCode}');
+        throw Exception(
+          'Failed to fetch DID document: ${didDocResponse.statusCode}',
+        );
       }
 
       final didDoc = json.decode(didDocResponse.body);
 
       final pdsUrl =
-          (didDoc['service'] as List<dynamic>).firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => '')['serviceEndpoint']
+          (didDoc['service'] as List<dynamic>).firstWhere(
+                (s) => s['id'] == '#atproto_pds',
+                orElse: () => '',
+              )['serviceEndpoint']
               as String?;
 
       if (pdsUrl == null) {
@@ -222,7 +256,9 @@ class AuthRepositoryImpl implements AuthRepository {
                 e.toString().contains('sign-in code') ||
                 e.toString().contains('verification code'))) {
           _logger.i('Authentication code required for user: $handle');
-          return LoginResult.codeRequired('Authentication code required. Check your email for a verification code.');
+          return LoginResult.codeRequired(
+            'Authentication code required. Check your email for a code.',
+          );
         }
         rethrow;
       }
@@ -233,7 +269,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<({bool success, String? error})> register(String handle, String email, String password, String? inviteCode) async {
+  Future<({bool success, String? error})> register(
+    String handle,
+    String email,
+    String password,
+    String? inviteCode,
+  ) async {
     try {
       _logger.i('Registration attempt for handle: $handle, email: $email');
       final at = ATProto.anonymous(service: 'pds.sprk.so');

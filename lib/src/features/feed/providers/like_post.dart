@@ -2,7 +2,7 @@ import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
 
 part 'like_post.g.dart';
 

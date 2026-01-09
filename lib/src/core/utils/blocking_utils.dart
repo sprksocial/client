@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 
 /// Checks if the viewer is blocking the profile
 bool isBlocking(ActorViewer? viewer) {

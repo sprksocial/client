@@ -22,10 +22,18 @@ class AppTabBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor ?? theme.scaffoldBackgroundColor,
         border: showBottomDivider
-            ? Border(bottom: BorderSide(color: bottomDividerColor ?? theme.dividerColor, width: 0.5))
+            ? Border(
+                bottom: BorderSide(
+                  color: bottomDividerColor ?? theme.dividerColor,
+                  width: 0.5,
+                ),
+              )
             : null,
       ),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: tabs),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: tabs,
+      ),
     );
   }
 }

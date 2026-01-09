@@ -15,9 +15,9 @@ typedef DeleteRecordCallback =
 class BskyRepoAdapter {
   const BskyRepoAdapter();
 
-  // ============================================================================
+  // ===========================================================================
   // Bluesky Cross-Post Handling
-  // ============================================================================
+  // ===========================================================================
 
   /// Build a Bluesky counterpart URI from a Spark post URI
   ///
@@ -33,7 +33,8 @@ class BskyRepoAdapter {
   /// This is a best-effort operation - errors are caught and returned as false.
   /// Returns true if deletion was successful, false otherwise.
   ///
-  /// [deleteRecord] is a callback that performs the actual deletion (typically atproto.repo.deleteRecord)
+  /// [deleteRecord] is a callback that performs the actual deletion
+  /// (typically com.atproto.repo.deleteRecord)
   Future<bool> deleteBlueskyCounterpart(
     DeleteRecordCallback deleteRecord,
     AtUri sparkUri,
@@ -47,7 +48,7 @@ class BskyRepoAdapter {
       );
       return true;
     } catch (e) {
-      // Ignore errors like 404 – it simply means the counterpart does not exist.
+      // Ignore errors like 404, it just means the counterpart doesn't exist.
       return false;
     }
   }

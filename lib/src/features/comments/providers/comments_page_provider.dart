@@ -2,9 +2,9 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/features/comments/providers/comments_page_state.dart';
-import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/features/comments/providers/comments_page_state.dart';
+import 'package:spark/src/features/feed/providers/post_updates.dart';
 
 part 'comments_page_provider.g.dart';
 
@@ -14,7 +14,9 @@ class CommentsPage extends _$CommentsPage {
 
   @override
   Future<CommentsPageState> build({required AtUri postUri}) async {
-    final isBlueskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
+    final isBlueskyPost = postUri.collection.toString().startsWith(
+      'app.bsky.feed.post',
+    );
     const timeoutDuration = Duration(seconds: 30);
 
     final thread = await feedRepository
@@ -22,7 +24,9 @@ class CommentsPage extends _$CommentsPage {
         .timeout(
           timeoutDuration,
           onTimeout: () {
-            throw Exception('Request timed out while loading thread for $postUri');
+            throw Exception(
+              'Request timed out while loading thread for $postUri',
+            );
           },
         );
     switch (thread) {
@@ -44,8 +48,7 @@ class CommentsPage extends _$CommentsPage {
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
   }) async {
-    // We need the current state to determine if the post is a sprk or bsky post.
-    // If the state is not loaded, we cannot proceed.
+    // We need the current state to determine if the post is a sprk or bsky post
     final currentState = state.value;
     if (currentState == null) {
       return;
@@ -66,17 +69,21 @@ class CommentsPage extends _$CommentsPage {
 
     // Refresh the thread using the provider's own postUri to ensure we're
     // refreshing the correct data.
-    final thread = await feedRepository.getThread(postUri, bluesky: !currentState.thread.post.isSprk, depth: 1);
+    final thread = await feedRepository.getThread(
+      postUri,
+      bluesky: !currentState.thread.post.isSprk,
+      depth: 1,
+    );
     switch (thread) {
       case ThreadViewPost():
         // Simply use the refreshed thread data from the server
         // This ensures we have the most up-to-date comments and counts
         state = AsyncValue.data(CommentsPageState(thread: thread));
 
-        // Update the cached post with the new reply count so it shows up in feeds
+        // Update cached post with new reply count so it shows up in feeds
         try {
           if (thread.post case ThreadPostView(:final post)) {
-            // Trigger feed UI update by incrementing the update counter
+            // Trigger feed UI update by incrementing update counter
             ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
           }
         } catch (e) {
@@ -110,7 +117,7 @@ class CommentsPage extends _$CommentsPage {
         // Use the refreshed thread data from the server
         state = AsyncValue.data(currentState.copyWith(thread: thread));
 
-        // Update the cached post with the new reply count so it shows up in feeds
+        // Update cached post with new reply count so it shows up in feeds
         try {
           if (thread.post case ThreadPostView(:final post)) {
             // Trigger feed UI update by incrementing the update counter

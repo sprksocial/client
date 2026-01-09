@@ -6,9 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
-import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/video_editor_grounded_page.dart';
+import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
+import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
+import 'package:spark/src/core/pro_video_editor/ui/video_editor_grounded_page.dart';
 
 /// Default implementation that directly delegates to ProVideoEditor.instance.
 class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
@@ -40,7 +40,8 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   }
 
   @override
-  Stream<ProgressModel> progressStream() => ProVideoEditor.instance.progressStream;
+  Stream<ProgressModel> progressStream() =>
+      ProVideoEditor.instance.progressStream;
 
   @override
   Future<XFile?> openImageEditor(BuildContext context, XFile source) async {
@@ -74,7 +75,10 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   }
 
   @override
-  Future<VideoEditorResult?> openVideoEditor(BuildContext context, EditorVideo video) async {
+  Future<VideoEditorResult?> openVideoEditor(
+    BuildContext context,
+    EditorVideo video,
+  ) async {
     return Navigator.of(context).push<VideoEditorResult?>(
       MaterialPageRoute(
         builder: (_) => VideoEditorGroundedPage(video: video),

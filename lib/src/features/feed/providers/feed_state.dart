@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 
 part 'feed_state.freezed.dart';
 
@@ -25,6 +25,9 @@ abstract class FeedState with _$FeedState {
 
   static const int fetchLimit = 10; // number of posts to fetch at a time
   static const int loadLimit = 10; // number of posts to keep ahead in memory
-  static const int firstLoadLimit = 10; // number of posts to load in the first load
-  static const int poolSize = fetchLimit + (fetchLimit >> 1); // number of post embeds to cache at a time
+  static const int firstLoadLimit =
+      10; // number of posts to load in the first load
+  static const int poolSize =
+      fetchLimit +
+      (fetchLimit >> 1); // number of post embeds to cache at a time
 }

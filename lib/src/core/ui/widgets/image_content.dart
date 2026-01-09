@@ -2,11 +2,16 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 
 class ImageContent extends StatelessWidget {
-  const ImageContent({required this.imageUrls, required this.borderRadius, super.key, this.thumbnailSize = 100});
+  const ImageContent({
+    required this.imageUrls,
+    required this.borderRadius,
+    super.key,
+    this.thumbnailSize = 100,
+  });
   final List<String> imageUrls;
   final BorderRadius borderRadius;
   final double thumbnailSize;
@@ -26,9 +31,15 @@ class ImageContent extends StatelessWidget {
                 top: MediaQuery.of(context).padding.top + 10,
                 right: 10,
                 child: IconButton(
-                  icon: const Icon(FluentIcons.dismiss_24_filled, color: Colors.white, size: 30),
+                  icon: const Icon(
+                    FluentIcons.dismiss_24_filled,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                   onPressed: () => context.router.maybePop(),
-                  style: IconButton.styleFrom(backgroundColor: Colors.black.withValues(alpha: 77)),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withValues(alpha: 77),
+                  ),
                 ),
               ),
             ],
@@ -60,13 +71,22 @@ class ImageContent extends StatelessWidget {
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white54,
+                      ),
                     ),
                   ),
                 ),
                 errorWidget: (context, url, error) => ColoredBox(
                   color: AppColors.darkPurple.withValues(alpha: 26),
-                  child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
+                  child: const Center(
+                    child: Icon(
+                      FluentIcons.image_off_24_regular,
+                      size: 24,
+                      color: Colors.white70,
+                    ),
+                  ),
                 ),
               ),
 
@@ -75,14 +95,21 @@ class ImageContent extends StatelessWidget {
                   top: 4,
                   right: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 179),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       '+${imageUrls.length - 1}',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 /// A general-purpose primary button that can display any text.
 ///
-/// This button uses the primary brand color and is commonly used in
-/// authentication screens, but can be used anywhere a prominent primary action is needed.
-/// It supports an optional trailing widget (e.g., SVG icon) and customizable minimum size.
+/// It uses the primary brand color and is commonly used in authentication
+/// screens, but can be used anywhere a prominent primary action is needed.
+/// It supports an optional trailing widget (e.g., SVG icon) and customizable
+/// minimum size.
 class PrimaryButton extends StatelessWidget {
   /// The text to display on the button
   final String text;

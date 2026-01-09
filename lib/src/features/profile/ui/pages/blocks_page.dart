@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/profile/providers/blocks_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/blocks_list_view.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/profile/providers/blocks_provider.dart';
+import 'package:spark/src/features/profile/ui/widgets/blocks_list_view.dart';
 
 @RoutePage()
 class BlocksPage extends ConsumerStatefulWidget {
@@ -31,7 +31,8 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
       final session = ref.read(sessionProvider);
       if (session != null) {
         ref.read(blocksProvider(did: session.did).notifier).fetchMore();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/theme/color_scheme.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/theme/color_scheme.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class AppTheme {
   AppTheme._();
@@ -19,7 +19,9 @@ class AppTheme {
         backgroundColor: AppColorScheme.light.surface,
         foregroundColor: AppColorScheme.light.onSurface,
         iconTheme: IconThemeData(color: AppColorScheme.light.onSurface),
-        titleTextStyle: AppTypography.textLargeBold.copyWith(color: AppColorScheme.light.onSurface),
+        titleTextStyle: AppTypography.textLargeBold.copyWith(
+          color: AppColorScheme.light.onSurface,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -50,7 +52,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColorScheme.light.surfaceContainerHighest,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -103,7 +108,9 @@ class AppTheme {
         backgroundColor: AppColorScheme.dark.surface,
         foregroundColor: AppColorScheme.dark.onSurface,
         iconTheme: IconThemeData(color: AppColorScheme.dark.onSurface),
-        titleTextStyle: AppTypography.textLargeBold.copyWith(color: AppColorScheme.dark.onSurface),
+        titleTextStyle: AppTypography.textLargeBold.copyWith(
+          color: AppColorScheme.dark.onSurface,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -134,7 +141,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColorScheme.dark.surfaceContainerHighest,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

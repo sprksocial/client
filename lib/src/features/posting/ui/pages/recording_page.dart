@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/design_system/templates/recording_page_template.dart';
-import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/posting/providers/camera_provider.dart';
-import 'package:sparksocial/src/features/posting/providers/recording_provider.dart';
+import 'package:spark/src/core/design_system/templates/recording_page_template.dart';
+import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/posting/providers/camera_provider.dart';
+import 'package:spark/src/features/posting/providers/recording_provider.dart';
 
 @RoutePage()
 class RecordingPage extends ConsumerStatefulWidget {
@@ -46,7 +46,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     }
 
     final cameraState = cameraAsync.value;
-    if (cameraState == null || !cameraState.isInitialized || cameraState.controller == null) {
+    if (cameraState == null ||
+        !cameraState.isInitialized ||
+        cameraState.controller == null) {
       _showError('Camera not ready');
       return;
     }
@@ -127,7 +129,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       }
 
       await context.router.push(
-        VideoReviewRoute(videoPath: result.video.path, storyMode: widget.storyMode, soundRef: result.soundRef),
+        VideoReviewRoute(
+          videoPath: result.video.path,
+          storyMode: widget.storyMode,
+          soundRef: result.soundRef,
+        ),
       );
 
       if (mounted) {
@@ -164,7 +170,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     final cameraAsync = ref.watch(cameraProvider);
     final recordingState = ref.watch(recordingProvider);
 
-    if (recordingState.hasReachedMaxDuration && recordingState.isRecording && !_isProcessing) {
+    if (recordingState.hasReachedMaxDuration &&
+        recordingState.isRecording &&
+        !_isProcessing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _stopRecording();
       });
@@ -179,16 +187,24 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.white, size: 64),
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.white,
+                    size: 64,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Camera Error',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     cameraState.error ?? 'Unknown error',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -211,7 +227,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           );
         }
 
-        final canFlipCamera = cameraState.cameras.length > 1 && !recordingState.isRecording;
+        final canFlipCamera =
+            cameraState.cameras.length > 1 && !recordingState.isRecording;
         final aspectRatio = cameraState.controller!.value.aspectRatio;
 
         return RecordingPageTemplate(
@@ -248,12 +265,16 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               const SizedBox(height: 16),
               Text(
                 'Camera Error',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 8),
               Text(
                 error.toString(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),

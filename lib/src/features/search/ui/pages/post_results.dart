@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
+import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/label_utils.dart';
+import 'package:spark/src/features/search/providers/post_search_provider.dart';
 
 class PostResults extends ConsumerStatefulWidget {
   const PostResults({super.key});
@@ -13,7 +13,8 @@ class PostResults extends ConsumerStatefulWidget {
   ConsumerState<PostResults> createState() => _PostResultsState();
 }
 
-class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAliveClientMixin {
+class _PostResultsState extends ConsumerState<PostResults>
+    with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -33,7 +34,8 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       ref.read(postSearchProvider.notifier).loadMorePosts();
     }
   }
@@ -96,7 +98,9 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
               Icon(
                 Icons.search,
                 size: 64,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -109,7 +113,9 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
               Text(
                 'Enter a search term to find posts',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
                 ),
               ),
             ],
@@ -128,7 +134,9 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
               Icon(
                 Icons.search_off,
                 size: 64,
-                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.5,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -141,7 +149,9 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
               Text(
                 'Try searching with different keywords',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.7,
+                  ),
                 ),
               ),
             ],
@@ -174,7 +184,9 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
                 return FutureBuilder<bool>(
                   future: () async {
                     final labels = post.labels ?? [];
-                    return labels.isNotEmpty ? await LabelUtils.shouldBlurContent(labels) : false;
+                    return labels.isNotEmpty
+                        ? await LabelUtils.shouldBlurContent(labels)
+                        : false;
                   }(),
                   builder: (context, snapshot) {
                     final shouldBlur = snapshot.data ?? false;
@@ -185,7 +197,9 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
                       seen: false,
                       nsfwBlur: shouldBlur,
                       onTap: () {
-                        context.router.push(StandalonePostRoute(postUri: post.uri.toString()));
+                        context.router.push(
+                          StandalonePostRoute(postUri: post.uri.toString()),
+                        );
                       },
                     );
                   },

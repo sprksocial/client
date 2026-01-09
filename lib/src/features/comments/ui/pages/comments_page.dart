@@ -3,15 +3,20 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
-import 'package:sparksocial/src/features/comments/ui/widgets/comment_input.dart';
-import 'package:sparksocial/src/features/comments/ui/widgets/comment_item.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
+import 'package:spark/src/features/comments/ui/widgets/comment_input.dart';
+import 'package:spark/src/features/comments/ui/widgets/comment_item.dart';
 
 @RoutePage()
 class CommentsPage extends ConsumerStatefulWidget {
-  const CommentsPage({required this.postUri, required this.isSprk, super.key, this.post});
+  const CommentsPage({
+    required this.postUri,
+    required this.isSprk,
+    super.key,
+    this.post,
+  });
   final String postUri;
   final bool isSprk;
   final PostView? post;
@@ -20,15 +25,22 @@ class CommentsPage extends ConsumerStatefulWidget {
   ConsumerState<CommentsPage> createState() => _CommentsPageState();
 }
 
-class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerProviderStateMixin {
+class _CommentsPageState extends ConsumerState<CommentsPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
     _animationController.forward();
   }
 
@@ -46,16 +58,25 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return Transform.translate(offset: Offset(0, height * (1 - _animation.value)), child: child);
+        return Transform.translate(
+          offset: Offset(0, height * (1 - _animation.value)),
+          child: child,
+        );
       },
       child: Container(
         height: height,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
         ),
         child: const ClipRRect(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
           child: SafeArea(child: AutoRouter()),
         ),
       ),
@@ -138,7 +159,8 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
   Widget build(BuildContext context) {
     final asyncState = ref.watch(commentsPageProvider(postUri: _postAtUri));
     final threadPost = asyncState.value?.thread.post;
-    final displayPost = _post ?? (threadPost is ThreadPostView ? threadPost.post : null);
+    final displayPost =
+        _post ?? (threadPost is ThreadPostView ? threadPost.post : null);
     final commentCount = asyncState.value?.thread.replies?.length ?? 0;
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
@@ -159,7 +181,10 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
               Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: borderColor, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: borderColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
               const SizedBox(height: 12),
               Padding(
@@ -169,13 +194,20 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
                   children: [
                     Text(
                       '$commentCount comments',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
                     ),
                     IconButton(
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       onPressed: _closeComments,
-                      icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
+                      icon: Icon(
+                        FluentIcons.dismiss_24_regular,
+                        color: textColor,
+                      ),
                     ),
                   ],
                 ),
@@ -195,7 +227,11 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
                 itemCount: data.thread.replies?.length ?? 0,
                 itemBuilder: (context, index) {
                   final comment = data.thread.replies![index] as ThreadViewPost;
-                  return CommentItem(key: ValueKey('comment-${comment.post.cid}'), thread: comment, mainPostUri: _postAtUri);
+                  return CommentItem(
+                    key: ValueKey('comment-${comment.post.cid}'),
+                    thread: comment,
+                    mainPostUri: _postAtUri,
+                  );
                 },
               );
             },
@@ -240,7 +276,13 @@ class _KeyboardAwareCommentInput extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(bottom: keyboardHeight),
-      child: CommentInputWidget(videoId: videoId, postCid: postCid, postUri: postUri, isSprk: isSprk, focusNode: focusNode),
+      child: CommentInputWidget(
+        videoId: videoId,
+        postCid: postCid,
+        postUri: postUri,
+        isSprk: isSprk,
+        focusNode: focusNode,
+      ),
     );
   }
 }

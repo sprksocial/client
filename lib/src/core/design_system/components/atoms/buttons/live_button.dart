@@ -1,7 +1,7 @@
 import 'dart:ui'; // Required for ImageFilter
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 
 class LiveButton extends StatelessWidget {
   final Widget child;

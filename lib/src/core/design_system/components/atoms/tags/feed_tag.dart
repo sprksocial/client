@@ -1,11 +1,17 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class FeedTag extends StatelessWidget {
-  const FeedTag({required this.id, super.key, this.text = '', this.onTap, this.selected = false});
+  const FeedTag({
+    required this.id,
+    super.key,
+    this.text = '',
+    this.onTap,
+    this.selected = false,
+  });
 
   final String text;
   final VoidCallback? onTap;
@@ -18,7 +24,10 @@ class FeedTag extends StatelessWidget {
       return InteractivePressable(
         onTap: onTap,
         borderRadius: BorderRadius.circular(9),
-        child: Text(text, style: AppTypography.textMediumThin.copyWith(color: Colors.white70)),
+        child: Text(
+          text,
+          style: AppTypography.textMediumThin.copyWith(color: Colors.white70),
+        ),
       );
     }
     return InteractivePressable(
@@ -39,7 +48,12 @@ class FeedTag extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Text(text, style: AppTypography.textMediumMedium.copyWith(color: Colors.white)),
+              child: Text(
+                text,
+                style: AppTypography.textMediumMedium.copyWith(
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ),

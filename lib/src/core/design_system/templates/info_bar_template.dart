@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/follow_pill_button.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_avatar.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/follow_pill_button.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 class InfoBarTemplate extends StatefulWidget {
   const InfoBarTemplate({
@@ -62,7 +62,8 @@ class InfoBarTemplate extends StatefulWidget {
   State<InfoBarTemplate> createState() => _InfoBarTemplateState();
 }
 
-class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProviderStateMixin {
+class _InfoBarTemplateState extends State<InfoBarTemplate>
+    with SingleTickerProviderStateMixin {
   bool _isDescriptionExpanded = false;
 
   void _toggleDescription() {
@@ -77,7 +78,10 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
     if (parts.length == 1) {
       return GestureDetector(
         onTap: widget.onHandleTap,
-        child: Text('@$handle', style: AppTypography.textSmallThin.copyWith(color: color)),
+        child: Text(
+          '@$handle',
+          style: AppTypography.textSmallThin.copyWith(color: color),
+        ),
       );
     }
 
@@ -92,7 +96,9 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
             TextSpan(text: '@$first'),
             TextSpan(
               text: '.$rest',
-              style: AppTypography.textSmallThin.copyWith(color: color.withAlpha(128)),
+              style: AppTypography.textSmallThin.copyWith(
+                color: color.withAlpha(128),
+              ),
             ),
           ],
         ),
@@ -134,7 +140,9 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
                     onTap: widget.onTitleTap,
                     child: Text(
                       widget.displayName,
-                      style: AppTypography.textMediumBold.copyWith(color: textColor),
+                      style: AppTypography.textMediumBold.copyWith(
+                        color: textColor,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -168,8 +176,12 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
               child: Text(
                 widget.description!,
                 style: AppTypography.textSmallMedium.copyWith(color: textColor),
-                maxLines: _isDescriptionExpanded ? null : widget.descriptionMaxLines,
-                overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                maxLines: _isDescriptionExpanded
+                    ? null
+                    : widget.descriptionMaxLines,
+                overflow: _isDescriptionExpanded
+                    ? TextOverflow.visible
+                    : TextOverflow.ellipsis,
               ),
             ),
           ),
@@ -180,7 +192,8 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
             spacing: 6,
             runSpacing: 6,
             children: [
-              for (final label in widget.informLabels) _InformChip(label: label),
+              for (final label in widget.informLabels)
+                _InformChip(label: label),
             ],
           ),
       ],
@@ -196,7 +209,9 @@ class _AltPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
-      color: (isDark ? AppColors.grey600 : AppColors.lightGreyButton).withAlpha(180),
+      color: (isDark ? AppColors.grey600 : AppColors.lightGreyButton).withAlpha(
+        180,
+      ),
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
@@ -205,7 +220,9 @@ class _AltPill extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Text(
             'ALT',
-            style: AppTypography.textExtraSmallMedium.copyWith(color: AppColors.greyWhite),
+            style: AppTypography.textExtraSmallMedium.copyWith(
+              color: AppColors.greyWhite,
+            ),
           ),
         ),
       ),
@@ -234,7 +251,10 @@ class _InformChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label, style: AppTypography.textExtraSmallMedium.copyWith(color: text)),
+          Text(
+            label,
+            style: AppTypography.textExtraSmallMedium.copyWith(color: text),
+          ),
         ],
       ),
     );

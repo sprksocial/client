@@ -3,16 +3,16 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/create_media_sheet.dart';
-import 'package:sparksocial/src/core/design_system/components/organisms/bottom_nav_bar.dart';
-import 'package:sparksocial/src/core/media/create_media_actions.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/theme/data/models/app_theme.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
-import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
+import 'package:spark/src/core/design_system/components/organisms/bottom_nav_bar.dart';
+import 'package:spark/src/core/media/create_media_actions.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/theme/data/models/app_theme.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
+import 'package:spark/src/features/home/providers/navigation_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_provider.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class MainPage extends ConsumerStatefulWidget {
@@ -53,8 +53,14 @@ class _MainPageState extends ConsumerState<MainPage> {
     showCreateMediaSheet(
       context,
       onRecord: CreateMediaActions.onRecord(context, storyMode: false),
-      onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: false),
-      onUploadImages: CreateMediaActions.onUploadImages(context, storyMode: false),
+      onUploadVideo: CreateMediaActions.onUploadVideo(
+        context,
+        storyMode: false,
+      ),
+      onUploadImages: CreateMediaActions.onUploadImages(
+        context,
+        storyMode: false,
+      ),
     );
   }
 
@@ -65,7 +71,13 @@ class _MainPageState extends ConsumerState<MainPage> {
 
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
-      routes: const [FeedsRoute(), SearchRoute(), EmptyRoute(), MessagesRoute(), UserProfileRoute()],
+      routes: const [
+        FeedsRoute(),
+        SearchRoute(),
+        EmptyRoute(),
+        MessagesRoute(),
+        UserProfileRoute(),
+      ],
       transitionBuilder: (context, child, animation) => child,
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
@@ -78,8 +90,11 @@ class _MainPageState extends ConsumerState<MainPage> {
           }
         });
 
-        final profileAsync = userDid != null ? ref.watch(profileProvider(did: userDid)) : null;
-        final userAvatar = profileAsync?.asData?.value.profile?.avatar?.toString();
+        final profileAsync = userDid != null
+            ? ref.watch(profileProvider(did: userDid))
+            : null;
+        final userAvatar = profileAsync?.asData?.value.profile?.avatar
+            ?.toString();
 
         final avatarProvider = userAvatar != null && userAvatar.isNotEmpty
             ? CachedNetworkImageProvider(userAvatar)
@@ -98,7 +113,9 @@ class _MainPageState extends ConsumerState<MainPage> {
               } else {
                 if (tabsRouter.activeIndex == index && index == 0) {
                   final activeFeed = ref.read(settingsProvider).activeFeed;
-                  ref.read(feedRefreshTriggerProvider(activeFeed).notifier).trigger();
+                  ref
+                      .read(feedRefreshTriggerProvider(activeFeed).notifier)
+                      .trigger();
                 } else {
                   tabsRouter.setActiveIndex(index);
                   ref.read(navigationProvider.notifier).updateIndex(index);

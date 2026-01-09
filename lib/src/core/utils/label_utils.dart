@@ -1,7 +1,7 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 
 class LabelUtils {
   static Future<LabelPreference> _getLabelPreference(String value) async {
@@ -76,7 +76,8 @@ class LabelUtils {
     for (final label in labels) {
       try {
         final preference = await _getLabelPreference(label.val);
-        if (preference.severity == Severity.alert && preference.setting == Setting.warn) {
+        if (preference.severity == Severity.alert &&
+            preference.setting == Setting.warn) {
           return true;
         }
       } catch (e) {
@@ -94,7 +95,9 @@ class LabelUtils {
     for (final label in labels) {
       try {
         final preference = await _getLabelPreference(label.val);
-        if (preference.blurs == Blurs.content || preference.blurs == Blurs.media && preference.setting == Setting.warn) {
+        if (preference.blurs == Blurs.content ||
+            preference.blurs == Blurs.media &&
+                preference.setting == Setting.warn) {
           return true;
         }
       } catch (e) {
@@ -114,7 +117,8 @@ class LabelUtils {
     for (final label in labels) {
       try {
         final preference = await _getLabelPreference(label.val);
-        if (preference.severity == Severity.alert && preference.setting == Setting.warn) {
+        if (preference.severity == Severity.alert &&
+            preference.setting == Setting.warn) {
           warningLabels.add(label.val);
         }
       } catch (e) {
@@ -134,7 +138,8 @@ class LabelUtils {
     for (final label in labels) {
       try {
         final preference = await _getLabelPreference(label.val);
-        if (preference.severity == Severity.inform && preference.setting == Setting.warn) {
+        if (preference.severity == Severity.inform &&
+            preference.setting == Setting.warn) {
           informLabels.add(label.val);
         }
       } catch (e) {

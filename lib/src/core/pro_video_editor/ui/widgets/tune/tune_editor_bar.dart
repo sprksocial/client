@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bottom_action_bar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bottom_action_bar.dart';
 
 /// A custom tune editor bottom bar widget for video editor.
 ///
-/// Provides controls for tune adjustments (brightness, contrast, saturation, etc.)
+/// Provides controls for tune adjustments (brightness, contrast, etc.)
 /// and a slider for adjusting the selected parameter.
 class TuneEditorBar extends StatefulWidget {
   /// Creates a [TuneEditorBar].
@@ -72,8 +72,12 @@ class _TuneEditorBarState extends State<TuneEditorBar> {
               child: StreamBuilder(
                 stream: widget.editor.uiStream.stream,
                 builder: (context, snapshot) {
-                  final activeOption = widget.editor.tuneAdjustmentList[widget.editor.selectedIndex];
-                  final activeMatrix = widget.editor.tuneAdjustmentMatrix[widget.editor.selectedIndex];
+                  final activeOption = widget
+                      .editor
+                      .tuneAdjustmentList[widget.editor.selectedIndex];
+                  final activeMatrix = widget
+                      .editor
+                      .tuneAdjustmentMatrix[widget.editor.selectedIndex];
 
                   return SizedBox(
                     height: 40,
@@ -81,7 +85,9 @@ class _TuneEditorBarState extends State<TuneEditorBar> {
                       min: activeOption.min,
                       max: activeOption.max,
                       divisions: activeOption.divisions,
-                      label: (activeMatrix.value * activeOption.labelMultiplier).round().toString(),
+                      label: (activeMatrix.value * activeOption.labelMultiplier)
+                          .round()
+                          .toString(),
                       value: activeMatrix.value,
                       activeColor: AppColors.primary400,
                       onChangeStart: widget.editor.onChangedStart,
@@ -117,8 +123,14 @@ class _TuneEditorBarState extends State<TuneEditorBar> {
                           });
                         },
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                          maximumSize: const Size(double.infinity, kBottomNavigationBarHeight),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 2,
+                          ),
+                          maximumSize: const Size(
+                            double.infinity,
+                            kBottomNavigationBarHeight,
+                          ),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -126,14 +138,18 @@ class _TuneEditorBarState extends State<TuneEditorBar> {
                             Icon(
                               item.icon,
                               size: 22,
-                              color: isSelected ? AppColors.primary500 : Colors.white,
+                              color: isSelected
+                                  ? AppColors.primary500
+                                  : Colors.white,
                             ),
                             const SizedBox(height: 5),
                             Text(
                               item.label,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: isSelected ? AppColors.primary500 : Colors.white,
+                                color: isSelected
+                                    ? AppColors.primary500
+                                    : Colors.white,
                               ),
                             ),
                           ],

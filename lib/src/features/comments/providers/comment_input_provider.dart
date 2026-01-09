@@ -3,29 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
-import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/comments/providers/comment_input_state.dart';
+import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
 
 part 'comment_input_provider.g.dart';
 
 @riverpod
 class CommentInput extends _$CommentInput {
   @override
-  CommentInputState build(TextEditingController textController, ImagePicker imagePicker) {
+  CommentInputState build(
+    TextEditingController textController,
+    ImagePicker imagePicker,
+  ) {
     ref.onDispose(() {
       textController.dispose();
     });
     textController.addListener(updateCanSubmit);
-    return CommentInputState(textController: textController, imagePicker: imagePicker);
+    return CommentInputState(
+      textController: textController,
+      imagePicker: imagePicker,
+    );
   }
 
-  late final SparkLogger _logger = GetIt.instance.get<LogService>().getLogger('CommentInputNotifier');
+  late final SparkLogger _logger = GetIt.instance.get<LogService>().getLogger(
+    'CommentInputNotifier',
+  );
 
   void updateCanSubmit() {
     final textIsNotEmpty = state.textController.text.trim().isNotEmpty;
     final imagesAreSelected = state.selectedImages.isNotEmpty;
-    final newCanSubmit = textIsNotEmpty || imagesAreSelected; // Can submit if text OR images exist
+    final newCanSubmit =
+        textIsNotEmpty ||
+        imagesAreSelected; // Can submit if text OR images exist
 
     if (newCanSubmit != state.canSubmit) {
       state = state.copyWith(canSubmit: newCanSubmit);
@@ -40,15 +50,27 @@ class CommentInput extends _$CommentInput {
 
     if (selection.baseOffset < 0) {
       state.textController.text = currentText + emoji;
-      state.textController.selection = TextSelection.collapsed(offset: currentText.length + emoji.length);
+      state.textController.selection = TextSelection.collapsed(
+        offset: currentText.length + emoji.length,
+      );
     } else {
-      state.textController.text = currentText.replaceRange(selection.start, selection.end, emoji);
+      state.textController.text = currentText.replaceRange(
+        selection.start,
+        selection.end,
+        emoji,
+      );
     }
 
-    final newText = currentText.replaceRange(selection.start, selection.end, emoji);
+    final newText = currentText.replaceRange(
+      selection.start,
+      selection.end,
+      emoji,
+    );
     state.textController.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(offset: selection.baseOffset + emoji.length),
+      selection: TextSelection.collapsed(
+        offset: selection.baseOffset + emoji.length,
+      ),
     );
   }
 
@@ -59,12 +81,16 @@ class CommentInput extends _$CommentInput {
     final currentImageCount = state.selectedImages.length;
     if (currentImageCount >= maxImages) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Replies can only have 1 image.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Replies can only have 1 image.')),
+      );
       return;
     }
 
     try {
-      final pickedFile = await state.imagePicker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await state.imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
       if (pickedFile != null) {
         state = state.copyWith(selectedImages: [pickedFile]);
         updateCanSubmit();
@@ -89,7 +115,9 @@ class CommentInput extends _$CommentInput {
     required String? rootUri,
   }) async {
     if (!state.canSubmit || state.isPosting) return;
-    final trayNotifier = ref.read(commentsPageProvider(postUri: AtUri.parse(parentUri)).notifier);
+    final trayNotifier = ref.read(
+      commentsPageProvider(postUri: AtUri.parse(parentUri)).notifier,
+    );
     final text = state.textController.text.trim();
     final imagesToUpload = List<XFile>.from(state.selectedImages);
 
@@ -108,7 +136,11 @@ class CommentInput extends _$CommentInput {
 
       state.textController.clear();
       updateCanSubmit();
-      state = state.copyWith(isPosting: false, selectedImages: [], altTexts: {});
+      state = state.copyWith(
+        isPosting: false,
+        selectedImages: [],
+        altTexts: {},
+      );
     } catch (e) {
       // If posting fails, just reset isPosting but keep the form data
       state = state.copyWith(isPosting: false);

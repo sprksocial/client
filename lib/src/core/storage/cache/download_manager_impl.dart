@@ -3,11 +3,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
-import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/feed/providers/feed_state.dart';
 
 class DownloadManagerImpl implements DownloadManagerInterface {
   DownloadManagerImpl() : _pool = Pool(FeedState.poolSize) {
@@ -39,8 +39,12 @@ class DownloadManagerImpl implements DownloadManagerInterface {
         );
       }
     } catch (e) {
-      // If not authenticated yet or preferences can't be loaded, use default feed
-      _logger.w('Could not load preferences during init (user may not be authenticated yet): $e');
+      // If not authenticated yet or preferences can't be loaded, use default
+      // feed
+      _logger.w(
+        'Could not load preferences during init '
+        '(user may not be authenticated yet): $e',
+      );
       _activeFeed = Feed(
         type: 'timeline',
         config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
@@ -53,14 +57,16 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
   late final SparkLogger _logger;
   late final Pool _pool;
-  final PriorityQueue<DownloadTask> _tasks = PriorityQueue<DownloadTask>((a, b) => a.priority.compareTo(b.priority));
+  final PriorityQueue<DownloadTask> _tasks = PriorityQueue<DownloadTask>(
+    (a, b) => a.priority.compareTo(b.priority),
+  );
 
   late Feed _activeFeed;
   bool _isProcessing = false;
 
   static final controller = BetterPlayerController(
     const BetterPlayerConfiguration(),
-  ); // static controller for caching (for some reason the method for precaching is not static)
+  ); // static controller for caching
 
   @override
   void setActiveFeed(Feed feed) {
@@ -72,7 +78,13 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
   void _updateTaskPriorities() {
     _tasks.removeAll().forEach((task) {
-      _tasks.add(task.copyWith(priority: _activeFeed == task.feed ? activeFeedPriority : inactiveFeedPriority));
+      _tasks.add(
+        task.copyWith(
+          priority: _activeFeed == task.feed
+              ? activeFeedPriority
+              : inactiveFeedPriority,
+        ),
+      );
     });
   }
 
@@ -92,7 +104,9 @@ class DownloadManagerImpl implements DownloadManagerInterface {
       return;
     }
 
-    task.priority = (task.feed == _activeFeed) ? activeFeedPriority : inactiveFeedPriority;
+    task.priority = (task.feed == _activeFeed)
+        ? activeFeedPriority
+        : inactiveFeedPriority;
     _tasks.add(task);
     _processQueue();
   }
@@ -106,8 +120,8 @@ class DownloadManagerImpl implements DownloadManagerInterface {
     while (_tasks.isNotEmpty) {
       final task = _tasks.removeFirst();
       if (task.status == DownloadTaskStatus.pending) {
-        // Try to acquire a pool resource. If pool is full, withResource will wait.
-        // We want to submit to the pool and let it manage, not block _processQueue.
+        // Try to acquire pool resource. If pool full, withResource will wait.
+        // We want to submit to pool and let it manage, not block _processQueue.
         // So, we don't await the withResource call here directly in the loop
         // that would make _processQueue sequential for task submission to pool.
         // Instead, we launch it and let the pool handle concurrency.
@@ -121,11 +135,16 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               // It's mainly for pool resource management.
             })
             .catchError((e, s) {
-              // This catchError is for unexpected errors from _pool.withResource itself,
+              // This is for unexpected errors from _pool.withResource itself,
               // or if _executeTask re-throws an error not caught internally.
-              _logger.e('Error from pool for task ${task.uri}: $e', error: e, stackTrace: s as StackTrace);
+              _logger.e(
+                'Error from pool for task ${task.uri}: $e',
+                error: e,
+                stackTrace: s as StackTrace,
+              );
               // Ensure task is marked as failed and removed if not already
-              if (task.status != DownloadTaskStatus.failed && task.status != DownloadTaskStatus.completed) {
+              if (task.status != DownloadTaskStatus.failed &&
+                  task.status != DownloadTaskStatus.completed) {
                 task.status = DownloadTaskStatus.failed;
                 task.onError(task, e, s);
               }
@@ -133,7 +152,8 @@ class DownloadManagerImpl implements DownloadManagerInterface {
             });
         _logger.d('Task ${task.uri} submitted to pool for execution.');
       }
-      if (task.status != DownloadTaskStatus.completed && task.status != DownloadTaskStatus.failed) {
+      if (task.status != DownloadTaskStatus.completed &&
+          task.status != DownloadTaskStatus.failed) {
         newTasks.add(task);
       }
     }
@@ -148,19 +168,31 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   Future<void> dispose() async {
     _logger.d('Disposing DownloadManager...');
     _cancelAllPendingTasks(); // Attempt to clean up
-    await _pool.close(); // Closes the pool and waits for active tasks to complete
+    await _pool
+        .close(); // Closes the pool and waits for active tasks to complete
     _logger.d('DownloadManager disposed.');
   }
 
   bool _areTherePendingActiveFeedTasks() {
     final tasks = _tasks.toList();
-    return tasks.any((task) => task.status == DownloadTaskStatus.pending && task.feed == _activeFeed);
+    return tasks.any(
+      (task) =>
+          task.status == DownloadTaskStatus.pending && task.feed == _activeFeed,
+    );
   }
 
   Future<void> _executeTask(DownloadTask task) async {
-    _logger.d('Executing task: ${task.uri} for feed ${task.feed.config.id} with priority ${task.priority}');
-    if (_activeFeed != task.feed && task.priority > activeFeedPriority && _areTherePendingActiveFeedTasks()) {
-      _logger.d('Task ${task.uri} is for an inactive feed, but there are still pending active feed tasks. Skipping.');
+    _logger.d(
+      'Executing task: ${task.uri} for feed ${task.feed.config.id} '
+      'with priority ${task.priority}',
+    );
+    if (_activeFeed != task.feed &&
+        task.priority > activeFeedPriority &&
+        _areTherePendingActiveFeedTasks()) {
+      _logger.d(
+        'Task ${task.uri} is for an inactive feed, but there are still '
+        'pending active feed tasks. Skipping.',
+      );
       return;
     }
     try {
@@ -189,9 +221,13 @@ class DownloadManagerImpl implements DownloadManagerInterface {
         case MediaViewImages():
           for (final url in task.post.imageUrls) {
             // Download the image and verify it's cached
-            final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
+            final fileInfo = await CachedNetworkImageProvider
+                .defaultCacheManager
+                .downloadFile(url, key: url);
             if (fileInfo.statusCode != 200) {
-              _logger.w('Image file was not properly cached after download: $url');
+              _logger.w(
+                'Image file was not properly cached after download: $url',
+              );
             }
           }
         case MediaViewBskyRecordWithMedia(:final media):
@@ -212,13 +248,19 @@ class DownloadManagerImpl implements DownloadManagerInterface {
                   ),
                 ),
               );
-              _logger.d('Video file successfully cached: ${task.post.videoUrl}');
+              _logger.d(
+                'Video file successfully cached: ${task.post.videoUrl}',
+              );
             case MediaViewImage() || MediaViewImages() || MediaViewBskyImages():
               for (final url in task.post.imageUrls) {
                 // Download the image and verify it's cached
-                final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
+                final fileInfo = await CachedNetworkImageProvider
+                    .defaultCacheManager
+                    .downloadFile(url, key: url);
                 if (fileInfo.statusCode != 200) {
-                  _logger.w('Image file was not properly cached after download: $url');
+                  _logger.w(
+                    'Image file was not properly cached after download: $url',
+                  );
                 }
               }
             default:
@@ -241,7 +283,9 @@ class DownloadManagerImpl implements DownloadManagerInterface {
             ),
           );
         default:
-          throw Exception('Unsupported media type: ${task.post.media.runtimeType}');
+          throw Exception(
+            'Unsupported media type: ${task.post.media.runtimeType}',
+          );
       }
 
       task.status = DownloadTaskStatus.completed;

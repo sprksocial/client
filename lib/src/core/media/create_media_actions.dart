@@ -5,18 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
 
 /// Centralized factories for the create media actions used across the app.
 ///
 /// These return closures compatible with typical UI callbacks so that
-/// pages can simply pass them into [showCreateMediaSheet] without duplicating logic.
+/// pages can just pass them to [showCreateMediaSheet] without duplicate logic.
 class CreateMediaActions {
   const CreateMediaActions._();
 
   /// Record flow: camera capture -> editor -> review.
-  static VoidCallback onRecord(BuildContext context, {required bool storyMode}) {
+  static VoidCallback onRecord(
+    BuildContext context, {
+    required bool storyMode,
+  }) {
     return () async {
       if (!context.mounted) return;
       await context.router.push(RecordingRoute(storyMode: storyMode));
@@ -24,7 +27,10 @@ class CreateMediaActions {
   }
 
   /// Upload video flow: pick from gallery -> open editor -> review (story/post mode decided here).
-  static VoidCallback onUploadVideo(BuildContext context, {required bool storyMode}) {
+  static VoidCallback onUploadVideo(
+    BuildContext context, {
+    required bool storyMode,
+  }) {
     return () async {
       final pickedVideo = await ImagePicker().pickVideo(
         source: ImageSource.gallery,
@@ -32,10 +38,15 @@ class CreateMediaActions {
       );
       if (pickedVideo != null && context.mounted) {
         final editorVideo = EditorVideo.file(File(pickedVideo.path));
-        final result = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(context, editorVideo);
+        final result = await GetIt.I<ProVideoEditorRepository>()
+            .openVideoEditor(context, editorVideo);
         if (result != null && context.mounted) {
           await context.router.push(
-            VideoReviewRoute(videoPath: result.video.path, storyMode: storyMode, soundRef: result.soundRef),
+            VideoReviewRoute(
+              videoPath: result.video.path,
+              storyMode: storyMode,
+              soundRef: result.soundRef,
+            ),
           );
         }
       }
@@ -43,7 +54,10 @@ class CreateMediaActions {
   }
 
   /// Upload images flow: multi-pick -> image review (story/post mode decided here).
-  static VoidCallback onUploadImages(BuildContext context, {required bool storyMode}) {
+  static VoidCallback onUploadImages(
+    BuildContext context, {
+    required bool storyMode,
+  }) {
     return () async {
       final pickedImages = await ImagePicker().pickMultiImage(limit: 12);
       if (context.mounted && pickedImages.isNotEmpty) {

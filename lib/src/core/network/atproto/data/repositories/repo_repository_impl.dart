@@ -5,12 +5,12 @@ import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/com_atproto_services.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/repo_adapter.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/record_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/network/atproto/data/adapters/bsky/repo_adapter.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Repository-related API endpoints implementation
 class RepoRepositoryImpl implements RepoRepository {
@@ -21,7 +21,9 @@ class RepoRepositoryImpl implements RepoRepository {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('RepoAPI');
 
   @override
-  Future<({Record record, RepoStrongRef strongRef})> getRecord({required AtUri uri}) async {
+  Future<({Record record, RepoStrongRef strongRef})> getRecord({
+    required AtUri uri,
+  }) async {
     _logger.d('Getting record for URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -33,17 +35,27 @@ class RepoRepositoryImpl implements RepoRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      final result = await atproto.repo.getRecord(repo: uri.hostname, collection: uri.collection.toString(), rkey: uri.rkey);
+      final result = await atproto.repo.getRecord(
+        repo: uri.hostname,
+        collection: uri.collection.toString(),
+        rkey: uri.rkey,
+      );
       _logger.d('Record retrieved successfully');
       return (
         record: Record.fromJson(result.data.value),
-        strongRef: RepoStrongRef(uri: result.data.uri, cid: result.data.cid ?? ''),
+        strongRef: RepoStrongRef(
+          uri: result.data.uri,
+          cid: result.data.cid ?? '',
+        ),
       );
     });
   }
 
   @override
-  Future<RepoStrongRef> editRecord({required AtUri uri, required Record record}) async {
+  Future<RepoStrongRef> editRecord({
+    required AtUri uri,
+    required Record record,
+  }) async {
     _logger.d('Editing record at URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -88,14 +100,22 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('User session DID not available');
       }
 
-      final result = await atproto.repo.createRecord(repo: repoDid, collection: collection, record: record, rkey: rkey);
+      final result = await atproto.repo.createRecord(
+        repo: repoDid,
+        collection: collection,
+        record: record,
+        rkey: rkey,
+      );
       _logger.d('Record created successfully');
       return RepoStrongRef(uri: result.data.uri, cid: result.data.cid);
     });
   }
 
   @override
-  Future<void> deleteRecord({required AtUri uri, bool skipBskyCrosspostCleanup = false}) async {
+  Future<void> deleteRecord({
+    required AtUri uri,
+    bool skipBskyCrosspostCleanup = false,
+  }) async {
     _logger.d('Deleting record at URI: $uri');
     return _client.executeWithRetry(() async {
       final atproto = _client.authRepository.atproto;
@@ -104,7 +124,11 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      await atproto.repo.deleteRecord(repo: uri.hostname, collection: uri.collection.toString(), rkey: uri.rkey);
+      await atproto.repo.deleteRecord(
+        repo: uri.hostname,
+        collection: uri.collection.toString(),
+        rkey: uri.rkey,
+      );
       _logger.d('Record deleted successfully');
 
       // Delete cross-posted Bluesky counterpart if it exists (only for posts)
@@ -113,8 +137,8 @@ class RepoRepositoryImpl implements RepoRepository {
         _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
 
         final deleted = await bskyRepoAdapter.deleteBlueskyCounterpart(
-          ({required repo, required collection, required rkey}) =>
-              atproto.repo.deleteRecord(repo: repo, collection: collection, rkey: rkey),
+          ({required repo, required collection, required rkey}) => atproto.repo
+              .deleteRecord(repo: repo, collection: collection, rkey: rkey),
           uri,
         );
 
@@ -180,14 +204,19 @@ class RepoRepositoryImpl implements RepoRepository {
 
       _logger.d('Records listed successfully');
 
-      final records = result.data.records.map((record) => Record.fromJson(record.value)).toList();
+      final records = result.data.records
+          .map((record) => Record.fromJson(record.value))
+          .toList();
 
       return records;
     });
   }
 
   @override
-  Future<bool> createReport({required ModerationCreateReportInput input, ModerationService? service}) async {
+  Future<bool> createReport({
+    required ModerationCreateReportInput input,
+    ModerationService? service,
+  }) async {
     _logger.i('Creating moderation report for reason: ${input.reasonType}');
 
     return _client.executeWithRetry(() async {
@@ -203,7 +232,11 @@ class RepoRepositoryImpl implements RepoRepository {
       } else if (service != null) {
         _logger.d('Using provided moderation service');
         try {
-          final report = await service.createReport(subject: input.subject, reasonType: input.reasonType, reason: input.reason);
+          final report = await service.createReport(
+            subject: input.subject,
+            reasonType: input.reasonType,
+            reason: input.reason,
+          );
           return report.status.code == 200;
         } catch (e) {
           _logger.e('Error creating report with service', error: e);
@@ -218,7 +251,11 @@ class RepoRepositoryImpl implements RepoRepository {
 
         if (subjectData is RepoStrongRef) {
           body = {
-            'subject': {r'$type': 'com.atproto.repo.strongRef', 'uri': subjectData.uri.toString(), 'cid': subjectData.cid},
+            'subject': {
+              r'$type': 'com.atproto.repo.strongRef',
+              'uri': subjectData.uri.toString(),
+              'cid': subjectData.cid,
+            },
             'reasonType': input.reasonType.toJson(),
           };
         } else {
@@ -238,10 +275,17 @@ class RepoRepositoryImpl implements RepoRepository {
         };
 
         try {
-          final response = await atproto.post(endpoint, headers: headers, body: body);
+          final response = await atproto.post(
+            endpoint,
+            headers: headers,
+            body: body,
+          );
 
           if (response.status != HttpStatus.ok) {
-            _logger.e('Failed to create report: ${response.data}', error: 'HTTP ${response.status}');
+            _logger.e(
+              'Failed to create report: ${response.data}',
+              error: 'HTTP ${response.status}',
+            );
             throw Exception('Failed to create report: ${response.data}');
           }
 

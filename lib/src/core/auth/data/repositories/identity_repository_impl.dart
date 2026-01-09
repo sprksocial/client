@@ -5,10 +5,10 @@ import 'package:atproto/atproto.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:sparksocial/src/core/auth/data/repositories/identity_repository.dart';
-import 'package:sparksocial/src/core/storage/storage.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/auth/data/repositories/identity_repository.dart';
+import 'package:spark/src/core/storage/storage.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Implementation of [IdentityRepository] with caching capabilities
 class IdentityRepositoryImpl implements IdentityRepository {
@@ -23,19 +23,30 @@ class IdentityRepositoryImpl implements IdentityRepository {
   static const Duration _cacheExpiration = Duration(hours: 2);
 
   final StorageManager _storageManager;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('IdentityRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'IdentityRepository',
+  );
 
   Future<void> _loadCache() async {
     try {
-      final cacheTtl = await _storageManager.preferences.getInt(StorageKeys.identityCacheTtl);
-      if (cacheTtl != null && DateTime.now().millisecondsSinceEpoch > cacheTtl) {
+      final cacheTtl = await _storageManager.preferences.getInt(
+        StorageKeys.identityCacheTtl,
+      );
+      if (cacheTtl != null &&
+          DateTime.now().millisecondsSinceEpoch > cacheTtl) {
         await clearCache();
         return;
       }
 
-      final didToHandleJson = await _storageManager.preferences.getString(StorageKeys.didToHandleCache);
-      final handleToDidJson = await _storageManager.preferences.getString(StorageKeys.handleToDidCache);
-      final didDocJson = await _storageManager.preferences.getString(StorageKeys.didDocCache);
+      final didToHandleJson = await _storageManager.preferences.getString(
+        StorageKeys.didToHandleCache,
+      );
+      final handleToDidJson = await _storageManager.preferences.getString(
+        StorageKeys.handleToDidCache,
+      );
+      final didDocJson = await _storageManager.preferences.getString(
+        StorageKeys.didDocCache,
+      );
 
       if (didToHandleJson != null) {
         _loadDidToHandleCache(didToHandleJson);
@@ -94,11 +105,20 @@ class IdentityRepositoryImpl implements IdentityRepository {
         DateTime.now().add(_cacheExpiration).millisecondsSinceEpoch,
       );
 
-      await _storageManager.preferences.setString(StorageKeys.didToHandleCache, json.encode(_didToHandleCache));
+      await _storageManager.preferences.setString(
+        StorageKeys.didToHandleCache,
+        json.encode(_didToHandleCache),
+      );
 
-      await _storageManager.preferences.setString(StorageKeys.handleToDidCache, json.encode(_handleToDidCache));
+      await _storageManager.preferences.setString(
+        StorageKeys.handleToDidCache,
+        json.encode(_handleToDidCache),
+      );
 
-      await _storageManager.preferences.setString(StorageKeys.didDocCache, json.encode(_didDocCache));
+      await _storageManager.preferences.setString(
+        StorageKeys.didDocCache,
+        json.encode(_didDocCache),
+      );
     } catch (e) {
       _logger.e('Error saving identity cache', error: e);
     }
@@ -182,7 +202,9 @@ class IdentityRepositoryImpl implements IdentityRepository {
     final response = await http.get(url);
 
     if (response.statusCode != 200) {
-      _logger.w('Failed to resolve DID document. Status: ${response.statusCode}');
+      _logger.w(
+        'Failed to resolve DID document. Status: ${response.statusCode}',
+      );
       return null;
     }
 
@@ -261,7 +283,9 @@ class IdentityRepositoryImpl implements IdentityRepository {
   }
 
   @override
-  Future<Map<String, String?>> resolveHandlesToDids(List<String> handles) async {
+  Future<Map<String, String?>> resolveHandlesToDids(
+    List<String> handles,
+  ) async {
     final results = <String, String?>{};
     final futures = <Future<String?>>[];
 

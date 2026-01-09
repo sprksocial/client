@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/features/audio_editor/widgets/audio_waveform_selector.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// Displays edit controls for the selected audio track.
 ///
@@ -41,7 +41,8 @@ class AudioEditControlsSection extends StatefulWidget {
   final VoidCallback onConfirm;
 
   @override
-  State<AudioEditControlsSection> createState() => _AudioEditControlsSectionState();
+  State<AudioEditControlsSection> createState() =>
+      _AudioEditControlsSectionState();
 }
 
 class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {

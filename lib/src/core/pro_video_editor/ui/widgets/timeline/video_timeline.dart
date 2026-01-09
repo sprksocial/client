@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/theme/text_theme.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 class VideoTimeline extends StatelessWidget {
   const VideoTimeline({
@@ -97,7 +97,10 @@ class _TransportControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentPosition = Duration(
-      milliseconds: (videoTimelineState.progress * videoTimelineState.videoDuration.inMilliseconds).round(),
+      milliseconds:
+          (videoTimelineState.progress *
+                  videoTimelineState.videoDuration.inMilliseconds)
+              .round(),
     );
     final totalDuration = videoTimelineState.videoDuration;
 
@@ -155,7 +158,10 @@ class _TransportControls extends StatelessWidget {
                     size: 22,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                 ),
                 IconButton(
                   onPressed: canRedo ? onRedo : null,
@@ -165,7 +171,10 @@ class _TransportControls extends StatelessWidget {
                     size: 22,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                 ),
                 IconButton(
                   onPressed: onToggleFullscreen,
@@ -175,7 +184,10 @@ class _TransportControls extends StatelessWidget {
                     size: 22,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                  constraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                 ),
               ],
             ),

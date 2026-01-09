@@ -3,12 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
-import 'package:sparksocial/src/features/messages/providers/conversations_provider.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/features/messages/providers/conversation_provider.dart';
+import 'package:spark/src/features/messages/providers/conversations_provider.dart';
 
 class SharePanel extends ConsumerStatefulWidget {
-  const SharePanel({required this.shareUrl, required this.embedCode, required this.atUri, super.key, this.showEmbed = true});
+  const SharePanel({
+    required this.shareUrl,
+    required this.embedCode,
+    required this.atUri,
+    super.key,
+    this.showEmbed = true,
+  });
   final String shareUrl;
   final String embedCode;
   final String atUri;
@@ -79,8 +85,16 @@ class _SharePanelState extends ConsumerState<SharePanel> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        boxShadow: [BoxShadow(color: theme.colorScheme.shadow.withValues(alpha: 0.2), blurRadius: 10)],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.2),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.6,
@@ -94,13 +108,20 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                 width: 40,
                 height: 4,
                 margin: const EdgeInsets.only(top: 12, bottom: 16),
-                decoration: BoxDecoration(color: dividerColor, borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: dividerColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   'Share Video',
-                  style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Divider(color: dividerColor, height: 30),
@@ -112,7 +133,11 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                     // Conversations selector
                     Text(
                       'Send to',
-                      style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Builder(
@@ -123,22 +148,29 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                             if (items.isEmpty) {
                               return Text(
                                 'No conversations yet',
-                                style: TextStyle(color: textColor.withAlpha(153)),
+                                style: TextStyle(
+                                  color: textColor.withAlpha(153),
+                                ),
                               );
                             }
                             return Column(
                               children: [
                                 for (final (profile, convo) in items)
                                   _ConvoListTile(
-                                    displayName: profile.displayName ?? profile.handle,
+                                    displayName:
+                                        profile.displayName ?? profile.handle,
                                     handle: profile.handle,
                                     avatarUrl: profile.avatar?.toString(),
                                     selected: _selectedConvoId == convo.id,
                                     onAvatarTap: () {
-                                      setState(() => _selectedConvoId = convo.id);
+                                      setState(
+                                        () => _selectedConvoId = convo.id,
+                                      );
                                     },
                                     onTileTap: () {
-                                      setState(() => _selectedConvoId = convo.id);
+                                      setState(
+                                        () => _selectedConvoId = convo.id,
+                                      );
                                     },
                                   ),
                               ],
@@ -148,8 +180,10 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                             padding: EdgeInsets.symmetric(vertical: 24),
                             child: Center(child: CircularProgressIndicator()),
                           ),
-                          error: (e, st) =>
-                              Text('Failed to load conversations', style: TextStyle(color: theme.colorScheme.error)),
+                          error: (e, st) => Text(
+                            'Failed to load conversations',
+                            style: TextStyle(color: theme.colorScheme.error),
+                          ),
                         );
                       },
                     ),
@@ -158,7 +192,11 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                     const SizedBox(height: 16),
                     Text(
                       'Video link',
-                      style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     CopyField(
@@ -174,7 +212,11 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                       const SizedBox(height: 24),
                       Text(
                         'Video embed',
-                        style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       CopyField(
@@ -206,18 +248,37 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                               setState(() => _sending = true);
                               try {
                                 final convoId = _selectedConvoId!;
-                                // Ensure the conversation is loaded before sending
-                                await ref.read(conversationProvider(convoId).future);
-                                // Send an empty-text message with the embed set to the post ATURI
+                                // Ensure conversation is loaded before sending
+                                await ref.read(
+                                  conversationProvider(convoId).future,
+                                );
+                                // Send empty message with embed set to post URI
                                 await ref
-                                    .read(conversationProvider(convoId).notifier)
-                                    .sendMessage(convoId, '', embed: widget.atUri);
+                                    .read(
+                                      conversationProvider(convoId).notifier,
+                                    )
+                                    .sendMessage(
+                                      convoId,
+                                      '',
+                                      embed: widget.atUri,
+                                    );
 
-                                messenger.showSnackBar(const SnackBar(content: Text('Shared to conversation')));
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Shared to conversation'),
+                                  ),
+                                );
                                 navigator.maybePop();
                               } catch (e) {
-                                messenger.showSnackBar(SnackBar(content: Text('Failed to share: $e')));
-                                logger.d('Failed to share video to conversation', error: e);
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text('Failed to share: $e'),
+                                  ),
+                                );
+                                logger.d(
+                                  'Failed to share video to conversation',
+                                  error: e,
+                                );
                               } finally {
                                 if (mounted) setState(() => _sending = false);
                               }
@@ -228,7 +289,9 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                               height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(theme.colorScheme.onPrimary),
+                                valueColor: AlwaysStoppedAnimation(
+                                  theme.colorScheme.onPrimary,
+                                ),
                               ),
                             )
                           : const Icon(Icons.send_rounded),
@@ -282,7 +345,11 @@ class CopyField extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Text(
                 text,
-                style: TextStyle(fontFamily: 'monospace', color: textColor.withAlpha(204), fontSize: 13),
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  color: textColor.withAlpha(204),
+                  fontSize: 13,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -296,12 +363,23 @@ class CopyField extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (Widget child, Animation<double> animation) {
-                    return ScaleTransition(scale: animation, child: child);
-                  },
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                        return ScaleTransition(scale: animation, child: child);
+                      },
                   child: isCopied
-                      ? const Icon(Icons.check_circle, key: ValueKey('copied'), color: Colors.green, size: 20)
-                      : Icon(Icons.content_copy_rounded, key: const ValueKey('copy'), color: accentColor, size: 20),
+                      ? const Icon(
+                          Icons.check_circle,
+                          key: ValueKey('copied'),
+                          color: Colors.green,
+                          size: 20,
+                        )
+                      : Icon(
+                          Icons.content_copy_rounded,
+                          key: const ValueKey('copy'),
+                          color: accentColor,
+                          size: 20,
+                        ),
                 ),
               ),
             ),
@@ -358,7 +436,10 @@ class _ConvoListTile extends StatelessWidget {
                               color: theme.colorScheme.surfaceContainerHighest,
                               child: Center(
                                 child: Text(
-                                  displayName.isNotEmpty ? displayName.characters.first.toUpperCase() : '?',
+                                  displayName.isNotEmpty
+                                      ? displayName.characters.first
+                                            .toUpperCase()
+                                      : '?',
                                   style: TextStyle(
                                     color: theme.colorScheme.onSurface,
                                     fontWeight: FontWeight.bold,
@@ -373,7 +454,9 @@ class _ConvoListTile extends StatelessWidget {
                             color: theme.colorScheme.surfaceContainerHighest,
                             child: Center(
                               child: Text(
-                                displayName.isNotEmpty ? displayName.characters.first.toUpperCase() : '?',
+                                displayName.isNotEmpty
+                                    ? displayName.characters.first.toUpperCase()
+                                    : '?',
                                 style: TextStyle(
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.bold,
@@ -388,7 +471,10 @@ class _ConvoListTile extends StatelessWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: theme.colorScheme.primary, width: 2),
+                        border: Border.all(
+                          color: theme.colorScheme.primary,
+                          width: 2,
+                        ),
                       ),
                     ),
                 ],
@@ -401,13 +487,19 @@ class _ConvoListTile extends StatelessWidget {
                 children: [
                   Text(
                     displayName,
-                    style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '@$handle',
-                    style: TextStyle(color: textColor.withAlpha(153), fontSize: 12),
+                    style: TextStyle(
+                      color: textColor.withAlpha(153),
+                      fontSize: 12,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],

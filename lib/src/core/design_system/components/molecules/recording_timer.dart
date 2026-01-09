@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class RecordingTimer extends StatelessWidget {
   const RecordingTimer({
@@ -17,7 +17,9 @@ class RecordingTimer extends StatelessWidget {
     final progress = duration.inMilliseconds / maxDuration.inMilliseconds;
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
-    final formattedTime = '${minutes.toString().padLeft(1, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final formattedTime =
+        '${minutes.toString().padLeft(1, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}';
 
     final isWarning = progress >= 0.9;
     final textColor = isWarning ? AppColors.red500 : AppColors.greyWhite;
@@ -28,7 +30,9 @@ class RecordingTimer extends StatelessWidget {
         color: Colors.black.withAlpha(128),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isWarning ? AppColors.red500.withAlpha(180) : Colors.white.withAlpha(50),
+          color: isWarning
+              ? AppColors.red500.withAlpha(180)
+              : Colors.white.withAlpha(50),
           width: 1.5,
         ),
       ),

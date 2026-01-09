@@ -6,12 +6,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/design_system/templates/video_review_page_template.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/core/design_system/templates/video_review_page_template.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
@@ -115,7 +115,9 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         }
         if (postRef == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to post video. Please try again.')),
+            const SnackBar(
+              content: Text('Failed to post video. Please try again.'),
+            ),
           );
           return;
         } else {
@@ -123,7 +125,9 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
             const SnackBar(content: Text('Video posted successfully!')),
           );
           if (!widget.storyMode) {
-            context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+            context.router.push(
+              StandalonePostRoute(postUri: postRef.uri.toString()),
+            );
           }
         }
       }
@@ -136,7 +140,12 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         // Show error without blocking UI
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to upload video: $e'), backgroundColor: Colors.red));
+        ).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload video: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
     return;
@@ -145,13 +154,17 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   @override
   Widget build(BuildContext context) {
     final rawAspectRatio = _player?.value.aspectRatio;
-    final ar = rawAspectRatio != null && rawAspectRatio > 0 ? rawAspectRatio : 1.0;
+    final ar = rawAspectRatio != null && rawAspectRatio > 0
+        ? rawAspectRatio
+        : 1.0;
 
     return VideoReviewPageTemplate(
       title: 'Review Video',
       onBack: () => context.maybePop(),
       aspectRatio: ar,
-      videoPreview: _player == null ? const Center(child: CircularProgressIndicator()) : VideoPlayer(_player!),
+      videoPreview: _player == null
+          ? const Center(child: CircularProgressIndicator())
+          : VideoPlayer(_player!),
       onAltEdit: _editAltText,
       descriptionController: _descriptionController,
       descriptionMaxChars: 300,

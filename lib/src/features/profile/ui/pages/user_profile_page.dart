@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/profile/ui/pages/profile_page.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/profile/ui/pages/profile_page.dart';
 
 @RoutePage()
 class UserProfilePage extends ConsumerWidget {
@@ -13,7 +13,9 @@ class UserProfilePage extends ConsumerWidget {
     final currentUser = ref.watch(sessionProvider);
 
     if (currentUser == null) {
-      return const Scaffold(body: Center(child: Text('Please log in to view your profile')));
+      return const Scaffold(
+        body: Center(child: Text('Please log in to view your profile')),
+      );
     }
 
     // Use the existing ProfilePage but pass the current user's DID

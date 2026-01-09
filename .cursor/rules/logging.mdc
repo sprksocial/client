@@ -18,7 +18,7 @@ A lightweight, flexible logging system for Spark Social with multiple outputs an
 
 ```dart
 
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 // Get a logger
 final logger = GetIt.instance<LogService>().getLogger('MyFeature');

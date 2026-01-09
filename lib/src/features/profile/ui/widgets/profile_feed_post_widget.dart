@@ -3,17 +3,17 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
-import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/features/feed/providers/like_post.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
+import 'package:spark/src/core/ui/widgets/heart_animation.dart';
+import 'package:spark/src/core/utils/label_utils.dart';
+import 'package:spark/src/features/feed/providers/like_post.dart';
+import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
+import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   const ProfileFeedPostWidget({
@@ -29,11 +29,11 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   final bool videosOnly;
   final PostView? post;
 
-  /// The index of this post in the profile feed, used for video visibility tracking.
   final int? index;
 
   @override
-  ConsumerState<ProfileFeedPostWidget> createState() => _ProfileFeedPostWidgetState();
+  ConsumerState<ProfileFeedPostWidget> createState() =>
+      _ProfileFeedPostWidgetState();
 }
 
 class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
@@ -63,8 +63,12 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     final feedRepository = GetIt.instance<SprkRepository>().feed;
 
     final uri = AtUri.parse(widget.postUri.toString());
-    final isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
-    final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
+    final isBlueskyPost = uri.collection.toString().startsWith(
+      'app.bsky.feed.post',
+    );
+    final networkPost = await feedRepository.getPosts([
+      uri,
+    ], bluesky: isBlueskyPost);
 
     if (networkPost.isEmpty) {
       return null;
@@ -74,7 +78,8 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   }
 
   Future<void> _handleDoubleTapLike(PostView postData) async {
-    final isCurrentlyLiked = _overrideIsLiked ?? (postData.viewer?.like != null);
+    final isCurrentlyLiked =
+        _overrideIsLiked ?? (postData.viewer?.like != null);
 
     if (isCurrentlyLiked) {
       return;
@@ -87,12 +92,16 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
 
     try {
       // Like the post using the same logic as SideActionBar
-      final newLike = await ref.read(likePostProvider(postData.cid, postData.uri).future);
+      final newLike = await ref.read(
+        likePostProvider(postData.cid, postData.uri).future,
+      );
 
-      // Update the post's viewer field with the new like reference and increment like count
+      // Update post viewer field with new like ref & increment like count
       final updatedPost = postData.copyWith(
         likeCount: (postData.likeCount ?? 0) + 1,
-        viewer: postData.viewer?.copyWith(like: newLike.uri) ?? ViewerState(like: newLike.uri, repost: postData.viewer?.repost),
+        viewer:
+            postData.viewer?.copyWith(like: newLike.uri) ??
+            ViewerState(like: newLike.uri, repost: postData.viewer?.repost),
       );
 
       if (mounted) {
@@ -155,7 +164,10 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                 children: [
                   Icon(Icons.error_outline, color: AppColors.white, size: 48),
                   SizedBox(height: 16),
-                  Text('Failed to load post', style: TextStyle(color: AppColors.white)),
+                  Text(
+                    'Failed to load post',
+                    style: TextStyle(color: AppColors.white),
+                  ),
                 ],
               ),
             ),
@@ -173,7 +185,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
           },
           child: Stack(
             children: [
-              // Main content - only this part should detect double-tap for likes
+              // Main content - only this part detects double-tap for likes
               Positioned.fill(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -182,51 +194,63 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     MediaViewVideo() => PostVideoPlayer(
                       videoUrl: post.videoUrl,
                       thumbnail: post.thumbnailUrl,
-                      profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
+                      profileFeedUri: widget.index != null
+                          ? widget.profileUri.toString()
+                          : null,
                       index: widget.index,
                     ),
                     MediaViewBskyVideo() => PostVideoPlayer(
                       videoUrl: post.videoUrl,
                       thumbnail: post.thumbnailUrl,
-                      profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
+                      profileFeedUri: widget.index != null
+                          ? widget.profileUri.toString()
+                          : null,
                       index: widget.index,
                     ),
-                    MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                    MediaViewBskyRecordWithMedia(:final media) => switch (media) {
-                      MediaViewVideo() => PostVideoPlayer(
-                        videoUrl: post.videoUrl,
-                        thumbnail: post.thumbnailUrl,
-                        profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
-                        index: widget.index,
-                      ),
-                      MediaViewBskyVideo() => PostVideoPlayer(
-                        videoUrl: post.videoUrl,
-                        thumbnail: post.thumbnailUrl,
-                        profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
-                        index: widget.index,
-                      ),
-                      MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                      _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-                    },
-                    _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                    MediaViewImages() || MediaViewBskyImages() => ImageCarousel(
+                      imageUrls: post.imageUrls,
+                    ),
+                    MediaViewBskyRecordWithMedia(:final media) =>
+                      switch (media) {
+                        MediaViewVideo() => PostVideoPlayer(
+                          videoUrl: post.videoUrl,
+                          thumbnail: post.thumbnailUrl,
+                          profileFeedUri: widget.index != null
+                              ? widget.profileUri.toString()
+                              : null,
+                          index: widget.index,
+                        ),
+                        MediaViewBskyVideo() => PostVideoPlayer(
+                          videoUrl: post.videoUrl,
+                          thumbnail: post.thumbnailUrl,
+                          profileFeedUri: widget.index != null
+                              ? widget.profileUri.toString()
+                              : null,
+                          index: widget.index,
+                        ),
+                        MediaViewImages() || MediaViewBskyImages() =>
+                          ImageCarousel(imageUrls: post.imageUrls),
+                        _ => const DecoratedBox(
+                          decoration: BoxDecoration(color: AppColors.black),
+                        ),
+                      },
+                    _ => const DecoratedBox(
+                      decoration: BoxDecoration(color: AppColors.black),
+                    ),
                   },
                 ),
               ),
 
-              // Overlay controls - no double-tap detection, so buttons respond immediately
               Positioned.fill(
                 child: PostOverlay(
                   post: post,
                   isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                   labels: post.labels ?? [],
-                  onProfilePressed: () {
-                    // No special handling needed for profile navigation in standalone feed
-                  },
                   onUsernameTap: () {
-                    // Extract DID from the profile URI (format: at://did:plc:...)
+                    // Extract DID from the profile URI
                     final currentProfileDid = widget.profileUri.hostname;
 
-                    // If clicking on the same profile we're viewing, navigate back
+                    // If clicking on same profile we're viewing, navigate back
                     if (post.author.did == currentProfileDid) {
                       context.router.maybePop();
                     } else {

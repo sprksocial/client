@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 
-/// Circular avatar with a subtle glass border similar to selected FeedTag style.
+/// Circular avatar with subtle glass border similar to selected FeedTag style.
 class GlassAvatar extends StatelessWidget {
   const GlassAvatar({
     required this.imageUrl,

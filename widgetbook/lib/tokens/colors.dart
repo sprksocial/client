@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:widgetbook_workspace/tokens/colors_preview.dart';
 
 @UseCase(name: 'Default', type: AppColors)

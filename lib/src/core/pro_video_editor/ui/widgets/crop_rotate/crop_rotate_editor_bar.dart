@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/features/crop_rotate_editor/widgets/crop_aspect_ratio_button.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bottom_action_bar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bottom_action_bar.dart';
 
 /// A custom crop/rotate editor bottom bar widget for video editor.
 ///
@@ -94,7 +94,9 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
             children: <Widget>[
               ..._buildConfigs(),
               if (cropRotateEditorConfigs.aspectRatios.isNotEmpty &&
-                  cropRotateEditorConfigs.tools.contains(CropRotateTool.aspectRatio)) ...[
+                  cropRotateEditorConfigs.tools.contains(
+                    CropRotateTool.aspectRatio,
+                  )) ...[
                 const SizedBox(width: 5),
                 _buildDivider(),
                 ..._buildAspectRatioButtons(),
@@ -149,7 +151,10 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
             onPressed: () => widget.editor.updateAspectRatio(item.value ?? -1),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              maximumSize: const Size(double.infinity, kBottomNavigationBarHeight),
+              maximumSize: const Size(
+                double.infinity,
+                kBottomNavigationBarHeight,
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -168,7 +173,9 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
                   item.text,
                   style: TextStyle(
                     fontSize: 10,
-                    color: isSelected ? widget.selectedRatioColor : _foreGroundColorAccent,
+                    color: isSelected
+                        ? widget.selectedRatioColor
+                        : _foreGroundColorAccent,
                   ),
                 ),
               ],

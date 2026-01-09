@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/features/clips_editor/pages/clips_editor_edit_page.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
 
 /// A custom clip editor bottom bar widget for video editor.
 ///
-/// Provides a simple bottom bar with done and close buttons for editing individual clips.
+/// Provides a simple bottom bar with done & close buttons for editing
+/// individual clips.
 class ClipEditorBar extends StatelessWidget {
   /// Creates a [ClipEditorBar].
   const ClipEditorBar({

@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/gradients.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
@@ -38,7 +38,8 @@ class ProfileAvatar extends StatelessWidget {
           height: size,
           fit: BoxFit.cover,
           placeholder: (context, url) => _buildPlaceholder(context, isDarkMode),
-          errorWidget: (context, url, error) => _buildPlaceholder(context, isDarkMode),
+          errorWidget: (context, url, error) =>
+              _buildPlaceholder(context, isDarkMode),
         ),
       );
     } else {
@@ -58,10 +59,14 @@ class ProfileAvatar extends StatelessWidget {
                     gradient: AppGradients.accent,
                   )
                 : BoxDecoration(
-                    color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
+                    color: isDarkMode
+                        ? AppColors.darkPurple
+                        : AppColors.lightLavender,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
+                      color: isDarkMode
+                          ? AppColors.darkPurple
+                          : AppColors.lightLavender,
                       width: 2,
                     ),
                   ),

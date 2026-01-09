@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 
 class HeartAnimation extends StatefulWidget {
   const HeartAnimation({
@@ -20,7 +20,8 @@ class HeartAnimation extends StatefulWidget {
   State<HeartAnimation> createState() => _HeartAnimationState();
 }
 
-class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStateMixin {
+class _HeartAnimationState extends State<HeartAnimation>
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
@@ -30,7 +31,10 @@ class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStat
     super.initState();
     _controller = AnimationController(duration: widget.duration, vsync: this);
 
-    _scaleAnimation = Tween<double>(begin: 0, end: 1.4).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+    _scaleAnimation = Tween<double>(
+      begin: 0,
+      end: 1.4,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     _opacityAnimation = Tween<double>(begin: 1, end: 0).animate(
       CurvedAnimation(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 
 class LabelSettingTile extends StatelessWidget {
   const LabelSettingTile({
@@ -13,7 +13,13 @@ class LabelSettingTile extends StatelessWidget {
   });
   final String label;
   final LabelPreference preference;
-  final Function(String label, {Setting? setting, Blurs? blurs, Severity? severity}) onPreferenceUpdate;
+  final Function(
+    String label, {
+    Setting? setting,
+    Blurs? blurs,
+    Severity? severity,
+  })
+  onPreferenceUpdate;
   final String? labelName;
   final String? labelDescription;
   final bool showSeverity;
@@ -33,13 +39,19 @@ class LabelSettingTile extends StatelessWidget {
             // Title and description
             Text(
               labelName ?? label,
-              style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
+              ),
             ),
             if (labelDescription != null) ...[
               const SizedBox(height: 4),
               Text(
                 labelDescription!,
-                style: TextStyle(color: colorScheme.onSurface.withAlpha(200), fontSize: 12),
+                style: TextStyle(
+                  color: colorScheme.onSurface.withAlpha(200),
+                  fontSize: 12,
+                ),
               ),
             ],
             const SizedBox(height: 16),
@@ -50,14 +62,25 @@ class LabelSettingTile extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: ElevatedButton(
-                      onPressed: () => onPreferenceUpdate(label, setting: setting),
+                      onPressed: () =>
+                          onPreferenceUpdate(label, setting: setting),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected ? colorScheme.primary : colorScheme.surface,
-                        foregroundColor: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                        backgroundColor: isSelected
+                            ? colorScheme.primary
+                            : colorScheme.surface,
+                        foregroundColor: isSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurface,
                         elevation: isSelected ? 2 : 0,
-                        side: BorderSide(color: colorScheme.outline, width: 0.5),
+                        side: BorderSide(
+                          color: colorScheme.outline,
+                          width: 0.5,
+                        ),
                       ),
-                      child: Text(setting.value.toUpperCase(), style: const TextStyle(fontSize: 12)),
+                      child: Text(
+                        setting.value.toUpperCase(),
+                        style: const TextStyle(fontSize: 12),
+                      ),
                     ),
                   ),
                 );
@@ -69,7 +92,10 @@ class LabelSettingTile extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Severity Level',
-                style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -79,14 +105,25 @@ class LabelSettingTile extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: ElevatedButton(
-                        onPressed: () => onPreferenceUpdate(label, severity: sev),
+                        onPressed: () =>
+                            onPreferenceUpdate(label, severity: sev),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected ? colorScheme.tertiary : colorScheme.surface,
-                          foregroundColor: isSelected ? colorScheme.onTertiary : colorScheme.onSurface,
+                          backgroundColor: isSelected
+                              ? colorScheme.tertiary
+                              : colorScheme.surface,
+                          foregroundColor: isSelected
+                              ? colorScheme.onTertiary
+                              : colorScheme.onSurface,
                           elevation: isSelected ? 2 : 0,
-                          side: BorderSide(color: colorScheme.outline, width: 0.5),
+                          side: BorderSide(
+                            color: colorScheme.outline,
+                            width: 0.5,
+                          ),
                         ),
-                        child: Text(sev.value.toUpperCase(), style: const TextStyle(fontSize: 10)),
+                        child: Text(
+                          sev.value.toUpperCase(),
+                          style: const TextStyle(fontSize: 10),
+                        ),
                       ),
                     ),
                   );

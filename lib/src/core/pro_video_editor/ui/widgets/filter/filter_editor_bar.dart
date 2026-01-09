@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/core/utils/size_utils.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
 
 /// A custom filter editor bottom bar widget for video editor.
 ///

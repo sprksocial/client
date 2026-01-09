@@ -2,16 +2,16 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/glass_input.dart';
-import 'package:sparksocial/src/core/design_system/templates/explore_page_template.dart';
-import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
-import 'package:sparksocial/src/features/search/providers/search_provider.dart';
-import 'package:sparksocial/src/features/search/providers/suggested_feeds_provider.dart';
-import 'package:sparksocial/src/features/search/ui/pages/post_results.dart';
-import 'package:sparksocial/src/features/search/ui/pages/user_results.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/suggested_feeds_list.dart';
-import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';
-import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
+import 'package:spark/src/core/design_system/components/molecules/glass_input.dart';
+import 'package:spark/src/core/design_system/templates/explore_page_template.dart';
+import 'package:spark/src/features/search/providers/post_search_provider.dart';
+import 'package:spark/src/features/search/providers/search_provider.dart';
+import 'package:spark/src/features/search/providers/suggested_feeds_provider.dart';
+import 'package:spark/src/features/search/ui/pages/post_results.dart';
+import 'package:spark/src/features/search/ui/pages/user_results.dart';
+import 'package:spark/src/features/search/ui/widgets/suggested_feeds_list.dart';
+import 'package:spark/src/features/stories/providers/stories_by_author.dart';
+import 'package:spark/src/features/stories/ui/widgets/stories_list.dart';
 
 /// Search page to find users
 @RoutePage()

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/storage/storage.dart';
-import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository.dart';
-import 'package:sparksocial/src/core/ui/theme/providers/theme_provider.dart';
+import 'package:spark/src/core/storage/storage.dart';
+import 'package:spark/src/core/ui/theme/data/repositories/theme_repository.dart';
+import 'package:spark/src/core/ui/theme/providers/theme_provider.dart';
 
 /// Implementation of ThemeRepository using SharedPreferences
 class ThemeRepositoryImpl implements ThemeRepository {
@@ -10,12 +10,17 @@ class ThemeRepositoryImpl implements ThemeRepository {
 
   @override
   Future<ThemeMode?> getThemeMode() async {
-    final savedTheme = await _storageManager.preferences.getString(StorageKeys.themeKey);
+    final savedTheme = await _storageManager.preferences.getString(
+      StorageKeys.themeKey,
+    );
     return savedTheme != null ? ThemeModeExtension.fromValue(savedTheme) : null;
   }
 
   @override
   Future<void> saveThemeMode(ThemeMode themeMode) async {
-    await _storageManager.preferences.setString(StorageKeys.themeKey, themeMode.value);
+    await _storageManager.preferences.setString(
+      StorageKeys.themeKey,
+      themeMode.value,
+    );
   }
 }

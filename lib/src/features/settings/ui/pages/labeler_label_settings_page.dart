@@ -6,14 +6,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/settings/ui/widgets/widgets.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
 
 @RoutePage()
 class LabelerLabelSettingsPage extends ConsumerStatefulWidget {
@@ -25,10 +25,12 @@ class LabelerLabelSettingsPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<LabelerLabelSettingsPage> createState() => _LabelerLabelSettingsPageState();
+  ConsumerState<LabelerLabelSettingsPage> createState() =>
+      _LabelerLabelSettingsPageState();
 }
 
-class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsPage> {
+class _LabelerLabelSettingsPageState
+    extends ConsumerState<LabelerLabelSettingsPage> {
   late final SparkLogger _logger;
   final ActorRepository _actorRepository = GetIt.instance<ActorRepository>();
   final SprkRepository _sprkRepository = GetIt.instance<SprkRepository>();
@@ -47,7 +49,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
   @override
   void initState() {
     super.initState();
-    _logger = GetIt.instance<LogService>().getLogger('LabelerLabelSettingsPage');
+    _logger = GetIt.instance<LogService>().getLogger(
+      'LabelerLabelSettingsPage',
+    );
     _loadLabelerSettings();
   }
 
@@ -90,7 +94,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
           },
           headers: {'atproto-proxy': _sprkRepository.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
         if (result.status != HttpStatus.ok) {
           throw Exception('Failed to retrieve labeler services');
@@ -118,7 +124,8 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
       final labelValues = labelValuesJson.map((v) => v as String).toList();
 
       // Extract labelValueDefinitions
-      final labelValueDefinitionsJson = policiesJson['labelValueDefinitions'] as List<dynamic>?;
+      final labelValueDefinitionsJson =
+          policiesJson['labelValueDefinitions'] as List<dynamic>?;
       final labelDefinitionMap = <String, Map<String, dynamic>>{};
       if (labelValueDefinitionsJson != null) {
         for (final defJson in labelValueDefinitionsJson) {
@@ -132,7 +139,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
 
       // Get existing preferences for this labeler
       final settings = ref.read(settingsProvider.notifier);
-      final existingPrefs = await settings.getLabelPreferencesForLabeler(widget.did);
+      final existingPrefs = await settings.getLabelPreferencesForLabeler(
+        widget.did,
+      );
       final preferences = <String, LabelPreference>{};
 
       // Create preferences for all label values
@@ -144,7 +153,8 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
           String defaultVisibility;
           final definition = labelDefinitionMap[labelValue];
           if (definition != null) {
-            defaultVisibility = definition['defaultSetting'] as String? ?? 'warn';
+            defaultVisibility =
+                definition['defaultSetting'] as String? ?? 'warn';
           } else {
             defaultVisibility = _getDefaultVisibilityForLabel(labelValue);
           }
@@ -246,7 +256,12 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
     return adultOnlyLabels.contains(label);
   }
 
-  Future<void> _updateLabelPreference(String label, {Setting? setting, Blurs? blurs, Severity? severity}) async {
+  Future<void> _updateLabelPreference(
+    String label, {
+    Setting? setting,
+    Blurs? blurs,
+    Severity? severity,
+  }) async {
     try {
       final currentPref = _labelPreferences[label];
       if (currentPref != null) {
@@ -296,7 +311,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
           backgroundColor: colorScheme.surface,
           foregroundColor: colorScheme.onSurface,
           iconTheme: IconThemeData(color: colorScheme.onSurface),
-          titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(color: colorScheme.onSurface),
+          titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
+            color: colorScheme.onSurface,
+          ),
           title: const Text('Labeler Settings'),
           centerTitle: true,
           leading: const AppLeadingButton(),
@@ -314,7 +331,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
           backgroundColor: colorScheme.surface,
           foregroundColor: colorScheme.onSurface,
           iconTheme: IconThemeData(color: colorScheme.onSurface),
-          titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(color: colorScheme.onSurface),
+          titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
+            color: colorScheme.onSurface,
+          ),
           title: const Text('Labeler Settings'),
           centerTitle: true,
           leading: const AppLeadingButton(),
@@ -361,7 +380,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         iconTheme: IconThemeData(color: colorScheme.onSurface),
-        titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(color: colorScheme.onSurface),
+        titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
+          color: colorScheme.onSurface,
+        ),
         title: const Text('Labeler Settings'),
         centerTitle: true,
         leading: const AppLeadingButton(),
@@ -374,10 +395,16 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
             // Labeler Profile Section
             if (_labelerProfile != null)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     child: _buildProfileCardWithoutBorder(
                       profile: _labelerProfile!,
                       colorScheme: colorScheme,
@@ -388,7 +415,10 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
               )
             else
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -448,7 +478,8 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Configure how this labeler's content labels are handled in your feeds.",
+                    "Configure how this labeler's content labels "
+                    'are handled in your feeds.',
                     style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(178),
                       fontSize: 14,
@@ -466,7 +497,11 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      Icon(Icons.label_outline, size: 48, color: colorScheme.onSurface.withAlpha(128)),
+                      Icon(
+                        Icons.label_outline,
+                        size: 48,
+                        color: colorScheme.onSurface.withAlpha(128),
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         'No Labels',
@@ -479,7 +514,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
                       const SizedBox(height: 8),
                       Text(
                         'This labeler does not provide any content labels.',
-                        style: TextStyle(color: colorScheme.onSurface.withAlpha(178)),
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withAlpha(178),
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -487,30 +524,34 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
                 ),
               )
             else
-              ..._labelPreferences.entries.where((entry) => !entry.key.startsWith('!')).map((entry) {
-                final definition = _labelDefinitions[entry.key];
-                String? labelName;
-                String? labelDescription;
+              ..._labelPreferences.entries
+                  .where((entry) => !entry.key.startsWith('!'))
+                  .map((entry) {
+                    final definition = _labelDefinitions[entry.key];
+                    String? labelName;
+                    String? labelDescription;
 
-                if (definition != null) {
-                  final locales = definition['locales'] as List<dynamic>?;
-                  if (locales != null && locales.isNotEmpty) {
-                    // Use first locale for now (could be enhanced to match user's locale)
-                    final firstLocale = locales.first as Map<String, dynamic>;
-                    labelName = firstLocale['name'] as String?;
-                    labelDescription = firstLocale['description'] as String?;
-                  }
-                }
+                    if (definition != null) {
+                      final locales = definition['locales'] as List<dynamic>?;
+                      if (locales != null && locales.isNotEmpty) {
+                        // TODO: match user's locale instead of first
+                        final firstLocale =
+                            locales.first as Map<String, dynamic>;
+                        labelName = firstLocale['name'] as String?;
+                        labelDescription =
+                            firstLocale['description'] as String?;
+                      }
+                    }
 
-                return LabelSettingTile(
-                  label: entry.key,
-                  preference: entry.value,
-                  onPreferenceUpdate: _updateLabelPreference,
-                  labelName: labelName,
-                  labelDescription: labelDescription,
-                  showSeverity: false,
-                );
-              }),
+                    return LabelSettingTile(
+                      label: entry.key,
+                      preference: entry.value,
+                      onPreferenceUpdate: _updateLabelPreference,
+                      labelName: labelName,
+                      labelDescription: labelDescription,
+                      showSeverity: false,
+                    );
+                  }),
 
             const SizedBox(height: 32),
           ],
@@ -587,7 +628,9 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
                               Padding(
                                 padding: const EdgeInsets.only(left: 4),
                                 child: Tooltip(
-                                  message: 'Default mod service labeler (cannot be removed)',
+                                  message:
+                                      'Default mod service labeler '
+                                      '(cannot be removed)',
                                   child: Icon(
                                     Icons.verified,
                                     size: 16,

@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/video_progress_bar.dart' as ds;
+import 'package:spark/src/core/design_system/components/atoms/video_progress_bar.dart'
+    as ds;
 
 class FeedVideoProgressBar extends StatefulWidget {
   const FeedVideoProgressBar({
@@ -87,7 +88,11 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
     final dur = v.duration;
     final buf = v.buffered;
 
-    if (!force && !_dragging && pos == _position && dur == _total && _listEquals(List<dynamic>.from(buf as List), _buffered)) {
+    if (!force &&
+        !_dragging &&
+        pos == _position &&
+        dur == _total &&
+        _listEquals(List<dynamic>.from(buf as List), _buffered)) {
       return;
     }
 
@@ -120,7 +125,9 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
 
   double get _progressFraction {
     if (_total.inMilliseconds == 0) return 0;
-    final effective = _dragging && _pendingSeek != null ? _pendingSeek! : _position;
+    final effective = _dragging && _pendingSeek != null
+        ? _pendingSeek!
+        : _position;
     return effective.inMilliseconds / _total.inMilliseconds;
   }
 
@@ -145,7 +152,9 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
 
   void _handleDragUpdate(double fraction) {
     if (_total == Duration.zero) return;
-    final targetMs = (fraction * _total.inMilliseconds).clamp(0, _total.inMilliseconds).toInt();
+    final targetMs = (fraction * _total.inMilliseconds)
+        .clamp(0, _total.inMilliseconds)
+        .toInt();
     final target = Duration(milliseconds: targetMs);
     _pendingSeek = target;
     widget.onSeek?.call(target);
@@ -157,7 +166,9 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
       _dragging = false;
       return;
     }
-    final finalMs = (fraction * _total.inMilliseconds).clamp(0, _total.inMilliseconds).toInt();
+    final finalMs = (fraction * _total.inMilliseconds)
+        .clamp(0, _total.inMilliseconds)
+        .toInt();
     final finalPos = Duration(milliseconds: finalMs);
     _pendingSeek = finalPos;
     setState(() {});

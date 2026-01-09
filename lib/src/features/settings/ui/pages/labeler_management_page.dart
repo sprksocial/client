@@ -3,23 +3,25 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class LabelerManagementPage extends ConsumerStatefulWidget {
   const LabelerManagementPage({super.key});
 
   @override
-  ConsumerState<LabelerManagementPage> createState() => _LabelerManagementPageState();
+  ConsumerState<LabelerManagementPage> createState() =>
+      _LabelerManagementPageState();
 }
 
-class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> with AutomaticKeepAliveClientMixin {
+class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
+    with AutomaticKeepAliveClientMixin {
   late final SparkLogger _logger;
   final ActorRepository _actorRepository = GetIt.instance<ActorRepository>();
   final SprkRepository _sprkRepository = GetIt.instance<SprkRepository>();
@@ -150,7 +152,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
 
       // If it's a handle, try to resolve it to a DID
       if (did.startsWith('@')) {
-        // For now, we'll require DID format. In the future, could add handle resolution
+        // TODO: add handle resolution in the future
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Please enter a DID (did:plc:...)')),
@@ -163,7 +165,9 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
       if (!did.startsWith('did:')) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Invalid DID format. Must start with did:')),
+            const SnackBar(
+              content: Text('Invalid DID format. Must start with did:'),
+            ),
           );
         }
         return;
@@ -196,7 +200,9 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
     if (did == _defaultModServiceDid) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cannot remove the default mod service labeler')),
+          const SnackBar(
+            content: Text('Cannot remove the default mod service labeler'),
+          ),
         );
       }
       return;
@@ -280,7 +286,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Manage the labelers that provide content moderation labels for your feeds.',
+                      'Manage the labelers that provide content moderation '
+                      'labels for your feeds.',
                       style: TextStyle(
                         color: colorScheme.onSurface.withAlpha(178),
                         fontSize: 14,
@@ -294,7 +301,10 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
             // Action buttons
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: ElevatedButton.icon(
                   onPressed: _addLabeler,
                   icon: const Icon(Icons.add, size: 18),
@@ -349,15 +359,23 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
                     final isDefault = did == _defaultModServiceDid;
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       child: Card(
                         child: InkWell(
                           onTap: () {
-                            context.router.push(LabelerLabelSettingsRoute(did: did));
+                            context.router.push(
+                              LabelerLabelSettingsRoute(did: did),
+                            );
                           },
                           borderRadius: BorderRadius.circular(12),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
@@ -367,14 +385,22 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
                                           colorScheme: colorScheme,
                                           isDefault: isDefault,
                                         )
-                                      : _buildFallbackLabelerCard(did, colorScheme, isDefault: isDefault),
+                                      : _buildFallbackLabelerCard(
+                                          did,
+                                          colorScheme,
+                                          isDefault: isDefault,
+                                        ),
                                 ),
                                 IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
-                                  icon: AppIcons.gear(color: colorScheme.onSurface),
+                                  icon: AppIcons.gear(
+                                    color: colorScheme.onSurface,
+                                  ),
                                   onPressed: () {
-                                    context.router.push(LabelerLabelSettingsRoute(did: did));
+                                    context.router.push(
+                                      LabelerLabelSettingsRoute(did: did),
+                                    );
                                   },
                                   tooltip: 'Label settings',
                                 ),
@@ -471,7 +497,9 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
                               Padding(
                                 padding: const EdgeInsets.only(left: 4),
                                 child: Tooltip(
-                                  message: 'Default mod service labeler (cannot be removed)',
+                                  message:
+                                      'Default mod service labeler '
+                                      '(cannot be removed)',
                                   child: Icon(
                                     Icons.verified,
                                     size: 16,
@@ -512,7 +540,11 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
     );
   }
 
-  Widget _buildFallbackLabelerCard(String did, ColorScheme colorScheme, {bool isDefault = false}) {
+  Widget _buildFallbackLabelerCard(
+    String did,
+    ColorScheme colorScheme, {
+    bool isDefault = false,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       child: Row(
@@ -551,7 +583,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
                         child: Tooltip(
-                          message: 'Default mod service labeler (cannot be removed)',
+                          message:
+                              'Default mod service labeler (cannot be removed)',
                           child: Icon(
                             Icons.verified,
                             size: 16,

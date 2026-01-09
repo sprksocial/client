@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class FollowButton extends StatelessWidget {
   const FollowButton({
@@ -79,11 +79,15 @@ class FollowButton extends StatelessWidget {
         height: 36,
         decoration: isFollowing
             ? BoxDecoration(
-                color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
+                color: isDark
+                    ? AppColors.darkGreyButton
+                    : AppColors.lightGreyButton,
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 border: Border.fromBorderSide(
                   BorderSide(
-                    color: isDark ? AppColors.grey700.withValues(alpha: 0.3) : AppColors.grey100.withValues(alpha: 0.3),
+                    color: isDark
+                        ? AppColors.grey700.withValues(alpha: 0.3)
+                        : AppColors.grey100.withValues(alpha: 0.3),
                     width: 1.14667,
                   ),
                 ),

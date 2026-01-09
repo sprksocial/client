@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/search/providers/search_state.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/search/providers/search_state.dart';
 
 part 'search_provider.g.dart';
 
@@ -17,7 +17,9 @@ part 'search_provider.g.dart';
 @riverpod
 class Search extends _$Search {
   Timer? _debounce;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SearchProvider');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'SearchProvider',
+  );
   final ActorRepository _actorRepository = GetIt.instance<ActorRepository>();
   final AuthRepository _authRepository = GetIt.instance<AuthRepository>();
   final GraphRepository _graphRepository = GetIt.instance<GraphRepository>();
@@ -34,10 +36,21 @@ class Search extends _$Search {
   /// Update the search query and trigger search with debounce
   void updateQuery(String query) {
     // Update query and reset pagination state
-    state = state.copyWith(query: query, searchResults: [], nextCursor: null, error: null);
+    state = state.copyWith(
+      query: query,
+      searchResults: [],
+      nextCursor: null,
+      error: null,
+    );
 
     if (query.isEmpty) {
-      state = state.copyWith(searchResults: [], error: null, isLoading: false, isLoadingMore: false, nextCursor: null);
+      state = state.copyWith(
+        searchResults: [],
+        error: null,
+        isLoading: false,
+        isLoadingMore: false,
+        nextCursor: null,
+      );
       return;
     }
 
@@ -65,7 +78,10 @@ class Search extends _$Search {
         isLoadingMore: false,
       );
 
-      _logger.d('Search completed with ${response.actors.length} results, nextCursor: ${response.cursor}');
+      _logger.d(
+        'Search completed with ${response.actors.length} results, '
+        'nextCursor: ${response.cursor}',
+      );
     } catch (e) {
       _logger.e('Failed to search users', error: e);
       state = state.copyWith(error: 'Failed to search users', isLoading: false);
@@ -82,7 +98,10 @@ class Search extends _$Search {
     state = state.copyWith(isLoadingMore: true);
 
     try {
-      final response = await _actorRepository.searchActors(state.query, cursor: nextCursor);
+      final response = await _actorRepository.searchActors(
+        state.query,
+        cursor: nextCursor,
+      );
 
       state = state.copyWith(
         searchResults: [...state.searchResults, ...response.actors],
@@ -90,7 +109,10 @@ class Search extends _$Search {
         isLoadingMore: false,
       );
 
-      _logger.d('Loaded more users: +${response.actors.length}, nextCursor: ${response.cursor}');
+      _logger.d(
+        'Loaded more users: +${response.actors.length}, '
+        'nextCursor: ${response.cursor}',
+      );
     } catch (e) {
       _logger.e('Failed to load more users', error: e);
       state = state.copyWith(isLoadingMore: false);
@@ -111,12 +133,16 @@ class Search extends _$Search {
 
       // Update the user in the search results with the follow URI
       final updatedResults = [...state.searchResults];
-      final userIndex = updatedResults.indexWhere((user) => user.did == userDid);
+      final userIndex = updatedResults.indexWhere(
+        (user) => user.did == userDid,
+      );
 
       if (userIndex != -1) {
         final user = updatedResults[userIndex];
 
-        final updatedUser = user.copyWith(viewer: ActorViewer(following: AtUri.parse(response.uri)));
+        final updatedUser = user.copyWith(
+          viewer: ActorViewer(following: AtUri.parse(response.uri)),
+        );
 
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);
@@ -142,7 +168,9 @@ class Search extends _$Search {
 
       // Update the user in the search results to remove the follow URI
       final updatedResults = [...state.searchResults];
-      final userIndex = updatedResults.indexWhere((user) => user.did == userDid);
+      final userIndex = updatedResults.indexWhere(
+        (user) => user.did == userDid,
+      );
 
       if (userIndex != -1) {
         final user = updatedResults[userIndex];

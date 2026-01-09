@@ -2,9 +2,9 @@ import 'package:atproto/core.dart';
 import 'package:bluesky/com_atproto_repo_strongref.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/posting/providers/post_story.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/features/posting/providers/post_story.dart';
 
 part 'video_upload_provider.g.dart';
 
@@ -17,11 +17,17 @@ Future<VideoUploadResult?> processVideo(Ref ref, String videoPath) async {
     logger.d('Processing video: $videoPath');
     final result = await feedRepository.uploadVideo(videoPath);
     logger.i(
-      'Video processed (size=${result.videoBlob.size}, mime=${result.videoBlob.mimeType}, hasAudio=${result.audioBlob != null})',
+      'Video processed (size=${result.videoBlob.size}, '
+      'mime=${result.videoBlob.mimeType}, '
+      'hasAudio=${result.audioBlob != null})',
     );
     return result;
   } catch (error, stackTrace) {
-    logger.e('Error processing video ($videoPath)', error: error, stackTrace: stackTrace);
+    logger.e(
+      'Error processing video ($videoPath)',
+      error: error,
+      stackTrace: stackTrace,
+    );
     return null;
   }
 }
@@ -39,10 +45,16 @@ Future<RepoStrongRef?> postVideo(
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
-    logger.d('Posting video (size=${blob.size}, crosspost=$crosspostToBsky, sound=${soundRef?.uri})');
+    logger.d(
+      'Posting video (size=${blob.size}, crosspost=$crosspostToBsky, '
+      'sound=${soundRef?.uri})',
+    );
 
     final postRecord = PostRecord(
-      caption: CaptionRef(text: description.isNotEmpty ? description : '', facets: []),
+      caption: CaptionRef(
+        text: description.isNotEmpty ? description : '',
+        facets: [],
+      ),
       media: Media.video(video: blob, alt: altText),
       createdAt: DateTime.now().toUtc(),
       sound: soundRef,
@@ -55,7 +67,13 @@ Future<RepoStrongRef?> postVideo(
 
     if (crosspostToBsky) {
       try {
-        await _crosspostVideoToBlueSky(ref, description, blob, altText, result.uri.rkey);
+        await _crosspostVideoToBlueSky(
+          ref,
+          description,
+          blob,
+          altText,
+          result.uri.rkey,
+        );
       } catch (e, s) {
         logger.w('Crosspost to Bluesky failed: $e', error: e, stackTrace: s);
       }
@@ -80,7 +98,10 @@ Future<RepoStrongRef?> processAndPostVideo(
   RepoStrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video');
-  logger.d('Processing then posting video: $videoPath (storyMode=$storyMode, sound=${soundRef?.uri})');
+  logger.d(
+    'Processing then posting video: $videoPath (storyMode=$storyMode, '
+    'sound=${soundRef?.uri})',
+  );
   final uploadResult = await processVideo(ref, videoPath);
   if (uploadResult == null) {
     logger.e('Aborting: processing failed');
@@ -89,7 +110,7 @@ Future<RepoStrongRef?> processAndPostVideo(
 
   final videoBlob = uploadResult.videoBlob;
 
-  // If no sound was pre-selected and the video has extracted audio, create a new sound record
+  // If no sound selected & video has extracted audio, create new sound record
   var effectiveSoundRef = soundRef;
   if (soundRef == null && uploadResult.audioBlob != null) {
     logger.d('Creating new sound record from extracted audio');
@@ -102,7 +123,11 @@ Future<RepoStrongRef?> processAndPostVideo(
       );
       logger.i('Sound record created: ${effectiveSoundRef.uri}');
     } catch (e, s) {
-      logger.w('Failed to create sound record, proceeding without sound', error: e, stackTrace: s);
+      logger.w(
+        'Failed to create sound record, proceeding without sound',
+        error: e,
+        stackTrace: s,
+      );
     }
   }
 
@@ -151,7 +176,11 @@ Future<void> _crosspostVideoToBlueSky(
   final bskyPostRecord = <String, dynamic>{
     r'$type': 'app.bsky.feed.post',
     'text': text,
-    'embed': {r'$type': 'app.bsky.embed.video', 'video': blob.toJson(), 'alt': altText},
+    'embed': {
+      r'$type': 'app.bsky.embed.video',
+      'video': blob.toJson(),
+      'alt': altText,
+    },
     'createdAt': DateTime.now().toUtc().toIso8601String(),
   };
 

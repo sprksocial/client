@@ -3,13 +3,13 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/utils/uppercase_text_formatter.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/uppercase_text_formatter.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
@@ -64,7 +64,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       if (result.isSuccess) {
         TextInput.finishAutofillContext();
-        final hasSparkProfile = await ref.read(onboardingRepositoryProvider).hasSparkProfile();
+        final hasSparkProfile = await ref
+            .read(onboardingRepositoryProvider)
+            .hasSparkProfile();
 
         if (!mounted) return;
 
@@ -90,7 +92,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLoading = ref.watch(authProvider.select((state) => state.isLoading));
+    final isLoading = ref.watch(
+      authProvider.select((state) => state.isLoading),
+    );
     final error = ref.watch(authProvider.select((state) => state.error));
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -125,17 +129,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           focusNode: _handleFocusNode,
                           decoration: InputDecoration(
                             hintText: 'Handle',
-                            prefixIcon: Icon(FluentIcons.person_24_regular, color: colorScheme.primary),
+                            prefixIcon: Icon(
+                              FluentIcons.person_24_regular,
+                              color: colorScheme.primary,
+                            ),
                             filled: true,
                             fillColor: colorScheme.surface,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: colorScheme.outline),
+                              borderSide: BorderSide(
+                                color: colorScheme.outline,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: colorScheme.primary),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary,
+                              ),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -146,10 +160,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               borderSide: BorderSide(color: colorScheme.error),
                             ),
                           ),
-                          style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                          style: AppTypography.textMediumMedium.copyWith(
+                            color: colorScheme.onSurface,
+                          ),
                           textInputAction: TextInputAction.next,
                           keyboardType: TextInputType.emailAddress,
-                          autofillHints: const [AutofillHints.username, AutofillHints.email],
+                          autofillHints: const [
+                            AutofillHints.username,
+                            AutofillHints.email,
+                          ],
                           onEditingComplete: _passwordFocusNode.requestFocus,
                         ),
                         const SizedBox(height: 16),
@@ -159,7 +178,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           focusNode: _passwordFocusNode,
                           decoration: InputDecoration(
                             hintText: 'Password',
-                            prefixIcon: Icon(FluentIcons.lock_closed_24_regular, color: colorScheme.primary),
+                            prefixIcon: Icon(
+                              FluentIcons.lock_closed_24_regular,
+                              color: colorScheme.primary,
+                            ),
                             suffixIcon: IconButton(
                               onPressed: () {
                                 setState(() {
@@ -167,20 +189,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 });
                               },
                               icon: Icon(
-                                _obscurePassword ? FluentIcons.eye_24_regular : FluentIcons.eye_off_24_regular,
+                                _obscurePassword
+                                    ? FluentIcons.eye_24_regular
+                                    : FluentIcons.eye_off_24_regular,
                                 color: colorScheme.primary,
                               ),
                             ),
                             filled: true,
                             fillColor: colorScheme.surface,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: colorScheme.outline),
+                              borderSide: BorderSide(
+                                color: colorScheme.outline,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: colorScheme.primary),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary,
+                              ),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -191,7 +222,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               borderSide: BorderSide(color: colorScheme.error),
                             ),
                           ),
-                          style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                          style: AppTypography.textMediumMedium.copyWith(
+                            color: colorScheme.onSurface,
+                          ),
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.visiblePassword,
@@ -214,33 +247,51 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             decoration: InputDecoration(
                               hintText: 'Enter code (e.g., ABCD1-ZXC45)',
                               helperText: 'Enter the code from your email',
-                              prefixIcon: Icon(FluentIcons.key_24_regular, color: colorScheme.primary),
+                              prefixIcon: Icon(
+                                FluentIcons.key_24_regular,
+                                color: colorScheme.primary,
+                              ),
                               filled: true,
                               fillColor: colorScheme.surface,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: colorScheme.outline),
+                                borderSide: BorderSide(
+                                  color: colorScheme.outline,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: colorScheme.primary),
+                                borderSide: BorderSide(
+                                  color: colorScheme.primary,
+                                ),
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: colorScheme.error),
+                                borderSide: BorderSide(
+                                  color: colorScheme.error,
+                                ),
                               ),
                               focusedErrorBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: colorScheme.error),
+                                borderSide: BorderSide(
+                                  color: colorScheme.error,
+                                ),
                               ),
                             ),
-                            style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                            style: AppTypography.textMediumMedium.copyWith(
+                              color: colorScheme.onSurface,
+                            ),
                             textInputAction: TextInputAction.done,
                             keyboardType: TextInputType.text,
                             textCapitalization: TextCapitalization.characters,
                             inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Za-z0-9\-]'),
+                              ),
                               const UpperCaseTextFormatter(),
                             ],
                             onEditingComplete: () {
@@ -259,11 +310,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
                         switch (error) {
-                          final String e when e.contains('must be a valid handle') => 'Invalid handle',
-                          final String e when e.contains('identifier or password') => 'Invalid handle or password',
+                          final String e
+                              when e.contains('must be a valid handle') =>
+                            'Invalid handle',
+                          final String e
+                              when e.contains('identifier or password') =>
+                            'Invalid handle or password',
                           _ => error,
                         },
-                        style: AppTypography.textSmallMedium.copyWith(color: colorScheme.error),
+                        style: AppTypography.textSmallMedium.copyWith(
+                          color: colorScheme.error,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),

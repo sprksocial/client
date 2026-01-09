@@ -22,7 +22,9 @@ class AppColors {
   static const Color brightPurple = Color(0xFFB20AFF);
 
   // Core colors
-  static const Color pink = Color(0xFFFF2696); // Main app color for buttons and highlights
+  static const Color pink = Color(
+    0xFFFF2696,
+  ); // Main app color for buttons and highlights
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
   static const Color nearBlack = Color(0xFF0D0A0F);

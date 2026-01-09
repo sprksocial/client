@@ -92,7 +92,8 @@ abstract class Preferences with _$Preferences {
   }) = _Preferences;
   const Preferences._();
 
-  factory Preferences.fromJson(Map<String, dynamic> json) => _$PreferencesFromJson(json);
+  factory Preferences.fromJson(Map<String, dynamic> json) =>
+      _$PreferencesFromJson(json);
 }
 
 @Freezed(unionKey: r'$type')
@@ -106,21 +107,24 @@ abstract class Preference with _$Preference {
     required String label,
     required String visibility, // ["ignore", "show", "warn", "hide"]
   }) = _ContentLabelPreference;
-  bool isContentLabelPref(Preference preference) => preference.mapOrNull(contentLabelPref: (pref) => pref) != null;
+  bool isContentLabelPref(Preference preference) =>
+      preference.mapOrNull(contentLabelPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#savedFeedsPref')
   @JsonSerializable(explicitToJson: true)
   const factory Preference.savedFeedsPref({
     required List<SavedFeed> items,
   }) = _SavedFeedsPref;
-  bool isSavedFeedsPref(Preference preference) => preference.mapOrNull(savedFeedsPref: (pref) => pref) != null;
+  bool isSavedFeedsPref(Preference preference) =>
+      preference.mapOrNull(savedFeedsPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#personalDetailsPref')
   @JsonSerializable(explicitToJson: true)
   const factory Preference.personalDetailsPref({
     required DateTime? birthDate,
   }) = _PersonalDetailsPref;
-  bool isPersonalDetailsPref(Preference preference) => preference.mapOrNull(personalDetailsPref: (pref) => pref) != null;
+  bool isPersonalDetailsPref(Preference preference) =>
+      preference.mapOrNull(personalDetailsPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#feedViewPref')
   @JsonSerializable(explicitToJson: true)
@@ -132,7 +136,8 @@ abstract class Preference with _$Preference {
     bool? hideReposts,
     bool? hideQuotePosts,
   }) = _FeedViewPref;
-  bool isFeedViewPref(Preference preference) => preference.mapOrNull(feedViewPref: (pref) => pref) != null;
+  bool isFeedViewPref(Preference preference) =>
+      preference.mapOrNull(feedViewPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#threadViewPref')
   @JsonSerializable(explicitToJson: true)
@@ -140,35 +145,40 @@ abstract class Preference with _$Preference {
     String? sort, // oldest, newest, most-likes, random, hotness
     bool? prioritizeFollowedUsers,
   }) = _ThreadViewPref;
-  bool isThreadViewPref(Preference preference) => preference.mapOrNull(threadViewPref: (pref) => pref) != null;
+  bool isThreadViewPref(Preference preference) =>
+      preference.mapOrNull(threadViewPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#interestsPref')
   @JsonSerializable(explicitToJson: true)
   const factory Preference.interestsPref({
     required List<String> tags,
   }) = _InterestsPref;
-  bool isInterestsPref(Preference preference) => preference.mapOrNull(interestsPref: (pref) => pref) != null;
+  bool isInterestsPref(Preference preference) =>
+      preference.mapOrNull(interestsPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#mutedWordsPref')
   @JsonSerializable(explicitToJson: true)
   const factory Preference.mutedWordsPref({
     required List<MutedWord> words,
   }) = _MutedWordsPref;
-  bool isMutedWordsPref(Preference preference) => preference.mapOrNull(mutedWordsPref: (pref) => pref) != null;
+  bool isMutedWordsPref(Preference preference) =>
+      preference.mapOrNull(mutedWordsPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#hiddenPostsPref')
   @JsonSerializable(explicitToJson: true)
   const factory Preference.hiddenPostsPref({
     @AtUriConverter() required List<AtUri> posts,
   }) = _HiddenPostsPref;
-  bool isHiddenPostsPref(Preference preference) => preference.mapOrNull(hiddenPostsPref: (pref) => pref) != null;
+  bool isHiddenPostsPref(Preference preference) =>
+      preference.mapOrNull(hiddenPostsPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#labelersPref')
   @JsonSerializable(explicitToJson: true)
   const factory Preference.labelersPref({
     required List<LabelerPrefItem> labelers,
   }) = _LabelersPref;
-  bool isLabelersPref(Preference preference) => preference.mapOrNull(labelersPref: (pref) => pref) != null;
+  bool isLabelersPref(Preference preference) =>
+      preference.mapOrNull(labelersPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#postInteractionSettingsPref')
   @JsonSerializable(explicitToJson: true)
@@ -178,7 +188,8 @@ abstract class Preference with _$Preference {
   bool isPostInteractionSettingsPref(Preference preference) =>
       preference.mapOrNull(postInteractionSettingsPref: (pref) => pref) != null;
 
-  factory Preference.fromJson(Map<String, dynamic> json) => _$PreferenceFromJson(json);
+  factory Preference.fromJson(Map<String, dynamic> json) =>
+      _$PreferenceFromJson(json);
 }
 
 @freezed
@@ -189,7 +200,9 @@ abstract class SavedFeed with _$SavedFeed {
     required bool pinned,
     String? id,
   }) {
-    final resolvedId = (id == null || id.isEmpty) ? DateTime.now().toUtc().toIso8601String() : id;
+    final resolvedId = (id == null || id.isEmpty)
+        ? DateTime.now().toUtc().toIso8601String()
+        : id;
 
     return SavedFeed.internal(
       type: type,
@@ -208,7 +221,8 @@ abstract class SavedFeed with _$SavedFeed {
 
   const SavedFeed._();
 
-  factory SavedFeed.fromJson(Map<String, dynamic> json) => _$SavedFeedFromJson(json);
+  factory SavedFeed.fromJson(Map<String, dynamic> json) =>
+      _$SavedFeedFromJson(json);
 }
 
 @freezed
@@ -221,7 +235,8 @@ abstract class MutedWord with _$MutedWord {
   }) = _MutedWord;
   const MutedWord._();
 
-  factory MutedWord.fromJson(Map<String, dynamic> json) => _$MutedWordFromJson(json);
+  factory MutedWord.fromJson(Map<String, dynamic> json) =>
+      _$MutedWordFromJson(json);
 }
 
 @freezed
@@ -232,7 +247,8 @@ abstract class LabelerPrefItem with _$LabelerPrefItem {
   }) = _LabelerPrefItem;
   const LabelerPrefItem._();
 
-  factory LabelerPrefItem.fromJson(Map<String, dynamic> json) => _$LabelerPrefItemFromJson(json);
+  factory LabelerPrefItem.fromJson(Map<String, dynamic> json) =>
+      _$LabelerPrefItemFromJson(json);
 }
 
 @freezed
@@ -245,5 +261,6 @@ abstract class ContentLabelPref with _$ContentLabelPref {
   }) = _ContentLabelPref;
   const ContentLabelPref._();
 
-  factory ContentLabelPref.fromJson(Map<String, dynamic> json) => _$ContentLabelPrefFromJson(json);
+  factory ContentLabelPref.fromJson(Map<String, dynamic> json) =>
+      _$ContentLabelPrefFromJson(json);
 }

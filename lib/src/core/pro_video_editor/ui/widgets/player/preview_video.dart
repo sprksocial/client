@@ -48,7 +48,9 @@ class _PreviewVideoState extends State<PreviewVideo> {
   }
 
   Future<void> _initializePlayer() async {
-    final controller = VideoPlayerController.networkUrl(Uri.file(widget.filePath));
+    final controller = VideoPlayerController.networkUrl(
+      Uri.file(widget.filePath),
+    );
     await controller.initialize();
     await controller.setLooping(false);
     await controller.setVolume(1);
@@ -88,14 +90,16 @@ class _PreviewVideoState extends State<PreviewVideo> {
     return FutureBuilder<VideoMetadata>(
       future: _videoMetadata,
       builder: (context, snapshot) {
-        if (_videoController == null || !_videoController!.value.isInitialized) {
+        if (_videoController == null ||
+            !_videoController!.value.isInitialized) {
           return const Center(child: CircularProgressIndicator());
         }
 
         final aspectRatio = snapshot.data?.resolution.aspectRatio ?? 1;
         final rotation = snapshot.data?.rotation ?? 0;
         final convertedRotation = rotation % 360;
-        final is90DegRotated = convertedRotation == 90 || convertedRotation == 270;
+        final is90DegRotated =
+            convertedRotation == 90 || convertedRotation == 270;
 
         final maxWidth = constraints.maxWidth;
         final maxHeight = constraints.maxHeight;
@@ -169,7 +173,11 @@ class _PreviewVideoState extends State<PreviewVideo> {
                       TableRow(
                         children: [
                           const Text('Resolution:'),
-                          Text('${md.resolution.width.toInt()}x${md.resolution.height.toInt()}', style: _valueStyle),
+                          Text(
+                            '${md.resolution.width.toInt()}x'
+                            '${md.resolution.height.toInt()}',
+                            style: _valueStyle,
+                          ),
                         ],
                       ),
                     ],

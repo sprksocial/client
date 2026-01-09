@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class OptionsPanel {
   static void show({
@@ -14,7 +14,9 @@ class OptionsPanel {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
-    final menuBackgroundColor = isDark ? theme.colorScheme.surface : Colors.white;
+    final menuBackgroundColor = isDark
+        ? theme.colorScheme.surface
+        : Colors.white;
 
     showModalBottomSheet(
       context: context,
@@ -30,7 +32,10 @@ class OptionsPanel {
               if (onDelete != null)
                 ListTile(
                   leading: Icon(Icons.delete_outline, color: textColor),
-                  title: Text(l10n.optionsPanelDelete, style: TextStyle(color: textColor)),
+                  title: Text(
+                    l10n.optionsPanelDelete,
+                    style: TextStyle(color: textColor),
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
                     onDelete();
@@ -40,7 +45,9 @@ class OptionsPanel {
                 ListTile(
                   leading: Icon(Icons.block, color: textColor),
                   title: Text(
-                    isBlocked ? l10n.optionsPanelUnblock : l10n.optionsPanelBlock,
+                    isBlocked
+                        ? l10n.optionsPanelUnblock
+                        : l10n.optionsPanelBlock,
                     style: TextStyle(color: textColor),
                   ),
                   onTap: () {
@@ -51,7 +58,9 @@ class OptionsPanel {
               ListTile(
                 leading: const Icon(Icons.report_outlined),
                 title: Text(
-                  isProfile ? l10n.optionsPanelReportProfile : l10n.optionsPanelReport,
+                  isProfile
+                      ? l10n.optionsPanelReportProfile
+                      : l10n.optionsPanelReport,
                   style: TextStyle(color: textColor),
                 ),
                 onTap: () {
@@ -61,7 +70,10 @@ class OptionsPanel {
               ),
               ListTile(
                 leading: const Icon(Icons.close),
-                title: Text(l10n.optionsPanelClose, style: TextStyle(color: textColor)),
+                title: Text(
+                  l10n.optionsPanelClose,
+                  style: TextStyle(color: textColor),
+                ),
                 onTap: () {
                   Navigator.of(context).pop();
                 },

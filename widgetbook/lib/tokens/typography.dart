@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
 import 'typography_preview.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 @UseCase(name: 'Default', type: AppTypography)
 Widget buildDesignSystemTextStylesUseCase(BuildContext context) {

@@ -4,15 +4,15 @@ import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
-import 'package:sparksocial/src/features/home/providers/feed_settings_visibility_provider.dart';
-import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_index_provider.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/feed/providers/feed_provider.dart';
+import 'package:spark/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
+import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
+import 'package:spark/src/features/home/providers/navigation_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';
 
 class PostVideoPlayer extends ConsumerStatefulWidget {
   const PostVideoPlayer({
@@ -30,14 +30,15 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
   final int? index;
 
   /// The profile URI for standalone profile feed visibility tracking.
-  /// When provided along with [index], uses profile feed index provider instead of feed provider.
+  /// When [index] provided, uses profile feed index provider not feed provider
   final String? profileFeedUri;
 
   @override
   ConsumerState<PostVideoPlayer> createState() => PostVideoPlayerState();
 }
 
-class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerProviderStateMixin {
+class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
+    with TickerProviderStateMixin {
   BetterPlayerController? videoController;
   bool _userInteracted = false;
 
@@ -59,12 +60,17 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _bounceAnimation = Tween<double>(
-      begin: 1,
-      end: 1.3,
-    ).animate(CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut));
+    _bounceAnimation =
+        Tween<double>(
+          begin: 1,
+          end: 1.3,
+        ).animate(
+          CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
+        );
     initVideoPlayer();
-    GetIt.I<LogService>().getLogger('PostVideoPlayer').i('Initialized PostVideoPlayer with video URL: ${widget.videoUrl}');
+    GetIt.I<LogService>()
+        .getLogger('PostVideoPlayer')
+        .i('Initialized PostVideoPlayer with video URL: ${widget.videoUrl}');
   }
 
   void pauseVideo() {
@@ -121,7 +127,9 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       );
       final videoControllerTemp = BetterPlayerController(
         const BetterPlayerConfiguration(
-          controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
+          controlsConfiguration: BetterPlayerControlsConfiguration(
+            showControls: false,
+          ),
           looping: true,
           fit: BoxFit.contain,
           expandToFill: false,
@@ -139,7 +147,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     }
   }
 
-  void _handleAutoPlayPause(bool shouldPlay, {bool isFeedSettingsVisible = false}) {
+  void _handleAutoPlayPause(
+    bool shouldPlay, {
+    bool isFeedSettingsVisible = false,
+  }) {
     if (_userInteracted) return;
 
     // Don't play if feed settings menu is open
@@ -166,7 +177,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     }
   }
 
-  void _handleFeedSettingsVisibility(bool isFeedSettingsVisible, bool isOnFeedsTab, FeedState? feedState) {
+  void _handleFeedSettingsVisibility(
+    bool isFeedSettingsVisible,
+    bool isOnFeedsTab,
+    FeedState? feedState,
+  ) {
     if (!isInitialized) return;
 
     // Pause videos when feed settings menu is open
@@ -175,7 +190,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       videoController?.pause();
     }
     // Resume videos when feed settings menu closes
-    // Resume if it was playing when menu opened, or if auto-play conditions are met
+    // Resume if it was playing when menu opened or if auto-play conditions met
     else if (!isFeedSettingsVisible) {
       final wasPlaying = _wasPlayingWhenMenuOpened;
       _wasPlayingWhenMenuOpened = false;
@@ -185,7 +200,9 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
         videoController?.play();
       } else if (!_userInteracted) {
         // Otherwise, check auto-play conditions
-        final shouldPlay = isOnFeedsTab && (feedState == null || feedState.index == widget.index);
+        final shouldPlay =
+            isOnFeedsTab &&
+            (feedState == null || feedState.index == widget.index);
         if (shouldPlay && !isPlaying) {
           videoController?.play();
         }
@@ -203,8 +220,12 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     final isOnFeedsTab = navigationState.currentIndex == 0;
     final feedSettingsVisible = ref.watch(feedSettingsVisibilityProvider);
 
-    final feedState = widget.feed != null ? ref.watch(feedProvider(widget.feed!)) : null;
-    final profileFeedIndex = widget.profileFeedUri != null ? ref.watch(profileFeedIndexProvider(widget.profileFeedUri!)) : null;
+    final feedState = widget.feed != null
+        ? ref.watch(feedProvider(widget.feed!))
+        : null;
+    final profileFeedIndex = widget.profileFeedUri != null
+        ? ref.watch(profileFeedIndexProvider(widget.profileFeedUri!))
+        : null;
 
     if (_lastNavigationIndex != navigationState.currentIndex) {
       _lastNavigationIndex = navigationState.currentIndex;
@@ -220,7 +241,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       _lastFeedSettingsVisible = feedSettingsVisible;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _handleFeedSettingsVisibility(feedSettingsVisible, isOnFeedsTab, feedState);
+          _handleFeedSettingsVisibility(
+            feedSettingsVisible,
+            isOnFeedsTab,
+            feedState,
+          );
         }
       });
     }
@@ -230,7 +255,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && !_userInteracted) {
             final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
-            _handleAutoPlayPause(shouldPlay, isFeedSettingsVisible: feedSettingsVisible);
+            _handleAutoPlayPause(
+              shouldPlay,
+              isFeedSettingsVisible: feedSettingsVisible,
+            );
           }
         });
       } else if (profileFeedIndex != null && widget.index != null) {
@@ -240,27 +268,37 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && !_userInteracted) {
               final shouldPlay = profileFeedIndex == widget.index;
-              _handleAutoPlayPause(shouldPlay, isFeedSettingsVisible: feedSettingsVisible);
+              _handleAutoPlayPause(
+                shouldPlay,
+                isFeedSettingsVisible: feedSettingsVisible,
+              );
             }
           });
         }
-      } else if (widget.feed == null && widget.index == null && widget.profileFeedUri == null) {
+      } else if (widget.feed == null &&
+          widget.index == null &&
+          widget.profileFeedUri == null) {
         // True standalone mode (no feed tracking at all)
         _handleAutoPlayPause(true, isFeedSettingsVisible: feedSettingsVisible);
       }
     });
 
-    final videoAspectRatio = videoController?.videoPlayerController?.value.aspectRatio;
+    final videoAspectRatio =
+        videoController?.videoPlayerController?.value.aspectRatio;
     final videoSize = videoController?.videoPlayerController?.value.size;
 
-    final shouldFillScreen = videoAspectRatio != null && videoAspectRatio > 0.5 && videoAspectRatio < 0.7;
+    final shouldFillScreen =
+        videoAspectRatio != null &&
+        videoAspectRatio > 0.5 &&
+        videoAspectRatio < 0.7;
     final fitMode = shouldFillScreen ? BoxFit.cover : BoxFit.contain;
 
     return Stack(
       alignment: Alignment.center,
       children: [
         Positioned.fill(
-          child: videoSize != null && videoSize.width > 0 && videoSize.height > 0
+          child:
+              videoSize != null && videoSize.width > 0 && videoSize.height > 0
               ? FittedBox(
                   fit: fitMode,
                   child: SizedBox(
@@ -310,7 +348,8 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
             child: FeedVideoProgressBar(
               controller: videoController!,
               onSeekStart: (_) => _userInteracted = true,
-              onSeekEnd: (d) => videoController?.videoPlayerController?.seekTo(d),
+              onSeekEnd: (d) =>
+                  videoController?.videoPlayerController?.seekTo(d),
             ),
           ),
       ],

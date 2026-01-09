@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 
 part 'search_state.freezed.dart';
 part 'search_state.g.dart';
@@ -32,5 +32,6 @@ abstract class SearchState with _$SearchState {
   factory SearchState.initial() => const SearchState();
 
   /// Factory to create from json
-  factory SearchState.fromJson(Map<String, dynamic> json) => _$SearchStateFromJson(json);
+  factory SearchState.fromJson(Map<String, dynamic> json) =>
+      _$SearchStateFromJson(json);
 }
