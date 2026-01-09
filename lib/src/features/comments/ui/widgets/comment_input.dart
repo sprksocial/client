@@ -2,6 +2,7 @@ import 'dart:io'; // Import for File
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
@@ -168,6 +169,7 @@ class _TextField extends StatelessWidget {
                 ),
                 onPressed: () {
                   if (state.canSubmit) {
+                    HapticFeedback.mediumImpact();
                     // Use reply info if available, otherwise use main post info
                     final parentCid = widget.postCid;
                     final parentUri = widget.postUri;

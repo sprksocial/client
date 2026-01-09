@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class GlassFollowButton extends StatelessWidget {
@@ -21,7 +22,14 @@ class GlassFollowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: isFollowing ? onUnfollow : onFollow,
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        if (isFollowing) {
+          onUnfollow();
+        } else {
+          onFollow();
+        }
+      },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(100),
         child: BackdropFilter(

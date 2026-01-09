@@ -591,16 +591,31 @@ sealed class EmbedViewRecord with _$EmbedViewRecord {
   }) = EmbedViewRecord_Blocked;
 
   factory EmbedViewRecord.fromJson(Map<String, dynamic> json) {
-    // Handle unsupported record embed types by returning notFound (uses adapter's list)
     final type = json[r'$type'] as String?;
+    // Handle unsupported record embed types by returning notFound (uses adapter's list)
     if (BskyFeedAdapter.isUnsupportedEmbedType(type)) {
       return EmbedViewRecord.notFound(
         uri: AtUri.parse(json['uri'] as String? ?? 'at://unknown'),
         notFound: true,
       );
     }
-    return _$EmbedViewRecordFromJson(json);
+    // Route to appropriate subtype based on $type
+    return switch (type) {
+      'app.bsky.embed.record#viewRecord' => _$EmbedViewRecord_RecordFromJson(json),
+      'app.bsky.embed.record#viewNotFound' => _$EmbedViewRecord_NotFoundFromJson(json),
+      'app.bsky.embed.record#viewBlocked' => _$EmbedViewRecord_BlockedFromJson(json),
+      _ => EmbedViewRecord.notFound(
+        uri: AtUri.parse(json['uri'] as String? ?? 'at://unknown'),
+        notFound: true,
+      ),
+    };
   }
+
+  Map<String, dynamic> toJson() => switch (this) {
+    EmbedViewRecord_Record() => (this as EmbedViewRecord_Record).toJson(),
+    EmbedViewRecord_NotFound() => (this as EmbedViewRecord_NotFound).toJson(),
+    EmbedViewRecord_Blocked() => (this as EmbedViewRecord_Blocked).toJson(),
+  };
 }
 
 @freezed

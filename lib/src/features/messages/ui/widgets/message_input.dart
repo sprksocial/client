@@ -1,5 +1,6 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
@@ -77,7 +78,12 @@ class MessageInput extends ConsumerWidget {
                 Container(
                   decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
                   child: IconButton(
-                    onPressed: isLoading ? null : onSend,
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            HapticFeedback.mediumImpact();
+                            onSend();
+                          },
                     icon: isLoading
                         ? const SizedBox(
                             width: 16,
