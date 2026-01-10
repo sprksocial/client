@@ -134,9 +134,9 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       ),
     );
 
-    final overlayState = Overlay.of(context);
-    overlayState.insert(_overlay!); // background popover
-    overlayState.insert(_overlayIcon!); // icon on top
+    Overlay.of(context)
+      ..insert(_overlay!) // background popover
+      ..insert(_overlayIcon!); // icon on top
     setState(() => _showingPopover = true);
   }
 

@@ -98,7 +98,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           altText: _videoAltText,
           storyMode: widget.storyMode,
           soundRef: widget.soundRef,
-          crosspostToBsky: widget.storyMode ? false : _crosspostToBsky,
+          crosspostToBsky: !widget.storyMode && _crosspostToBsky,
         ).future,
       );
 
@@ -110,8 +110,9 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         context.router.popUntilRoot();
         final did = ref.read(sessionProvider)?.did;
         if (did != null) {
-          ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
-          ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
+          ref
+            ..invalidate(profileFeedProvider(AtUri.parse('at://$did'), false))
+            ..invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
         }
         if (postRef == null) {
           ScaffoldMessenger.of(context).showSnackBar(

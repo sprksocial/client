@@ -36,8 +36,9 @@ class _RecordingButtonState extends State<RecordingButton>
     if (widget.isRecording && !oldWidget.isRecording) {
       _pulseController.repeat(reverse: true);
     } else if (!widget.isRecording && oldWidget.isRecording) {
-      _pulseController.stop();
-      _pulseController.reset();
+      _pulseController
+        ..stop()
+        ..reset();
     }
   }
 

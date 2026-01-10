@@ -101,10 +101,9 @@ class ProfileReposts extends _$ProfileReposts {
           final uri = AtUri.parse(label.uri);
           final post = postViews[uri];
           if (post != null) {
-            final existingLabels = post.labels != null
-                ? List<Label>.from(post.labels!)
-                : <Label>[];
-            existingLabels.add(label);
+            final existingLabels =
+                post.labels != null ? List<Label>.from(post.labels!) : <Label>[]
+                  ..add(label);
             postViews[uri] = post.copyWith(labels: existingLabels);
           }
         }

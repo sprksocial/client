@@ -202,18 +202,20 @@ class _ProgressPainter extends CustomPainter {
         size.width * (end - start),
         size.height,
       );
-      canvas.save();
-      canvas.clipRect(trackRect);
-      canvas.drawRect(segRect, bufferedPaint);
-      canvas.restore();
+      canvas
+        ..save()
+        ..clipRect(trackRect)
+        ..drawRect(segRect, bufferedPaint)
+        ..restore();
     }
 
     final playedPaint = Paint()..color = playedColor;
     final playedRect = Rect.fromLTWH(0, 0, size.width * progress, size.height);
-    canvas.save();
-    canvas.clipRect(trackRect);
-    canvas.drawRect(playedRect, playedPaint);
-    canvas.restore();
+    canvas
+      ..save()
+      ..clipRect(trackRect)
+      ..drawRect(playedRect, playedPaint)
+      ..restore();
 
     if (showThumb) {
       final cx = size.width * progress;

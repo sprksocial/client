@@ -171,9 +171,8 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
 
   Future<void> _checkContentWarning() async {
     final labels = widget.postView.labels ?? [];
-    final shouldBlur = labels.isNotEmpty
-        ? await LabelUtils.shouldBlurContent(labels)
-        : false;
+    final shouldBlur =
+        labels.isNotEmpty && await LabelUtils.shouldBlurContent(labels);
     if (mounted) {
       setState(() => _shouldBlur = shouldBlur);
     }

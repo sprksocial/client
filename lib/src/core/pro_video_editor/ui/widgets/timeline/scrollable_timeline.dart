@@ -271,16 +271,17 @@ class _TimeRulerPainter extends CustomPainter {
           paint,
         );
 
-        textPainter.text = TextSpan(
-          text: formatTime(seconds),
-          style: const TextStyle(
-            color: AppColors.grey300,
-            fontSize: 10,
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
-        );
-        textPainter.layout();
-        textPainter.paint(canvas, Offset(x - textPainter.width / 2, 2));
+        textPainter
+          ..text = TextSpan(
+            text: formatTime(seconds),
+            style: const TextStyle(
+              color: AppColors.grey300,
+              fontSize: 10,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          )
+          ..layout()
+          ..paint(canvas, Offset(x - textPainter.width / 2, 2));
       } else {
         canvas.drawLine(
           Offset(x, size.height - 6),

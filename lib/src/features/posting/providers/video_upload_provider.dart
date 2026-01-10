@@ -97,11 +97,11 @@ Future<RepoStrongRef?> processAndPostVideo(
   bool storyMode = false,
   RepoStrongRef? soundRef,
 }) async {
-  final logger = GetIt.I<LogService>().getLogger('Process/Post Video');
-  logger.d(
-    'Processing then posting video: $videoPath (storyMode=$storyMode, '
-    'sound=${soundRef?.uri})',
-  );
+  final logger = GetIt.I<LogService>().getLogger('Process/Post Video')
+    ..d(
+      'Processing then posting video: $videoPath (storyMode=$storyMode, '
+      'sound=${soundRef?.uri})',
+    );
   final uploadResult = await processVideo(ref, videoPath);
   if (uploadResult == null) {
     logger.e('Aborting: processing failed');
@@ -170,8 +170,8 @@ Future<void> _crosspostVideoToBlueSky(
   String altText,
   String rkey,
 ) async {
-  final logger = GetIt.I<LogService>().getLogger('Crosspost Video');
-  logger.d('Crossposting video to Bluesky');
+  final logger = GetIt.I<LogService>().getLogger('Crosspost Video')
+    ..d('Crossposting video to Bluesky');
 
   final bskyPostRecord = <String, dynamic>{
     r'$type': 'app.bsky.feed.post',

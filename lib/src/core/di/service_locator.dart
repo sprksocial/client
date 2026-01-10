@@ -41,77 +41,51 @@ Future<void> initServiceLocator() async {
   await storageManager.init();
 
   final downloadManager = DownloadManagerImpl();
-  sl.registerSingleton<DownloadManagerInterface>(downloadManager);
-
-  // Register storage manager
-  sl.registerSingleton<StorageManager>(storageManager);
-
-  // Register network dependencies
-  // Register AuthRepository
-  sl.registerSingleton<AuthRepository>(AuthRepositoryImpl());
-
-  // Register service auth helper for XRPC
-  sl.registerSingleton<ServiceAuthHelper>(
-    ServiceAuthHelper(sl<AuthRepository>()),
-  );
-
-  // Register Chat dependencies with XRPC implementation
-  sl.registerSingleton<MessagesRepository>(
-    MessagesRepositoryXrpc(sl<ServiceAuthHelper>()),
-  );
-
-  // Register SprkRepository with its interface
-  sl.registerSingleton<SprkRepository>(
-    SprkRepositoryImpl(sl<AuthRepository>()),
-  );
-
-  // Register PrefRepository
-  sl.registerSingleton<PrefRepository>(
-    PrefRepositoryImpl(sl<SprkRepository>()),
-  );
-
-  // Register identity repository
-  sl.registerSingleton<IdentityRepository>(
-    IdentityRepositoryImpl(sl<StorageManager>()),
-  );
-
-  // Register theme repository
-  sl.registerSingleton<ThemeRepository>(
-    ThemeRepositoryImpl(sl<StorageManager>()),
-  );
-
-  // Register ActorRepository
-  sl.registerSingleton<ActorRepository>(
-    ActorRepositoryImpl(sl.get<SprkRepository>()),
-  );
-
-  // Register GraphRepository
-  sl.registerSingleton<GraphRepository>(
-    GraphRepositoryImpl(sl.get<SprkRepository>()),
-  );
-
-  // Register StoryRepository
-  sl.registerSingleton<StoryRepository>(
-    StoryRepositoryImpl(sl.get<SprkRepository>()),
-  );
-
-  // Register SoundRepository
-  sl.registerSingleton<SoundRepository>(
-    SoundRepositoryImpl(sl.get<SprkRepository>()),
-  );
+  sl
+    ..registerSingleton<DownloadManagerInterface>(downloadManager)
+    ..registerSingleton<StorageManager>(storageManager)
+    ..registerSingleton<AuthRepository>(AuthRepositoryImpl())
+    ..registerSingleton<ServiceAuthHelper>(
+      ServiceAuthHelper(sl<AuthRepository>()),
+    )
+    ..registerSingleton<MessagesRepository>(
+      MessagesRepositoryXrpc(sl<ServiceAuthHelper>()),
+    )
+    ..registerSingleton<SprkRepository>(
+      SprkRepositoryImpl(sl<AuthRepository>()),
+    )
+    ..registerSingleton<PrefRepository>(
+      PrefRepositoryImpl(sl<SprkRepository>()),
+    )
+    ..registerSingleton<IdentityRepository>(
+      IdentityRepositoryImpl(sl<StorageManager>()),
+    )
+    ..registerSingleton<ThemeRepository>(
+      ThemeRepositoryImpl(sl<StorageManager>()),
+    )
+    ..registerSingleton<ActorRepository>(
+      ActorRepositoryImpl(sl.get<SprkRepository>()),
+    )
+    ..registerSingleton<GraphRepository>(
+      GraphRepositoryImpl(sl.get<SprkRepository>()),
+    )
+    ..registerSingleton<StoryRepository>(
+      StoryRepositoryImpl(sl.get<SprkRepository>()),
+    )
+    ..registerSingleton<SoundRepository>(
+      SoundRepositoryImpl(sl.get<SprkRepository>()),
+    );
 
   await downloadManager.init();
 
-  // Register OnboardingRepository
-  sl.registerLazySingleton<OnboardingRepository>(
-    () => OnboardingRepositoryImpl(
-      repoRepository: sl<SprkRepository>().repo,
-      authRepository: sl<AuthRepository>(),
-    ),
-  );
-
-  // Register ProVideoEditorRepository (image/video editing abstraction)
-  sl.registerSingleton<ProVideoEditorRepository>(
-    const ProVideoEditorRepositoryImpl(),
-  );
+  sl
+    ..registerLazySingleton<OnboardingRepository>(
+      () => OnboardingRepositoryImpl(
+        repoRepository: sl<SprkRepository>().repo,
+        authRepository: sl<AuthRepository>(),
+      ),
+    )
+    ..registerSingleton<ProVideoEditorRepository>(
+      const ProVideoEditorRepositoryImpl(),
+    );
 }

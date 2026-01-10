@@ -218,14 +218,15 @@ class Settings extends _$Settings {
   /// Updates preferences with new feeds list
   Future<void> _updateFeedsInPreferences(List<Feed> feeds) async {
     final preferences = await _prefRepository.getPreferences();
-    final updatedPreferences = preferences.preferences
-        .where((pref) => !pref.isSavedFeedsPref(pref))
-        .toList();
-    updatedPreferences.add(
-      Preference.savedFeedsPref(
-        items: feeds.map((feed) => feed.config).toList(),
-      ),
-    );
+    final updatedPreferences =
+        preferences.preferences
+            .where((pref) => !pref.isSavedFeedsPref(pref))
+            .toList()
+          ..add(
+            Preference.savedFeedsPref(
+              items: feeds.map((feed) => feed.config).toList(),
+            ),
+          );
     await _prefRepository.putPreferences(
       Preferences(preferences: updatedPreferences),
     );
@@ -343,12 +344,13 @@ class Settings extends _$Settings {
         LabelerPrefItem(did: modServiceDid),
         ...(preferences.labelers ?? []),
       ];
-      final updatedPreferences = preferences.preferences
-          .where((pref) => !pref.isLabelersPref(pref))
-          .toList();
-      updatedPreferences.add(
-        Preference.labelersPref(labelers: updatedLabelers),
-      );
+      final updatedPreferences =
+          preferences.preferences
+              .where((pref) => !pref.isLabelersPref(pref))
+              .toList()
+            ..add(
+              Preference.labelersPref(labelers: updatedLabelers),
+            );
 
       await _prefRepository.putPreferences(
         Preferences(preferences: updatedPreferences),
@@ -388,12 +390,13 @@ class Settings extends _$Settings {
 
       // Create updated preferences with new labeler
       final updatedLabelers = [...currentLabelers, LabelerPrefItem(did: did)];
-      final updatedPreferences = preferences.preferences
-          .where((pref) => !pref.isLabelersPref(pref))
-          .toList();
-      updatedPreferences.add(
-        Preference.labelersPref(labelers: updatedLabelers),
-      );
+      final updatedPreferences =
+          preferences.preferences
+              .where((pref) => !pref.isLabelersPref(pref))
+              .toList()
+            ..add(
+              Preference.labelersPref(labelers: updatedLabelers),
+            );
 
       await _prefRepository.putPreferences(
         Preferences(preferences: updatedPreferences),
@@ -430,12 +433,13 @@ class Settings extends _$Settings {
           .toList();
 
       // Create updated preferences
-      final updatedPreferences = preferences.preferences
-          .where((pref) => !pref.isLabelersPref(pref))
-          .toList();
-      updatedPreferences.add(
-        Preference.labelersPref(labelers: updatedLabelers),
-      );
+      final updatedPreferences =
+          preferences.preferences
+              .where((pref) => !pref.isLabelersPref(pref))
+              .toList()
+            ..add(
+              Preference.labelersPref(labelers: updatedLabelers),
+            );
 
       await _prefRepository.putPreferences(
         Preferences(preferences: updatedPreferences),
@@ -464,12 +468,13 @@ class Settings extends _$Settings {
           LabelerPrefItem(did: modServiceDid),
           ...(preferences.labelers ?? []),
         ];
-        final updatedPreferences = preferences.preferences
-            .where((pref) => !pref.isLabelersPref(pref))
-            .toList();
-        updatedPreferences.add(
-          Preference.labelersPref(labelers: updatedLabelers),
-        );
+        final updatedPreferences =
+            preferences.preferences
+                .where((pref) => !pref.isLabelersPref(pref))
+                .toList()
+              ..add(
+                Preference.labelersPref(labelers: updatedLabelers),
+              );
         await _prefRepository.putPreferences(
           Preferences(preferences: updatedPreferences),
         );

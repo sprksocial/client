@@ -291,8 +291,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   @override
   void dispose() {
-    final recordingNotifier = ref.read(recordingProvider.notifier);
-    recordingNotifier.reset();
+    ref.read(recordingProvider.notifier).reset();
     super.dispose();
   }
 }

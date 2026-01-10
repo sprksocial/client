@@ -55,8 +55,9 @@ class _HeartAnimationState extends State<HeartAnimation>
     super.didUpdateWidget(oldWidget);
     if (widget.isAnimating != oldWidget.isAnimating) {
       if (widget.isAnimating) {
-        _controller.reset();
-        _controller.forward();
+        _controller
+          ..reset()
+          ..forward();
       }
     }
   }

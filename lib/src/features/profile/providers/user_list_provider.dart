@@ -107,7 +107,7 @@ class UserList extends _$UserList {
         for (var i = 0; i < profiles.length; i++) {
           final profile = profiles[i];
           if (profilesMap.containsKey(profile.did)) {
-            final fetchedProfile = profilesMap[profile.did]!;
+            final fetchedProfile = profilesMap[profile.did];
             profiles[i] = profile.copyWith(
               displayName: fetchedProfile.displayName as String?,
               description: fetchedProfile.description as String?,

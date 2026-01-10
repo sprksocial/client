@@ -28,8 +28,9 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
+    _searchController
+      ..removeListener(_onSearchChanged)
+      ..dispose();
     super.dispose();
   }
 
@@ -168,8 +169,9 @@ class _UserResultsState extends ConsumerState<_UserResults> {
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
     super.dispose();
   }
 

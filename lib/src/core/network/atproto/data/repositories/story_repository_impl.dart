@@ -32,8 +32,9 @@ class StoryRepositoryImpl implements StoryRepository {
           'alt': media['alt'],
         };
         // Remove the direct fields (optional, but cleaner)
-        media.remove('thumb');
-        media.remove('fullsize');
+        media
+          ..remove('thumb')
+          ..remove('fullsize');
         if (media['alt'] != null) {
           media.remove('alt');
         }

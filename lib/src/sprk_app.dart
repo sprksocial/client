@@ -34,9 +34,9 @@ class _SprkAppState extends ConsumerState<SprkApp> {
       _logger.d('Syncing user preferences from server...');
       final settingsNotifier = ref.read(settingsProvider.notifier);
       await settingsNotifier.syncPreferencesFromServer();
-      _logger.d('User preferences synced successfully');
-
-      _logger.d('Loading settings...');
+      _logger
+        ..d('User preferences synced successfully')
+        ..d('Loading settings...');
       await settingsNotifier.loadSettings();
 
       if (!mounted) return;
@@ -44,8 +44,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
       final activeFeed = ref.read(settingsProvider).activeFeed;
       _logger.d('Active feed: ${activeFeed.config.value}');
 
-      final feedNotifier = ref.read(feedProvider(activeFeed).notifier);
-      feedNotifier.loadAndUpdateFirstLoad();
+      ref.read(feedProvider(activeFeed).notifier).loadAndUpdateFirstLoad();
       _logger.d('Feed loading started');
     } catch (e) {
       _logger.w('Error during app initialization', error: e);
