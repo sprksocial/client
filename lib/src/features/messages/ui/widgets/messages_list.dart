@@ -243,11 +243,13 @@ class MessagesList extends StatelessWidget {
         final message = messages[messages.length - 1 - index];
         final isCurrentUser =
             currentUserDid != null && message.sender.did == currentUserDid;
+        final hasPreviousMessage = index < messages.length - 1;
         final showAvatar =
             !isCurrentUser &&
             (index == 0 ||
-                messages[messages.length - 1 - index - 1].sender.did !=
-                    message.sender.did);
+                (hasPreviousMessage &&
+                    messages[messages.length - 1 - index - 1].sender.did !=
+                        message.sender.did));
 
         return Column(
           children: [
