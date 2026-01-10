@@ -26,15 +26,18 @@ class MenuActionButton extends StatelessWidget {
     // Check if current user is the author
     final authRepository = GetIt.instance<AuthRepository>();
     final userDid = authRepository.session?.did;
-    final isCurrentUserAuthor = userDid == authorDid;
+    final isCurrentUserAuthor =
+        userDid != null && authorDid != null && userDid == authorDid;
 
     OptionsPanel.show(
       context: context,
-      onReport: () {
-        if (onPressed != null) {
-          onPressed!();
-        }
-      },
+      onReport: isCurrentUserAuthor
+          ? null
+          : () {
+              if (onPressed != null) {
+                onPressed!();
+              }
+            },
       onDelete: isCurrentUserAuthor && onDeletePressed != null
           ? onDeletePressed
           : null,

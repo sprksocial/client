@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -15,6 +16,7 @@ import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
 import 'package:spark/src/features/feed/providers/repost_post.dart';
 import 'package:spark/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
   const SideActionBar({
@@ -346,6 +348,63 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     );
   }
 
+  Future<void> _handleDeletePost() async {
+    final currentPost = _currentPost ?? widget.post;
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Post'),
+        content: const Text(
+          'Are you sure you want to delete this post? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final feedRepository = GetIt.instance<SprkRepository>().feed;
+      final success = await feedRepository.deletePost(currentPost.uri);
+      if (!success) {
+        throw Exception('Failed to delete post');
+      }
+
+      if (widget.feed != null) {
+        final controller = ref.read(
+          feedActionControllerProvider(widget.feed!),
+        );
+        controller?.onAdvanceAndRemove();
+      } else {
+        final profileUri = AtUri.parse('at://${currentPost.author.did}');
+        ref.invalidate(profileFeedProvider(profileUri, false));
+        ref.invalidate(profileFeedProvider(profileUri, true));
+      }
+
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Post deleted')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Failed to delete post: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _handleBlock() async {
     final currentPost = _currentPost ?? widget.post;
     final author = currentPost.author;
@@ -403,6 +462,10 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     // Curation disabled: do not build curate destinations from feeds
 
     final currentPost = _currentPost ?? widget.post;
+    final authRepository = GetIt.instance<AuthRepository>();
+    final userDid = authRepository.session?.did;
+    final isCurrentUserAuthor =
+        userDid != null && userDid == currentPost.author.did;
 
     final commentCount =
         currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
@@ -417,8 +480,11 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       onSoundTap: currentPost.sound != null ? _handleSoundTap : null,
       onOptions: () => OptionsPanel.show(
         context: context,
-        onReport: _handleReport,
-        onBlock: widget.showBlockOption ? _handleBlock : null,
+        onReport: isCurrentUserAuthor ? null : _handleReport,
+        onDelete: isCurrentUserAuthor ? _handleDeletePost : null,
+        onBlock: widget.showBlockOption && !isCurrentUserAuthor
+            ? _handleBlock
+            : null,
         isBlocked: isBlocking(currentPost.author.viewer),
       ),
       likeCount: _likeCount.toString(),

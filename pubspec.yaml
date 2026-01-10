@@ -4,7 +4,7 @@ publish_to: "none"
 # The number after + should stay fixed, the android workflow will change it on every build
 version: 0.5.0+1
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.10.0
 workspace:
   - widgetbook
   - fonts
