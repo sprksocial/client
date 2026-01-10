@@ -15,7 +15,7 @@ class PostOverlay extends StatelessWidget {
     this.onProfilePressed,
     this.onUsernameTap,
     this.labels = const [],
-    this.onBlockAndAdvance,
+    this.showBlockOption = true,
   });
 
   final PostView post;
@@ -25,8 +25,9 @@ class PostOverlay extends StatelessWidget {
   final VoidCallback? onUsernameTap;
   final List<Label> labels;
 
-  /// Callback invoked after successfully blocking a user
-  final VoidCallback? onBlockAndAdvance;
+  /// Whether to show the block option in the options panel.
+  /// Set to false for profile feeds where blocking doesn't make sense.
+  final bool showBlockOption;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +122,7 @@ class PostOverlay extends StatelessWidget {
                           post.media is MediaViewImages ||
                           post.media is MediaViewBskyImages,
                       onProfilePressed: onProfilePressed,
-                      onBlockAndAdvance: onBlockAndAdvance,
+                      showBlockOption: showBlockOption,
                     ),
                   ),
                 ],

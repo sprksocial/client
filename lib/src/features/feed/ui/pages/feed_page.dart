@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/feed/providers/feed_action_controller.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
@@ -33,10 +34,28 @@ class _FeedPageState extends ConsumerState<FeedPage>
   void initState() {
     super.initState();
     pageController = PageController();
+
+    // Register the feed action controller so child widgets can trigger
+    // feed-level actions like advancing after blocking
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      ref
+          .read(feedActionControllerProvider(widget.feed).notifier)
+          .setController(
+            FeedActionController(
+              onAdvanceAndRemove: scrollToNextAndRemovePrevious,
+            ),
+          );
+    });
   }
 
   @override
   void dispose() {
+    ref
+        .read(feedActionControllerProvider(widget.feed).notifier)
+        .clearController();
     pageController.dispose();
     super.dispose();
   }
@@ -178,7 +197,6 @@ class _FeedPageState extends ConsumerState<FeedPage>
                         FeedPostWidget(
                           index: index,
                           feed: widget.feed,
-                          onBlockAndAdvance: scrollToNextAndRemovePrevious,
                         ),
                         const Positioned(
                           bottom: 10,
@@ -220,7 +238,6 @@ class _FeedPageState extends ConsumerState<FeedPage>
                     return FeedPostWidget(
                       index: index,
                       feed: widget.feed,
-                      onBlockAndAdvance: scrollToNextAndRemovePrevious,
                     );
                   } else {
                     // SizedBox to maintain scroll position but hide content

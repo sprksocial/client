@@ -246,6 +246,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                   post: post,
                   isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                   labels: post.labels ?? [],
+                  showBlockOption: false,
                   onUsernameTap: () {
                     // Extract DID from the profile URI
                     final currentProfileDid = widget.profileUri.hostname;
