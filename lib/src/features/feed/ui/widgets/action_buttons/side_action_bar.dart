@@ -10,6 +10,7 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/utils/blocking_utils.dart';
+import 'package:spark/src/features/feed/providers/feed_action_controller.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
 import 'package:spark/src/features/feed/providers/repost_post.dart';
@@ -27,7 +28,7 @@ class SideActionBar extends ConsumerStatefulWidget {
     this.profileImageUrl,
     this.isImage = false,
     this.onProfilePressed,
-    this.onBlockAndAdvance,
+    this.showBlockOption = true,
   });
   final Feed? feed;
   final String likeCount;
@@ -39,8 +40,9 @@ class SideActionBar extends ConsumerStatefulWidget {
   final bool isImage;
   final VoidCallback? onProfilePressed;
 
-  /// Callback invoked after successfully blocking a user
-  final VoidCallback? onBlockAndAdvance;
+  /// Whether to show the block option in the options panel.
+  /// Set to false for profile feeds where blocking doesn't make sense.
+  final bool showBlockOption;
 
   @override
   ConsumerState<SideActionBar> createState() => SideActionBarState();
@@ -365,9 +367,12 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         );
       }
 
-      // If blocking and callback provided, advance to next post
-      if (!wasBlocked && widget.onBlockAndAdvance != null) {
-        widget.onBlockAndAdvance!();
+      // If blocking and we have a feed, use the action controller to advance
+      if (!wasBlocked && widget.feed != null) {
+        final controller = ref.read(
+          feedActionControllerProvider(widget.feed!),
+        );
+        controller?.onAdvanceAndRemove();
       }
     } catch (e) {
       if (mounted) {
@@ -413,7 +418,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       onOptions: () => OptionsPanel.show(
         context: context,
         onReport: _handleReport,
-        onBlock: _handleBlock,
+        onBlock: widget.showBlockOption ? _handleBlock : null,
         isBlocked: isBlocking(currentPost.author.viewer),
       ),
       likeCount: _likeCount.toString(),

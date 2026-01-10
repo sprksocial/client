@@ -23,14 +23,10 @@ class FeedPostWidget extends ConsumerStatefulWidget {
     required this.index,
     required this.feed,
     super.key,
-    this.onBlockAndAdvance,
   });
 
   final int index;
   final Feed feed;
-
-  /// Callback invoked after successfully blocking a user
-  final VoidCallback? onBlockAndAdvance;
 
   @override
   ConsumerState<FeedPostWidget> createState() => _FeedPostWidgetState();
@@ -305,7 +301,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         ),
                       );
                     },
-                    onBlockAndAdvance: widget.onBlockAndAdvance,
                   ),
                 ),
               ],
