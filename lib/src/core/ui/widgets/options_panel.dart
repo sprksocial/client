@@ -4,7 +4,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 class OptionsPanel {
   static void show({
     required BuildContext context,
-    required VoidCallback onReport,
+    VoidCallback? onReport,
     VoidCallback? onDelete,
     VoidCallback? onBlock,
     bool isBlocked = false,
@@ -55,19 +55,20 @@ class OptionsPanel {
                     onBlock();
                   },
                 ),
-              ListTile(
-                leading: const Icon(Icons.report_outlined),
-                title: Text(
-                  isProfile
-                      ? l10n.optionsPanelReportProfile
-                      : l10n.optionsPanelReport,
-                  style: TextStyle(color: textColor),
+              if (onReport != null)
+                ListTile(
+                  leading: const Icon(Icons.report_outlined),
+                  title: Text(
+                    isProfile
+                        ? l10n.optionsPanelReportProfile
+                        : l10n.optionsPanelReport,
+                    style: TextStyle(color: textColor),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onReport();
+                  },
                 ),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  onReport();
-                },
-              ),
               ListTile(
                 leading: const Icon(Icons.close),
                 title: Text(
