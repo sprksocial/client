@@ -94,14 +94,16 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       final paused = event.betterPlayerEventType == BetterPlayerEventType.pause;
 
       if (paused) {
-        _bounceController.reset();
-        _bounceController.forward();
+        _bounceController
+          ..reset()
+          ..forward();
       }
 
       final playing = event.betterPlayerEventType == BetterPlayerEventType.play;
       if (playing) {
-        _bounceController.stop();
-        _bounceController.value = 1.0;
+        _bounceController
+          ..stop()
+          ..value = 1.0;
       }
     }
   }

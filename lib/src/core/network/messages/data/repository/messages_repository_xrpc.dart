@@ -65,8 +65,9 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       final token = await _serviceAuthHelper.getServiceToken(nsid);
       final url = Uri.parse('$_baseUrl/xrpc/$nsid');
 
-      _logger.d('POST $url');
-      _logger.d('Body: ${jsonEncode(body)}');
+      _logger
+        ..d('POST $url')
+        ..d('Body: ${jsonEncode(body)}');
 
       final response = await http.post(
         url,

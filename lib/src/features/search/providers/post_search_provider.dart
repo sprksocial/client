@@ -99,13 +99,14 @@ class PostSearch extends _$PostSearch {
               return PostView.fromJson(postJson);
             } catch (e, stackTrace) {
               final postJson = post.toJson();
-              _logger.e(
-                'Failed to convert bsky post ${index + 1}/${bskyResponse.data.posts.length}',
-              );
-              _logger.e('Post URI: ${post.uri}');
-              _logger.e('Post JSON: $postJson');
-              _logger.e('Error: $e');
-              _logger.e('Stack trace: $stackTrace');
+              _logger
+                ..e(
+                  'Failed to convert bsky post ${index + 1}/${bskyResponse.data.posts.length}',
+                )
+                ..e('Post URI: ${post.uri}')
+                ..e('Post JSON: $postJson')
+                ..e('Error: $e')
+                ..e('Stack trace: $stackTrace');
               return null;
             }
           })
@@ -212,13 +213,14 @@ class PostSearch extends _$PostSearch {
               return PostView.fromJson(postJson);
             } catch (e, stackTrace) {
               final postJson = post.toJson();
-              _logger.e(
-                'Failed to convert bsky post ${index + 1}/${response.data.posts.length}',
-              );
-              _logger.e('Post URI: ${post.uri}');
-              _logger.e('Post JSON: $postJson');
-              _logger.e('Error: $e');
-              _logger.e('Stack trace: $stackTrace');
+              _logger
+                ..e(
+                  'Failed to convert bsky post ${index + 1}/${response.data.posts.length}',
+                )
+                ..e('Post URI: ${post.uri}')
+                ..e('Post JSON: $postJson')
+                ..e('Error: $e')
+                ..e('Stack trace: $stackTrace');
               return null;
             }
           })

@@ -28,8 +28,9 @@ class _PostResultsState extends ConsumerState<PostResults>
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
     super.dispose();
   }
 
@@ -184,9 +185,8 @@ class _PostResultsState extends ConsumerState<PostResults>
                 return FutureBuilder<bool>(
                   future: () async {
                     final labels = post.labels ?? [];
-                    return labels.isNotEmpty
-                        ? await LabelUtils.shouldBlurContent(labels)
-                        : false;
+                    return labels.isNotEmpty &&
+                        await LabelUtils.shouldBlurContent(labels);
                   }(),
                   builder: (context, snapshot) {
                     final shouldBlur = snapshot.data ?? false;

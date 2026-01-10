@@ -66,8 +66,9 @@ class LoggerFactory {
   /// Reset all loggers and default outputs
   static void reset() {
     _loggers.clear();
-    _defaultOutputs.clear();
-    _defaultOutputs.add(ConsoleOutput());
+    _defaultOutputs
+      ..clear()
+      ..add(ConsoleOutput());
     if (!kIsWeb) {
       _defaultOutputs.add(FileOutput());
     }

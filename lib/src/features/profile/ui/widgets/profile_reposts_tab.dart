@@ -24,8 +24,7 @@ class ProfileRepostsTab extends ProfileTabBase {
     final actor = profileUri.hostname;
 
     void onPostTap(BuildContext context, WidgetRef ref, AtUri postUri) {
-      final repostsState = ref.read(profileRepostsProvider(actor));
-      repostsState.whenData((repostsState) {
+      ref.read(profileRepostsProvider(actor)).whenData((repostsState) {
         final filteredUris = repostsState.loadedPosts;
         final postIndex = filteredUris.indexOf(postUri);
         if (postIndex != -1) {
@@ -36,7 +35,9 @@ class ProfileRepostsTab extends ProfileTabBase {
             ),
           );
         } else {
-          context.router.push(StandalonePostRoute(postUri: postUri.toString()));
+          context.router.push(
+            StandalonePostRoute(postUri: postUri.toString()),
+          );
         }
       });
     }

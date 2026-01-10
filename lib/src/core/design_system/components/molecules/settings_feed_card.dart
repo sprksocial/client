@@ -263,7 +263,7 @@ class SettingsFeedCard extends StatelessWidget {
         if (onDelete != null) ...[
           const SizedBox(width: 8),
           InteractivePressable(
-            onTap: onDelete!,
+            onTap: onDelete,
             borderRadius: BorderRadius.circular(6),
             child: Container(
               padding: const EdgeInsets.all(8),

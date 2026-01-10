@@ -32,8 +32,9 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _focusNode.removeListener(_focusListener);
-    _focusNode.dispose();
+    _focusNode
+      ..removeListener(_focusListener)
+      ..dispose();
     super.dispose();
   }
 

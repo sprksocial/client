@@ -20,8 +20,7 @@ class ProfileGridTab extends ProfileTabBase {
   @override
   List<Widget> buildSlivers(BuildContext context, WidgetRef ref) {
     void onPostTap(BuildContext context, WidgetRef ref, AtUri postUri) {
-      final feedState = ref.read(profileFeedProvider(profileUri, false));
-      feedState.whenData((feedState) {
+      ref.read(profileFeedProvider(profileUri, false)).whenData((feedState) {
         final filteredUris = feedState.loadedPosts;
         final postIndex = filteredUris.indexOf(postUri);
         if (postIndex != -1) {
@@ -33,7 +32,9 @@ class ProfileGridTab extends ProfileTabBase {
             ),
           );
         } else {
-          context.router.push(StandalonePostRoute(postUri: postUri.toString()));
+          context.router.push(
+            StandalonePostRoute(postUri: postUri.toString()),
+          );
         }
       });
     }

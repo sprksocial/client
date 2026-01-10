@@ -33,8 +33,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
+    _searchController
+      ..removeListener(_onSearchChanged)
+      ..dispose();
     super.dispose();
   }
 
@@ -91,8 +92,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         ),
         emptyStateWidget: RefreshIndicator(
           onRefresh: () async {
-            ref.invalidate(storiesByAuthorProvider());
-            ref.invalidate(suggestedFeedsProvider);
+            ref
+              ..invalidate(storiesByAuthorProvider())
+              ..invalidate(suggestedFeedsProvider);
           },
           child: const CustomScrollView(
             slivers: [

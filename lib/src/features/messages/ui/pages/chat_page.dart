@@ -74,20 +74,21 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(conversationProvider(widget.conversationId));
-    ref.listen(
-      pollingTriggerProvider(widget.conversationId),
-      (previous, next) {},
-    );
-    // When the conversation loads for the first time, notify backend as read
-    ref.listen(conversationProvider(widget.conversationId), (prev, next) {
-      final data = next.asData?.value;
-      if (!_markedReadOnce && data != null && data.messages.isNotEmpty) {
-        _markedReadOnce = true;
-        ref
-            .read(conversationProvider(widget.conversationId).notifier)
-            .markReadUpToLatest();
-      }
-    });
+    ref
+      ..listen(
+        pollingTriggerProvider(widget.conversationId),
+        (previous, next) {},
+      )
+      // When the conversation loads for the first time, notify backend as read
+      ..listen(conversationProvider(widget.conversationId), (prev, next) {
+        final data = next.asData?.value;
+        if (!_markedReadOnce && data != null && data.messages.isNotEmpty) {
+          _markedReadOnce = true;
+          ref
+              .read(conversationProvider(widget.conversationId).notifier)
+              .markReadUpToLatest();
+        }
+      });
     final messagesWidget = state.when(
       data: (data) => MessagesList(
         messages: data.messages,

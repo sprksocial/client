@@ -281,8 +281,9 @@ class BskyFeedAdapter {
           record.remove('embed');
         }
 
-        record.remove('text');
-        record.remove('facets');
+        record
+          ..remove('text')
+          ..remove('facets');
 
         // Check if this is a reply/comment
         isReply = record.containsKey('reply') && record['reply'] != null;
@@ -742,13 +743,14 @@ class BskyFeedAdapter {
     required List<bsky_defs.PostView> rawPosts,
     bool filterByMedia = true,
   }) {
-    final rawPostsJson = rawPosts.map((post) {
-      final json = post.toJson();
-      return deepCopyJson(json);
-    }).toList();
-
-    // Convert each post
-    rawPostsJson.forEach(convertPostViewJson);
+    final rawPostsJson =
+        rawPosts.map((post) {
+            final json = post.toJson();
+            return deepCopyJson(json);
+          })
+          ..toList()
+          // Convert each post
+          ..forEach(convertPostViewJson);
 
     // Parse and convert to Spark format
     final parsedPosts = rawPostsJson.map(PostView.fromJson).toList();

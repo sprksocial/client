@@ -199,40 +199,41 @@ class _CacheablePageViewState extends State<CacheablePageView> {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder description) {
     super.debugFillProperties(description);
-    description.add(
-      EnumProperty<Axis>('scrollDirection', widget.scrollDirection),
-    );
-    description.add(
-      FlagProperty('reverse', value: widget.reverse, ifTrue: 'reversed'),
-    );
-    description.add(
-      DiagnosticsProperty<PageController>(
-        'controller',
-        widget.controller,
-        showName: false,
-      ),
-    );
-    description.add(
-      DiagnosticsProperty<ScrollPhysics>(
-        'physics',
-        widget.physics,
-        showName: false,
-      ),
-    );
-    description.add(
-      FlagProperty(
-        'pageSnapping',
-        value: widget.pageSnapping,
-        ifFalse: 'snapping disabled',
-      ),
-    );
-    description.add(
-      FlagProperty(
-        'allowImplicitScrolling',
-        value: widget.allowImplicitScrolling,
-        ifTrue: 'allow implicit scrolling',
-      ),
-    );
+    description
+      ..add(
+        EnumProperty<Axis>('scrollDirection', widget.scrollDirection),
+      )
+      ..add(
+        FlagProperty('reverse', value: widget.reverse, ifTrue: 'reversed'),
+      )
+      ..add(
+        DiagnosticsProperty<PageController>(
+          'controller',
+          widget.controller,
+          showName: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollPhysics>(
+          'physics',
+          widget.physics,
+          showName: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'pageSnapping',
+          value: widget.pageSnapping,
+          ifFalse: 'snapping disabled',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'allowImplicitScrolling',
+          value: widget.allowImplicitScrolling,
+          ifTrue: 'allow implicit scrolling',
+        ),
+      );
   }
 }
 

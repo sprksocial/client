@@ -121,7 +121,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       _isPosting = true;
     });
     try {
-      final crosspostEnabled = widget.storyMode ? false : _crosspostToBsky;
+      final crosspostEnabled = !widget.storyMode && _crosspostToBsky;
       final description = _descriptionController.text;
       RepoStrongRef result;
       if (widget.storyMode) {
@@ -210,12 +210,13 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                 context.router.popUntilRoot();
                 final did = ref.read(sessionProvider)?.did;
                 if (did != null) {
-                  ref.invalidate(
-                    profileFeedProvider(AtUri.parse('at://$did'), false),
-                  );
-                  ref.invalidate(
-                    profileFeedProvider(AtUri.parse('at://$did'), true),
-                  );
+                  ref
+                    ..invalidate(
+                      profileFeedProvider(AtUri.parse('at://$did'), false),
+                    )
+                    ..invalidate(
+                      profileFeedProvider(AtUri.parse('at://$did'), true),
+                    );
                 }
                 if (!widget.storyMode) {
                   context.router.push(
