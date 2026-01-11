@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/storage/storage.dart';
+import 'package:spark/src/core/utils/did_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -48,6 +49,20 @@ class AuthRepositoryImpl implements AuthRepository {
         _initCompleter.completeError(e);
       }
     }
+  }
+
+  /// Fetches a DID document, handling both did:plc and did:web methods.
+  Future<Map<String, dynamic>> _fetchDidDocument(String did) async {
+    final url = DidUtils.buildDidDocumentUrl(did);
+    _logger.d('Fetching DID document from: $url');
+    final response = await http.get(url);
+
+    if (response.statusCode != 200) {
+      _logger.e('Failed to fetch DID document: ${response.statusCode}');
+      throw Exception('Failed to fetch DID document: ${response.statusCode}');
+    }
+
+    return json.decode(response.body) as Map<String, dynamic>;
   }
 
   String? _extractPdsDomain(Map<String, dynamic> doc) {
@@ -121,14 +136,12 @@ class AuthRepositoryImpl implements AuthRepository {
           : null;
 
       if (service == null) {
-        _logger.d('Fetching DID document from PLC directory');
-        final didDocResponse = await http.get(
-          Uri.parse('https://plc.directory/${_session!.did}'),
-        );
-        if (didDocResponse.statusCode == 200) {
-          service = _extractPdsDomain(
-            json.decode(didDocResponse.body) as Map<String, dynamic>,
-          );
+        _logger.d('Fetching DID document');
+        try {
+          final didDoc = await _fetchDidDocument(_session!.did);
+          service = _extractPdsDomain(didDoc);
+        } catch (e) {
+          _logger.e('Failed to fetch DID document during refresh', error: e);
         }
       }
 
@@ -202,18 +215,7 @@ class AuthRepositoryImpl implements AuthRepository {
       _logger
         ..d('Resolved DID: $did')
         ..d('Fetching DID document');
-      final didDocResponse = await http.get(
-        Uri.parse('https://plc.directory/$did'),
-      );
-
-      if (didDocResponse.statusCode != 200) {
-        _logger.e('Failed to fetch DID document: ${didDocResponse.statusCode}');
-        throw Exception(
-          'Failed to fetch DID document: ${didDocResponse.statusCode}',
-        );
-      }
-
-      final didDoc = json.decode(didDocResponse.body);
+      final didDoc = await _fetchDidDocument(did);
 
       final pdsUrl =
           (didDoc['service'] as List<dynamic>).firstWhere(

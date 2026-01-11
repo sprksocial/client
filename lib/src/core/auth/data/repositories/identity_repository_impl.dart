@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:spark/src/core/auth/data/repositories/identity_repository.dart';
 import 'package:spark/src/core/storage/storage.dart';
+import 'package:spark/src/core/utils/did_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -198,14 +199,12 @@ class IdentityRepositoryImpl implements IdentityRepository {
   }
 
   Future<Map<String, dynamic>?> _fetchAndCacheDidDoc(String did) async {
-    final url = Uri.parse('https://plc.directory/$did');
+    final url = DidUtils.buildDidDocumentUrl(did);
     final response = await http.get(url);
 
     if (response.statusCode != 200) {
-      _logger.w(
-        'Failed to resolve DID document. Status: ${response.statusCode}',
-      );
-      return null;
+      _logger.e('Failed to fetch DID document: ${response.statusCode}');
+      throw Exception('Failed to fetch DID document: ${response.statusCode}');
     }
 
     final didDoc = json.decode(response.body);
