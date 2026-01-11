@@ -63,8 +63,10 @@ class OnboardingState extends _$OnboardingState {
         avatar: bskyProfile.avatar,
       );
 
+      if (!ref.mounted) return;
       state = const AsyncData(null);
     } catch (e, stackTrace) {
+      if (!ref.mounted) return;
       state = AsyncError(e, stackTrace);
     }
   }
@@ -86,8 +88,10 @@ class OnboardingState extends _$OnboardingState {
         avatar: avatar,
       );
 
+      if (!ref.mounted) return;
       state = const AsyncData(null);
     } catch (e, stackTrace) {
+      if (!ref.mounted) return;
       state = AsyncError(e, stackTrace);
     }
   }
@@ -114,8 +118,10 @@ class OnboardingState extends _$OnboardingState {
         hasMore = cursor != null;
       }
 
+      if (!ref.mounted) return;
       state = const AsyncData(null);
     } catch (e, stackTrace) {
+      if (!ref.mounted) return;
       state = AsyncError(e, stackTrace);
     }
   }

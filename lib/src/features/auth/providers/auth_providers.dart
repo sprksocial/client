@@ -18,7 +18,7 @@ AuthRepository authRepository(Ref ref) {
 
 /// Authentication notifier for the application
 /// Provides higher-level authentication operations and state management
-@riverpod
+@Riverpod(keepAlive: true)
 class Auth extends _$Auth {
   late final AuthRepository _authRepository;
   late final LogService _logService;
@@ -107,9 +107,15 @@ class Auth extends _$Auth {
         password,
         inviteCode,
       );
-      _updateState();
-      state = state.copyWith(isLoading: false, error: result.error);
-      return LoginResult.success();
+
+      if (result.success) {
+        _updateState();
+        state = state.copyWith(isLoading: false);
+        return LoginResult.success();
+      } else {
+        state = state.copyWith(isLoading: false, error: result.error);
+        return LoginResult.failed(result.error ?? 'Registration failed');
+      }
     } catch (e, stackTrace) {
       _logger.e('Registration error', error: e, stackTrace: stackTrace);
       final errorMsg = 'Registration failed: $e';
