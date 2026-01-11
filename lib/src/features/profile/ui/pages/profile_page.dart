@@ -456,7 +456,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ],
           tabsWidget: ProfileTabBar(
             selectedIndex: _activeTabIndex,
-            tabs: _buildTabItems(_activeTabIndex),
+            tabs: _buildTabItems(context, _activeTabIndex),
           ),
           onTabChanged: (index) {
             setState(() {
@@ -497,7 +497,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ],
           tabsWidget: ProfileTabBar(
             selectedIndex: _activeTabIndex,
-            tabs: _buildTabItems(_activeTabIndex),
+            tabs: _buildTabItems(context, _activeTabIndex),
           ),
           contentWidget:
               const SizedBox.shrink(), // Not used when contentSlivers provided
@@ -518,10 +518,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   /// Builds the list of tab items - easy to add new tabs here!
   // When adding tabs 1+, switch to AutoTabsRouter & pass TabsRouter not int
-  List<ProfileTabItem> _buildTabItems(int activeIndex) {
+  List<ProfileTabItem> _buildTabItems(
+    BuildContext context,
+    int activeIndex,
+  ) {
+    final inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
     return [
       ProfileTabItem(
-        icon: AppIcons.grid(),
+        icon: AppIcons.grid(color: inactiveColor),
         filledIcon: AppIcons.gridFilled(),
         isSelected: activeIndex == 0,
         onTap: () {
@@ -531,7 +536,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         },
       ),
       ProfileTabItem(
-        icon: AppIcons.repost(),
+        icon: AppIcons.repost(color: inactiveColor),
         filledIcon:
             AppIcons.repost(), // No filled variant exists, use same icon
         isSelected: activeIndex == 1,
