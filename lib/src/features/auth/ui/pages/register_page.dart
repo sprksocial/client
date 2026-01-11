@@ -47,38 +47,46 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       _errorMessage = null;
     });
 
-    final handle = '${_handleController.text}.sprk.so';
+    try {
+      final handle = '${_handleController.text}.sprk.so';
 
-    final authNotifier = ref.read(authProvider.notifier);
-    final result = await authNotifier.register(
-      handle,
-      _emailController.text,
-      _passwordController.text,
-      _inviteCodeController.text.isEmpty ? null : _inviteCodeController.text,
-    );
+      final authNotifier = ref.read(authProvider.notifier);
+      final result = await authNotifier.register(
+        handle,
+        _emailController.text,
+        _passwordController.text,
+        _inviteCodeController.text.isEmpty ? null : _inviteCodeController.text,
+      );
 
-    setState(() {
-      _isRegistering = false;
-    });
-
-    if (result.isSuccess) {
-      final hasProfile = await ref.read(hasSparkProfileProvider.future);
-      if (!mounted) return;
-
-      if (hasProfile) {
-        // Sync preferences from server before navigating to feed
-        // This ensures feeds are loaded properly after registration
-        await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
-
+      if (result.isSuccess) {
+        // Invalidate and refresh the provider to get fresh state after registration
+        ref.invalidate(hasSparkProfileProvider);
+        final hasProfile = await ref.read(hasSparkProfileProvider.future);
         if (!mounted) return;
 
-        context.router.replace(const FeedsRoute());
+        if (hasProfile) {
+          // Sync preferences from server before navigating to feed
+          // This ensures feeds are loaded properly after registration
+          await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
+
+          if (!mounted) return;
+
+          context.router.replace(const FeedsRoute());
+        } else {
+          context.router.replace(const OnboardingRoute());
+        }
       } else {
-        context.router.replace(const OnboardingRoute());
+        if (!mounted) return;
+        setState(() {
+          _isRegistering = false;
+          _errorMessage = result.error;
+        });
       }
-    } else {
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _errorMessage = result.error;
+        _isRegistering = false;
+        _errorMessage = 'An error occurred: $e';
       });
     }
   }
