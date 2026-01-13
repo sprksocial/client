@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/identity_repository.dart';
-import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
 import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
@@ -22,6 +21,7 @@ import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
@@ -212,8 +212,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         if (profile == null) {
           // Check if this is the current user's profile to show settings button
           final currentUserDid = ref.read(currentDidProvider);
-          final isCurrentUser = currentUserDid != null &&
-              currentUserDid == widget.did;
+          final isCurrentUser =
+              currentUserDid != null && currentUserDid == widget.did;
           final colorScheme = theme.colorScheme;
 
           return ErrorScreen(
@@ -529,8 +529,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       error: (error, stackTrace) {
         // Check if this is the current user's profile to show settings button
         final currentUserDid = ref.read(currentDidProvider);
-        final isCurrentUser = currentUserDid != null &&
-            currentUserDid == widget.did;
+        final isCurrentUser =
+            currentUserDid != null && currentUserDid == widget.did;
         final colorScheme = theme.colorScheme;
 
         return ErrorScreen(

@@ -16,6 +16,7 @@ class StorageKeys {
   static const String oauthDid = 'oauth_did';
   static const String oauthHandle = 'oauth_handle';
   static const String oauthPdsEndpoint = 'oauth_pds_endpoint';
+  static const String oauthServer = 'oauth_server';
 
   static const String themeKey = 'app_theme_mode';
 

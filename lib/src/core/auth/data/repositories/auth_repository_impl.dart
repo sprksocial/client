@@ -12,6 +12,7 @@ import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/core/utils/did_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/utils/oauth_resolver.dart';
 
 /// OAuth client metadata URL
 const String _clientMetadataUrl = 'https://sprk.so/client-metadata.json';
@@ -28,6 +29,7 @@ class AuthRepositoryImpl implements AuthRepository {
   String? _did;
   String? _handle;
   String? _pdsEndpoint;
+  String? _oauthServer;
 
   /// Pending OAuth context during authorization flow
   OAuthContext? _pendingContext;
@@ -129,6 +131,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final savedPdsEndpoint = await StorageManager.instance.secure.getString(
         StorageKeys.oauthPdsEndpoint,
       );
+      final savedOAuthServer = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthServer,
+      );
 
       if (accessToken == null ||
           refreshToken == null ||
@@ -149,6 +154,7 @@ class AuthRepositoryImpl implements AuthRepository {
       _did = savedDid;
       _handle = savedHandle;
       _pdsEndpoint = savedPdsEndpoint;
+      _oauthServer = savedOAuthServer;
 
       // Extract just the host from the PDS endpoint
       final pdsHost = _pdsEndpoint != null
@@ -161,10 +167,9 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       // Recreate OAuth client for token refresh
-      if (_pdsEndpoint != null) {
+      if (_oauthServer != null) {
         final metadata = await getClientMetadata(_clientMetadataUrl);
-        final oauthServer = await resolveOAuthServer(_pdsEndpoint!);
-        _oauthClient = OAuthClient(metadata, service: oauthServer);
+        _oauthClient = OAuthClient(metadata, service: _oauthServer!);
         _logger.d('OAuthClient recreated for session refresh');
       }
 
@@ -217,6 +222,12 @@ class AuthRepositoryImpl implements AuthRepository {
           _pdsEndpoint!,
         );
       }
+      if (_oauthServer != null) {
+        await StorageManager.instance.secure.setString(
+          StorageKeys.oauthServer,
+          _oauthServer!,
+        );
+      }
       _logger.d('OAuth session saved successfully');
     } catch (e) {
       _logger.e('Failed to save OAuth session', error: e);
@@ -236,6 +247,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await StorageManager.instance.secure.remove(StorageKeys.oauthDid);
       await StorageManager.instance.secure.remove(StorageKeys.oauthHandle);
       await StorageManager.instance.secure.remove(StorageKeys.oauthPdsEndpoint);
+      await StorageManager.instance.secure.remove(StorageKeys.oauthServer);
       await StorageManager.instance.secure.remove(
         StorageKeys.oauthPendingContext,
       );
@@ -277,9 +289,9 @@ class AuthRepositoryImpl implements AuthRepository {
       // Get client metadata
       final metadata = await getClientMetadata(_clientMetadataUrl);
       // Resolve OAuth server from PDS endpoint
-      final oauthServer = await resolveOAuthServer(pdsEndpoint);
-      _logger.d('Resolved OAuth server: $oauthServer');
-      _oauthClient = OAuthClient(metadata, service: oauthServer);
+      _oauthServer = await resolveOAuthServer(pdsEndpoint);
+      _logger.d('Resolved OAuth server: $_oauthServer');
+      _oauthClient = OAuthClient(metadata, service: _oauthServer!);
 
       // Start OAuth authorization
       final (authUrl, ctx) = await _oauthClient!.authorize(handle);
@@ -296,6 +308,7 @@ class AuthRepositoryImpl implements AuthRepository {
           'handle': handle,
           'did': resolvedDid,
           'pdsEndpoint': pdsEndpoint,
+          'oauthServer': _oauthServer,
           'state': stateParam,
         }),
       );
@@ -315,11 +328,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Store service for later
       _pdsEndpoint = 'https://$service';
+      _oauthServer = service;
 
       // Get client metadata
       final metadata = await getClientMetadata(_clientMetadataUrl);
       _logger.d('Using OAuth server: $service');
-      _oauthClient = OAuthClient(metadata, service: service);
+      _oauthClient = OAuthClient(metadata, service: _oauthServer!);
 
       // Start OAuth authorization without login hint
       final (authUrl, ctx) = await _oauthClient!.authorize();
@@ -334,6 +348,7 @@ class AuthRepositoryImpl implements AuthRepository {
         StorageKeys.oauthPendingContext,
         json.encode({
           'pdsEndpoint': _pdsEndpoint,
+          'oauthServer': _oauthServer,
           'state': stateParam,
         }),
       );
@@ -359,6 +374,7 @@ class AuthRepositoryImpl implements AuthRepository {
           _handle = contextData['handle'] as String?;
           _did = contextData['did'] as String?;
           _pdsEndpoint = contextData['pdsEndpoint'] as String?;
+          _oauthServer = contextData['oauthServer'] as String?;
           final savedState = contextData['state'] as String?;
 
           // Verify state parameter matches if present
@@ -367,7 +383,8 @@ class AuthRepositoryImpl implements AuthRepository {
             final callbackState = callbackUri.queryParameters['state'];
             if (callbackState != savedState) {
               _logger.e(
-                'OAuth state mismatch. Expected: $savedState, got: $callbackState',
+                'OAuth state mismatch. '
+                'Expected: $savedState, got: $callbackState',
               );
               // Clear invalid context
               await StorageManager.instance.secure.remove(
@@ -380,26 +397,23 @@ class AuthRepositoryImpl implements AuthRepository {
           }
 
           // Recreate OAuth client with the correct OAuth server
-          if (_pdsEndpoint != null) {
+          if (_oauthServer != null) {
             final metadata = await getClientMetadata(_clientMetadataUrl);
-            final pdsUri = Uri.parse(_pdsEndpoint!);
-            final oauthServer = pdsUri.host;
-            _oauthClient = OAuthClient(metadata, service: oauthServer);
+            _oauthClient = OAuthClient(metadata, service: _oauthServer!);
           }
         }
-
-        // If we still don't have the context after restoration, we cannot proceed
-        // The OAuthContext cannot be serialized, so we need the original context object
         if (_pendingContext == null) {
           _logger.e(
-            'No pending OAuth context found. App may have been killed during OAuth flow.',
+            'No pending OAuth context found. '
+            'App may have been killed during OAuth flow.',
           );
           // Clear any partial context data
           await StorageManager.instance.secure.remove(
             StorageKeys.oauthPendingContext,
           );
           return LoginResult.failed(
-            'OAuth session was interrupted. Please start the sign-up process again.',
+            'OAuth session was interrupted. '
+            'Please start the sign-up process again.',
           );
         }
 
@@ -454,6 +468,7 @@ class AuthRepositoryImpl implements AuthRepository {
       _did = null;
       _handle = null;
       _pdsEndpoint = null;
+      _oauthServer = null;
       _oauthClient = null;
       _pendingContext = null;
       _logger.i('Logout successful');
@@ -503,13 +518,12 @@ class AuthRepositoryImpl implements AuthRepository {
         _logger.w('No OAuth session or client to refresh');
 
         // Try to recreate OAuth client if we have a session but no client
-        if (_oauthSession != null && _pdsEndpoint != null) {
+        if (_oauthSession != null && _oauthServer != null) {
           final metadata = await getClientMetadata(_clientMetadataUrl);
-          final oauthServer = await resolveOAuthServer(_pdsEndpoint!);
-          _oauthClient = OAuthClient(metadata, service: oauthServer);
-          _logger.d('OAuthClient recreated with service: $oauthServer');
+          _oauthClient = OAuthClient(metadata, service: _oauthServer!);
+          _logger.d('OAuthClient recreated with service: $_oauthServer');
         } else {
-          _logger.w('Cannot refresh: missing session or PDS endpoint');
+          _logger.w('Cannot refresh: missing session or OAuth server');
           return false;
         }
       }

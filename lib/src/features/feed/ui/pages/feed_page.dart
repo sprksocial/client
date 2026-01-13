@@ -43,8 +43,9 @@ class _FeedPageState extends ConsumerState<FeedPage>
         return;
       }
       // Save the notifier for safe access in dispose()
-      _actionControllerNotifier =
-          ref.read(feedActionControllerProvider(widget.feed).notifier);
+      _actionControllerNotifier = ref.read(
+        feedActionControllerProvider(widget.feed).notifier,
+      );
       _actionControllerNotifier!.setController(
         FeedActionController(
           onAdvanceAndRemove: scrollToNextAndRemovePrevious,
@@ -55,7 +56,6 @@ class _FeedPageState extends ConsumerState<FeedPage>
 
   @override
   void dispose() {
-    // Use the saved notifier instead of ref to avoid unsafe access during unmount
     _actionControllerNotifier?.clearController();
     pageController.dispose();
     super.dispose();

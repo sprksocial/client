@@ -69,13 +69,16 @@ dependencies:
   video_player: ^2.10.0
   web_socket_channel: ^3.0.3
 
+# Overrides only needed until atproto.dart PR #2224 is merged
 dependency_overrides:
-  atproto:
-    path: ../atproto.dart/packages/atproto
   atproto_core:
-    path: ../atproto.dart/packages/atproto_core
+    git:
+      url: https://github.com/knotbin/atproto.dart.git
+      path: packages/atproto_core
   atproto_oauth:
-    path: ../atproto.dart/packages/atproto_oauth
+    git:
+      url: https://github.com/knotbin/atproto.dart.git
+      path: packages/atproto_oauth
 
 dev_dependencies:
   auto_route_generator: ^10.2.3

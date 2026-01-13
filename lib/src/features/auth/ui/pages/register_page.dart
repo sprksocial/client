@@ -171,7 +171,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Share videos, connect with friends,\nand express yourself freely.',
+                              'Share videos, connect with friends,\n'
+                              'and take back your timeline.',
                               style: AppTypography.textMediumMedium.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                                 height: 1.5,

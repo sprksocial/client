@@ -92,23 +92,28 @@ packages:
   atproto:
     dependency: "direct main"
     description:
-      path: "../atproto.dart/packages/atproto"
-      relative: true
-    source: path
+      name: atproto
+      sha256: "160da2b0bc9207336aee4be8bf67a801f4eb2d7e7574550b2ab8e6bbac8728d4"
+      url: "https://pub.dev"
+    source: hosted
     version: "1.3.0"
   atproto_core:
     dependency: "direct main"
     description:
-      path: "../atproto.dart/packages/atproto_core"
-      relative: true
-    source: path
+      path: "packages/atproto_core"
+      ref: HEAD
+      resolved-ref: "46fd244e5a58548e4b8db65723f4f6e478576d47"
+      url: "https://github.com/knotbin/atproto.dart.git"
+    source: git
     version: "1.1.0"
   atproto_oauth:
     dependency: "direct overridden"
     description:
-      path: "../atproto.dart/packages/atproto_oauth"
-      relative: true
-    source: path
+      path: "packages/atproto_oauth"
+      ref: HEAD
+      resolved-ref: "46fd244e5a58548e4b8db65723f4f6e478576d47"
+      url: "https://github.com/knotbin/atproto.dart.git"
+    source: git
     version: "0.1.2"
   audio_waveforms:
     dependency: "direct main"
