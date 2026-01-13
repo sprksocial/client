@@ -112,6 +112,42 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get buttonSave;
 
+  /// Delete option in options panel
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get buttonDelete;
+
+  /// Block option in options panel
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get buttonBlock;
+
+  /// Unblock option in options panel
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get buttonUnblock;
+
+  /// Report option in options panel
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get buttonReport;
+
+  /// Report Profile option in options panel
+  ///
+  /// In en, this message translates to:
+  /// **'Report Profile'**
+  String get buttonReportProfile;
+
+  /// Close option in options panel
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get buttonClose;
+
   /// Error message for required fields
   ///
   /// In en, this message translates to:
@@ -135,42 +171,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search...'**
   String get searchPlaceholder;
-
-  /// Delete option in options panel
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get optionsPanelDelete;
-
-  /// Block option in options panel
-  ///
-  /// In en, this message translates to:
-  /// **'Block'**
-  String get optionsPanelBlock;
-
-  /// Unblock option in options panel
-  ///
-  /// In en, this message translates to:
-  /// **'Unblock'**
-  String get optionsPanelUnblock;
-
-  /// Report option in options panel
-  ///
-  /// In en, this message translates to:
-  /// **'Report'**
-  String get optionsPanelReport;
-
-  /// Report Profile option in options panel
-  ///
-  /// In en, this message translates to:
-  /// **'Report Profile'**
-  String get optionsPanelReportProfile;
-
-  /// Close option in options panel
-  ///
-  /// In en, this message translates to:
-  /// **'Close'**
-  String get optionsPanelClose;
 }
 
 class _AppLocalizationsDelegate

@@ -19,7 +19,8 @@ enum ReportCategory {
   misleading('Misleading'),
   ruleViolations('Rule Violations'),
   selfHarm('Self-Harm'),
-  other('Other');
+  other('Other')
+  ;
 
   const ReportCategory(this.displayName);
   final String displayName;

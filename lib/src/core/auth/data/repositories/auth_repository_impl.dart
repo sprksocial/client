@@ -15,7 +15,7 @@ import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/oauth_resolver.dart';
 
 /// OAuth client metadata URL
-const String _clientMetadataUrl = 'https://sprk.so/client-metadata.json';
+const String _clientMetadataUrl = 'https://sprk.so/oauth-client-metadata.json';
 
 /// Implementation of the authentication repository for AT Protocol using OAuth
 class AuthRepositoryImpl implements AuthRepository {

@@ -18,6 +18,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonSave => 'Save';
 
   @override
+  String get buttonDelete => 'Delete';
+
+  @override
+  String get buttonBlock => 'Block';
+
+  @override
+  String get buttonUnblock => 'Unblock';
+
+  @override
+  String get buttonReport => 'Report';
+
+  @override
+  String get buttonReportProfile => 'Report Profile';
+
+  @override
+  String get buttonClose => 'Close';
+
+  @override
   String get inputErrorRequired => 'This field is required';
 
   @override
@@ -28,22 +46,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchPlaceholder => 'Search...';
-
-  @override
-  String get optionsPanelDelete => 'Delete';
-
-  @override
-  String get optionsPanelBlock => 'Block';
-
-  @override
-  String get optionsPanelUnblock => 'Unblock';
-
-  @override
-  String get optionsPanelReport => 'Report';
-
-  @override
-  String get optionsPanelReportProfile => 'Report Profile';
-
-  @override
-  String get optionsPanelClose => 'Close';
 }

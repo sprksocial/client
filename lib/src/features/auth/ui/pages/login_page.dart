@@ -58,7 +58,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         try {
           callbackUrl = await FlutterWebAuth2.authenticate(
             url: authUrl,
-            callbackUrlScheme: 'so.sprk',
+            callbackUrlScheme: 'sprk',
             options: const FlutterWebAuth2Options(
               intentFlags: ephemeralIntentFlags,
             ),

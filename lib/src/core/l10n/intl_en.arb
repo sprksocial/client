@@ -1,69 +1,69 @@
 {
   "@@locale": "en",
   "@@context": "General localization strings",
-  
+
   "buttonCancel": "Cancel",
   "@buttonCancel": {
     "description": "Cancel button text"
   },
-  
+
   "buttonConfirm": "Confirm",
   "@buttonConfirm": {
     "description": "Confirm button text"
   },
-  
+
   "buttonSave": "Save",
   "@buttonSave": {
     "description": "Save button text"
   },
-  
+
+  "buttonDelete": "Delete",
+  "@buttonDelete": {
+    "description": "Delete option in options panel"
+  },
+
+  "buttonBlock": "Block",
+  "@buttonBlock": {
+    "description": "Block option in options panel"
+  },
+
+  "buttonUnblock": "Unblock",
+  "@buttonUnblock": {
+    "description": "Unblock option in options panel"
+  },
+
+  "buttonReport": "Report",
+  "@buttonReport": {
+    "description": "Report option in options panel"
+  },
+
+  "buttonReportProfile": "Report Profile",
+  "@buttonReportProfile": {
+    "description": "Report Profile option in options panel"
+  },
+
+  "buttonClose": "Close",
+  "@buttonClose": {
+    "description": "Close option in options panel"
+  },
+
   "inputErrorRequired": "This field is required",
   "@inputErrorRequired": {
     "description": "Error message for required fields"
   },
-  
+
   "inputErrorEmail": "Please enter a valid email address",
   "@inputErrorEmail": {
     "description": "Error message for invalid email"
   },
-  
+
   "loading": "Loading...",
   "@loading": {
     "description": "Loading state text"
   },
-  
+
   "searchPlaceholder": "Search...",
   "@searchPlaceholder": {
     "description": "Placeholder text for search inputs"
-  },
-  
-  "optionsPanelDelete": "Delete",
-  "@optionsPanelDelete": {
-    "description": "Delete option in options panel"
-  },
-  
-  "optionsPanelBlock": "Block",
-  "@optionsPanelBlock": {
-    "description": "Block option in options panel"
-  },
-  
-  "optionsPanelUnblock": "Unblock",
-  "@optionsPanelUnblock": {
-    "description": "Unblock option in options panel"
-  },
-  
-  "optionsPanelReport": "Report",
-  "@optionsPanelReport": {
-    "description": "Report option in options panel"
-  },
-  
-  "optionsPanelReportProfile": "Report Profile",
-  "@optionsPanelReportProfile": {
-    "description": "Report Profile option in options panel"
-  },
-  
-  "optionsPanelClose": "Close",
-  "@optionsPanelClose": {
-    "description": "Close option in options panel"
   }
 }
