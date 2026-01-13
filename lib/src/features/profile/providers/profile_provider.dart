@@ -33,14 +33,16 @@ class ProfileNotifier extends _$ProfileNotifier {
     logger.d('Building ProfileNotifier for did: $did');
     final initialState = ProfileState(currentViewDid: did);
     await loadProfileData(did, initialState);
-    return state.asData!.value;
+    // Return the state value if available, otherwise return initial state
+    // This handles edge cases where loadProfileData sets an error/auth prompt
+    return state.asData?.value ?? initialState;
   }
 
   Future<void> loadProfileData(
     String? targetDidArgument,
     ProfileState currentState,
   ) async {
-    final effectiveDid = targetDidArgument ?? authRepository.session?.did;
+    final effectiveDid = targetDidArgument ?? authRepository.did;
 
     if (!authRepository.isAuthenticated && effectiveDid == null) {
       logger.i(
@@ -92,33 +94,28 @@ class ProfileNotifier extends _$ProfileNotifier {
     final currentDid = currentProfileState?.currentViewDid;
     logger.d('Refreshing profile for DID: $currentDid');
 
-    if (currentDid == null && !authRepository.isAuthenticated) {
-      logger.w('Cannot refresh, no DID and user not authenticated.');
+    final didToRefresh = currentDid ?? authRepository.did;
+    if (didToRefresh == null) {
+      logger.w('Cannot refresh, no DID available.');
       return;
     }
-    final didToRefresh = currentDid ?? authRepository.session!.did;
 
     try {
       final profileUri = AtUri.parse('at://$didToRefresh');
-      final profileRefreshFuture = loadProfileData(
+
+      // Invalidate feed providers to force a rebuild rather than calling
+      // notifier methods directly, which can fail if providers are disposed
+      ref
+        ..invalidate(profileFeedProvider(profileUri, true))
+        ..invalidate(profileFeedProvider(profileUri, false));
+
+      // Load profile data
+      await loadProfileData(
         didToRefresh,
         currentProfileState ?? ProfileState(currentViewDid: didToRefresh),
       );
 
-      final videosRefreshFuture = ref
-          .read(profileFeedProvider(profileUri, true).notifier)
-          .refresh();
-      final photosRefreshFuture = ref
-          .read(profileFeedProvider(profileUri, false).notifier)
-          .refresh();
-
-      await Future.wait([
-        profileRefreshFuture,
-        videosRefreshFuture,
-        photosRefreshFuture,
-      ]);
-
-      logger.i('Profile and feeds for $didToRefresh refreshed successfully.');
+      logger.i('Profile for $didToRefresh refreshed successfully.');
     } catch (e, s) {
       logger.e(
         'Error refreshing profile for $didToRefresh',
@@ -142,8 +139,7 @@ class ProfileNotifier extends _$ProfileNotifier {
   bool isCurrentUser() {
     final profileDid = state.asData?.value.profile?.did;
     if (profileDid == null) return false;
-    return authRepository.isAuthenticated &&
-        authRepository.session?.did == profileDid;
+    return authRepository.isAuthenticated && authRepository.did == profileDid;
   }
 
   Future<String?> toggleFollow() async {

@@ -28,15 +28,14 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
   Future<OnboardingScreenState> _fetchInitialProfileData() async {
     try {
-      final session = _authRepository.session;
-      if (session == null || session.did.isEmpty) {
+      final userDid = _authRepository.did;
+      if (userDid == null || userDid.isEmpty) {
         _logger.e('User not authenticated or DID is missing.');
         return const OnboardingScreenState(
           isLoading: false,
           errorMessage: 'User not authenticated',
         );
       }
-      final userDid = session.did;
 
       final profileDataMap = await _onboardingRepository.getBskyProfile();
 

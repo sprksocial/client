@@ -25,14 +25,14 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     'OnboardingRepository',
   );
 
-  Session? get _session => _authRepository.session;
+  String? get _did => _authRepository.did;
   ATProto? get _atproto => _authRepository.atproto;
 
   @override
   Future<bool> hasSparkProfile() async {
-    if (_session == null) return false;
+    if (_did == null) return false;
 
-    final uri = AtUri.parse('at://${_session!.did}/so.sprk.actor.profile/self');
+    final uri = AtUri.parse('at://$_did/so.sprk.actor.profile/self');
     try {
       final response = await _repoRepository.getRecord(uri: uri);
       _logger.i('Spark profile found: ${response.record.toJson()}');
@@ -52,11 +52,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
   @override
   Future<ActorProfileRecord?> getBskyProfile() async {
-    if (_session == null) return null;
+    if (_did == null) return null;
 
     try {
       final uri = AtUri.parse(
-        'at://${_session!.did}/app.bsky.actor.profile/self',
+        'at://$_did/app.bsky.actor.profile/self',
       );
       final response = await _repoRepository.getRecord(uri: uri);
       return ActorProfileRecord.fromJson(response.record.toJson());
@@ -115,14 +115,17 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
   @override
   Future<FollowsResponse> getBskyFollows({String? cursor}) async {
-    if (_session == null || _atproto == null) {
+    if (_did == null || _atproto == null) {
       throw Exception('Not authenticated');
     }
 
-    final bsky = bs.Bluesky.fromSession(_session!);
-    final did = _session!.did;
+    // Use the ATProto client's OAuth session if available, otherwise anonymous
+    final bsky = _atproto!.oAuthSession != null
+        ? bs.Bluesky.fromOAuthSession(_atproto!.oAuthSession!)
+        : bs.Bluesky.anonymous();
+
     final response = await bsky.graph.getFollows(
-      actor: did,
+      actor: _did!,
       limit: 100,
       cursor: cursor,
     );

@@ -66,12 +66,12 @@ class PostSearch extends _$PostSearch {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final bskySession = _authRepository.session;
-      if (bskySession == null) {
+      final atproto = _authRepository.atproto;
+      if (atproto == null || atproto.oAuthSession == null) {
         return;
       }
 
-      final bskyApi = bsky.Bluesky.fromSession(bskySession);
+      final bskyApi = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
       final sprkSearch = _feedRepository.searchPosts(query);
       final bskySearch = bskyApi.feed.searchPosts(
         q: query,
@@ -187,11 +187,11 @@ class PostSearch extends _$PostSearch {
 
     final bskyCursor = state.bskyNextCursor;
     if (bskyCursor != null && bskyCursor.isNotEmpty) {
-      final bskySession = _authRepository.session;
-      if (bskySession == null) {
+      final atproto = _authRepository.atproto;
+      if (atproto == null || atproto.oAuthSession == null) {
         return;
       }
-      final bskyApi = bsky.Bluesky.fromSession(bskySession);
+      final bskyApi = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
       final response = await bskyApi.feed.searchPosts(
         q: state.query,
         sort: const FeedSearchPostsSort.unknown(data: 'latest'),

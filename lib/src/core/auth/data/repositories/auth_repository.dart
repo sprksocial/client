@@ -1,38 +1,43 @@
 import 'package:atproto/atproto.dart';
-import 'package:atproto/core.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 
-/// Authentication repository interface for AT Protocol
+/// Authentication repository interface for AT Protocol using OAuth
 abstract class AuthRepository {
+  /// Future that completes when initialization is done
+  Future<void> get initializationComplete;
+
   /// Checks if the user is authenticated
   bool get isAuthenticated;
 
-  /// Gets the current session
-  Session? get session;
+  /// Gets the current user's DID
+  String? get did;
+
+  /// Gets the current user's handle
+  String? get handle;
 
   /// Gets the AT Protocol client
   ATProto? get atproto;
 
-  /// Attempts to log in a user with the provided credentials
+  /// Initiates the OAuth flow for the given handle
   ///
-  /// [handle] - The user handle
-  /// [password] - The user password
-  /// [authCode] - Optional authentication code for two-factor authentication
-  Future<LoginResult> login(String handle, String password, {String? authCode});
+  /// [handle] - The user handle to authenticate
+  ///
+  /// Returns the authorization URL that the user should be redirected to
+  Future<String> initiateOAuth(String handle);
 
-  /// Registers a new user account
+  /// Initiates the OAuth flow without a handle, using a specific service
   ///
-  /// [handle] - The user handle
-  /// [email] - The user email
-  /// [password] - The user password
-  /// [inviteCode] - Optional invite code for restricted registrations
+  /// [service] - The OAuth service host (e.g., 'pds.sprk.so')
   ///
-  Future<({bool success, String? error})> register(
-    String handle,
-    String email,
-    String password,
-    String? inviteCode,
-  );
+  /// Returns the authorization URL that the user should be redirected to
+  Future<String> initiateOAuthWithService(String service);
+
+  /// Completes the OAuth flow after receiving the callback
+  ///
+  /// [callbackUrl] - The full callback URL with authorization code
+  ///
+  /// Returns the result of the login attempt
+  Future<LoginResult> completeOAuth(String callbackUrl);
 
   /// Logs out the current user
   Future<void> logout();

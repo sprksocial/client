@@ -25,7 +25,7 @@ class MenuActionButton extends StatelessWidget {
   void _showOptionsMenu(BuildContext context) {
     // Check if current user is the author
     final authRepository = GetIt.instance<AuthRepository>();
-    final userDid = authRepository.session?.did;
+    final userDid = authRepository.did;
     final isCurrentUserAuthor =
         userDid != null && authorDid != null && userDid == authorDid;
 

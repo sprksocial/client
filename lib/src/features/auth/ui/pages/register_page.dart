@@ -1,17 +1,17 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/config/app_config.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+/// Registration page that uses OAuth to create an account
 @RoutePage()
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -21,418 +21,195 @@ class RegisterPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterPageState extends ConsumerState<RegisterPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _handleController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _inviteCodeController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  bool _hasReceivedCallback = false;
+  bool _isCompletingOAuth = false;
 
-  bool _isPasswordVisible = false;
-  bool _isRegistering = false;
-  bool _agreedToTerms = false;
-  String? _errorMessage;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _handleController.dispose();
-    _passwordController.dispose();
-    _inviteCodeController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _register() async {
-    setState(() {
-      _isRegistering = true;
-      _errorMessage = null;
-    });
+  Future<void> _initiateOAuth() async {
+    final authNotifier = ref.read(authProvider.notifier);
 
     try {
-      final handle = '${_handleController.text}.sprk.so';
-
-      final authNotifier = ref.read(authProvider.notifier);
-      final result = await authNotifier.register(
-        handle,
-        _emailController.text,
-        _passwordController.text,
-        _inviteCodeController.text.isEmpty ? null : _inviteCodeController.text,
+      // Initiate OAuth flow without handle, using pds.sprk.so service
+      final authUrl = await authNotifier.initiateOAuthWithService(
+        'pds.sprk.so',
       );
 
-      if (result.isSuccess) {
-        // Invalidate and refresh the provider to get fresh state after registration
-        ref.invalidate(hasSparkProfileProvider);
-        final hasProfile = await ref.read(hasSparkProfileProvider.future);
+      if (!mounted) return;
+
+      // Open the browser for OAuth authentication
+      String callbackUrl;
+      try {
+        callbackUrl = await FlutterWebAuth2.authenticate(
+          url: authUrl,
+          callbackUrlScheme: 'so.sprk',
+        );
+      } on PlatformException catch (e) {
+        if (e.code == 'CANCELED') {
+          // User cancelled the OAuth flow - reset loading state
+          if (!mounted) return;
+          setState(() {
+            _hasReceivedCallback = false;
+            _isCompletingOAuth = false;
+          });
+          authNotifier.resetOAuthState();
+          return;
+        }
+        // Re-throw other platform exceptions to be handled below
+        rethrow;
+      }
+
+      if (!mounted) return;
+
+      // Mark that we've received the callback - now we're completing OAuth
+      setState(() {
+        _hasReceivedCallback = true;
+        _isCompletingOAuth = true;
+      });
+
+      // Complete the OAuth flow with the callback URL
+      final completeResult = await authNotifier.completeOAuth(callbackUrl);
+
+      if (!mounted) return;
+
+      if (completeResult.isSuccess) {
+        final hasSparkProfile = await ref
+            .read(onboardingRepositoryProvider)
+            .hasSparkProfile();
+
         if (!mounted) return;
 
-        if (hasProfile) {
+        if (hasSparkProfile) {
           // Sync preferences from server before navigating to feed
-          // This ensures feeds are loaded properly after registration
           await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
 
           if (!mounted) return;
 
-          context.router.replace(const FeedsRoute());
+          context.router.replaceAll([const FeedsRoute()]);
         } else {
-          context.router.replace(const OnboardingRoute());
+          context.router.replaceAll([const OnboardingRoute()]);
         }
       } else {
+        // OAuth completion failed - reset callback state
         if (!mounted) return;
         setState(() {
-          _isRegistering = false;
-          _errorMessage = result.error;
+          _hasReceivedCallback = false;
+          _isCompletingOAuth = false;
         });
       }
     } catch (e) {
+      // Reset loading state for any errors
       if (!mounted) return;
       setState(() {
-        _isRegistering = false;
-        _errorMessage = 'An error occurred: $e';
+        _hasReceivedCallback = false;
+        _isCompletingOAuth = false;
       });
-    }
-  }
-
-  bool _isFormValid() {
-    return !AppConfig.signupsDisabled &&
-        _emailController.text.isNotEmpty &&
-        _handleController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty &&
-        _agreedToTerms;
-  }
-
-  Future<void> _launchUrl(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        await launchUrl(uri);
-      }
-    } catch (e) {
-      // Silently handle URL launch errors
+      final errorMessage = e is PlatformException
+          ? 'Sign up failed: ${e.message ?? e.code}'
+          : 'Sign up failed: $e';
+      authNotifier.resetOAuthState(error: errorMessage);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(
+      authProvider.select((state) => state.isLoading),
+    );
+    final error = ref.watch(authProvider.select((state) => state.error));
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Form(
-              key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
-                children: [
-                  const SizedBox(height: 24),
-                  Text(
-                    'Create Account',
-                    style: AppTypography.displaySmallBold.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  if (AppConfig.signupsDisabled) ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            FluentIcons.warning_24_regular,
-                            color: colorScheme.error,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'New account registration is currently disabled '
-                              'while we correct issues in our system. '
-                              'We are working to remedy this as soon as '
-                              'possible.',
-                              style: AppTypography.textSmallMedium.copyWith(
-                                color: colorScheme.error,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: 'Your email address',
-                      prefixIcon: Icon(
-                        FluentIcons.mail_24_regular,
-                        color: colorScheme.primary,
-                      ),
-                      filled: true,
-                      fillColor: colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.outline),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.primary),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.error),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.error),
-                      ),
-                    ),
-                    style: AppTypography.textMediumMedium.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _handleController,
-                    decoration: InputDecoration(
-                      hintText: 'username',
-                      prefixIcon: Icon(
-                        FluentIcons.mention_24_regular,
-                        color: colorScheme.primary,
-                      ),
-                      suffixIcon: Padding(
-                        padding: const EdgeInsets.only(right: 16),
-                        child: Center(
-                          widthFactor: 1,
-                          child: Text(
-                            '.sprk.so',
-                            style: AppTypography.textMediumMedium.copyWith(
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.outline),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.primary),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.error),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.error),
-                      ),
-                    ),
-                    style: AppTypography.textMediumMedium.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-
-                  const SizedBox(height: 24),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: !_isPasswordVisible,
-                    decoration: InputDecoration(
-                      hintText: 'Your password',
-                      prefixIcon: Icon(
-                        FluentIcons.key_24_regular,
-                        color: colorScheme.primary,
-                      ),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                        icon: Icon(
-                          _isPasswordVisible
-                              ? FluentIcons.eye_off_24_regular
-                              : FluentIcons.eye_24_regular,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.outline),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.primary),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.error),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: colorScheme.error),
-                      ),
-                    ),
-                    style: AppTypography.textMediumMedium.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    onChanged: (_) => setState(() {}),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 24),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            FluentIcons.warning_24_regular,
-                            color: colorScheme.error,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: AppTypography.textSmallMedium.copyWith(
-                                color: colorScheme.error,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Checkbox(
-                        value: _agreedToTerms,
-                        onChanged: (value) {
-                          setState(() {
-                            _agreedToTerms = value ?? false;
-                          });
-                        },
-                        activeColor: colorScheme.primary,
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: RichText(
-                            text: TextSpan(
-                              style: AppTypography.textSmallMedium.copyWith(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              // Main content - centered
+              Expanded(
+                child: Center(
+                  child: _isCompletingOAuth
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Completing sign up...',
+                              style: AppTypography.textMediumMedium.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
-                              children: [
-                                const TextSpan(text: 'I agree to the '),
-                                TextSpan(
-                                  text: 'Terms of Service',
-                                  style: AppTypography.textSmallMedium.copyWith(
-                                    color: colorScheme.primary,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () =>
-                                        _launchUrl('https://sprk.so/terms'),
-                                ),
-                                const TextSpan(text: ' and '),
-                                TextSpan(
-                                  text: 'Privacy Policy',
-                                  style: AppTypography.textSmallMedium.copyWith(
-                                    color: colorScheme.primary,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () =>
-                                        _launchUrl('https://sprk.so/privacy'),
-                                ),
-                                const TextSpan(text: '.'),
-                              ],
+                              textAlign: TextAlign.center,
                             ),
-                          ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Spark logo
+                            SvgPicture.asset(
+                              'images/sprk.svg',
+                              height: 100,
+                              width: 100,
+                              package: 'assets',
+                              colorFilter: isDarkMode
+                                  ? null
+                                  : const ColorFilter.mode(
+                                      Colors.black,
+                                      BlendMode.srcIn,
+                                    ),
+                            ),
+                            const SizedBox(height: 32),
+                            // Welcome text
+                            Text(
+                              'Welcome!',
+                              style: AppTypography.displaySmallBold.copyWith(
+                                color: colorScheme.onSurface,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Share videos, connect with friends,\nand express yourself freely.',
+                              style: AppTypography.textMediumMedium.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                height: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (error != null) ...[
+                              const SizedBox(height: 24),
+                              Text(
+                                error,
+                                style: AppTypography.textSmallMedium.copyWith(
+                                  color: colorScheme.error,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  if (_isRegistering)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  else
-                    LongButton(
-                      label: 'Create Account',
-                      onPressed: _isFormValid() ? _register : null,
-                    ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account?',
-                        style: AppTypography.textMediumMedium.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      TextButton(
-                        onPressed: () =>
-                            context.router.push(const LoginRoute()),
-                        child: Text(
-                          'Sign in',
-                          style: AppTypography.textMediumBold.copyWith(
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
+              // Buttons at the bottom
+              if (!_hasReceivedCallback) ...[
+                Opacity(
+                  opacity: isLoading ? 0.5 : 1.0,
+                  child: LongButton(
+                    label: 'Get Started',
+                    onPressed: isLoading ? null : _initiateOAuth,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                LongButton(
+                  label: 'I already have an account',
+                  variant: LongButtonVariant.regular,
+                  onPressed: () => context.router.push(const LoginRoute()),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ],
           ),
         ),
       ),

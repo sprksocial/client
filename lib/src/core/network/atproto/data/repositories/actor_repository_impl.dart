@@ -52,9 +52,11 @@ class ActorRepositoryImpl implements ActorRepository {
         _logger
           ..e('Failed to retrieve profile for DID: $did', error: e)
           ..i('Trying to get profile from bluesky');
-        final bluesky = bsky.Bluesky.fromSession(
-          _client.authRepository.session!,
-        );
+        final oauthSession = atproto.oAuthSession;
+        if (oauthSession == null) {
+          throw Exception('No OAuth session available');
+        }
+        final bluesky = bsky.Bluesky.fromOAuthSession(oauthSession);
         final profile = await bskyActorAdapter.getProfileFromBluesky(
           bluesky,
           did,
@@ -132,8 +134,13 @@ class ActorRepositoryImpl implements ActorRepository {
       throw Exception('AtProto not initialized');
     }
 
+    final did = _client.authRepository.did;
+    if (did == null) {
+      throw Exception('User DID not available');
+    }
+
     await atproto.repo.putRecord(
-      repo: _client.authRepository.session!.did,
+      repo: did,
       collection: 'so.sprk.actor.profile',
       rkey: 'self',
       record: record.toJson(),
@@ -206,9 +213,11 @@ class ActorRepositoryImpl implements ActorRepository {
         _logger
           ..e('Failed to retrieve profile for DIDs: $dids', error: e)
           ..i('Trying to get profiles from bluesky');
-        final bluesky = bsky.Bluesky.fromSession(
-          _client.authRepository.session!,
-        );
+        final oauthSession = atproto.oAuthSession;
+        if (oauthSession == null) {
+          throw Exception('No OAuth session available');
+        }
+        final bluesky = bsky.Bluesky.fromOAuthSession(oauthSession);
         final profiles = await bskyActorAdapter.getProfilesFromBluesky(
           bluesky,
           dids,

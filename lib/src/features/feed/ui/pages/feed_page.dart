@@ -26,6 +26,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
   final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
   bool _hasInitialized = false;
   bool _isRefreshing = false;
+  FeedActionControllerNotifier? _actionControllerNotifier;
 
   @override
   bool get wantKeepAlive => true;
@@ -41,21 +42,21 @@ class _FeedPageState extends ConsumerState<FeedPage>
       if (!mounted) {
         return;
       }
-      ref
-          .read(feedActionControllerProvider(widget.feed).notifier)
-          .setController(
-            FeedActionController(
-              onAdvanceAndRemove: scrollToNextAndRemovePrevious,
-            ),
-          );
+      // Save the notifier for safe access in dispose()
+      _actionControllerNotifier =
+          ref.read(feedActionControllerProvider(widget.feed).notifier);
+      _actionControllerNotifier!.setController(
+        FeedActionController(
+          onAdvanceAndRemove: scrollToNextAndRemovePrevious,
+        ),
+      );
     });
   }
 
   @override
   void dispose() {
-    ref
-        .read(feedActionControllerProvider(widget.feed).notifier)
-        .clearController();
+    // Use the saved notifier instead of ref to avoid unsafe access during unmount
+    _actionControllerNotifier?.clearController();
     pageController.dispose();
     super.dispose();
   }

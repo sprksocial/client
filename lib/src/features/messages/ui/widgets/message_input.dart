@@ -26,7 +26,9 @@ class MessageInput extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(authProvider).session;
+    final authState = ref.watch(authProvider);
+    final userDid = authState.did ?? '';
+    final userHandle = authState.handle ?? '';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -45,14 +47,14 @@ class MessageInput extends ConsumerWidget {
               children: [
                 UserAvatar(
                   imageUrl: ref
-                      .read(profileProvider(did: session?.did ?? ''))
+                      .read(profileProvider(did: userDid))
                       .when(
                         data: (profileData) =>
                             profileData.profile?.avatar?.toString() ?? '',
                         error: (error, stackTrace) => '',
                         loading: () => '',
                       ),
-                  username: session?.handle ?? '',
+                  username: userHandle,
                   size: 28,
                 ),
                 const SizedBox(width: 8),

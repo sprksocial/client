@@ -60,6 +60,11 @@ class Settings extends _$Settings {
   Future<void> loadSettings() async {
     try {
       _logger.d('Loading settings from server...');
+
+      // Wait for auth to be initialized before trying to load settings
+      final authRepository = _sprkRepository.authRepository;
+      await authRepository.initializationComplete;
+
       final preferences = await _prefRepository.getPreferences();
       final savedFeeds = _getSavedFeedsFromPreferences(preferences);
 

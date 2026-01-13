@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:atproto/atproto.dart';
-import 'package:atproto/core.dart';
+import 'package:atproto_core/atproto_core.dart' show restoreOAuthSession;
+import 'package:atproto_core/atproto_oauth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:spark/src/core/auth/data/models/login_result.dart';
@@ -12,27 +13,44 @@ import 'package:spark/src/core/utils/did_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
-/// Implementation of the authentication repository for AT Protocol
+/// OAuth client metadata URL
+const String _clientMetadataUrl = 'https://sprk.so/client-metadata.json';
+
+/// Implementation of the authentication repository for AT Protocol using OAuth
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl() {
     _logger.i('Initializing AuthRepository');
     _initialize();
   }
-  Session? _session;
+
+  OAuthSession? _oauthSession;
   ATProto? _atProto;
+  String? _did;
+  String? _handle;
+  String? _pdsEndpoint;
+
+  /// Pending OAuth context during authorization flow
+  OAuthContext? _pendingContext;
+  OAuthClient? _oauthClient;
 
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
     'AuthRepository',
   );
 
   final Completer<void> _initCompleter = Completer<void>();
+
+  @override
   Future<void> get initializationComplete => _initCompleter.future;
 
   @override
-  bool get isAuthenticated => _session != null;
+  bool get isAuthenticated =>
+      _oauthSession != null && _atProto != null && _did != null;
 
   @override
-  Session? get session => _session;
+  String? get did => _did;
+
+  @override
+  String? get handle => _handle;
 
   @override
   ATProto? get atproto => _atProto;
@@ -65,284 +83,414 @@ class AuthRepositoryImpl implements AuthRepository {
     return json.decode(response.body) as Map<String, dynamic>;
   }
 
-  String? _extractPdsDomain(Map<String, dynamic> doc) {
+  String? _extractPdsEndpoint(Map<String, dynamic> doc) {
     final services = doc['service'] as List<dynamic>?;
     if (services == null || services.isEmpty) {
       return null;
     }
 
-    final pdsService = services.firstWhere((s) => s['id'] == '#atproto_pds');
+    final pdsService = services.firstWhere(
+      (s) => s['id'] == '#atproto_pds',
+      orElse: () => null,
+    );
 
-    final pdsUrl = pdsService['serviceEndpoint'] as String?;
-    if (pdsUrl == null) {
+    if (pdsService == null) {
       return null;
     }
 
-    return pdsUrl
-        .replaceFirst('http://', '')
-        .replaceFirst('https://', '')
-        .replaceFirst('/', '');
-  }
-
-  bool _isTokenExpired(Jwt token) {
-    return DateTime.now().isAfter(
-      token.exp.subtract(const Duration(minutes: 5)),
-    );
+    return pdsService['serviceEndpoint'] as String?;
   }
 
   Future<void> _loadSavedSession() async {
     try {
-      _logger.d('Loading saved session');
-      final savedSessionJson = await StorageManager.instance.secure.getString(
-        StorageKeys.userSession,
+      _logger.d('Loading saved OAuth session');
+
+      final accessToken = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthAccessToken,
+      );
+      final refreshToken = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthRefreshToken,
+      );
+      final publicKey = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthPublicKey,
+      );
+      final privateKey = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthPrivateKey,
+      );
+      final savedDpopNonce = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthDpopNonce,
+      );
+      final savedDid = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthDid,
+      );
+      final savedHandle = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthHandle,
+      );
+      final savedPdsEndpoint = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthPdsEndpoint,
       );
 
-      if (savedSessionJson == null) {
-        _logger.d('No saved session found');
+      if (accessToken == null ||
+          refreshToken == null ||
+          publicKey == null ||
+          privateKey == null) {
+        _logger.d('No saved OAuth session found');
         return;
       }
 
-      _session = Session.fromJson(
-        json.decode(savedSessionJson) as Map<String, dynamic>,
+      _oauthSession = restoreOAuthSession(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        dPoPNonce: savedDpopNonce,
+        publicKey: publicKey,
+        privateKey: privateKey,
       );
-      if (_session == null) {
-        _logger.w('Failed to parse saved session');
-        return;
-      }
 
-      if (!_session!.active || _isTokenExpired(_session!.accessTokenJwt)) {
-        _logger.i('Session inactive or token expired, refreshing');
-        await _refreshSession();
-        return;
-      }
+      _did = savedDid;
+      _handle = savedHandle;
+      _pdsEndpoint = savedPdsEndpoint;
 
-      _atProto = ATProto.fromSession(_session!);
-      _logger.i('Session loaded successfully for user: ${_session!.handle}');
-    } catch (e) {
-      _logger.e('Error loading saved session', error: e);
-    }
-  }
-
-  Future<void> _refreshSession() async {
-    try {
-      if (_session == null) {
-        _logger.w('No refresh token available');
-        throw Exception('No refresh token available');
-      }
-
-      _logger.i('Refreshing session for user: ${_session!.handle}');
-      var service = _session!.didDoc != null
-          ? _extractPdsDomain(_session!.didDoc!)
+      // Extract just the host from the PDS endpoint
+      final pdsHost = _pdsEndpoint != null
+          ? Uri.parse(_pdsEndpoint!).host
           : null;
 
-      if (service == null) {
-        _logger.d('Fetching DID document');
-        try {
-          final didDoc = await _fetchDidDocument(_session!.did);
-          service = _extractPdsDomain(didDoc);
-        } catch (e) {
-          _logger.e('Failed to fetch DID document during refresh', error: e);
-        }
-      }
-
-      if (service == null) {
-        _logger.e('Could not determine service endpoint');
-        throw Exception('Could not determine service endpoint');
-      }
-
-      _logger.d('Using service endpoint: $service');
-      final response = await refreshSession(
-        service: service,
-        refreshJwt: _session!.refreshJwt,
+      _atProto = ATProto.fromOAuthSession(
+        _oauthSession!,
+        service: pdsHost,
       );
 
-      if (response.status != HttpStatus.ok) {
-        _logger.e('Failed to refresh session: ${response.status}');
-        throw Exception('Failed to refresh session: ${response.status}');
+      // Recreate OAuth client for token refresh
+      if (_pdsEndpoint != null) {
+        final metadata = await getClientMetadata(_clientMetadataUrl);
+        final oauthServer = await resolveOAuthServer(_pdsEndpoint!);
+        _oauthClient = OAuthClient(metadata, service: oauthServer);
+        _logger.d('OAuthClient recreated for session refresh');
       }
 
-      _session = response.data;
-
-      await _saveSession(_session!);
-      _atProto = ATProto.fromSession(_session!);
-      _logger.i('Session refreshed successfully');
+      _logger.i('OAuth session loaded successfully for user: $_handle');
     } catch (e) {
-      _logger.e('Session refresh failed', error: e);
-      await _clearSavedSession();
-      _session = null;
-      _atProto = null;
+      _logger.e('Error loading saved OAuth session', error: e);
     }
   }
 
-  Future<void> _saveSession(Session sessionData) async {
+  Future<void> _saveSession() async {
+    if (_oauthSession == null) return;
+
     try {
-      _logger.d('Saving session for user: ${sessionData.handle}');
-      final sessionJson = sessionData.toJson();
+      _logger.d('Saving OAuth session for user: $_handle');
       await StorageManager.instance.secure.setString(
-        StorageKeys.userSession,
-        json.encode(sessionJson),
+        StorageKeys.oauthAccessToken,
+        _oauthSession!.accessToken,
       );
-      _logger.d('Session saved successfully');
+      await StorageManager.instance.secure.setString(
+        StorageKeys.oauthRefreshToken,
+        _oauthSession!.refreshToken,
+      );
+      await StorageManager.instance.secure.setString(
+        StorageKeys.oauthPublicKey,
+        _oauthSession!.$publicKey,
+      );
+      await StorageManager.instance.secure.setString(
+        StorageKeys.oauthPrivateKey,
+        _oauthSession!.$privateKey,
+      );
+      await StorageManager.instance.secure.setString(
+        StorageKeys.oauthDpopNonce,
+        _oauthSession!.$dPoPNonce,
+      );
+      if (_did != null) {
+        await StorageManager.instance.secure.setString(
+          StorageKeys.oauthDid,
+          _did!,
+        );
+      }
+      if (_handle != null) {
+        await StorageManager.instance.secure.setString(
+          StorageKeys.oauthHandle,
+          _handle!,
+        );
+      }
+      if (_pdsEndpoint != null) {
+        await StorageManager.instance.secure.setString(
+          StorageKeys.oauthPdsEndpoint,
+          _pdsEndpoint!,
+        );
+      }
+      _logger.d('OAuth session saved successfully');
     } catch (e) {
-      _logger.e('Failed to save session', error: e);
-      // Failed to save session
+      _logger.e('Failed to save OAuth session', error: e);
     }
   }
 
   Future<void> _clearSavedSession() async {
     try {
-      _logger.d('Clearing saved session');
+      _logger.d('Clearing saved OAuth session');
+      await StorageManager.instance.secure.remove(StorageKeys.oauthAccessToken);
+      await StorageManager.instance.secure.remove(
+        StorageKeys.oauthRefreshToken,
+      );
+      await StorageManager.instance.secure.remove(StorageKeys.oauthPublicKey);
+      await StorageManager.instance.secure.remove(StorageKeys.oauthPrivateKey);
+      await StorageManager.instance.secure.remove(StorageKeys.oauthDpopNonce);
+      await StorageManager.instance.secure.remove(StorageKeys.oauthDid);
+      await StorageManager.instance.secure.remove(StorageKeys.oauthHandle);
+      await StorageManager.instance.secure.remove(StorageKeys.oauthPdsEndpoint);
+      await StorageManager.instance.secure.remove(
+        StorageKeys.oauthPendingContext,
+      );
+      // Also clear old session format if exists
       await StorageManager.instance.secure.remove(StorageKeys.userSession);
-      _logger.d('Session cleared successfully');
+      _logger.d('OAuth session cleared successfully');
     } catch (e) {
-      _logger.e('Failed to clear session', error: e);
-      // Failed to clear session
+      _logger.e('Failed to clear OAuth session', error: e);
     }
   }
 
   @override
-  Future<LoginResult> login(
-    String handle,
-    String password, {
-    String? authCode,
-  }) async {
+  Future<String> initiateOAuth(String handle) async {
     try {
-      _logger.i('Login attempt for user: $handle');
-      final at = ATProto.anonymous(service: 'pds.sprk.so');
+      _logger.i('Initiating OAuth for handle: $handle');
+
+      // Resolve handle to DID
+      final at = ATProto.anonymous(service: 'public.api.bsky.app');
       _logger.d('Resolving handle: $handle');
       final didRes = await at.identity.resolveHandle(handle: handle);
-      final did = didRes.data.did;
-      _logger
-        ..d('Resolved DID: $did')
-        ..d('Fetching DID document');
-      final didDoc = await _fetchDidDocument(did);
+      final resolvedDid = didRes.data.did;
+      _logger.d('Resolved DID: $resolvedDid');
 
-      final pdsUrl =
-          (didDoc['service'] as List<dynamic>).firstWhere(
-                (s) => s['id'] == '#atproto_pds',
-                orElse: () => '',
-              )['serviceEndpoint']
-              as String?;
+      final didDoc = await _fetchDidDocument(resolvedDid);
+      final pdsEndpoint = _extractPdsEndpoint(didDoc);
 
-      if (pdsUrl == null) {
+      if (pdsEndpoint == null) {
         _logger.e('PDS endpoint not found in DID document');
         throw Exception('PDS endpoint not found in DID document');
       }
 
-      final pdsDomain = Uri.parse(pdsUrl).host;
-      _logger.d('Using PDS domain: $pdsDomain');
+      _logger.d('Found PDS endpoint: $pdsEndpoint');
 
-      try {
-        _logger.d('Creating session');
-        final session = await createSession(
-          identifier: handle,
-          password: password,
-          service: pdsDomain,
-          authFactorToken: authCode,
-        );
+      // Store user info for later
+      _did = resolvedDid;
+      _handle = handle;
+      _pdsEndpoint = pdsEndpoint;
 
-        _session = session.data;
-        if (_session == null) {
-          _logger.e('Failed to create session');
-          throw Exception('Failed to create session');
-        }
+      // Get client metadata
+      final metadata = await getClientMetadata(_clientMetadataUrl);
+      // Resolve OAuth server from PDS endpoint
+      final oauthServer = await resolveOAuthServer(pdsEndpoint);
+      _logger.d('Resolved OAuth server: $oauthServer');
+      _oauthClient = OAuthClient(metadata, service: oauthServer);
 
-        _atProto = ATProto.fromSession(_session!);
-        await _saveSession(_session!);
-        _logger.i('Login successful for user: $handle');
+      // Start OAuth authorization
+      final (authUrl, ctx) = await _oauthClient!.authorize(handle);
+      _pendingContext = ctx;
 
-        return LoginResult.success();
-      } catch (e) {
-        if (e.toString().contains('401') &&
-            (e.toString().contains('sign in code') ||
-                e.toString().contains('sign-in code') ||
-                e.toString().contains('verification code'))) {
-          _logger.i('Authentication code required for user: $handle');
-          return LoginResult.codeRequired(
-            'Authentication code required. Check your email for a code.',
-          );
-        }
-        rethrow;
-      }
+      // Extract state parameter from authorization URL for restoration
+      final authUri = Uri.parse(authUrl.toString());
+      final stateParam = authUri.queryParameters['state'];
+
+      // Store pending context in case app is killed during OAuth flow
+      await StorageManager.instance.secure.setString(
+        StorageKeys.oauthPendingContext,
+        json.encode({
+          'handle': handle,
+          'did': resolvedDid,
+          'pdsEndpoint': pdsEndpoint,
+          'state': stateParam,
+        }),
+      );
+
+      _logger.i('OAuth authorization URL generated');
+      return authUrl.toString();
     } catch (e) {
-      _logger.e('Login failed', error: e);
-      return LoginResult.failed(e.toString());
+      _logger.e('Failed to initiate OAuth', error: e);
+      rethrow;
     }
   }
 
   @override
-  Future<({bool success, String? error})> register(
-    String handle,
-    String email,
-    String password,
-    String? inviteCode,
-  ) async {
+  Future<String> initiateOAuthWithService(String service) async {
     try {
-      _logger.i('Registration attempt for handle: $handle, email: $email');
-      final at = ATProto.anonymous(service: 'pds.sprk.so');
-      _logger.d('Creating account');
-      final createResponse = await at.server.createAccount(
-        handle: handle,
-        email: email,
-        password: password,
-        inviteCode: inviteCode,
+      _logger.i('Initiating OAuth with service: $service');
+
+      // Store service for later
+      _pdsEndpoint = 'https://$service';
+
+      // Get client metadata
+      final metadata = await getClientMetadata(_clientMetadataUrl);
+      _logger.d('Using OAuth server: $service');
+      _oauthClient = OAuthClient(metadata, service: service);
+
+      // Start OAuth authorization without login hint
+      final (authUrl, ctx) = await _oauthClient!.authorize();
+      _pendingContext = ctx;
+
+      // Extract state parameter from authorization URL for restoration
+      final authUri = Uri.parse(authUrl.toString());
+      final stateParam = authUri.queryParameters['state'];
+
+      // Store pending context in case app was killed during OAuth flow
+      await StorageManager.instance.secure.setString(
+        StorageKeys.oauthPendingContext,
+        json.encode({
+          'pdsEndpoint': _pdsEndpoint,
+          'state': stateParam,
+        }),
       );
-      if (createResponse.status != HttpStatus.ok) {
-        _logger.e('Failed to create account: ${createResponse.status}');
-        throw Exception('Failed to create account: ${createResponse.status}');
-      }
 
-      _logger.d('Account created, creating session');
-      await login(handle, password);
-
-      _session = session;
-      if (_session == null) {
-        _logger.e('Failed to create session after registration');
-        throw Exception('Failed to create session');
-      }
-
-      _atProto = ATProto.fromSession(_session!);
-
-      await _saveSession(_session!);
-      _logger.i('Registration successful for user: $handle');
-
-      return (success: true, error: null);
+      _logger.i('OAuth authorization URL generated');
+      return authUrl.toString();
     } catch (e) {
-      _logger.e('Registration failed', error: e);
-      return (success: false, error: e.toString());
+      _logger.e('Failed to initiate OAuth with service', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<LoginResult> completeOAuth(String callbackUrl) async {
+    try {
+      if (_oauthClient == null || _pendingContext == null) {
+        // Try to restore context if app was killed
+        final savedContext = await StorageManager.instance.secure.getString(
+          StorageKeys.oauthPendingContext,
+        );
+        if (savedContext != null) {
+          final contextData = json.decode(savedContext) as Map<String, dynamic>;
+          _handle = contextData['handle'] as String?;
+          _did = contextData['did'] as String?;
+          _pdsEndpoint = contextData['pdsEndpoint'] as String?;
+          final savedState = contextData['state'] as String?;
+
+          // Verify state parameter matches if present
+          if (savedState != null) {
+            final callbackUri = Uri.parse(callbackUrl);
+            final callbackState = callbackUri.queryParameters['state'];
+            if (callbackState != savedState) {
+              _logger.e(
+                'OAuth state mismatch. Expected: $savedState, got: $callbackState',
+              );
+              // Clear invalid context
+              await StorageManager.instance.secure.remove(
+                StorageKeys.oauthPendingContext,
+              );
+              return LoginResult.failed(
+                'OAuth state verification failed. Please try again.',
+              );
+            }
+          }
+
+          // Recreate OAuth client with the correct OAuth server
+          if (_pdsEndpoint != null) {
+            final metadata = await getClientMetadata(_clientMetadataUrl);
+            final pdsUri = Uri.parse(_pdsEndpoint!);
+            final oauthServer = pdsUri.host;
+            _oauthClient = OAuthClient(metadata, service: oauthServer);
+          }
+        }
+
+        // If we still don't have the context after restoration, we cannot proceed
+        // The OAuthContext cannot be serialized, so we need the original context object
+        if (_pendingContext == null) {
+          _logger.e(
+            'No pending OAuth context found. App may have been killed during OAuth flow.',
+          );
+          // Clear any partial context data
+          await StorageManager.instance.secure.remove(
+            StorageKeys.oauthPendingContext,
+          );
+          return LoginResult.failed(
+            'OAuth session was interrupted. Please start the sign-up process again.',
+          );
+        }
+
+        if (_oauthClient == null) {
+          _logger.e('OAuth client could not be restored');
+          return LoginResult.failed('OAuth client initialization failed');
+        }
+      }
+
+      // Complete OAuth flow
+      _oauthSession = await _oauthClient!.callback(
+        callbackUrl,
+        _pendingContext!,
+      );
+
+      // Create ATProto client from OAuth session
+      if (_pdsEndpoint != null) {
+        final pdsHost = Uri.parse(_pdsEndpoint!).host;
+        _atProto = ATProto.fromOAuthSession(
+          _oauthSession!,
+          service: pdsHost,
+        );
+      } else {
+        _logger.e('PDS endpoint is null, cannot create ATProto client');
+        return LoginResult.failed('PDS endpoint not found');
+      }
+
+      // Save session
+      await _saveSession();
+
+      // Clear pending context
+      await StorageManager.instance.secure.remove(
+        StorageKeys.oauthPendingContext,
+      );
+      _pendingContext = null;
+
+      _logger.i('OAuth login successful for user: $_handle');
+      return LoginResult.success();
+    } catch (e, stackTrace) {
+      _logger.e('OAuth callback failed', error: e, stackTrace: stackTrace);
+      return LoginResult.failed(e.toString());
     }
   }
 
   @override
   Future<void> logout() async {
     try {
-      if (_atProto != null) {
-        _logger.i('Logging out user: ${_session?.handle}');
-        await _clearSavedSession();
-        _session = null;
-        _atProto = null;
-        _logger.i('Logout successful');
-      }
+      _logger.i('Logging out user: $_handle');
+      await _clearSavedSession();
+      _oauthSession = null;
+      _atProto = null;
+      _did = null;
+      _handle = null;
+      _pdsEndpoint = null;
+      _oauthClient = null;
+      _pendingContext = null;
+      _logger.i('Logout successful');
     } catch (e) {
       _logger.e('Logout failed', error: e);
-      // Logout failed
     }
   }
 
   @override
   Future<bool> validateSession() async {
-    if (_atProto == null || _session == null) {
+    // Wait for initialization to complete first
+    await initializationComplete;
+
+    if (_atProto == null || _oauthSession == null) {
       _logger.d('No session to validate');
       return false;
     }
 
     try {
-      _logger.d('Validating session for user: ${_session!.handle}');
-      await _atProto!.identity.resolveHandle(handle: _session!.handle);
+      _logger.d('Validating OAuth session for user: $_handle');
+      await _atProto!.identity.resolveHandle(handle: _handle ?? '');
       _logger.d('Session validation successful');
       return true;
     } catch (e) {
-      _logger.w('Session validation failed, logging out', error: e);
+      _logger.w(
+        'Session validation failed, attempting token refresh',
+        error: e,
+      );
+
+      // Try to refresh the token before giving up
+      final refreshed = await refreshToken();
+      if (refreshed) {
+        _logger.i('Token refresh successful, session is now valid');
+        return true;
+      }
+
+      _logger.w('Token refresh failed, logging out');
       await logout();
       return false;
     }
@@ -351,13 +499,39 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<bool> refreshToken() async {
     try {
-      _logger.i('Refreshing token');
-      await _refreshSession();
-      final result = _session != null;
-      _logger.i(result ? 'Token refresh successful' : 'Token refresh failed');
-      return result;
+      if (_oauthSession == null || _oauthClient == null) {
+        _logger.w('No OAuth session or client to refresh');
+
+        // Try to recreate OAuth client if we have a session but no client
+        if (_oauthSession != null && _pdsEndpoint != null) {
+          final metadata = await getClientMetadata(_clientMetadataUrl);
+          final oauthServer = await resolveOAuthServer(_pdsEndpoint!);
+          _oauthClient = OAuthClient(metadata, service: oauthServer);
+          _logger.d('OAuthClient recreated with service: $oauthServer');
+        } else {
+          _logger.w('Cannot refresh: missing session or PDS endpoint');
+          return false;
+        }
+      }
+
+      _logger.i('Refreshing OAuth token');
+      final refreshedSession = await _oauthClient!.refresh(_oauthSession!);
+      _oauthSession = refreshedSession;
+
+      final pdsHost = _pdsEndpoint != null
+          ? Uri.parse(_pdsEndpoint!).host
+          : null;
+      _atProto = ATProto.fromOAuthSession(
+        _oauthSession!,
+        service: pdsHost,
+      );
+
+      await _saveSession();
+      _logger.i('OAuth token refresh successful');
+      return true;
     } catch (e) {
-      _logger.e('Token refresh failed', error: e);
+      _logger.e('OAuth token refresh failed', error: e);
+      // Don't logout here - let the caller decide what to do
       return false;
     }
   }

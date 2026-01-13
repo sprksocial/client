@@ -147,9 +147,11 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
     if (bluesky) {
       _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
-      final blueskyClient = bsky.Bluesky.fromSession(
-        _client.authRepository.session!,
-      );
+      final oauthSession = _client.authRepository.atproto?.oAuthSession;
+      if (oauthSession == null) {
+        throw Exception('No OAuth session available');
+      }
+      final blueskyClient = bsky.Bluesky.fromOAuthSession(oauthSession);
       final posts = await blueskyClient.feed.getPosts(uris: uris);
 
       // Use adapter to process Bluesky posts
@@ -320,9 +322,13 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       try {
+        final oauthSession = _client.authRepository.atproto?.oAuthSession;
+        if (oauthSession == null) {
+          throw Exception('No OAuth session available');
+        }
         final resultBsky =
-            await bsky.Bluesky.fromSession(
-              _client.authRepository.session!,
+            await bsky.Bluesky.fromOAuthSession(
+              oauthSession,
             ).feed.getAuthorFeed(
               actor: actorUri.hostname,
               limit: limit,
@@ -1098,7 +1104,7 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('Not authenticated');
       }
       final authAtProto = _client.authRepository.atproto;
-      if (authAtProto == null || authAtProto.session == null) {
+      if (authAtProto == null || authAtProto.oAuthSession == null) {
         throw Exception('AtProto not initialized');
       }
 
@@ -1391,9 +1397,11 @@ class FeedRepositoryImpl implements FeedRepository {
 
       // Get the post thread
       if (bluesky) {
-        final bluesky = bsky.Bluesky.fromSession(
-          _client.authRepository.session!,
-        );
+        final oauthSession = atproto.oAuthSession;
+        if (oauthSession == null) {
+          throw Exception('No OAuth session available');
+        }
+        final bluesky = bsky.Bluesky.fromOAuthSession(oauthSession);
         final response = await bluesky.feed.getPostThread(
           uri: uri,
           depth: depth,

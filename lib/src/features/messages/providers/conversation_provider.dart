@@ -19,7 +19,7 @@ class Conversation extends _$Conversation {
 
     // Load conversation and initial messages
     final convo = await repo.getConversation(convoId);
-    final meDid = GetIt.I<AuthRepository>().session?.did;
+    final meDid = GetIt.I<AuthRepository>().did;
     final otherDid = convo.members.firstWhere(
       (d) => d != meDid,
       orElse: () => convo.members.first,

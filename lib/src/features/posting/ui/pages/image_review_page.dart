@@ -208,7 +208,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
               final postRef = await _uploadImagesAndPost();
               if (context.mounted && postRef != null) {
                 context.router.popUntilRoot();
-                final did = ref.read(sessionProvider)?.did;
+                final did = ref.read(currentDidProvider);
                 if (did != null) {
                   ref
                     ..invalidate(

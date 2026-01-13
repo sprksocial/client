@@ -3,10 +3,11 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/utils/uppercase_text_formatter.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
@@ -21,15 +22,10 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _handleController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _authCodeController = TextEditingController();
-  bool _obscurePassword = true;
   final _formKey = GlobalKey<FormState>();
-  bool _showAuthCodeField = false;
-
   final _handleFocusNode = FocusNode();
-  final _passwordFocusNode = FocusNode();
-  final _authCodeFocusNode = FocusNode();
+  bool _hasReceivedCallback = false;
+  bool _isCompletingOAuth = false;
 
   @override
   void initState() {
@@ -42,50 +38,97 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   void dispose() {
     _handleController.dispose();
-    _passwordController.dispose();
-    _authCodeController.dispose();
     _handleFocusNode.dispose();
-    _passwordFocusNode.dispose();
-    _authCodeFocusNode.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _initiateOAuth() async {
     if (_formKey.currentState?.validate() ?? false) {
       final authNotifier = ref.read(authProvider.notifier);
+      final handle = _handleController.text.trim();
 
-      final result = await authNotifier.login(
-        _handleController.text.trim(),
-        _passwordController.text,
-        authCode: _showAuthCodeField ? _authCodeController.text.trim() : null,
-      );
-
-      if (!mounted) return;
-
-      if (result.isSuccess) {
-        TextInput.finishAutofillContext();
-        final hasSparkProfile = await ref
-            .read(onboardingRepositoryProvider)
-            .hasSparkProfile();
+      try {
+        // Initiate OAuth flow - this returns the authorization URL
+        final authUrl = await authNotifier.initiateOAuth(handle);
 
         if (!mounted) return;
 
-        if (hasSparkProfile) {
-          // Sync preferences from server before navigating to feed
-          // This ensures feeds are loaded properly after login
-          await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
+        // Open the browser for OAuth authentication
+        String callbackUrl;
+        try {
+          callbackUrl = await FlutterWebAuth2.authenticate(
+            url: authUrl,
+            callbackUrlScheme: 'so.sprk',
+            options: const FlutterWebAuth2Options(
+              intentFlags: ephemeralIntentFlags,
+            ),
+          );
+        } on PlatformException catch (e) {
+          if (e.code == 'CANCELED') {
+            // User cancelled the OAuth flow - reset loading state
+            if (!mounted) return;
+            setState(() {
+              _hasReceivedCallback = false;
+              _isCompletingOAuth = false;
+            });
+            authNotifier.resetOAuthState();
+            return;
+          }
+          // Re-throw other platform exceptions to be handled below
+          rethrow;
+        }
+
+        if (!mounted) return;
+
+        // Mark that we've received the callback - now we're completing OAuth
+        setState(() {
+          _hasReceivedCallback = true;
+          _isCompletingOAuth = true;
+        });
+
+        // Complete the OAuth flow with the callback URL
+        final completeResult = await authNotifier.completeOAuth(callbackUrl);
+
+        if (!mounted) return;
+
+        if (completeResult.isSuccess) {
+          final hasSparkProfile = await ref
+              .read(onboardingRepositoryProvider)
+              .hasSparkProfile();
 
           if (!mounted) return;
 
-          context.router.replaceAll([const FeedsRoute()]);
+          if (hasSparkProfile) {
+            // Sync preferences from server before navigating to feed
+            await ref
+                .read(settingsProvider.notifier)
+                .syncPreferencesFromServer();
+
+            if (!mounted) return;
+
+            context.router.replaceAll([const FeedsRoute()]);
+          } else {
+            context.router.replaceAll([const OnboardingRoute()]);
+          }
         } else {
-          context.router.replaceAll([const OnboardingRoute()]);
+          // OAuth completion failed - reset callback state to show input again
+          if (!mounted) return;
+          setState(() {
+            _hasReceivedCallback = false;
+            _isCompletingOAuth = false;
+          });
         }
-      } else if (result.isCodeRequired) {
+      } catch (e) {
+        // Reset loading state for any errors
+        if (!mounted) return;
         setState(() {
-          _showAuthCodeField = true;
+          _hasReceivedCallback = false;
+          _isCompletingOAuth = false;
         });
-        _authCodeFocusNode.requestFocus();
+        final errorMessage = e is PlatformException
+            ? 'Login failed: ${e.message ?? e.code}'
+            : 'Login failed: $e';
+        authNotifier.resetOAuthState(error: errorMessage);
       }
     }
   }
@@ -101,34 +144,44 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Sign In',
-                    style: AppTypography.displaySmallBold.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!_hasReceivedCallback) ...[
+                        Text(
+                          'Sign In',
+                          style: AppTypography.displaySmallBold.copyWith(
+                            color: colorScheme.onSurface,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Enter your handle to continue with OAuth',
+                          style: AppTypography.textMediumMedium.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                      ],
 
-                  AutofillGroup(
-                    child: Column(
-                      children: [
+                      if (!_hasReceivedCallback) ...[
                         TextFormField(
                           controller: _handleController,
                           focusNode: _handleFocusNode,
+                          enabled: !isLoading,
                           decoration: InputDecoration(
-                            hintText: 'Handle',
+                            hintText: 'jerry.sprk.so',
                             prefixIcon: Icon(
                               FluentIcons.person_24_regular,
                               color: colorScheme.primary,
@@ -163,185 +216,85 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           style: AppTypography.textMediumMedium.copyWith(
                             color: colorScheme.onSurface,
                           ),
-                          textInputAction: TextInputAction.next,
+                          textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.emailAddress,
                           autofillHints: const [
                             AutofillHints.username,
                             AutofillHints.email,
                           ],
-                          onEditingComplete: _passwordFocusNode.requestFocus,
+                          onEditingComplete: _initiateOAuth,
                         ),
-                        const SizedBox(height: 16),
-
-                        TextFormField(
-                          controller: _passwordController,
-                          focusNode: _passwordFocusNode,
-                          decoration: InputDecoration(
-                            hintText: 'Password',
-                            prefixIcon: Icon(
-                              FluentIcons.lock_closed_24_regular,
-                              color: colorScheme.primary,
-                            ),
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                              icon: Icon(
-                                _obscurePassword
-                                    ? FluentIcons.eye_24_regular
-                                    : FluentIcons.eye_off_24_regular,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: colorScheme.surface,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: colorScheme.outline,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: colorScheme.error),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: colorScheme.error),
-                            ),
-                          ),
-                          style: AppTypography.textMediumMedium.copyWith(
-                            color: colorScheme.onSurface,
-                          ),
-                          obscureText: _obscurePassword,
-                          textInputAction: TextInputAction.done,
-                          keyboardType: TextInputType.visiblePassword,
-                          autofillHints: const [AutofillHints.password],
-                          onEditingComplete: () {
-                            if (_showAuthCodeField) {
-                              _authCodeFocusNode.requestFocus();
-                            } else {
-                              TextInput.finishAutofillContext();
-                              _login();
-                            }
-                          },
-                        ),
-
-                        if (_showAuthCodeField) ...[
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _authCodeController,
-                            focusNode: _authCodeFocusNode,
-                            decoration: InputDecoration(
-                              hintText: 'Enter code (e.g., ABCD1-ZXC45)',
-                              helperText: 'Enter the code from your email',
-                              prefixIcon: Icon(
-                                FluentIcons.key_24_regular,
-                                color: colorScheme.primary,
-                              ),
-                              filled: true,
-                              fillColor: colorScheme.surface,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: colorScheme.outline,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: colorScheme.primary,
-                                ),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: colorScheme.error,
-                                ),
-                              ),
-                            ),
-                            style: AppTypography.textMediumMedium.copyWith(
-                              color: colorScheme.onSurface,
-                            ),
-                            textInputAction: TextInputAction.done,
-                            keyboardType: TextInputType.text,
-                            textCapitalization: TextCapitalization.characters,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[A-Za-z0-9\-]'),
-                              ),
-                              const UpperCaseTextFormatter(),
-                            ],
-                            onEditingComplete: () {
-                              TextInput.finishAutofillContext();
-                              _login();
-                            },
-                          ),
-                        ],
+                        const SizedBox(height: 24),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
 
-                  if (error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        switch (error) {
-                          final String e
-                              when e.contains('must be a valid handle') =>
-                            'Invalid handle',
-                          final String e
-                              when e.contains('identifier or password') =>
-                            'Invalid handle or password',
-                          _ => error,
-                        },
-                        style: AppTypography.textSmallMedium.copyWith(
-                          color: colorScheme.error,
+                      if (error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            switch (error) {
+                              final String e
+                                  when e.contains('must be a valid handle') =>
+                                'Invalid handle',
+                              final String e
+                                  when e.contains('Failed to resolve') =>
+                                'Could not find this handle',
+                              _ => error,
+                            },
+                            style: AppTypography.textSmallMedium.copyWith(
+                              color: colorScheme.error,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
 
-                  if (isLoading)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
-                  else
-                    LongButton(
-                      label: _showAuthCodeField ? 'Verify Code' : 'Login',
-                      onPressed: _login,
-                    ),
-                ],
+                      if (_isCompletingOAuth)
+                        Column(
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Completing sign in...',
+                              style: AppTypography.textMediumMedium.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        )
+                      else if (!_hasReceivedCallback)
+                        Opacity(
+                          opacity: isLoading ? 0.5 : 1.0,
+                          child: LongButton(
+                            label: 'Continue',
+                            onPressed: isLoading ? null : _initiateOAuth,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+          // Back button in top-left corner
+          Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: IconButton(
+                  icon: AppIcons.chevronleft(color: colorScheme.onSurface),
+                  onPressed: () {
+                    if (mounted) {
+                      context.router.maybePop();
+                    }
+                  },
+                  tooltip: 'Back',
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

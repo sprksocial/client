@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/identity_repository.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
 import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
@@ -209,12 +210,31 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
         final profile = state.profile;
         if (profile == null) {
+          // Check if this is the current user's profile to show settings button
+          final currentUserDid = ref.read(currentDidProvider);
+          final isCurrentUser = currentUserDid != null &&
+              currentUserDid == widget.did;
+          final colorScheme = theme.colorScheme;
+
           return ErrorScreen(
             context: context,
             message: 'Profile not found',
             stackTrace: null,
             onRetry: notifier.refreshProfile,
             theme: theme,
+            appBarActions: isCurrentUser
+                ? [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () =>
+                            context.router.push(const ProfileSettingsRoute()),
+                        icon: AppIcons.gear(color: colorScheme.onSurface),
+                      ),
+                    ),
+                  ]
+                : null,
           );
         }
         final isCurrentUser = notifier.isCurrentUser();
@@ -506,13 +526,34 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           scrollController: _scrollController,
         );
       },
-      error: (error, stackTrace) => ErrorScreen(
-        context: context,
-        message: error.toString(),
-        stackTrace: stackTrace,
-        onRetry: notifier.refreshProfile,
-        theme: theme,
-      ),
+      error: (error, stackTrace) {
+        // Check if this is the current user's profile to show settings button
+        final currentUserDid = ref.read(currentDidProvider);
+        final isCurrentUser = currentUserDid != null &&
+            currentUserDid == widget.did;
+        final colorScheme = theme.colorScheme;
+
+        return ErrorScreen(
+          context: context,
+          message: error.toString(),
+          stackTrace: stackTrace,
+          onRetry: notifier.refreshProfile,
+          theme: theme,
+          appBarActions: isCurrentUser
+              ? [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () =>
+                          context.router.push(const ProfileSettingsRoute()),
+                      icon: AppIcons.gear(color: colorScheme.onSurface),
+                    ),
+                  ),
+                ]
+              : null,
+        );
+      },
     );
   }
 
@@ -603,6 +644,7 @@ class ErrorScreen extends StatelessWidget {
     required this.stackTrace,
     required this.onRetry,
     required this.theme,
+    this.appBarActions,
     super.key,
   });
 
@@ -611,6 +653,7 @@ class ErrorScreen extends StatelessWidget {
   final StackTrace? stackTrace;
   final VoidCallback onRetry;
   final ThemeData theme;
+  final List<Widget>? appBarActions;
 
   @override
   Widget build(BuildContext context) {
@@ -629,6 +672,7 @@ class ErrorScreen extends StatelessWidget {
             ? theme.colorScheme.surfaceContainerHighest
             : theme.colorScheme.surface,
         elevation: 0,
+        actions: appBarActions,
       ),
       body: Center(
         child: Column(

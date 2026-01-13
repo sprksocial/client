@@ -53,20 +53,26 @@ class SprkRepositoryImpl implements SprkRepository {
   /// Execute API request with token expiration handling
   /// This method performs a single retry after refreshing the token.
   /// To prevent infinite loops, it does NOT call executeWithRetry recursively.
+  ///
+  /// Note: DPoP nonce challenges (401 with dpop-nonce header) are handled
+  /// automatically by the atproto library's Challenge class. This method
+  /// only handles actual token expiration.
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) async {
     try {
       return await apiCall();
     } catch (e) {
       // Check if the error is a token expired error
+      // Only refresh for actual expiration, not for DPoP nonce challenges
+      // (those are handled by the atproto library automatically)
       final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('400') && (errorStr.contains('expired'))) {
+      if (errorStr.contains('401') && errorStr.contains('unauthorized')) {
         _logger.i('Token expired, attempting to refresh');
         // Try to refresh the token
         final refreshed = await _authRepository.refreshToken();
         if (!refreshed) {
           _logger.e('Failed to refresh expired token');
-          throw Exception('Failed to refresh expired token');
+          throw Exception('Session expired. Please log in again.');
         }
 
         _logger.i('Token refreshed successfully, retrying API call once');

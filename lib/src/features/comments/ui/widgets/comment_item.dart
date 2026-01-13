@@ -194,7 +194,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                           builder: (context) {
                             final authRepository =
                                 GetIt.instance<AuthRepository>();
-                            final userDid = authRepository.session?.did;
+                            final userDid = authRepository.did;
                             final isCurrentUserAuthor =
                                 userDid == commentState.thread.post.author.did;
                             final theme = Theme.of(context);

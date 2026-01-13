@@ -72,8 +72,8 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
 
       final authRepository = GetIt.instance<AuthRepository>();
 
-      final session = authRepository.session;
-      if (session == null || session.did.isEmpty) {
+      final did = authRepository.did;
+      if (did == null || did.isEmpty) {
         throw Exception('Not authenticated');
       }
 
@@ -81,8 +81,6 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       if (atproto == null) {
         throw Exception('AtProto not initialized');
       }
-
-      final did = session.did;
 
       logger.i('Fetching Spark posts for DID: $did');
 

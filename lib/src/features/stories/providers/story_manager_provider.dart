@@ -49,7 +49,7 @@ class StoryManager extends _$StoryManager {
 
   Future<StoryManagerState> _loadInitial() async {
     try {
-      final did = _sprk.authRepository.session?.did;
+      final did = _sprk.authRepository.did;
       if (did == null) {
         return StoryManagerState(stories: const [], error: 'Not authenticated');
       }

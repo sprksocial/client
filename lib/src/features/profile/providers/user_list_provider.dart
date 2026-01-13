@@ -44,9 +44,9 @@ class UserList extends _$UserList {
   final AuthRepository _authRepository = sl<AuthRepository>();
 
   bool isCurrentUser(String did) {
-    final session = _authRepository.session;
-    if (session == null) return false;
-    return session.did == did;
+    final currentDid = _authRepository.did;
+    if (currentDid == null) return false;
+    return currentDid == did;
   }
 
   @override
@@ -87,9 +87,9 @@ class UserList extends _$UserList {
         .toList();
 
     if (didsToFetch.isNotEmpty) {
-      final session = _authRepository.session;
-      if (session != null) {
-        final bskyClient = bsky.Bluesky.fromSession(session);
+      final atproto = _authRepository.atproto;
+      if (atproto != null && atproto.oAuthSession != null) {
+        final bskyClient = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
         final fetchedProfiles = <dynamic>[];
 
         for (var i = 0; i < didsToFetch.length; i += 25) {

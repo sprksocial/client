@@ -34,18 +34,18 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
   void _onScroll() {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      final session = ref.read(sessionProvider);
-      if (session != null) {
-        ref.read(blocksProvider(did: session.did).notifier).fetchMore();
+      final currentDid = ref.read(currentDidProvider);
+      if (currentDid != null) {
+        ref.read(blocksProvider(did: currentDid).notifier).fetchMore();
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final session = ref.watch(sessionProvider);
+    final currentDid = ref.watch(currentDidProvider);
 
-    if (session == null) {
+    if (currentDid == null) {
       return Scaffold(
         appBar: AppBar(
           leading: const AppLeadingButton(tooltip: 'Back'),
@@ -57,7 +57,7 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
       );
     }
 
-    final blocksAsync = ref.watch(blocksProvider(did: session.did));
+    final blocksAsync = ref.watch(blocksProvider(did: currentDid));
 
     return Scaffold(
       appBar: AppBar(
@@ -66,13 +66,13 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(blocksProvider(did: session.did));
-          await ref.read(blocksProvider(did: session.did).future);
+          ref.invalidate(blocksProvider(did: currentDid));
+          await ref.read(blocksProvider(did: currentDid).future);
         },
         child: blocksAsync.when(
           data: (blocksList) => BlocksListView(
             users: blocksList.profiles,
-            did: session.did,
+            did: currentDid,
             scrollController: _scrollController,
             isFetchingMore: blocksList.isFetchingMore,
           ),

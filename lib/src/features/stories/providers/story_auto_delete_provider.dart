@@ -49,7 +49,7 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
   final sprk = GetIt.I<SprkRepository>();
   final logger = GetIt.I<LogService>().getLogger('StoryAutoDeleteExec');
   final atproto = sprk.authRepository.atproto;
-  final did = sprk.authRepository.session?.did;
+  final did = sprk.authRepository.did;
   if (atproto == null || did == null) return;
 
   try {

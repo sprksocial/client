@@ -37,6 +37,7 @@ dependencies:
   flutter_riverpod: ^3.0.3
   flutter_secure_storage: ^10.0.0
   flutter_svg: ^2.2.0
+  flutter_web_auth_2: ^4.1.0
   fonts:
     path: fonts
   freezed: ^3.2.3
@@ -67,6 +68,14 @@ dependencies:
   url_launcher: ^6.2.5
   video_player: ^2.10.0
   web_socket_channel: ^3.0.3
+
+dependency_overrides:
+  atproto:
+    path: ../atproto.dart/packages/atproto
+  atproto_core:
+    path: ../atproto.dart/packages/atproto_core
+  atproto_oauth:
+    path: ../atproto.dart/packages/atproto_oauth
 
 dev_dependencies:
   auto_route_generator: ^10.2.3

@@ -73,8 +73,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
               ),
             ),
             data: (data) {
-              final session = ref.read(sessionProvider);
-              final currentUserDid = session?.did;
+              final currentUserDid = ref.read(currentDidProvider);
               final authorsList = data.storiesByAuthor.entries.toList();
 
               return ListView.builder(

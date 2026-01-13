@@ -38,9 +38,9 @@ class Blocks extends _$Blocks {
         .toList();
 
     if (didsToFetch.isNotEmpty) {
-      final session = _authRepository.session;
-      if (session != null) {
-        final bskyClient = bsky.Bluesky.fromSession(session);
+      final atproto = _authRepository.atproto;
+      if (atproto != null && atproto.oAuthSession != null) {
+        final bskyClient = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
         final fetchedProfiles = <dynamic>[];
 
         for (var i = 0; i < didsToFetch.length; i += 25) {
