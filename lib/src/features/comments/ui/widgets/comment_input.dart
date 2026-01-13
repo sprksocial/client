@@ -52,7 +52,9 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
     final notifier = ref.read(
       commentInputProvider(textController, imagePicker).notifier,
     );
-    final session = ref.watch(authProvider).session;
+    final authState = ref.watch(authProvider);
+    final userDid = authState.did ?? '';
+    final userHandle = authState.handle ?? '';
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
 
@@ -80,14 +82,14 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
               children: [
                 UserAvatar(
                   imageUrl: ref
-                      .read(profileProvider(did: session?.did ?? ''))
+                      .read(profileProvider(did: userDid))
                       .when(
                         data: (profileData) =>
                             profileData.profile?.avatar?.toString() ?? '',
                         error: (error, stackTrace) => '',
                         loading: () => '',
                       ),
-                  username: session?.handle ?? '',
+                  username: userHandle,
                   size: 28,
                 ),
                 const SizedBox(width: 8),

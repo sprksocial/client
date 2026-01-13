@@ -107,7 +107,7 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final sessionDid = _client.authRepository.session?.did;
+      final sessionDid = _client.authRepository.did;
       if (sessionDid == null) {
         _logger.e('Session DID not available for authenticated user');
         throw Exception('Session DID not available');
@@ -233,7 +233,7 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final sessionDid = _client.authRepository.session?.did;
+      final sessionDid = _client.authRepository.did;
       if (sessionDid == null) {
         _logger.e('Session DID not available for authenticated user');
         throw Exception('Session DID not available');

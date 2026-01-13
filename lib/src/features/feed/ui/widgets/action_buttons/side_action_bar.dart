@@ -356,7 +356,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       builder: (context) => AlertDialog(
         title: const Text('Delete Post'),
         content: const Text(
-          'Are you sure you want to delete this post? This action cannot be undone.',
+          'Are you sure you want to delete this post?'
+          '\nThis action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -387,8 +388,9 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         controller?.onAdvanceAndRemove();
       } else {
         final profileUri = AtUri.parse('at://${currentPost.author.did}');
-        ref.invalidate(profileFeedProvider(profileUri, false));
-        ref.invalidate(profileFeedProvider(profileUri, true));
+        ref
+          ..invalidate(profileFeedProvider(profileUri, false))
+          ..invalidate(profileFeedProvider(profileUri, true));
       }
 
       if (mounted) {
@@ -463,7 +465,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
     final currentPost = _currentPost ?? widget.post;
     final authRepository = GetIt.instance<AuthRepository>();
-    final userDid = authRepository.session?.did;
+    final userDid = authRepository.did;
     final isCurrentUserAuthor =
         userDid != null && userDid == currentPost.author.did;
 

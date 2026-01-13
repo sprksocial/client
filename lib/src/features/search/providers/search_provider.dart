@@ -193,7 +193,7 @@ class Search extends _$Search {
       _logger.w('User not authenticated, cannot check if current user');
       return false;
     }
-    final currentDid = authRepo.session?.did;
+    final currentDid = authRepo.did;
     return did == currentDid;
   }
 }

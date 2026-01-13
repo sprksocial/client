@@ -94,7 +94,7 @@ class RepoRepositoryImpl implements RepoRepository {
       }
 
       // Use provided repo DID or fall back to session DID
-      final repoDid = repo ?? _client.authRepository.session?.did;
+      final repoDid = repo ?? _client.authRepository.did;
       if (repoDid == null) {
         _logger.e('User session DID not available');
         throw Exception('User session DID not available');
@@ -226,7 +226,7 @@ class RepoRepositoryImpl implements RepoRepository {
       }
 
       final atproto = _client.authRepository.atproto;
-      if (atproto == null || atproto.session == null) {
+      if (atproto == null || atproto.oAuthSession == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       } else if (service != null) {

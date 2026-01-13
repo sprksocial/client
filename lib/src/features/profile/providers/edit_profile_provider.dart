@@ -133,7 +133,7 @@ class EditProfile extends _$EditProfile {
       // save profile in the storage here
 
       // Invalidate the main profile provider to trigger a refresh
-      if (state.profile.did == _authRepository.session?.did) {
+      if (state.profile.did == _authRepository.did) {
         ref.invalidate(profileProvider(did: state.profile.did));
       }
 

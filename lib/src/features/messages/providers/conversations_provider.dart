@@ -21,7 +21,7 @@ class Conversations extends _$Conversations {
     cursor = res.cursor;
 
     // Resolve profiles for the counterpart in each convo
-    final meDid = GetIt.I<AuthRepository>().session?.did;
+    final meDid = GetIt.I<AuthRepository>().did;
     final items = <(ProfileViewDetailed, ConvoView)>[];
     for (final convo in res.conversations) {
       final otherDid = convo.members.firstWhere(

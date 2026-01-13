@@ -10,15 +10,15 @@ class UserProfilePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(sessionProvider);
+    final currentUserDid = ref.watch(currentDidProvider);
 
-    if (currentUser == null) {
+    if (currentUserDid == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view your profile')),
       );
     }
 
     // Use the existing ProfilePage but pass the current user's DID
-    return ProfilePage(did: currentUser.did);
+    return ProfilePage(did: currentUserDid);
   }
 }

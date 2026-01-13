@@ -108,7 +108,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
       if (mounted) {
         context.router.popUntilRoot();
-        final did = ref.read(sessionProvider)?.did;
+        final did = ref.read(currentDidProvider);
         if (did != null) {
           ref
             ..invalidate(profileFeedProvider(AtUri.parse('at://$did'), false))

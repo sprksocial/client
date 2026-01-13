@@ -1,5 +1,4 @@
 import 'package:atproto/atproto.dart';
-import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
@@ -28,11 +27,25 @@ class Auth extends _$Auth {
     _authRepository = ref.watch(authRepositoryProvider);
     _logService = GetIt.instance<LogService>();
 
+    // Schedule state update after initialization completes
+    _initializeState();
+
     return AuthState(
       isAuthenticated: _authRepository.isAuthenticated,
-      session: _authRepository.session,
+      did: _authRepository.did,
+      handle: _authRepository.handle,
       atproto: _authRepository.atproto,
     );
+  }
+
+  /// Waits for repository initialization and updates state
+  Future<void> _initializeState() async {
+    try {
+      await _authRepository.initializationComplete;
+      _updateState();
+    } catch (e) {
+      _logger.e('Failed to initialize auth state', error: e);
+    }
   }
 
   SparkLogger get _logger => _logService.getLogger('AuthNotifier');
@@ -41,33 +54,79 @@ class Auth extends _$Auth {
   void _updateState() {
     state = AuthState(
       isAuthenticated: _authRepository.isAuthenticated,
-      session: _authRepository.session,
+      did: _authRepository.did,
+      handle: _authRepository.handle,
       atproto: _authRepository.atproto,
       isLoading: state.isLoading,
       error: state.error,
     );
   }
 
-  /// Attempts to log in a user with the provided credentials
+  /// Initiates the OAuth flow for the given handle
   ///
-  /// [handle] - The user handle (e.g. username)
-  /// [password] - The user password
-  /// [authCode] - Optional authentication code for two-factor authentication
-  Future<LoginResult> login(
-    String handle,
-    String password, {
-    String? authCode,
-  }) async {
-    _logger.i('Login attempt by service layer');
+  /// [handle] - The user handle to authenticate
+  ///
+  /// Returns the authorization URL that the user should be redirected to
+  Future<String> initiateOAuth(String handle) async {
+    _logger.i('Initiating OAuth for handle: $handle');
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _authRepository.login(
-        handle,
-        password,
-        authCode: authCode,
+      final authUrl = await _authRepository.initiateOAuth(handle);
+      // Don't set isLoading to false here - we're waiting for the callback
+      return authUrl;
+    } catch (e, stackTrace) {
+      _logger.e('OAuth initiation error', error: e, stackTrace: stackTrace);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to start login: $e',
       );
+      rethrow;
+    }
+  }
+
+  /// Initiates the OAuth flow without a handle, using a specific service
+  ///
+  /// [service] - The OAuth service host (e.g., 'pds.sprk.so')
+  ///
+  /// Returns the authorization URL that the user should be redirected to
+  Future<String> initiateOAuthWithService(String service) async {
+    _logger.i('Initiating OAuth with service: $service');
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final authUrl = await _authRepository.initiateOAuthWithService(service);
+      // Don't set isLoading to false here - we're waiting for the callback
+      return authUrl;
+    } catch (e, stackTrace) {
+      _logger.e('OAuth initiation error', error: e, stackTrace: stackTrace);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to start sign up: $e',
+      );
+      rethrow;
+    }
+  }
+
+  /// Resets the OAuth loading state, typically called when the OAuth flow is cancelled or errored
+  ///
+  /// [error] - Optional error message to set. If null, error is cleared.
+  void resetOAuthState({String? error}) {
+    state = state.copyWith(isLoading: false, error: error);
+  }
+
+  /// Completes the OAuth flow after receiving the callback
+  ///
+  /// [callbackUrl] - The full callback URL with authorization code
+  ///
+  /// Returns the result of the login attempt
+  Future<LoginResult> completeOAuth(String callbackUrl) async {
+    _logger.i('Completing OAuth with callback');
+
+    try {
+      final result = await _authRepository.completeOAuth(callbackUrl);
 
       if (!result.isSuccess) {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -78,49 +137,12 @@ class Auth extends _$Auth {
 
       return result;
     } catch (e, stackTrace) {
-      _logger.e('Login error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(isLoading: false, error: 'Login failed: $e');
-      return LoginResult.failed('Login failed: $e');
-    }
-  }
-
-  /// Registers a new user account
-  ///
-  /// [handle] - The user handle (e.g. username)
-  /// [email] - The user email address
-  /// [password] - The user password
-  /// [inviteCode] - Optional invite code for restricted registrations
-  Future<LoginResult> register(
-    String handle,
-    String email,
-    String password,
-    String? inviteCode,
-  ) async {
-    _logger.i('Registration attempt by service layer');
-
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final result = await _authRepository.register(
-        handle,
-        email,
-        password,
-        inviteCode,
+      _logger.e('OAuth completion error', error: e, stackTrace: stackTrace);
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Login failed: $e',
       );
-
-      if (result.success) {
-        _updateState();
-        state = state.copyWith(isLoading: false);
-        return LoginResult.success();
-      } else {
-        state = state.copyWith(isLoading: false, error: result.error);
-        return LoginResult.failed(result.error ?? 'Registration failed');
-      }
-    } catch (e, stackTrace) {
-      _logger.e('Registration error', error: e, stackTrace: stackTrace);
-      final errorMsg = 'Registration failed: $e';
-      state = state.copyWith(isLoading: false, error: errorMsg);
-      return LoginResult.failed(errorMsg);
+      return LoginResult.failed('Login failed: $e');
     }
   }
 
@@ -179,11 +201,18 @@ bool isAuthenticated(Ref ref) {
   return authState.isAuthenticated;
 }
 
-/// Convenience provider for accessing the current session
+/// Convenience provider for accessing the current user's DID
 @riverpod
-Session? session(Ref ref) {
+String? currentDid(Ref ref) {
   final authState = ref.watch(authProvider);
-  return authState.session;
+  return authState.did;
+}
+
+/// Convenience provider for accessing the current user's handle
+@riverpod
+String? currentHandle(Ref ref) {
+  final authState = ref.watch(authProvider);
+  return authState.handle;
 }
 
 /// Convenience provider for accessing the ATProto client

@@ -66,8 +66,7 @@ class _MainPageState extends ConsumerState<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final session = ref.watch(sessionProvider);
-    final userDid = session?.did;
+    final userDid = ref.watch(currentDidProvider);
 
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
