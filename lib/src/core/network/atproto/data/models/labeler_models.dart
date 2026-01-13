@@ -23,7 +23,8 @@ const defaultLabels = [
 enum Blurs {
   content('content'),
   media('media'),
-  none('none');
+  none('none')
+  ;
 
   final String value;
   const Blurs(this.value);
@@ -39,7 +40,8 @@ enum Blurs {
 enum Severity {
   alert('alert'),
   inform('inform'),
-  none('none');
+  none('none')
+  ;
 
   final String value;
   const Severity(this.value);
@@ -55,7 +57,8 @@ enum Severity {
 enum Setting {
   hide('hide'),
   warn('warn'),
-  ignore('ignore');
+  ignore('ignore')
+  ;
 
   final String value;
   const Setting(this.value);

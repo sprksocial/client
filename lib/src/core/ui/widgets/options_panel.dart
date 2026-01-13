@@ -33,7 +33,7 @@ class OptionsPanel {
                 ListTile(
                   leading: Icon(Icons.delete_outline, color: textColor),
                   title: Text(
-                    l10n.optionsPanelDelete,
+                    l10n.buttonDelete,
                     style: TextStyle(color: textColor),
                   ),
                   onTap: () {
@@ -45,9 +45,7 @@ class OptionsPanel {
                 ListTile(
                   leading: Icon(Icons.block, color: textColor),
                   title: Text(
-                    isBlocked
-                        ? l10n.optionsPanelUnblock
-                        : l10n.optionsPanelBlock,
+                    isBlocked ? l10n.buttonUnblock : l10n.buttonBlock,
                     style: TextStyle(color: textColor),
                   ),
                   onTap: () {
@@ -59,9 +57,7 @@ class OptionsPanel {
                 ListTile(
                   leading: const Icon(Icons.report_outlined),
                   title: Text(
-                    isProfile
-                        ? l10n.optionsPanelReportProfile
-                        : l10n.optionsPanelReport,
+                    isProfile ? l10n.buttonReportProfile : l10n.buttonReport,
                     style: TextStyle(color: textColor),
                   ),
                   onTap: () {
@@ -72,7 +68,7 @@ class OptionsPanel {
               ListTile(
                 leading: const Icon(Icons.close),
                 title: Text(
-                  l10n.optionsPanelClose,
+                  l10n.buttonClose,
                   style: TextStyle(color: textColor),
                 ),
                 onTap: () {

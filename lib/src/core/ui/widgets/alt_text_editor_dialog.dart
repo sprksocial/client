@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 
 class AltTextEditorDialog extends StatefulWidget {
@@ -109,7 +110,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
                 children: [
                   TextButton(
                     onPressed: () => context.router.maybePop(_controller.text),
-                    child: const Text('Cancel'),
+                    child: Text(AppLocalizations.of(context).buttonCancel),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
@@ -121,7 +122,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Save'),
+                    child: Text(AppLocalizations.of(context).buttonSave),
                   ),
                 ],
               ),

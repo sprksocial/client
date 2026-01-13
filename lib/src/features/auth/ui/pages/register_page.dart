@@ -40,7 +40,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       try {
         callbackUrl = await FlutterWebAuth2.authenticate(
           url: authUrl,
-          callbackUrlScheme: 'so.sprk',
+          callbackUrlScheme: 'sprk',
         );
       } on PlatformException catch (e) {
         if (e.code == 'CANCELED') {
