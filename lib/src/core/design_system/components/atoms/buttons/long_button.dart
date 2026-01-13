@@ -31,7 +31,7 @@ class LongButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPrimary = variant == LongButtonVariant.primary;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return InteractivePressable(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(8),

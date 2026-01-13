@@ -110,7 +110,7 @@ class Auth extends _$Auth {
     }
   }
 
-  /// Resets the OAuth loading state, typically called when the OAuth flow is cancelled or errored
+  /// Resets OAuth loading state, typically when the OAuth cancelled or errored
   ///
   /// [error] - Optional error message to set. If null, error is cleared.
   void resetOAuthState({String? error}) {
