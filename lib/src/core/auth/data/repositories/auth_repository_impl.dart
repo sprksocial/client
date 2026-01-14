@@ -441,6 +441,20 @@ class AuthRepositoryImpl implements AuthRepository {
         return LoginResult.failed('PDS endpoint not found');
       }
 
+      // Fetch session info to get DID and handle if not already set
+      // This is needed for registration flow where handle/DID aren't known upfront
+      if (_did == null || _handle == null) {
+        try {
+          final sessionResponse = await _atProto!.server.getSession();
+          _did = sessionResponse.data.did;
+          _handle = sessionResponse.data.handle;
+          _logger.d('Fetched session info - DID: $_did, Handle: $_handle');
+        } catch (e) {
+          _logger.e('Failed to fetch session info', error: e);
+          return LoginResult.failed('Failed to get session info: $e');
+        }
+      }
+
       // Save session
       await _saveSession();
 

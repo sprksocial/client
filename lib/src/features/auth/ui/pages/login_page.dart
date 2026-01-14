@@ -59,9 +59,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           callbackUrl = await FlutterWebAuth2.authenticate(
             url: authUrl,
             callbackUrlScheme: 'sprk',
-            options: const FlutterWebAuth2Options(
-              intentFlags: ephemeralIntentFlags,
-            ),
           );
         } on PlatformException catch (e) {
           if (e.code == 'CANCELED') {
