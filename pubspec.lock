@@ -102,7 +102,7 @@ packages:
     description:
       path: "packages/atproto_core"
       ref: HEAD
-      resolved-ref: "46fd244e5a58548e4b8db65723f4f6e478576d47"
+      resolved-ref: d04cef00866a4e73be8909b343946bbaaff7236d
       url: "https://github.com/knotbin/atproto.dart.git"
     source: git
     version: "1.1.0"
@@ -111,7 +111,7 @@ packages:
     description:
       path: "packages/atproto_oauth"
       ref: HEAD
-      resolved-ref: "46fd244e5a58548e4b8db65723f4f6e478576d47"
+      resolved-ref: d04cef00866a4e73be8909b343946bbaaff7236d
       url: "https://github.com/knotbin/atproto.dart.git"
     source: git
     version: "0.1.2"
