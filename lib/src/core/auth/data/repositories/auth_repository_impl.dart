@@ -110,7 +110,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final accessToken = await StorageManager.instance.secure.getString(
         StorageKeys.oauthAccessToken,
       );
-      final refreshToken = await StorageManager.instance.secure.getString(
+      final savedRefreshToken = await StorageManager.instance.secure.getString(
         StorageKeys.oauthRefreshToken,
       );
       final publicKey = await StorageManager.instance.secure.getString(
@@ -121,6 +121,9 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       final savedDpopNonce = await StorageManager.instance.secure.getString(
         StorageKeys.oauthDpopNonce,
+      );
+      final savedExpiresAt = await StorageManager.instance.secure.getString(
+        StorageKeys.oauthExpiresAt,
       );
       final savedDid = await StorageManager.instance.secure.getString(
         StorageKeys.oauthDid,
@@ -136,7 +139,7 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       if (accessToken == null ||
-          refreshToken == null ||
+          savedRefreshToken == null ||
           publicKey == null ||
           privateKey == null) {
         _logger.d('No saved OAuth session found');
@@ -145,16 +148,47 @@ class AuthRepositoryImpl implements AuthRepository {
 
       _oauthSession = restoreOAuthSession(
         accessToken: accessToken,
-        refreshToken: refreshToken,
+        refreshToken: savedRefreshToken,
         dPoPNonce: savedDpopNonce,
         publicKey: publicKey,
         privateKey: privateKey,
       );
 
+      // Parse expiresAt, default to epoch if not found (will trigger refresh)
+      final expiresAt = savedExpiresAt != null
+          ? DateTime.parse(savedExpiresAt)
+          : DateTime.fromMillisecondsSinceEpoch(0);
+
       _did = savedDid;
       _handle = savedHandle;
       _pdsEndpoint = savedPdsEndpoint;
       _oauthServer = savedOAuthServer;
+
+      // Recreate OAuth client for token refresh (needed before refresh attempt)
+      if (_oauthServer != null) {
+        final metadata = await getClientMetadata(_clientMetadataUrl);
+        _oauthClient = OAuthClient(metadata, service: _oauthServer!);
+        _logger.d('OAuthClient recreated for session refresh');
+      }
+
+      // Check if token needs refresh (5 minutes before expiration per README)
+      if (expiresAt.isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
+        _logger.d('Access token expired or expiring soon, refreshing');
+        final refreshed = await refreshToken();
+        if (!refreshed) {
+          _logger.w('Token refresh failed during restore, clearing session');
+          await _clearSavedSession();
+          _oauthSession = null;
+          _atProto = null;
+          _did = null;
+          _handle = null;
+          _pdsEndpoint = null;
+          _oauthServer = null;
+          _oauthClient = null;
+          return;
+        }
+        _logger.i('Token refreshed successfully during restore');
+      }
 
       // Extract just the host from the PDS endpoint
       final pdsHost = _pdsEndpoint != null
@@ -165,13 +199,6 @@ class AuthRepositoryImpl implements AuthRepository {
         _oauthSession!,
         service: pdsHost,
       );
-
-      // Recreate OAuth client for token refresh
-      if (_oauthServer != null) {
-        final metadata = await getClientMetadata(_clientMetadataUrl);
-        _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-        _logger.d('OAuthClient recreated for session refresh');
-      }
 
       _logger.i('OAuth session loaded successfully for user: $_handle');
     } catch (e) {
@@ -203,6 +230,10 @@ class AuthRepositoryImpl implements AuthRepository {
       await StorageManager.instance.secure.setString(
         StorageKeys.oauthDpopNonce,
         _oauthSession!.$dPoPNonce,
+      );
+      await StorageManager.instance.secure.setString(
+        StorageKeys.oauthExpiresAt,
+        _oauthSession!.expiresAt.toIso8601String(),
       );
       if (_did != null) {
         await StorageManager.instance.secure.setString(
@@ -244,6 +275,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await StorageManager.instance.secure.remove(StorageKeys.oauthPublicKey);
       await StorageManager.instance.secure.remove(StorageKeys.oauthPrivateKey);
       await StorageManager.instance.secure.remove(StorageKeys.oauthDpopNonce);
+      await StorageManager.instance.secure.remove(StorageKeys.oauthExpiresAt);
       await StorageManager.instance.secure.remove(StorageKeys.oauthDid);
       await StorageManager.instance.secure.remove(StorageKeys.oauthHandle);
       await StorageManager.instance.secure.remove(StorageKeys.oauthPdsEndpoint);

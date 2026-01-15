@@ -433,8 +433,9 @@ abstract class PostView with _$PostView {
       }
     }
 
-    // Fallback to original string
-    return uriString;
+    // Return empty string for unrecognized URI schemes (e.g., file://)
+    // to prevent invalid URLs from being passed to image loaders
+    return '';
   }
 
   String get videoUrl {
@@ -463,13 +464,14 @@ abstract class PostView with _$PostView {
 
   List<String> get imageUrls {
     final mediaToCheck = displayMedia;
+    final List<String> urls;
     switch (mediaToCheck) {
       case MediaViewImage(:final image):
-        return [image.fullsize.toString()];
+        urls = [image.fullsize.toString()];
       case MediaViewImages(:final images):
-        return images.map((img) => img.fullsize.toString()).toList();
+        urls = images.map((img) => img.fullsize.toString()).toList();
       case MediaViewBskyImages(:final images):
-        return images
+        urls = images
             .map(
               (img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true),
             )
@@ -478,22 +480,26 @@ abstract class PostView with _$PostView {
         // Handle nested media in record with media
         switch (media) {
           case MediaViewImage(:final image):
-            return [image.fullsize.toString()];
+            urls = [image.fullsize.toString()];
           case MediaViewImages(:final images):
-            return images.map((img) => img.fullsize.toString()).toList();
+            urls = images.map((img) => img.fullsize.toString()).toList();
           case MediaViewBskyImages(:final images):
-            return images
+            urls = images
                 .map(
                   (img) =>
                       _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true),
                 )
                 .toList();
           case _:
-            return [];
+            urls = [];
         }
       case _:
-        return [];
+        urls = [];
     }
+    // Filter out invalid URLs (must be http/https)
+    return urls
+        .where((url) => url.startsWith('http://') || url.startsWith('https://'))
+        .toList();
   }
 
   String get thumbnailUrl {

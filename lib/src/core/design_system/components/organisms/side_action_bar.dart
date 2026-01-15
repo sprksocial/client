@@ -208,11 +208,15 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       ]);
     }
 
-    if (widget.soundCover != null) {
+    // Only show sound item if cover URL is valid
+    final soundCover = widget.soundCover;
+    if (soundCover != null &&
+        soundCover.isNotEmpty &&
+        (soundCover.startsWith('http://') || soundCover.startsWith('https://'))) {
       children.addAll([
         const SizedBox(height: 13),
         _SoundItem(
-          cover: widget.soundCover!,
+          cover: soundCover,
           onTap: widget.onSoundTap,
         ),
       ]);
@@ -331,6 +335,10 @@ class _SoundItem extends StatelessWidget {
   Widget build(BuildContext context) {
     const albumSize = 35.0;
 
+    // Don't render if cover URL is empty or invalid
+    final hasValidCover = cover.isNotEmpty &&
+        (cover.startsWith('http://') || cover.startsWith('https://'));
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -339,10 +347,13 @@ class _SoundItem extends StatelessWidget {
         height: albumSize,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          image: DecorationImage(
-            image: NetworkImage(cover),
-            fit: BoxFit.cover,
-          ),
+          color: hasValidCover ? null : Colors.grey[800],
+          image: hasValidCover
+              ? DecorationImage(
+                  image: NetworkImage(cover),
+                  fit: BoxFit.cover,
+                )
+              : null,
         ),
       ),
     );

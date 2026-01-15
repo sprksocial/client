@@ -12,6 +12,7 @@ class StorageKeys {
   static const String oauthPublicKey = 'oauth_public_key';
   static const String oauthPrivateKey = 'oauth_private_key';
   static const String oauthDpopNonce = 'oauth_dpop_nonce';
+  static const String oauthExpiresAt = 'oauth_expires_at';
   static const String oauthPendingContext = 'oauth_pending_context';
   static const String oauthDid = 'oauth_did';
   static const String oauthHandle = 'oauth_handle';
