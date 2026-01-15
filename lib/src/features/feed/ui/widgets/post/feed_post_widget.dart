@@ -252,7 +252,13 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         thumbnail: postData.thumbnailUrl,
                       ),
                       MediaViewImages() || MediaViewBskyImages() =>
-                        ImageCarousel(imageUrls: postData.imageUrls),
+                        ImageCarousel(
+                          imageUrls: postData.imageUrls,
+                          hasKnownInteractions: currentPost.viewer
+                                  ?.knownInteractions !=
+                              null &&
+                              currentPost.viewer!.knownInteractions!.isNotEmpty,
+                        ),
                       MediaViewBskyRecordWithMedia(:final media) =>
                         switch (media) {
                           MediaViewVideo() => PostVideoPlayer(
@@ -270,7 +276,14 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                             thumbnail: postData.thumbnailUrl,
                           ),
                           MediaViewImages() || MediaViewBskyImages() =>
-                            ImageCarousel(imageUrls: postData.imageUrls),
+                            ImageCarousel(
+                              imageUrls: postData.imageUrls,
+                              hasKnownInteractions: currentPost.viewer
+                                      ?.knownInteractions !=
+                                  null &&
+                                  currentPost.viewer!.knownInteractions!
+                                      .isNotEmpty,
+                            ),
                           _ => const DecoratedBox(
                             decoration: BoxDecoration(color: AppColors.black),
                           ),

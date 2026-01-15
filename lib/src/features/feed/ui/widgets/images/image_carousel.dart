@@ -5,9 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 
 class ImageCarousel extends ConsumerStatefulWidget {
-  const ImageCarousel({required this.imageUrls, super.key, this.alts});
+  const ImageCarousel({
+    required this.imageUrls,
+    super.key,
+    this.alts,
+    this.hasKnownInteractions = false,
+  });
   final List<String> imageUrls;
   final List<String>? alts;
+  final bool hasKnownInteractions;
 
   @override
   ConsumerState<ImageCarousel> createState() => _ImageCarouselState();
@@ -122,6 +128,13 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    // Handle empty image URLs gracefully
+    if (widget.imageUrls.isEmpty) {
+      return const DecoratedBox(
+        decoration: BoxDecoration(color: AppColors.black),
+      );
+    }
+
     final hasMultipleImages = widget.imageUrls.length > 1;
 
     // If only one image, show it directly without carousel
@@ -145,8 +158,9 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
         ),
         Positioned(
           // Position dots above the post overlay content area
-          // The overlay has content (InfoBar, SideActionBar) in the bottom ~150px
-          bottom: 180,
+          // When known interactions exist, they add ~48px (bar height + 12px spacing)
+          // Base position is 180px, reduced by 48px when no known interactions
+          bottom: widget.hasKnownInteractions ? 180 : 132,
           left: 0,
           right: 0,
           child: Center(
