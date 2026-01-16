@@ -17,7 +17,6 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/utils/blocking_utils.dart';
-import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
@@ -271,102 +270,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ) {
               if (updated == true) {
                 notifier.refreshProfile();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Profile updated successfully'),
-                    ),
-                  );
-                }
               }
             });
           },
           onFollowTap: () async {
             try {
               await notifier.toggleFollow();
-              final latestProfileState = ref
-                  .read(profileProvider(did: widget.did))
-                  .asData
-                  ?.value;
-
-              if (latestProfileState != null &&
-                  !latestProfileState.showAuthPrompt) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Followed successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              }
             } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      ErrorMessages.getOperationErrorMessage('follow', e),
-                    ),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
+              _logger.e('Error unfollowing profile', error: e);
             }
           },
           onUnfollowTap: () async {
             try {
               await notifier.toggleFollow();
-              final latestProfileState = ref
-                  .read(profileProvider(did: widget.did))
-                  .asData
-                  ?.value;
-
-              if (latestProfileState != null &&
-                  !latestProfileState.showAuthPrompt) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Unfollowed successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              }
             } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      ErrorMessages.getOperationErrorMessage('unfollow', e),
-                    ),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
+              _logger.e('Error unfollowing profile', error: e);
             }
           },
           onUnblockTap: () async {
             try {
               await notifier.toggleBlock();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('User unblocked'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
             } catch (e) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      ErrorMessages.getOperationErrorMessage('unblock', e),
-                    ),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
+              _logger.e('Error unblocking profile', error: e);
             }
           },
           onShareTap: () =>
@@ -401,67 +326,58 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         postCid: profile.did,
                         onSubmit: (subject, reasonType, reason) async {
                           try {
-                            final success = await notifier.createReport(
+                            await notifier.createReport(
                               did: profile.did,
                               reasonType: reasonType,
                               reason: reason,
                             );
-                            if (success && context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Report submitted successfully',
-                                  ),
-                                ),
-                              );
-                            }
                           } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    ErrorMessages.getOperationErrorMessage(
-                                      'report',
-                                      e,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
+                            _logger.e('Error creating report', error: e);
                           }
                         },
                       ),
                     ),
                     onBlock: () async {
+                      final wasBlocked = isBlocking(profile.viewer);
+
+                      // Show confirmation dialog
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(
+                            wasBlocked ? 'Unblock User' : 'Block User',
+                          ),
+                          content: Text(
+                            wasBlocked
+                                ? 'Are you sure you want to unblock this user?'
+                                : 'Are you sure you want to block this user? '
+                                      'You will no longer see their posts.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: TextButton.styleFrom(
+                                foregroundColor: wasBlocked ? null : Colors.red,
+                              ),
+                              child: Text(wasBlocked ? 'Unblock' : 'Block'),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirmed != true) return;
+
                       try {
-                        final wasBlocked = isBlocking(profile.viewer);
                         await notifier.toggleBlock();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                wasBlocked ? 'User unblocked' : 'User blocked',
-                              ),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
                       } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                ErrorMessages.getOperationErrorMessage(
-                                  isBlocking(profile.viewer)
-                                      ? 'unblock'
-                                      : 'block',
-                                  e,
-                                ),
-                              ),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
+                        _logger.e(
+                          'Error blocking/unblocking profile',
+                          error: e,
+                        );
                       }
                     },
                     isBlocked: isBlocking(profile.viewer),

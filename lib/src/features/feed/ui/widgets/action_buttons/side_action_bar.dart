@@ -163,14 +163,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         _likeCount += wasLiked ? 1 : -1;
       });
 
-      // Show error to user
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to ${wasLiked ? 'unlike' : 'like'} post: $e'),
-          ),
-        );
-      }
+      // Error handling - snackbar removed
     }
   }
 
@@ -238,18 +231,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         _repostCount += wasReposted ? 1 : -1;
       });
 
-      // Show error to user
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to ${wasReposted ? 'unrepost' : 'repost'} post: $e',
-            ),
-          ),
-        );
-      }
+      // Error handling - snackbar removed
     }
   }
 
@@ -350,7 +332,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
   Future<void> _handleDeletePost() async {
     final currentPost = _currentPost ?? widget.post;
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -392,18 +373,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
           ..invalidate(profileFeedProvider(profileUri, false))
           ..invalidate(profileFeedProvider(profileUri, true));
       }
-
-      if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('Post deleted')),
-        );
-      }
     } catch (e) {
-      if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('Failed to delete post: $e')),
-        );
-      }
+      // Error handling - snackbar removed
     }
   }
 
@@ -412,21 +383,41 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     final author = currentPost.author;
     final wasBlocked = isBlocking(author.viewer);
 
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(wasBlocked ? 'Unblock User' : 'Block User'),
+        content: Text(
+          wasBlocked
+              ? 'Are you sure you want to unblock this user?'
+              : 'Are you sure you want to block this user? '
+                    'You will no longer see their posts.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: wasBlocked ? null : Colors.red,
+            ),
+            child: Text(wasBlocked ? 'Unblock' : 'Block'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     try {
       final graphRepository = GetIt.instance<SprkRepository>().graph;
       await graphRepository.toggleBlock(
         author.did,
         author.viewer?.blocking,
       );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(wasBlocked ? 'User unblocked' : 'User blocked'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
 
       // If blocking and we have a feed, use the action controller to advance
       if (!wasBlocked && widget.feed != null) {
@@ -436,16 +427,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         controller?.onAdvanceAndRemove();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Failed to ${wasBlocked ? 'unblock' : 'block'} user: $e',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      // Error handling - snackbar removed
     }
   }
 

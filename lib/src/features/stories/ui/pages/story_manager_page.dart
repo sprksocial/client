@@ -56,11 +56,6 @@ class StoryManagerPage extends ConsumerWidget {
         false;
     if (!shouldDelete) return;
     await notifier.deleteStory(story);
-    if (context.mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Story deleted')));
-    }
   }
 
   @override

@@ -158,7 +158,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
         ),
         Positioned(
           // Position dots above the post overlay content area
-          // When known interactions exist, they add ~48px (bar height + 12px spacing)
+          // When known interactions exist, they add ~48px (bar height + 12px)
           // Base position is 180px, reduced by 48px when no known interactions
           bottom: widget.hasKnownInteractions ? 180 : 132,
           left: 0,
@@ -193,8 +193,8 @@ class _ScrollingDotIndicator extends StatefulWidget {
 class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
     with SingleTickerProviderStateMixin {
   static const int _maxVisibleDots = 5;
-  static const double _dotSize = 6.0;
-  static const double _dotSpacing = 4.0;
+  static const double _dotSize = 6;
+  static const double _dotSpacing = 4;
   static const double _dotTotalWidth = _dotSize + _dotSpacing;
 
   // Dot positions (indices 0-4 for 5 dots)
@@ -281,7 +281,7 @@ class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
     final newOffset = _calculateScrollOffset(index);
     if (newOffset != _targetScrollOffset) {
       // Get the current visual position - use the animation value if animating,
-      // otherwise use the stored offset. This prevents jumps when new animations
+      // otherwise use the stored offset to prevent jumps when new animations
       // start while previous ones are still in progress.
       final currentVisualPosition = _controller.isAnimating
           ? _scrollAnimation.value
@@ -291,12 +291,13 @@ class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
       // This ensures continuity when rapid swipes occur
       _currentScrollOffset = currentVisualPosition;
 
-      _scrollAnimation = Tween<double>(
-        begin: currentVisualPosition,
-        end: newOffset,
-      ).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-      );
+      _scrollAnimation =
+          Tween<double>(
+            begin: currentVisualPosition,
+            end: newOffset,
+          ).animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+          );
       _targetScrollOffset = newOffset;
       _controller
         ..reset()
@@ -323,10 +324,9 @@ class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
       child: AnimatedBuilder(
         animation: _scrollAnimation,
         builder: (context, child) {
-          final scrollOffset =
-              _controller.isAnimating
-                  ? _scrollAnimation.value
-                  : _targetScrollOffset;
+          final scrollOffset = _controller.isAnimating
+              ? _scrollAnimation.value
+              : _targetScrollOffset;
 
           return SizedBox(
             width: visibleWidth,
@@ -406,7 +406,8 @@ class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
     if (relativePosition < edgeZone) {
       if (relativePosition < 0) {
         // Dot is outside visible area (entering/exiting on left)
-        // Scale from 0 (at -1) to edgeScale or 1.0 (at 0) depending on hasMoreBefore
+        // Scale from 0 (at -1) to edgeScale or 1 (at 0)
+        // depending on hasMoreBefore
         final targetScale = hasMoreBefore ? edgeScale : 1.0;
         return ((1 + relativePosition) * targetScale).clamp(0.0, 1.0);
       } else if (hasMoreBefore) {
@@ -418,25 +419,26 @@ class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
     }
 
     // Right side: dots entering/exiting or at edge
-    final rightEdgeStart = _maxVisibleDots - 1 - edgeZone;
+    const rightEdgeStart = _maxVisibleDots - 1 - edgeZone;
     if (relativePosition > rightEdgeStart) {
       final distanceFromRight = _maxVisibleDots - 1 - relativePosition;
 
       if (relativePosition > _maxVisibleDots - 1) {
         // Dot is outside visible area (entering/exiting on right)
-        // Scale from 0 (at _maxVisibleDots) to edgeScale or 1.0 (at _maxVisibleDots-1)
+        // Scale from 0 (at _maxVisibleDots)
+        // to edgeScale or 1 (at _maxVisibleDots-1)
         final targetScale = hasMoreAfter ? edgeScale : 1.0;
         return ((1 + distanceFromRight) * targetScale).clamp(0.0, 1.0);
       } else if (hasMoreAfter) {
         // Dot is in the right edge zone with more dots after
-        // Scale from edgeScale (at _maxVisibleDots-1) to 1.0 (at rightEdgeStart)
+        // Scale from edgeScale (at _maxVisibleDots-1) to 1 (at rightEdgeStart)
         return (edgeScale + (distanceFromRight / edgeZone) * (1 - edgeScale))
             .clamp(0.0, 1.0);
       }
     }
 
     // Middle dots are full size
-    return 1.0;
+    return 1;
   }
 }
 

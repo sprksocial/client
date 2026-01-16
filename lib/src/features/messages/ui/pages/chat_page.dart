@@ -63,11 +63,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       );
       await chatService.sendMessage(widget.conversationId, content);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
-      }
+      // Error handling - snackbar removed
     }
   }
 

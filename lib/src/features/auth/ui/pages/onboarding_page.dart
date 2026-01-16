@@ -98,9 +98,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       context.router.replaceAll([const MainRoute()]);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error completing profile: $e')));
+      // Error handling - snackbar removed
     } finally {
       if (mounted) {
         setState(() {

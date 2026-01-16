@@ -104,14 +104,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(
-          content: Text('Failed to select images: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // Error handling - snackbar removed
     }
   }
 
@@ -156,14 +149,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       setState(() {
         _isPosting = false;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(
-        SnackBar(
-          content: Text('Failed to create post: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
     return null;
   }

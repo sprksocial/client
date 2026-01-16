@@ -77,17 +77,11 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully!')),
-      );
-
       // Go back to previous screen
       context.router.pop();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
+      // Error handling - snackbar removed
     } finally {
       if (mounted) {
         setState(() {

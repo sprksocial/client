@@ -81,9 +81,6 @@ class CommentInput extends _$CommentInput {
     final currentImageCount = state.selectedImages.length;
     if (currentImageCount >= maxImages) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Replies can only have 1 image.')),
-      );
       return;
     }
 

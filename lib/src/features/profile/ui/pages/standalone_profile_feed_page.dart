@@ -16,12 +16,12 @@ import 'package:spark/src/features/profile/ui/widgets/profile_feed_post_widget.d
 @RoutePage()
 class StandaloneProfileFeedPage extends ConsumerStatefulWidget {
   const StandaloneProfileFeedPage({
-    required this.profileUri,
+    @PathParam('did') required this.did,
     required this.videosOnly,
     required this.initialPostIndex,
     super.key,
   });
-  final String profileUri;
+  final String did;
   final bool videosOnly;
   final int initialPostIndex;
 
@@ -40,7 +40,7 @@ class _StandaloneProfileFeedPageState
   @override
   void initState() {
     super.initState();
-    profileAtUri = AtUri.parse(widget.profileUri);
+    profileAtUri = AtUri.parse('at://${widget.did}');
     _currentIndex = widget.initialPostIndex;
     pageController = PageController(initialPage: widget.initialPostIndex);
   }
@@ -57,7 +57,7 @@ class _StandaloneProfileFeedPageState
       _hasInitializedIndex = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref
-            .read(profileFeedIndexProvider(widget.profileUri).notifier)
+            .read(profileFeedIndexProvider(profileAtUri.toString()).notifier)
             .setIndex(widget.initialPostIndex);
       });
     }
@@ -99,7 +99,9 @@ class _StandaloneProfileFeedPageState
                   });
                   ref
                       .read(
-                        profileFeedIndexProvider(widget.profileUri).notifier,
+                        profileFeedIndexProvider(
+                          profileAtUri.toString(),
+                        ).notifier,
                       )
                       .setIndex(index);
                   // Load more posts when approaching the end
