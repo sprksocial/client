@@ -15,6 +15,7 @@ import 'package:spark/src/core/ui/widgets/image_content.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/utils/utils.dart';
 import 'package:spark/src/features/comments/providers/comment_provider.dart';
 import 'package:spark/src/features/comments/providers/comment_state.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
@@ -34,6 +35,9 @@ class CommentItem extends ConsumerStatefulWidget {
 
 class _CommentItemState extends ConsumerState<CommentItem> {
   late CommentState commentState;
+  late final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'CommentItem',
+  );
 
   @override
   void initState() {
@@ -51,7 +55,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
   }
 
   void _handleReportComment() {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final sprkRepository = GetIt.instance<SprkRepository>();
     showDialog(
       context: context,
@@ -60,23 +63,15 @@ class _CommentItemState extends ConsumerState<CommentItem> {
         postCid: commentState.thread.post.cid,
         onSubmit: (subject, reasonType, reason) async {
           try {
-            final result = await sprkRepository.repo.createReport(
+            await sprkRepository.repo.createReport(
               input: ModerationCreateReportInput(
                 subject: subject,
                 reasonType: reasonType,
                 reason: reason,
               ),
             );
-
-            if (result) {
-              scaffoldMessenger.showSnackBar(
-                const SnackBar(content: Text('Report submitted successfully')),
-              );
-            }
           } catch (e) {
-            scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text('Error submitting report: $e')),
-            );
+            _logger.e('Error creating report', error: e);
           }
         },
       ),
@@ -84,8 +79,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
   }
 
   void _handleDeleteComment() {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
     // Confirm deletion
     showDialog(
       context: context,
@@ -114,11 +107,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                   await context.router.maybePop(); // to close the menu below
                 }
               } catch (e) {
-                if (mounted) {
-                  scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text('Failed to delete comment: $e')),
-                  );
-                }
+                _logger.e('Error deleting comment', error: e);
               }
             },
             child: Text(AppLocalizations.of(context).buttonDelete),

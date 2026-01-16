@@ -41,22 +41,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
       }
     });
 
-    final theme = Theme.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: theme.colorScheme.onPrimary),
-            const SizedBox(width: 12),
-            Text(isLink ? 'Video link copied!' : 'Embed code copied!'),
-          ],
-        ),
-        backgroundColor: theme.colorScheme.primary,
-        behavior: SnackBarBehavior.floating,
-        width: MediaQuery.of(context).size.width * 0.9,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    // Snackbar removed
 
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
@@ -242,7 +227,6 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                       onPressed: (_selectedConvoId == null || _sending)
                           ? null
                           : () async {
-                              final messenger = ScaffoldMessenger.of(context);
                               final navigator = Navigator.of(context);
 
                               setState(() => _sending = true);
@@ -263,18 +247,9 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                                       embed: widget.atUri,
                                     );
 
-                                messenger.showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Shared to conversation'),
-                                  ),
-                                );
                                 navigator.maybePop();
                               } catch (e) {
-                                messenger.showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to share: $e'),
-                                  ),
-                                );
+                                // Error handling - snackbar removed
                                 logger.d(
                                   'Failed to share video to conversation',
                                   error: e,

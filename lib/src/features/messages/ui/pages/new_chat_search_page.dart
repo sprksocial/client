@@ -200,9 +200,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Unable to start chat: $e')));
+      // Error handling - snackbar removed
     }
   }
 

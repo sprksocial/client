@@ -16,11 +16,11 @@ import 'package:spark/src/features/profile/ui/widgets/profile_feed_post_widget.d
 @RoutePage()
 class StandaloneRepostsFeedPage extends ConsumerStatefulWidget {
   const StandaloneRepostsFeedPage({
-    required this.actor,
+    @PathParam('did') required this.did,
     required this.initialPostIndex,
     super.key,
   });
-  final String actor;
+  final String did;
   final int initialPostIndex;
 
   @override
@@ -53,12 +53,12 @@ class _StandaloneRepostsFeedPageState
       _hasInitializedIndex = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref
-            .read(profileFeedIndexProvider('reposts:${widget.actor}').notifier)
+            .read(profileFeedIndexProvider('reposts:${widget.did}').notifier)
             .setIndex(widget.initialPostIndex);
       });
     }
 
-    final repostsState = ref.watch(profileRepostsProvider(widget.actor));
+    final repostsState = ref.watch(profileRepostsProvider(widget.did));
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -94,7 +94,7 @@ class _StandaloneRepostsFeedPageState
                   ref
                       .read(
                         profileFeedIndexProvider(
-                          'reposts:${widget.actor}',
+                          'reposts:${widget.did}',
                         ).notifier,
                       )
                       .setIndex(index);
@@ -102,15 +102,15 @@ class _StandaloneRepostsFeedPageState
                   if (index >= filteredUris.length - 3 &&
                       !state.isEndOfNetwork) {
                     ref
-                        .read(profileRepostsProvider(widget.actor).notifier)
+                        .read(profileRepostsProvider(widget.did).notifier)
                         .loadMore();
                   }
                 },
                 itemBuilder: (context, index) {
                   final postUri = filteredUris[index];
                   final post = state.postViews[postUri];
-                  // Create a profile URI from the actor for the post widget
-                  final profileUri = AtUri.parse('at://${widget.actor}');
+                  // Create a profile URI from the did for the post widget
+                  final profileUri = AtUri.parse('at://${widget.did}');
                   return ProfileFeedPostWidget(
                     postUri: postUri,
                     profileUri: profileUri,
@@ -143,7 +143,7 @@ class _StandaloneRepostsFeedPageState
                   ElevatedButton(
                     onPressed: () {
                       ref
-                          .read(profileRepostsProvider(widget.actor).notifier)
+                          .read(profileRepostsProvider(widget.did).notifier)
                           .refresh();
                     },
                     child: const Text('Retry'),

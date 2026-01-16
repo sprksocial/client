@@ -115,16 +115,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
             ..invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
         }
         if (postRef == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to post video. Please try again.'),
-            ),
-          );
           return;
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Video posted successfully!')),
-          );
           if (!widget.storyMode) {
             context.router.push(
               StandalonePostRoute(postUri: postRef.uri.toString()),
@@ -137,16 +129,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         setState(() {
           _isPosting = false;
         });
-
-        // Show error without blocking UI
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload video: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
     }
     return;

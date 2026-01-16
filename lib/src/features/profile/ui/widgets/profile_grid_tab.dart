@@ -26,7 +26,7 @@ class ProfileGridTab extends ProfileTabBase {
         if (postIndex != -1) {
           context.router.push(
             StandaloneProfileFeedRoute(
-              profileUri: profileUri.toString(),
+              did: profileUri.hostname,
               videosOnly: false,
               initialPostIndex: postIndex,
             ),

@@ -106,11 +106,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                       .read(settingsProvider.notifier)
                       .reorderFeed(actualOldIndex, actualNewIndex);
                 } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to reorder feeds: $e')),
-                    );
-                  }
+                  // Error handling - snackbar removed
                 }
               },
               proxyDecorator: (child, index, animation) {
@@ -172,19 +168,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .removeFeed(feed);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Feed removed')),
-                                );
-                              }
                             } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to remove feed: $e'),
-                                  ),
-                                );
-                              }
+                              // Error handling - snackbar removed
                             }
                           }
                         : null,
@@ -230,19 +215,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .likeFeed(feed);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Feed liked')),
-                                );
-                              }
                             } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to like feed: $e'),
-                                  ),
-                                );
-                              }
+                              // Error handling - snackbar removed
                             }
                           }
                         : null,
@@ -252,19 +226,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .unlikeFeed(feed);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Feed unliked')),
-                                );
-                              }
                             } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Failed to unlike feed: $e'),
-                                  ),
-                                );
-                              }
+                              // Error handling - snackbar removed
                             }
                           }
                         : null,

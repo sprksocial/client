@@ -116,11 +116,17 @@ class AppRouter extends RootStackRouter {
 
     // Deep linking routes or routes that will be pushed on top of everything
     AutoRoute(page: StandalonePostRoute.page, path: '/post/:postUri'),
-    AutoRoute(page: StandaloneProfileFeedRoute.page, path: '/profile-feed'),
-    AutoRoute(page: StandaloneRepostsFeedRoute.page, path: '/reposts-feed'),
     AutoRoute(
       page: ProfileRoute.page,
       path: '/profile/:did',
+    ),
+    AutoRoute(
+      page: StandaloneProfileFeedRoute.page,
+      path: '/profile/:did/feed',
+    ),
+    AutoRoute(
+      page: StandaloneRepostsFeedRoute.page,
+      path: '/profile/:did/reposts',
     ),
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),
     AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),

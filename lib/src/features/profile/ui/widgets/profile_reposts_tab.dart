@@ -30,7 +30,7 @@ class ProfileRepostsTab extends ProfileTabBase {
         if (postIndex != -1) {
           context.router.push(
             StandaloneRepostsFeedRoute(
-              actor: actor,
+              did: actor,
               initialPostIndex: postIndex,
             ),
           );

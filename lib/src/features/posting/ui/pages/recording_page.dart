@@ -41,7 +41,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     final recordingState = ref.read(recordingProvider);
 
     if (cameraAsync.hasError) {
-      _showError('Camera error: ${cameraAsync.error}');
       return;
     }
 
@@ -49,7 +48,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (cameraState == null ||
         !cameraState.isInitialized ||
         cameraState.controller == null) {
-      _showError('Camera not ready');
       return;
     }
 
@@ -69,8 +67,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     final success = await cameraNotifier.startVideoRecording();
     if (success) {
       recordingNotifier.startRecording();
-    } else {
-      _showError('Failed to start recording');
     }
   }
 
@@ -93,7 +89,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       setState(() {
         _isProcessing = false;
       });
-      _showError('Failed to stop recording');
       return;
     }
 
@@ -145,7 +140,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        _showError('Failed to process video: $e');
       }
     }
   }
@@ -153,16 +147,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   Future<void> _handleFlipCamera() async {
     final cameraNotifier = ref.read(cameraProvider.notifier);
     await cameraNotifier.flipCamera();
-  }
-
-  void _showError(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 
   @override
@@ -239,7 +223,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           maxDuration: recordingState.maxDuration,
           onBack: () {
             if (recordingState.isRecording) {
-              _showError('Please stop recording before going back');
               return;
             }
             context.router.pop();

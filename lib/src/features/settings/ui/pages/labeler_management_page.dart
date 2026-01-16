@@ -66,11 +66,6 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
       _logger.d('Loaded ${labelerDids.length} labelers');
     } catch (e) {
       _logger.e('Error loading labelers: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load labelers: $e')),
-        );
-      }
       setState(() => _isLoading = false);
     }
   }
@@ -154,23 +149,11 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
       // If it's a handle, try to resolve it to a DID
       if (did.startsWith('@')) {
         // TODO: add handle resolution in the future
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please enter a DID (did:plc:...)')),
-          );
-        }
         return;
       }
 
       // Validate DID format
       if (!did.startsWith('did:')) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid DID format. Must start with did:'),
-            ),
-          );
-        }
         return;
       }
 
@@ -179,19 +162,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
 
       // Refresh the list
       await _loadLabelers();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Labeler added successfully')),
-        );
-      }
     } catch (e) {
       _logger.e('Error adding labeler: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add labeler: $e')),
-        );
-      }
     } finally {
       didController.dispose();
     }
@@ -199,13 +171,6 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
 
   Future<void> _removeLabeler(String did) async {
     if (did == _defaultModServiceDid) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cannot remove the default mod service labeler'),
-          ),
-        );
-      }
       return;
     }
 
@@ -235,19 +200,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
 
       // Refresh the list
       await _loadLabelers();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Labeler removed successfully')),
-        );
-      }
     } catch (e) {
       _logger.e('Error removing labeler: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to remove labeler: $e')),
-        );
-      }
     }
   }
 

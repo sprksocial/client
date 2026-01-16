@@ -45,14 +45,6 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       // Close loading dialog if it's open
       if (mounted) {
         context.router.maybePop();
-
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Logout failed: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
     }
   }
@@ -190,42 +182,11 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       // Close loading dialog
       if (mounted) {
         context.router.maybePop();
-
-        // Show success message
-        if (oldPosts.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'No old posts found. All posts are already in the new format.',
-              ),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Updated $successCount/${oldPosts.length} old posts to new format${errorCount > 0 ? ' ($errorCount failed)' : ''}.',
-              ),
-              backgroundColor: successCount == oldPosts.length
-                  ? Colors.green
-                  : Colors.orange,
-            ),
-          );
-        }
       }
     } catch (e) {
       // Close loading dialog if it's open
       if (mounted) {
         context.router.maybePop();
-
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to fetch records: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
       logger.e('Error fetching Spark records', error: e);
     }

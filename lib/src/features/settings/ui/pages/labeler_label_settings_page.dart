@@ -289,11 +289,6 @@ class _LabelerLabelSettingsPageState
       }
     } catch (e) {
       _logger.e('Error updating label preference: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update preference: $e')),
-        );
-      }
     }
   }
 
