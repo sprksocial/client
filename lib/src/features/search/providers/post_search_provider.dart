@@ -11,6 +11,7 @@ import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/search/providers/post_search_state.dart';
+import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 part 'post_search_provider.g.dart';
 
@@ -118,8 +119,8 @@ class PostSearch extends _$PostSearch {
         'Successfully converted ${bskyPosts.length}/${bskyResponse.data.posts.length} bsky posts',
       );
 
-      final filteredSprkPosts = await _filterHiddenPosts(sprkResponse.posts);
-      final filteredBskyPosts = await _filterHiddenPosts(bskyPosts);
+      final filteredSprkPosts = _filterHiddenPosts(sprkResponse.posts);
+      final filteredBskyPosts = _filterHiddenPosts(bskyPosts);
 
       final combinedPosts = [...filteredSprkPosts, ...filteredBskyPosts];
 
@@ -171,7 +172,7 @@ class PostSearch extends _$PostSearch {
         state.query,
         cursor: sprkCursor,
       );
-      final filteredPosts = await _filterHiddenPosts(response.posts);
+      final filteredPosts = _filterHiddenPosts(response.posts);
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredPosts],
         sprkNextCursor: response.cursor,
@@ -229,7 +230,7 @@ class PostSearch extends _$PostSearch {
           .toList();
 
       final initialCount = state.searchResults.length;
-      final filteredBskyPosts = await _filterHiddenPosts(bskyPosts);
+      final filteredBskyPosts = _filterHiddenPosts(bskyPosts);
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredBskyPosts],
         bskyNextCursor: response.data.cursor,
@@ -244,10 +245,15 @@ class PostSearch extends _$PostSearch {
     }
   }
 
-  Future<List<PostView>> _filterHiddenPosts(List<PostView> posts) async {
+  List<PostView> _filterHiddenPosts(List<PostView> posts) {
+    final preferences = ref.read(userPreferencesProvider).asData?.value;
+    if (preferences == null) {
+      return posts; // Can't filter without preferences
+    }
+
     final filteredPosts = <PostView>[];
     for (final post in posts) {
-      if (!await LabelUtils.shouldHideContent(post.labels ?? [])) {
+      if (!LabelUtils.shouldHideContent(preferences, post.labels ?? [])) {
         filteredPosts.add(post);
       }
     }

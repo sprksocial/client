@@ -56,7 +56,12 @@ class _FeedPageState extends ConsumerState<FeedPage>
 
   @override
   void dispose() {
-    _actionControllerNotifier?.clearController();
+    // Delay clearing the controller to avoid modifying provider state
+    // during widget tree finalization
+    final notifier = _actionControllerNotifier;
+    if (notifier != null) {
+      Future(() => notifier.clearController());
+    }
     pageController.dispose();
     super.dispose();
   }

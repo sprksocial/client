@@ -66,15 +66,9 @@ class ProfileNotifier extends _$ProfileNotifier {
         'Profile loaded successfully for $effectiveDid: ${profile.handle}',
       );
 
-      final isEarlySupporter = await actorRepository.isEarlySupporter(
-        effectiveDid,
-      );
-      logger.d('Early supporter status for $effectiveDid: $isEarlySupporter');
-
       state = AsyncData(
         currentState.copyWith(
           profile: profile,
-          isEarlySupporter: isEarlySupporter,
           showAuthPrompt: false,
           currentViewDid: effectiveDid,
         ),
@@ -207,18 +201,12 @@ class ProfileNotifier extends _$ProfileNotifier {
             final refreshedProfile = await actorRepository.getProfile(
               profile.did,
             );
-            final isEarlySupporter = await actorRepository.isEarlySupporter(
-              profile.did,
-            );
 
             // Only update if state hasn't changed (user hasn't navigated away)
             final currentState = state.asData?.value;
             if (currentState?.profile?.did == profile.did) {
               state = AsyncData(
-                currentState!.copyWith(
-                  profile: refreshedProfile,
-                  isEarlySupporter: isEarlySupporter,
-                ),
+                currentState!.copyWith(profile: refreshedProfile),
               );
             }
           } catch (e) {
@@ -303,18 +291,12 @@ class ProfileNotifier extends _$ProfileNotifier {
             final refreshedProfile = await actorRepository.getProfile(
               profile.did,
             );
-            final isEarlySupporter = await actorRepository.isEarlySupporter(
-              profile.did,
-            );
 
             // Only update if state hasn't changed (user hasn't navigated away)
             final currentState = state.asData?.value;
             if (currentState?.profile?.did == profile.did) {
               state = AsyncData(
-                currentState!.copyWith(
-                  profile: refreshedProfile,
-                  isEarlySupporter: isEarlySupporter,
-                ),
+                currentState!.copyWith(profile: refreshedProfile),
               );
             }
           } catch (e) {

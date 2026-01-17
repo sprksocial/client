@@ -5,6 +5,7 @@ import 'package:spark/src/core/design_system/components/molecules/post_tile.dart
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/search/providers/post_search_provider.dart';
+import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class PostResults extends ConsumerStatefulWidget {
   const PostResults({super.key});
@@ -181,26 +182,21 @@ class _PostResultsState extends ConsumerState<PostResults>
                 }
 
                 final post = state.searchResults[index];
+                final preferences =
+                    ref.read(userPreferencesProvider).asData?.value;
+                final labels = post.labels ?? [];
+                final shouldBlur = preferences != null &&
+                    labels.isNotEmpty &&
+                    LabelUtils.shouldBlurContent(preferences, labels);
 
-                return FutureBuilder<bool>(
-                  future: () async {
-                    final labels = post.labels ?? [];
-                    return labels.isNotEmpty &&
-                        await LabelUtils.shouldBlurContent(labels);
-                  }(),
-                  builder: (context, snapshot) {
-                    final shouldBlur = snapshot.data ?? false;
-
-                    return PostTile(
-                      thumbnailUrl: post.thumbnailUrl,
-                      likes: post.likeCount ?? 0,
-                      seen: false,
-                      nsfwBlur: shouldBlur,
-                      onTap: () {
-                        context.router.push(
-                          StandalonePostRoute(postUri: post.uri.toString()),
-                        );
-                      },
+                return PostTile(
+                  thumbnailUrl: post.thumbnailUrl,
+                  likes: post.likeCount ?? 0,
+                  seen: false,
+                  nsfwBlur: shouldBlur,
+                  onTap: () {
+                    context.router.push(
+                      StandalonePostRoute(postUri: post.uri.toString()),
                     );
                   },
                 );

@@ -1,25 +1,35 @@
 import 'package:atproto/com_atproto_label_defs.dart';
-import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 
+/// Utility class for working with labels.
+///
+/// All methods that need preferences now take them as a parameter instead of
+/// fetching them. This ensures preferences are loaded once and passed down
+/// from the [UserPreferencesProvider].
 class LabelUtils {
-  static Future<LabelPreference> _getLabelPreference(String value) async {
-    final prefRepository = GetIt.instance<PrefRepository>();
-    final preferences = await prefRepository.getPreferences();
+  /// Gets a label preference from the given preferences.
+  /// Returns null if not found instead of throwing.
+  static LabelPreference? getLabelPreferenceFromPrefs(
+    Preferences preferences,
+    String value,
+  ) {
     final contentLabelPrefs = preferences.contentLabelPrefs ?? [];
-    final contentLabelPref = contentLabelPrefs.firstWhere(
-      (pref) => pref.label == value,
-      orElse: () => throw Exception('Label preference not found'),
-    );
-    return LabelPreference(
-      value: contentLabelPref.label,
-      blurs: _visibilityToBlurs(contentLabelPref.visibility),
-      severity: _visibilityToSeverity(contentLabelPref.visibility),
-      defaultSetting: _visibilityToSetting(contentLabelPref.visibility),
-      setting: _visibilityToSetting(contentLabelPref.visibility),
-      adultOnly: _isAdultOnlyLabel(value),
-    );
+    try {
+      final contentLabelPref = contentLabelPrefs.firstWhere(
+        (pref) => pref.label == value,
+      );
+      return LabelPreference(
+        value: contentLabelPref.label,
+        blurs: _visibilityToBlurs(contentLabelPref.visibility),
+        severity: _visibilityToSeverity(contentLabelPref.visibility),
+        defaultSetting: _visibilityToSetting(contentLabelPref.visibility),
+        setting: _visibilityToSetting(contentLabelPref.visibility),
+        adultOnly: _isAdultOnlyLabel(value),
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   static Setting _visibilityToSetting(String visibility) {
@@ -70,99 +80,95 @@ class LabelUtils {
     return adultOnlyLabels.contains(label);
   }
 
-  static Future<bool> shouldShowWarning(List<Label> labels) async {
+  /// Checks if any label should show a warning.
+  /// Takes preferences as a parameter instead of fetching.
+  static bool shouldShowWarning(Preferences preferences, List<Label> labels) {
     if (labels.isEmpty) return false;
 
     for (final label in labels) {
-      try {
-        final preference = await _getLabelPreference(label.val);
-        if (preference.severity == Severity.alert &&
-            preference.setting == Setting.warn) {
-          return true;
-        }
-      } catch (e) {
-        // If no preference found, continue checking other labels
-        continue;
+      final preference = getLabelPreferenceFromPrefs(preferences, label.val);
+      if (preference != null &&
+          preference.severity == Severity.alert &&
+          preference.setting == Setting.warn) {
+        return true;
       }
     }
 
     return false;
   }
 
-  static Future<bool> shouldBlurContent(List<Label> labels) async {
+  /// Checks if content should be blurred.
+  /// Takes preferences as a parameter instead of fetching.
+  static bool shouldBlurContent(Preferences preferences, List<Label> labels) {
     if (labels.isEmpty) return false;
 
     for (final label in labels) {
-      try {
-        final preference = await _getLabelPreference(label.val);
-        if (preference.blurs == Blurs.content ||
-            preference.blurs == Blurs.media &&
-                preference.setting == Setting.warn) {
-          return true;
-        }
-      } catch (e) {
-        // If no preference found, continue checking other labels
-        continue;
+      final preference = getLabelPreferenceFromPrefs(preferences, label.val);
+      if (preference != null &&
+          (preference.blurs == Blurs.content ||
+              (preference.blurs == Blurs.media &&
+                  preference.setting == Setting.warn))) {
+        return true;
       }
     }
 
     return false;
   }
 
-  static Future<List<String>> getWarningLabels(List<Label> labels) async {
+  /// Gets labels that should show warnings.
+  /// Takes preferences as a parameter instead of fetching.
+  static List<String> getWarningLabels(
+    Preferences preferences,
+    List<Label> labels,
+  ) {
     if (labels.isEmpty) return [];
 
     final warningLabels = <String>[];
 
     for (final label in labels) {
-      try {
-        final preference = await _getLabelPreference(label.val);
-        if (preference.severity == Severity.alert &&
-            preference.setting == Setting.warn) {
-          warningLabels.add(label.val);
-        }
-      } catch (e) {
-        // If no preference found, continue checking other labels
-        continue;
+      final preference = getLabelPreferenceFromPrefs(preferences, label.val);
+      if (preference != null &&
+          preference.severity == Severity.alert &&
+          preference.setting == Setting.warn) {
+        warningLabels.add(label.val);
       }
     }
 
     return warningLabels;
   }
 
-  static Future<List<String>> getInformLabels(List<Label> labels) async {
+  /// Gets labels that should show info.
+  /// Takes preferences as a parameter instead of fetching.
+  static List<String> getInformLabels(
+    Preferences preferences,
+    List<Label> labels,
+  ) {
     if (labels.isEmpty) return [];
 
     final informLabels = <String>[];
 
     for (final label in labels) {
-      try {
-        final preference = await _getLabelPreference(label.val);
-        if (preference.severity == Severity.inform &&
-            preference.setting == Setting.warn) {
-          informLabels.add(label.val);
-        }
-      } catch (e) {
-        // If no preference found, continue checking other labels
-        continue;
+      final preference = getLabelPreferenceFromPrefs(preferences, label.val);
+      if (preference != null &&
+          preference.severity == Severity.inform &&
+          preference.setting == Setting.warn) {
+        informLabels.add(label.val);
       }
     }
 
     return informLabels;
   }
 
-  static Future<bool> shouldHideContent(List<Label> labels) async {
+  /// Checks if content should be hidden.
+  /// Takes preferences as a parameter instead of fetching.
+  static bool shouldHideContent(Preferences preferences, List<Label> labels) {
     if (labels.isEmpty) return false;
 
     for (final label in labels) {
-      try {
-        final preference = await _getLabelPreference(label.val);
-        if (preference.setting == Setting.hide || preference.adultOnly) {
-          return true;
-        }
-      } catch (e) {
-        // If no preference found, continue checking other labels
-        continue;
+      final preference = getLabelPreferenceFromPrefs(preferences, label.val);
+      if (preference != null &&
+          (preference.setting == Setting.hide || preference.adultOnly)) {
+        return true;
       }
     }
 

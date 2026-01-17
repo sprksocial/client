@@ -6,7 +6,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
 /// Builder function that creates slivers for the profile grid
@@ -137,7 +136,7 @@ List<Widget> buildProfileGridSlivers({
   );
 }
 
-class ProfileGridTile extends StatefulWidget {
+class ProfileGridTile extends StatelessWidget {
   const ProfileGridTile({
     required this.postView,
     required this.onTap,
@@ -148,46 +147,27 @@ class ProfileGridTile extends StatefulWidget {
   final String? postSource;
   final VoidCallback onTap;
 
-  @override
-  State<ProfileGridTile> createState() => _ProfileGridTileState();
-}
+  /// Check for adult content labels synchronously without network calls
+  bool _hasAdultLabel() {
+    final labels = postView.labels;
+    if (labels == null || labels.isEmpty) return false;
 
-class _ProfileGridTileState extends State<ProfileGridTile> {
-  bool _shouldBlur = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkContentWarning();
-  }
-
-  @override
-  void didUpdateWidget(covariant ProfileGridTile oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.postView.uri != oldWidget.postView.uri) {
-      _checkContentWarning();
-    }
-  }
-
-  Future<void> _checkContentWarning() async {
-    final labels = widget.postView.labels ?? [];
-    final shouldBlur =
-        labels.isNotEmpty && await LabelUtils.shouldBlurContent(labels);
-    if (mounted) {
-      setState(() => _shouldBlur = shouldBlur);
-    }
+    // Check for common adult content labels synchronously
+    const adultLabels = {'porn', 'sexual', 'nudity', 'nsfw', 'adult'};
+    return labels.any((label) => adultLabels.contains(label.val.toLowerCase()));
   }
 
   @override
   Widget build(BuildContext context) {
-    final thumbnailUrl = widget.postView.thumbnailUrl;
+    final thumbnailUrl = postView.thumbnailUrl;
+    final shouldBlur = _hasAdultLabel();
 
     // Use like count as a proxy for views, or 0 if not available
-    final likeCount = widget.postView.likeCount ?? 0;
+    final likeCount = postView.likeCount ?? 0;
 
     if (thumbnailUrl.isEmpty) {
       return GestureDetector(
-        onTap: widget.onTap,
+        onTap: onTap,
         child: ColoredBox(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: const Center(
@@ -204,10 +184,10 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
           thumbnailUrl: thumbnailUrl,
           likes: likeCount,
           seen: false,
-          nsfwBlur: _shouldBlur,
-          onTap: widget.onTap,
+          nsfwBlur: shouldBlur,
+          onTap: onTap,
         ),
-        if (widget.postSource != null)
+        if (postSource != null)
           Positioned(
             top: 8,
             right: 8,
@@ -220,7 +200,7 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
                 borderRadius: BorderRadius.circular(15),
               ),
               child: SvgPicture.asset(
-                widget.postSource == 'bsky'
+                postSource == 'bsky'
                     ? 'images/bsky.svg'
                     : 'images/sprk.svg',
                 width: 12,

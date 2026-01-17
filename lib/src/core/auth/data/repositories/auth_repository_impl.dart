@@ -6,6 +6,7 @@ import 'package:atproto_core/atproto_core.dart' show restoreOAuthSession;
 import 'package:atproto_core/atproto_oauth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:spark/src/core/auth/data/models/account.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/storage/storage.dart';
@@ -16,6 +17,9 @@ import 'package:spark/src/core/utils/oauth_resolver.dart';
 
 /// OAuth client metadata URL
 const String _clientMetadataUrl = 'https://sprk.so/oauth-client-metadata.json';
+
+/// Cached OAuth client metadata to avoid repeated network calls
+OAuthClientMetadata? _cachedClientMetadata;
 
 /// Implementation of the authentication repository for AT Protocol using OAuth
 class AuthRepositoryImpl implements AuthRepository {
@@ -43,6 +47,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> get initializationComplete => _initCompleter.future;
+
+  /// Gets cached OAuth client metadata, fetching once if needed
+  Future<OAuthClientMetadata> _getCachedClientMetadata() async {
+    if (_cachedClientMetadata != null) {
+      return _cachedClientMetadata!;
+    }
+    _cachedClientMetadata = await getClientMetadata(_clientMetadataUrl);
+    return _cachedClientMetadata!;
+  }
 
   @override
   bool get isAuthenticated =>
@@ -105,74 +118,48 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<void> _loadSavedSession() async {
     try {
-      _logger.d('Loading saved OAuth session');
+      _logger.d('Loading saved account');
 
-      final accessToken = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthAccessToken,
-      );
-      final savedRefreshToken = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthRefreshToken,
-      );
-      final publicKey = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthPublicKey,
-      );
-      final privateKey = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthPrivateKey,
-      );
-      final savedDpopNonce = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthDpopNonce,
-      );
-      final savedExpiresAt = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthExpiresAt,
-      );
-      final savedDid = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthDid,
-      );
-      final savedHandle = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthHandle,
-      );
-      final savedPdsEndpoint = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthPdsEndpoint,
-      );
-      final savedOAuthServer = await StorageManager.instance.secure.getString(
-        StorageKeys.oauthServer,
+      // Load account as single JSON object - much faster than multiple reads
+      final accountJson = await StorageManager.instance.secure.getString(
+        StorageKeys.account,
       );
 
-      if (accessToken == null ||
-          savedRefreshToken == null ||
-          publicKey == null ||
-          privateKey == null) {
-        _logger.d('No saved OAuth session found');
+      if (accountJson == null) {
+        _logger.d('No saved account found');
         return;
       }
 
+      final account = Account.fromJsonString(accountJson);
+
       _oauthSession = restoreOAuthSession(
-        accessToken: accessToken,
-        refreshToken: savedRefreshToken,
-        dPoPNonce: savedDpopNonce,
-        publicKey: publicKey,
-        privateKey: privateKey,
+        accessToken: account.accessToken,
+        refreshToken: account.refreshToken,
+        dPoPNonce: account.dpopNonce,
+        publicKey: account.publicKey,
+        privateKey: account.privateKey,
       );
 
       // Parse expiresAt, default to epoch if not found (will trigger refresh)
-      final expiresAt = savedExpiresAt != null
-          ? DateTime.parse(savedExpiresAt)
+      final expiresAt = account.expiresAt != null
+          ? DateTime.parse(account.expiresAt!)
           : DateTime.fromMillisecondsSinceEpoch(0);
 
-      _did = savedDid;
-      _handle = savedHandle;
-      _pdsEndpoint = savedPdsEndpoint;
-      _oauthServer = savedOAuthServer;
-
-      // Recreate OAuth client for token refresh (needed before refresh attempt)
-      if (_oauthServer != null) {
-        final metadata = await getClientMetadata(_clientMetadataUrl);
-        _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-        _logger.d('OAuthClient recreated for session refresh');
-      }
+      _did = account.did;
+      _handle = account.handle;
+      _pdsEndpoint = account.pdsEndpoint;
+      _oauthServer = account.server;
 
       // Check if token needs refresh (5 minutes before expiration per README)
-      if (expiresAt.isBefore(DateTime.now().add(const Duration(minutes: 5)))) {
+      final tokenNeedsRefresh = expiresAt.isBefore(
+        DateTime.now().add(const Duration(minutes: 5)),
+      );
+
+      // Only fetch OAuth client metadata if we need to refresh the token
+      // This avoids a blocking network call on app start when token is valid
+      if (tokenNeedsRefresh && _oauthServer != null) {
+        final metadata = await _getCachedClientMetadata();
+        _oauthClient = OAuthClient(metadata, service: _oauthServer!);
         _logger.d('Access token expired or expiring soon, refreshing');
         final refreshed = await refreshToken();
         if (!refreshed) {
@@ -200,9 +187,9 @@ class AuthRepositoryImpl implements AuthRepository {
         service: pdsHost,
       );
 
-      _logger.i('OAuth session loaded successfully for user: $_handle');
+      _logger.i('Account loaded successfully for user: $_handle');
     } catch (e) {
-      _logger.e('Error loading saved OAuth session', error: e);
+      _logger.e('Error loading saved account', error: e);
     }
   }
 
@@ -210,84 +197,44 @@ class AuthRepositoryImpl implements AuthRepository {
     if (_oauthSession == null) return;
 
     try {
-      _logger.d('Saving OAuth session for user: $_handle');
-      await StorageManager.instance.secure.setString(
-        StorageKeys.oauthAccessToken,
-        _oauthSession!.accessToken,
+      _logger.d('Saving account for user: $_handle');
+
+      final account = Account(
+        accessToken: _oauthSession!.accessToken,
+        refreshToken: _oauthSession!.refreshToken,
+        publicKey: _oauthSession!.$publicKey,
+        privateKey: _oauthSession!.$privateKey,
+        dpopNonce: _oauthSession!.$dPoPNonce,
+        expiresAt: _oauthSession!.expiresAt.toIso8601String(),
+        did: _did,
+        handle: _handle,
+        pdsEndpoint: _pdsEndpoint,
+        server: _oauthServer,
       );
+
       await StorageManager.instance.secure.setString(
-        StorageKeys.oauthRefreshToken,
-        _oauthSession!.refreshToken,
+        StorageKeys.account,
+        account.toJsonString(),
       );
-      await StorageManager.instance.secure.setString(
-        StorageKeys.oauthPublicKey,
-        _oauthSession!.$publicKey,
-      );
-      await StorageManager.instance.secure.setString(
-        StorageKeys.oauthPrivateKey,
-        _oauthSession!.$privateKey,
-      );
-      await StorageManager.instance.secure.setString(
-        StorageKeys.oauthDpopNonce,
-        _oauthSession!.$dPoPNonce,
-      );
-      await StorageManager.instance.secure.setString(
-        StorageKeys.oauthExpiresAt,
-        _oauthSession!.expiresAt.toIso8601String(),
-      );
-      if (_did != null) {
-        await StorageManager.instance.secure.setString(
-          StorageKeys.oauthDid,
-          _did!,
-        );
-      }
-      if (_handle != null) {
-        await StorageManager.instance.secure.setString(
-          StorageKeys.oauthHandle,
-          _handle!,
-        );
-      }
-      if (_pdsEndpoint != null) {
-        await StorageManager.instance.secure.setString(
-          StorageKeys.oauthPdsEndpoint,
-          _pdsEndpoint!,
-        );
-      }
-      if (_oauthServer != null) {
-        await StorageManager.instance.secure.setString(
-          StorageKeys.oauthServer,
-          _oauthServer!,
-        );
-      }
-      _logger.d('OAuth session saved successfully');
+
+      _logger.d('Account saved successfully');
     } catch (e) {
-      _logger.e('Failed to save OAuth session', error: e);
+      _logger.e('Failed to save account', error: e);
     }
   }
 
   Future<void> _clearSavedSession() async {
     try {
-      _logger.d('Clearing saved OAuth session');
-      await StorageManager.instance.secure.remove(StorageKeys.oauthAccessToken);
+      _logger.d('Clearing saved account');
+      await StorageManager.instance.secure.remove(StorageKeys.account);
       await StorageManager.instance.secure.remove(
-        StorageKeys.oauthRefreshToken,
-      );
-      await StorageManager.instance.secure.remove(StorageKeys.oauthPublicKey);
-      await StorageManager.instance.secure.remove(StorageKeys.oauthPrivateKey);
-      await StorageManager.instance.secure.remove(StorageKeys.oauthDpopNonce);
-      await StorageManager.instance.secure.remove(StorageKeys.oauthExpiresAt);
-      await StorageManager.instance.secure.remove(StorageKeys.oauthDid);
-      await StorageManager.instance.secure.remove(StorageKeys.oauthHandle);
-      await StorageManager.instance.secure.remove(StorageKeys.oauthPdsEndpoint);
-      await StorageManager.instance.secure.remove(StorageKeys.oauthServer);
-      await StorageManager.instance.secure.remove(
-        StorageKeys.oauthPendingContext,
+        StorageKeys.pendingAuthContext,
       );
       // Also clear old session format if exists
       await StorageManager.instance.secure.remove(StorageKeys.userSession);
-      _logger.d('OAuth session cleared successfully');
+      _logger.d('Account cleared successfully');
     } catch (e) {
-      _logger.e('Failed to clear OAuth session', error: e);
+      _logger.e('Failed to clear account', error: e);
     }
   }
 
@@ -318,8 +265,8 @@ class AuthRepositoryImpl implements AuthRepository {
       _handle = handle;
       _pdsEndpoint = pdsEndpoint;
 
-      // Get client metadata
-      final metadata = await getClientMetadata(_clientMetadataUrl);
+      // Get client metadata (cached)
+      final metadata = await _getCachedClientMetadata();
       // Resolve OAuth server from PDS endpoint
       _oauthServer = await resolveOAuthServer(pdsEndpoint);
       _logger.d('Resolved OAuth server: $_oauthServer');
@@ -335,12 +282,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Store pending context in case app is killed during OAuth flow
       await StorageManager.instance.secure.setString(
-        StorageKeys.oauthPendingContext,
+        StorageKeys.pendingAuthContext,
         json.encode({
           'handle': handle,
           'did': resolvedDid,
           'pdsEndpoint': pdsEndpoint,
-          'oauthServer': _oauthServer,
+          'server': _oauthServer,
           'state': stateParam,
         }),
       );
@@ -362,8 +309,8 @@ class AuthRepositoryImpl implements AuthRepository {
       _pdsEndpoint = 'https://$service';
       _oauthServer = service;
 
-      // Get client metadata
-      final metadata = await getClientMetadata(_clientMetadataUrl);
+      // Get client metadata (cached)
+      final metadata = await _getCachedClientMetadata();
       _logger.d('Using OAuth server: $service');
       _oauthClient = OAuthClient(metadata, service: _oauthServer!);
 
@@ -377,10 +324,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Store pending context in case app was killed during OAuth flow
       await StorageManager.instance.secure.setString(
-        StorageKeys.oauthPendingContext,
+        StorageKeys.pendingAuthContext,
         json.encode({
           'pdsEndpoint': _pdsEndpoint,
-          'oauthServer': _oauthServer,
+          'server': _oauthServer,
           'state': stateParam,
         }),
       );
@@ -399,14 +346,14 @@ class AuthRepositoryImpl implements AuthRepository {
       if (_oauthClient == null || _pendingContext == null) {
         // Try to restore context if app was killed
         final savedContext = await StorageManager.instance.secure.getString(
-          StorageKeys.oauthPendingContext,
+          StorageKeys.pendingAuthContext,
         );
         if (savedContext != null) {
           final contextData = json.decode(savedContext) as Map<String, dynamic>;
           _handle = contextData['handle'] as String?;
           _did = contextData['did'] as String?;
           _pdsEndpoint = contextData['pdsEndpoint'] as String?;
-          _oauthServer = contextData['oauthServer'] as String?;
+          _oauthServer = contextData['server'] as String?;
           final savedState = contextData['state'] as String?;
 
           // Verify state parameter matches if present
@@ -420,7 +367,7 @@ class AuthRepositoryImpl implements AuthRepository {
               );
               // Clear invalid context
               await StorageManager.instance.secure.remove(
-                StorageKeys.oauthPendingContext,
+                StorageKeys.pendingAuthContext,
               );
               return LoginResult.failed(
                 'OAuth state verification failed. Please try again.',
@@ -430,7 +377,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
           // Recreate OAuth client with the correct OAuth server
           if (_oauthServer != null) {
-            final metadata = await getClientMetadata(_clientMetadataUrl);
+            final metadata = await _getCachedClientMetadata();
             _oauthClient = OAuthClient(metadata, service: _oauthServer!);
           }
         }
@@ -441,7 +388,7 @@ class AuthRepositoryImpl implements AuthRepository {
           );
           // Clear any partial context data
           await StorageManager.instance.secure.remove(
-            StorageKeys.oauthPendingContext,
+            StorageKeys.pendingAuthContext,
           );
           return LoginResult.failed(
             'OAuth session was interrupted. '
@@ -492,7 +439,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // Clear pending context
       await StorageManager.instance.secure.remove(
-        StorageKeys.oauthPendingContext,
+        StorageKeys.pendingAuthContext,
       );
       _pendingContext = null;
 
@@ -565,7 +512,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
         // Try to recreate OAuth client if we have a session but no client
         if (_oauthSession != null && _oauthServer != null) {
-          final metadata = await getClientMetadata(_clientMetadataUrl);
+          final metadata = await _getCachedClientMetadata();
           _oauthClient = OAuthClient(metadata, service: _oauthServer!);
           _logger.d('OAuthClient recreated with service: $_oauthServer');
         } else {

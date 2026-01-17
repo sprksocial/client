@@ -1,12 +1,14 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
-class PostOverlay extends StatelessWidget {
+class PostOverlay extends ConsumerWidget {
   const PostOverlay({
     required this.post,
     super.key,
@@ -30,8 +32,9 @@ class PostOverlay extends StatelessWidget {
   final bool showBlockOption;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final preferences = ref.watch(userPreferencesProvider).asData?.value;
 
     return Stack(
       children: [
@@ -85,10 +88,11 @@ class PostOverlay extends StatelessWidget {
                             ),
                           ),
                         // Author info and caption
-                        FutureBuilder<List<String>>(
-                          future: LabelUtils.getInformLabels(labels),
-                          builder: (context, snapshot) {
-                            final informLabels = snapshot.data ?? [];
+                        Builder(
+                          builder: (context) {
+                            final informLabels = preferences != null
+                                ? LabelUtils.getInformLabels(preferences, labels)
+                                : <String>[];
                             return InfoBar(
                               username: post.author.handle,
                               displayName:

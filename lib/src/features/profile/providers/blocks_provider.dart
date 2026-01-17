@@ -1,6 +1,4 @@
-import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/di/service_locator.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
@@ -10,7 +8,7 @@ part 'blocks_provider.g.dart';
 @Riverpod(keepAlive: true)
 class Blocks extends _$Blocks {
   final GraphRepository _graphRepository = sl<GraphRepository>();
-  final AuthRepository _authRepository = sl<AuthRepository>();
+  final ActorRepository _actorRepository = sl<ActorRepository>();
 
   @override
   Future<PaginatedUserList> build({required String did}) async {
@@ -18,7 +16,7 @@ class Blocks extends _$Blocks {
     final profiles = response.blocks.toList();
     final cursor = response.cursor;
 
-    await _fetchAndMergeProfilesFromBsky(profiles);
+    await _fetchAndMergeProfiles(profiles);
 
     // remove profiles with unknown.invalid handle
     profiles.removeWhere(
@@ -29,46 +27,60 @@ class Blocks extends _$Blocks {
     return PaginatedUserList(profiles: profiles, cursor: cursor);
   }
 
-  Future<void> _fetchAndMergeProfilesFromBsky(
+  /// Fetch missing profile data using ActorRepository (Spark-first with
+  /// Bluesky fallback)
+  /// Only fetches profiles that are actually incomplete (missing key fields)
+  Future<void> _fetchAndMergeProfiles(
     List<ProfileView> profiles,
   ) async {
+    // Check if profile is incomplete - need to check multiple fields
+    // A profile is incomplete if it's missing displayName, description, or avatar
+    // AND has a valid handle (if handle is missing, it's likely a deleted account)
     final didsToFetch = profiles
-        .where((profile) => profile.displayName == null)
+        .where((profile) {
+          // Profile is incomplete if it has a valid handle but is missing key fields
+          final hasValidHandle = profile.handle.isNotEmpty &&
+              profile.handle != 'unknown.invalid';
+          final isIncomplete = hasValidHandle &&
+              (profile.displayName == null ||
+                  profile.description == null ||
+                  profile.avatar == null);
+          return isIncomplete;
+        })
         .map((profile) => profile.did)
         .toList();
 
-    if (didsToFetch.isNotEmpty) {
-      final atproto = _authRepository.atproto;
-      if (atproto != null && atproto.oAuthSession != null) {
-        final bskyClient = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
-        final fetchedProfiles = <dynamic>[];
+    if (didsToFetch.isEmpty) return;
 
-        for (var i = 0; i < didsToFetch.length; i += 25) {
-          final batch = didsToFetch.sublist(
-            i,
-            i + 25 > didsToFetch.length ? didsToFetch.length : i + 25,
-          );
-          final profilesResponse = await bskyClient.actor.getProfiles(
-            actors: batch,
-          );
-          fetchedProfiles.addAll(profilesResponse.data.profiles);
-        }
-        final profilesMap = {for (final p in fetchedProfiles) p.did: p};
+    // Use ActorRepository which has proper Spark-first, Bluesky-fallback logic
+    final fetchedProfiles = <ProfileViewDetailed>[];
 
-        for (var i = 0; i < profiles.length; i++) {
-          final profile = profiles[i];
-          if (profilesMap.containsKey(profile.did)) {
-            final fetchedProfile = profilesMap[profile.did];
-            profiles[i] = profile.copyWith(
-              displayName: fetchedProfile.displayName as String?,
-              description: fetchedProfile.description as String?,
-              handle: fetchedProfile.handle as String,
-              avatar: fetchedProfile.avatar != null
-                  ? Uri.parse(fetchedProfile.avatar as String)
-                  : null,
-            );
-          }
-        }
+    for (var i = 0; i < didsToFetch.length; i += 25) {
+      final batch = didsToFetch.sublist(
+        i,
+        i + 25 > didsToFetch.length ? didsToFetch.length : i + 25,
+      );
+      try {
+        final batchProfiles = await _actorRepository.getProfiles(batch);
+        fetchedProfiles.addAll(batchProfiles);
+      } catch (e) {
+        // If batch fails, continue with other batches
+        continue;
+      }
+    }
+
+    final profilesMap = {for (final p in fetchedProfiles) p.did: p};
+
+    for (var i = 0; i < profiles.length; i++) {
+      final profile = profiles[i];
+      if (profilesMap.containsKey(profile.did)) {
+        final fetchedProfile = profilesMap[profile.did]!;
+        profiles[i] = profile.copyWith(
+          displayName: fetchedProfile.displayName,
+          description: fetchedProfile.description,
+          handle: fetchedProfile.handle,
+          avatar: fetchedProfile.avatar,
+        );
       }
     }
   }
@@ -102,7 +114,7 @@ class Blocks extends _$Blocks {
       final newProfiles = response.blocks.toList();
       final newCursor = response.cursor;
 
-      await _fetchAndMergeProfilesFromBsky(newProfiles);
+      await _fetchAndMergeProfiles(newProfiles);
 
       state = AsyncValue.data(
         state.value!.copyWith(

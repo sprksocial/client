@@ -14,6 +14,7 @@ import 'package:spark/src/features/feed/providers/like_post.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   const ProfileFeedPostWidget({
@@ -43,12 +44,14 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   List<String> _warningLabels = [];
   bool? _overrideIsLiked;
   PostView? _currentPost;
+  Future<PostView?>? _postFuture;
 
   @override
   void initState() {
     super.initState();
-    _loadPostWithFallback().then((post) {
-      if (post != null) {
+    _postFuture = _loadPostWithFallback();
+    _postFuture!.then((post) {
+      if (post != null && mounted) {
         _checkContentWarning(post);
       }
     });
@@ -115,16 +118,23 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     }
   }
 
-  Future<void> _checkContentWarning(PostView postData) async {
+  void _checkContentWarning(PostView postData) {
     final labels = postData.labels ?? [];
+    final preferences = ref.read(userPreferencesProvider).asData?.value;
 
-    if (labels.isNotEmpty) {
-      final shouldShowWarning = await LabelUtils.shouldShowWarning(labels);
+    if (labels.isNotEmpty && preferences != null) {
+      final shouldShowWarning = LabelUtils.shouldShowWarning(
+        preferences,
+        labels,
+      );
 
-      final shouldBlurContent = await LabelUtils.shouldBlurContent(labels);
+      final shouldBlurContent = LabelUtils.shouldBlurContent(
+        preferences,
+        labels,
+      );
 
       if (shouldShowWarning) {
-        final warningLabels = await LabelUtils.getWarningLabels(labels);
+        final warningLabels = LabelUtils.getWarningLabels(preferences, labels);
         if (mounted) {
           setState(() {
             _showWarningOverlay = true;
@@ -153,7 +163,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<PostView?>(
-      future: _loadPostWithFallback(),
+      future: _postFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const ColoredBox(

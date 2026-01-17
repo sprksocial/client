@@ -6,18 +6,9 @@ class StorageKeys {
   static const String dmAccessToken = 'dm_access_token';
   static const String dmRefreshToken = 'dm_refresh_token';
 
-  /// OAuth keys
-  static const String oauthAccessToken = 'oauth_access_token';
-  static const String oauthRefreshToken = 'oauth_refresh_token';
-  static const String oauthPublicKey = 'oauth_public_key';
-  static const String oauthPrivateKey = 'oauth_private_key';
-  static const String oauthDpopNonce = 'oauth_dpop_nonce';
-  static const String oauthExpiresAt = 'oauth_expires_at';
-  static const String oauthPendingContext = 'oauth_pending_context';
-  static const String oauthDid = 'oauth_did';
-  static const String oauthHandle = 'oauth_handle';
-  static const String oauthPdsEndpoint = 'oauth_pds_endpoint';
-  static const String oauthServer = 'oauth_server';
+  /// Account (stores all auth data as single JSON object)
+  static const String account = 'account';
+  static const String pendingAuthContext = 'pending_auth_context';
 
   static const String themeKey = 'app_theme_mode';
 

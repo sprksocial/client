@@ -16,6 +16,7 @@ import 'package:spark/src/features/feed/providers/post_updates.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
@@ -73,14 +74,21 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
     throw Exception('Failed to load post after $maxRetries attempts');
   }
 
-  Future<void> _checkContentWarning(PostView postData) async {
+  void _checkContentWarning(PostView postData) {
     final labels = postData.labels ?? [];
+    final preferences = ref.read(userPreferencesProvider).asData?.value;
 
-    if (labels.isNotEmpty) {
-      final shouldShowWarning = await LabelUtils.shouldShowWarning(labels);
-      final shouldBlurContent = await LabelUtils.shouldBlurContent(labels);
+    if (labels.isNotEmpty && preferences != null) {
+      final shouldShowWarning = LabelUtils.shouldShowWarning(
+        preferences,
+        labels,
+      );
+      final shouldBlurContent = LabelUtils.shouldBlurContent(
+        preferences,
+        labels,
+      );
       if (shouldShowWarning) {
-        final warningLabels = await LabelUtils.getWarningLabels(labels);
+        final warningLabels = LabelUtils.getWarningLabels(preferences, labels);
         setState(() {
           _showWarningOverlay = true;
           _warningLabels = warningLabels;
