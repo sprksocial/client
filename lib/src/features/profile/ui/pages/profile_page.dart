@@ -25,7 +25,6 @@ import 'package:spark/src/features/profile/providers/profile_feed_provider.dart'
 import 'package:spark/src/features/profile/providers/profile_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
-import 'package:spark/src/features/profile/ui/widgets/early_supporter_sheet.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_grid_tab.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_reposts_tab.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
@@ -124,20 +123,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return tabWidget.buildSlivers(context, ref);
   }
 
-  void _showEarlySupporterInfo(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(top: 20),
-          child: EarlySupporterSheet(),
-        ),
-      ),
-    );
-  }
-
   Future<void> _handleUsernameTap(String username) async {
     try {
       final cleanUsername = username.startsWith('@')
@@ -181,16 +166,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     // Tab 0 is the default profile content (built directly, not a route)
     // Tabs 1+ are subpages (route pages)
-    // Initialize all tabs to cache their widgets
+    // Only initialize the active tab widget
     final profileUri = AtUri.parse('at://${widget.did}');
-    _getTabWidget(0);
-    _getTabWidget(1);
+    _getTabWidget(_activeTabIndex);
 
-    // Watch all tab providers to keep their state alive even when not visible
-    // This ensures tabs don't reload when switching between them
-    ref.watch(profileFeedProvider(profileUri, false));
-    final actor = profileUri.hostname;
-    ref.watch(profileRepostsProvider(actor));
+    // Only watch the active tab's provider - lazy load other tabs
+    // This reduces initial load time by not fetching data for hidden tabs
+    if (_activeTabIndex == 0) {
+      ref.watch(profileFeedProvider(profileUri, false));
+    } else if (_activeTabIndex == 1) {
+      final actor = profileUri.hostname;
+      ref.watch(profileRepostsProvider(actor));
+    }
 
     // Build slivers for the active tab using cached widget
     final contentSlivers = _buildSliversForTab(
@@ -254,7 +241,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           isCurrentUser: isCurrentUser,
           isFollowing: profile.viewer?.following != null,
           isBlocking: isBlocking(profile.viewer),
-          isEarlySupporter: state.isEarlySupporter,
           onAvatarTap: (profile.stories?.isNotEmpty ?? false)
               ? () => _openStoriesViewer(profile)
               : null,
@@ -296,7 +282,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           },
           onShareTap: () =>
               _logger.i('Share profile tapped for ${profile.did}'),
-          onEarlySupporterTap: () => _showEarlySupporterInfo(context),
           onMentionTap: _handleUsernameTap,
           onAddStoryTap: isCurrentUser ? () => _handleAddStory(context) : null,
           appBarTitle: profile.displayName ?? profile.handle,

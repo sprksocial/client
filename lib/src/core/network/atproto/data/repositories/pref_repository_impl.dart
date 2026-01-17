@@ -16,9 +16,10 @@ class PrefRepositoryImpl implements PrefRepository {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
     'PrefRepository',
   );
+
   @override
   Future<Preferences> getPreferences() async {
-    _logger.d('Getting user preferences');
+    _logger.d('Getting user preferences from server');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -50,7 +51,7 @@ class PrefRepositoryImpl implements PrefRepository {
 
   @override
   Future<void> putPreferences(Preferences preferences) async {
-    return _client.executeWithRetry(() async {
+    await _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');

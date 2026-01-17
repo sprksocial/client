@@ -7,7 +7,6 @@ part 'profile_state.freezed.dart';
 abstract class ProfileState with _$ProfileState {
   const factory ProfileState({
     ProfileViewDetailed? profile,
-    @Default(false) bool isEarlySupporter,
     @Default(false) bool showAuthPrompt,
     String?
     currentViewDid, // DID being viewed or null for current user's profile

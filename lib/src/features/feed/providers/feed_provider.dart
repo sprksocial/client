@@ -95,22 +95,6 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 
-  bool _shouldUseBlueskyAPI() {
-    // Determine if this feed should use Bluesky API for post hydration
-    switch (_feed) {
-      case Feed(type: 'timeline'):
-        return false;
-      case Feed(type: 'feed'):
-        if (_feed.view != null) {
-          return _feed.view!.uri.collection.toString() ==
-              'app.bsky.feed.generator';
-        }
-      case _:
-        throw ArgumentError('Invalid feed type: $_feed');
-    }
-    return false;
-  }
-
   Future<void> loadAndUpdateFirstLoad() async {
     if (_isLoadingInProgress || state.loadingFirstLoad) {
       _logger.w('Load already in progress, skipping duplicate call');
@@ -446,18 +430,6 @@ class FeedNotifier extends _$FeedNotifier {
     state = state.copyWith(active: active);
     if (active) {
       _downloadManager.setActiveFeed(_feed);
-    }
-  }
-
-  Future<void> refreshPost(AtUri uri) async {
-    try {
-      final posts = await _feedRepository.getPosts([
-        uri,
-      ], bluesky: _shouldUseBlueskyAPI());
-      if (posts.isEmpty) return;
-      replacePost(posts.first);
-    } catch (e, stackTrace) {
-      _logger.e('Error refreshing post $uri: $e', stackTrace: stackTrace);
     }
   }
 

@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/feed/providers/feed_state.dart';
@@ -14,42 +13,17 @@ class DownloadManagerImpl implements DownloadManagerInterface {
     _logger = GetIt.instance<LogService>().getLogger('DownloadManager');
   }
 
+  /// Initializes the download manager with a default feed.
+  /// The actual active feed will be set via [setActiveFeed] once the
+  /// UserPreferencesProvider has loaded.
   Future<void> init() async {
-    try {
-      final prefRepository = GetIt.instance<PrefRepository>();
-      final preferences = await prefRepository.getPreferences();
-      final feeds = preferences.savedFeeds ?? [];
-      SavedFeed? activeSavedFeed;
-      try {
-        activeSavedFeed = feeds.firstWhere((feed) => feed.pinned);
-      } catch (e) {
-        if (feeds.isNotEmpty) {
-          activeSavedFeed = feeds.first;
-        }
-      }
-      if (activeSavedFeed == null) {
-        _activeFeed = Feed(
-          type: 'timeline',
-          config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
-        );
-      } else {
-        _activeFeed = Feed(
-          type: activeSavedFeed.type,
-          config: activeSavedFeed,
-        );
-      }
-    } catch (e) {
-      // If not authenticated yet or preferences can't be loaded, use default
-      // feed
-      _logger.w(
-        'Could not load preferences during init '
-        '(user may not be authenticated yet): $e',
-      );
-      _activeFeed = Feed(
-        type: 'timeline',
-        config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
-      );
-    }
+    // Start with default feed - the actual active feed will be set
+    // via setActiveFeed() once preferences are loaded from the provider
+    _activeFeed = Feed(
+      type: 'timeline',
+      config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
+    );
+    _logger.d('DownloadManager initialized with default feed');
   }
 
   @override

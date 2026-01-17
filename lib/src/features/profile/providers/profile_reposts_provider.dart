@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,7 +9,6 @@ import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_state.dart';
-import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 part 'profile_reposts_provider.g.dart';
 
@@ -88,34 +86,6 @@ class ProfileReposts extends _$ProfileReposts {
     newPosts.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
     allPosts.addAll(newPosts.map((post) => post.uri));
 
-    // Get additional labels from followed labelers for new posts
-    if (newPosts.isNotEmpty) {
-      try {
-        final settings = ref.read(settingsProvider.notifier);
-        final followedLabelers = await settings.getLabelers();
-        final newPostUris = newPosts.map((post) => post.uri).toList();
-        final (cursor: _, labels: additionalLabels) = await _feedRepository
-            .getLabels(newPostUris, sources: followedLabelers);
-        // Add the additional labels to the posts
-        for (final label in additionalLabels) {
-          final uri = AtUri.parse(label.uri);
-          final post = postViews[uri];
-          if (post != null) {
-            final existingLabels =
-                post.labels != null ? List<Label>.from(post.labels!) : <Label>[]
-                  ..add(label);
-            postViews[uri] = post.copyWith(labels: existingLabels);
-          }
-        }
-      } catch (e) {
-        _logger.e('Error fetching additional labels: $e');
-      }
-    }
-
-    // Client-side components decide whether to show videos/images/all.
-    // Here we only apply label-based filtering and return all posts.
-    final filteredPosts = await _filterHiddenPosts(allPosts, postViews);
-
     // End of network when:
     // 1. API returns null cursor (no more pages)
     // 2. API returns fewer posts than requested (last page)
@@ -127,7 +97,7 @@ class ProfileReposts extends _$ProfileReposts {
             currentState.allPosts.length == allPosts.length);
 
     return ProfileFeedState(
-      loadedPosts: filteredPosts,
+      loadedPosts: allPosts,
       allPosts: allPosts,
       isEndOfNetwork: isEndOfNetwork,
       cursor: result.cursor,
@@ -197,68 +167,5 @@ class ProfileReposts extends _$ProfileReposts {
       _logger.e('Error refreshing reposts: $e');
       state = AsyncValue.error(e, StackTrace.current);
     }
-  }
-
-  /// Checks if a post should be hidden based on its labels and user preferences
-  Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
-    final settings = ref.read(settingsProvider.notifier);
-    for (final label in postLabels) {
-      try {
-        final labelPreference = await settings.getLabelPreference(label.val);
-        if (labelPreference.setting == Setting.hide ||
-            labelPreference.adultOnly) {
-          return true;
-        }
-      } catch (e) {
-        // Label preference not found, continue checking other labels
-        continue;
-      }
-    }
-    return false;
-  }
-
-  /// Filters URIs based on label preferences
-  Future<List<AtUri>> _filterHiddenPosts(
-    List<AtUri> uris,
-    Map<AtUri, PostView> postViews,
-  ) async {
-    final filteredUris = <AtUri>[];
-
-    for (final uri in uris) {
-      final postView = postViews[uri];
-      if (postView != null) {
-        // Collect all labels for this post
-        final postLabels = <Label>[];
-
-        // Add labels from the post itself
-        if (postView.labels != null) {
-          postLabels.addAll(postView.labels!);
-        }
-
-        // Add self labels from the post record
-        if (postView.record.selfLabels != null) {
-          for (final selfLabel in postView.record.selfLabels!) {
-            postLabels.add(
-              Label(
-                uri: postView.uri.toString(),
-                val: selfLabel.val,
-                src: postView.uri.toString(),
-                cts: postView.indexedAt,
-              ),
-            );
-          }
-        }
-
-        final shouldHide = await _shouldHidePost(uri, postLabels);
-        if (!shouldHide) {
-          filteredUris.add(uri);
-        }
-      } else {
-        // No post view means no labels, so include the post
-        filteredUris.add(uri);
-      }
-    }
-
-    return filteredUris;
   }
 }

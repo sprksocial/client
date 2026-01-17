@@ -1,5 +1,4 @@
 import 'package:atproto/com_atproto_label_defs.dart';
-import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,11 +11,11 @@ import 'package:spark/src/core/ui/widgets/heart_animation.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
-import 'package:spark/src/features/feed/providers/post_updates.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:spark/src/features/home/providers/navigation_provider.dart';
+import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class FeedPostWidget extends ConsumerStatefulWidget {
   const FeedPostWidget({
@@ -35,7 +34,6 @@ class FeedPostWidget extends ConsumerStatefulWidget {
 class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   Future<PostView>? _postFuture;
   String? _lastPostUri;
-  int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey =
       GlobalKey<PostVideoPlayerState>();
   bool _isAnimatingHeart = false;
@@ -113,8 +111,10 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     }
   }
 
-  Future<void> _checkContentWarning(String postUri) async {
+  void _checkContentWarning(String postUri) {
     final feedState = ref.read(feedProvider(widget.feed));
+    final preferences = ref.read(userPreferencesProvider).asData?.value;
+
     if (widget.index < feedState.loadedPosts.length) {
       final post = feedState.loadedPosts[widget.index];
       if (post.uri.toString() != postUri) {
@@ -124,12 +124,15 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
       if (extraInfo != null &&
           extraInfo.postLabels.isNotEmpty &&
-          !_userDismissedWarning) {
-        final shouldShowWarning = await LabelUtils.shouldShowWarning(
+          !_userDismissedWarning &&
+          preferences != null) {
+        final shouldShowWarning = LabelUtils.shouldShowWarning(
+          preferences,
           extraInfo.postLabels,
         );
         if (shouldShowWarning) {
-          final warningLabels = await LabelUtils.getWarningLabels(
+          final warningLabels = LabelUtils.getWarningLabels(
+            preferences,
             extraInfo.postLabels,
           );
           setState(() {
@@ -164,16 +167,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       final post = feedState.loadedPosts[widget.index];
       final currentUri = post.uri.toString();
 
-      // Watch for post updates to trigger reload
-      final updateCount = ref.watch(postUpdateProvider(currentUri));
-
-      if (_lastPostUri != currentUri || _lastUpdateCount != updateCount) {
-        _lastUpdateCount = updateCount;
+      // Update local state when URI changes (scrolling to different post)
+      // Posts are already hydrated from getFeed - no need to call getPosts
+      if (_lastPostUri != currentUri) {
+        _lastPostUri = currentUri;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            ref
-                .read(feedProvider(widget.feed).notifier)
-                .refreshPost(AtUri.parse(currentUri));
             setState(_loadPost);
             _checkContentWarning(currentUri);
           }
@@ -251,14 +250,13 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         index: widget.index,
                         thumbnail: postData.thumbnailUrl,
                       ),
-                      MediaViewImages() || MediaViewBskyImages() =>
-                        ImageCarousel(
-                          imageUrls: postData.imageUrls,
-                          hasKnownInteractions: currentPost.viewer
-                                  ?.knownInteractions !=
-                              null &&
-                              currentPost.viewer!.knownInteractions!.isNotEmpty,
-                        ),
+                      MediaViewImages() ||
+                      MediaViewBskyImages() => ImageCarousel(
+                        imageUrls: postData.imageUrls,
+                        hasKnownInteractions:
+                            currentPost.viewer?.knownInteractions != null &&
+                            currentPost.viewer!.knownInteractions!.isNotEmpty,
+                      ),
                       MediaViewBskyRecordWithMedia(:final media) =>
                         switch (media) {
                           MediaViewVideo() => PostVideoPlayer(
@@ -275,15 +273,16 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                             index: widget.index,
                             thumbnail: postData.thumbnailUrl,
                           ),
-                          MediaViewImages() || MediaViewBskyImages() =>
-                            ImageCarousel(
-                              imageUrls: postData.imageUrls,
-                              hasKnownInteractions: currentPost.viewer
-                                      ?.knownInteractions !=
-                                  null &&
-                                  currentPost.viewer!.knownInteractions!
-                                      .isNotEmpty,
-                            ),
+                          MediaViewImages() ||
+                          MediaViewBskyImages() => ImageCarousel(
+                            imageUrls: postData.imageUrls,
+                            hasKnownInteractions:
+                                currentPost.viewer?.knownInteractions != null &&
+                                currentPost
+                                    .viewer!
+                                    .knownInteractions!
+                                    .isNotEmpty,
+                          ),
                           _ => const DecoratedBox(
                             decoration: BoxDecoration(color: AppColors.black),
                           ),

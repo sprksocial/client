@@ -31,6 +31,15 @@ class SprkRepositoryImpl implements SprkRepository {
     'SprkRepository',
   );
 
+  // Cached repository instances
+  ActorRepository? _actor;
+  RepoRepository? _repo;
+  GraphRepository? _graph;
+  FeedRepository? _feed;
+  StoryRepository? _story;
+  LabelerRepository? _labeler;
+  SoundRepository? _sound;
+
   /// Get the authentication service
   @override
   AuthRepository get authRepository => _authRepository;
@@ -59,6 +68,9 @@ class SprkRepositoryImpl implements SprkRepository {
   /// only handles actual token expiration.
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) async {
+    // Wait for auth initialization to complete before making API calls
+    await _authRepository.initializationComplete;
+
     try {
       return await apiCall();
     } catch (e) {
@@ -93,23 +105,23 @@ class SprkRepositoryImpl implements SprkRepository {
   }
 
   @override
-  ActorRepository get actor => ActorRepositoryImpl(this);
+  ActorRepository get actor => _actor ??= ActorRepositoryImpl(this);
 
   @override
-  RepoRepository get repo => RepoRepositoryImpl(this);
+  RepoRepository get repo => _repo ??= RepoRepositoryImpl(this);
 
   @override
-  GraphRepository get graph => GraphRepositoryImpl(this);
+  GraphRepository get graph => _graph ??= GraphRepositoryImpl(this);
 
   @override
-  FeedRepository get feed => FeedRepositoryImpl(this);
+  FeedRepository get feed => _feed ??= FeedRepositoryImpl(this);
 
   @override
-  StoryRepository get story => StoryRepositoryImpl(this);
+  StoryRepository get story => _story ??= StoryRepositoryImpl(this);
 
   @override
-  LabelerRepository get labeler => LabelerRepositoryImpl(this);
+  LabelerRepository get labeler => _labeler ??= LabelerRepositoryImpl(this);
 
   @override
-  SoundRepository get sound => SoundRepositoryImpl(this);
+  SoundRepository get sound => _sound ??= SoundRepositoryImpl(this);
 }
