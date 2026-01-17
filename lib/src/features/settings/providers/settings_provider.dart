@@ -33,6 +33,17 @@ class Settings extends _$Settings {
   /// This prevents repeated network calls to getServices for the same labelers.
   final Set<String> _labelerPoliciesChecked = {};
 
+  /// Tracks if the default labeler has been ensured this session
+  bool _defaultLabelerEnsured = false;
+
+  /// Tracks if settings have been loaded to prevent resetting state on rebuild
+  bool _hasLoadedSettings = false;
+
+  /// Tracks if loadSettings is currently in progress to prevent concurrent calls
+  bool _isLoadingSettings = false;
+
+  SettingsState? _preservedState;
+
   FeedRepository get feedRepository =>
       _feedRepository ??= _sprkRepository!.feed;
   SprkRepository get sprkRepository =>
@@ -76,9 +87,23 @@ class Settings extends _$Settings {
     // Watch the preferences provider - when it updates, we'll rebuild
     ref.watch(userPreferencesProvider);
 
+    // Preserve state across rebuilds to prevent the feeds tabs from disappearing
+    listenSelf((previous, next) {
+      _preservedState = next;
+    });
+
+    // If we've already loaded settings once, preserve the state instead of
+    // resetting to default. This prevents the UI from flickering when
+    // userPreferencesProvider triggers a rebuild.
+    if (_hasLoadedSettings && _preservedState != null) {
+      return _preservedState!;
+    }
+
     // Load settings asynchronously but return a temporary state immediately
     // This prevents blocking the UI while loading
-    Future.microtask(loadSettings);
+    if (!_hasLoadedSettings && !_isLoadingSettings) {
+      Future.microtask(loadSettings);
+    }
 
     // Return temporary default state that will be replaced by loadSettings()
     return SettingsState(
@@ -88,6 +113,20 @@ class Settings extends _$Settings {
 
   /// Loads all settings from the preferences provider
   Future<void> loadSettings() async {
+    // Guard against concurrent calls
+    if (_isLoadingSettings) {
+      logger.d('loadSettings already in progress, skipping duplicate call');
+      return;
+    }
+
+    // If already loaded, skip (but allow explicit refresh via syncPreferencesFromServer)
+    if (_hasLoadedSettings) {
+      logger.d('Settings already loaded, skipping');
+      return;
+    }
+
+    _isLoadingSettings = true;
+
     try {
       logger.d('Loading settings from preferences...');
 
@@ -132,6 +171,7 @@ class Settings extends _$Settings {
             feeds: updatedFeeds,
             likedFeeds: likedFeeds,
           );
+          _hasLoadedSettings = true;
           return;
         } catch (e) {
           logger.e('Error setting default preferences: $e');
@@ -158,10 +198,13 @@ class Settings extends _$Settings {
         feeds: feeds,
         likedFeeds: likedFeeds,
       );
+      _hasLoadedSettings = true;
 
       logger.d('Settings state updated successfully');
     } catch (e) {
       logger.e('Error loading settings: $e');
+    } finally {
+      _isLoadingSettings = false;
     }
   }
 
@@ -245,6 +288,8 @@ class Settings extends _$Settings {
   /// - Manually from the settings UI if user wants to refresh preferences
   Future<void> syncPreferencesFromServer() async {
     try {
+      // Reset load state to force a fresh load from server
+      _hasLoadedSettings = false;
       await loadSettings();
       logger.d('Preferences synced successfully');
     } catch (e) {
@@ -322,6 +367,7 @@ class Settings extends _$Settings {
   /// Debug method to reload settings and verify persistence
   Future<void> reloadSettingsForTesting() async {
     logger.d('Manually reloading settings for testing...');
+    _hasLoadedSettings = false;
     await loadSettings();
   }
 
@@ -372,26 +418,35 @@ class Settings extends _$Settings {
         preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
 
     // Ensure default mod service labeler is always present
+    // Only check once per session to avoid unnecessary putPreferences calls
     final modServiceDid = _defaultModServiceDid;
-    final wasAdded = !labelers.contains(modServiceDid);
-    if (wasAdded) {
-      logger.d('Default mod service labeler not found, adding it');
+    if (!_defaultLabelerEnsured) {
+      _defaultLabelerEnsured = true;
+      final isMissing = !labelers.contains(modServiceDid);
+      if (isMissing) {
+        logger.d('Default mod service labeler not found, adding it');
+        labelers = [modServiceDid, ...labelers];
+
+        // Update preferences to include default labeler
+        final updatedLabelers = <LabelerPrefItem>[
+          LabelerPrefItem(did: modServiceDid),
+          ...(preferences.labelers ?? []),
+        ];
+        final updatedPreferencesList =
+            preferences.preferences
+                .where((pref) => !pref.isLabelersPref(pref))
+                .toList()
+              ..add(
+                Preference.labelersPref(labelers: updatedLabelers),
+              );
+
+        await _updatePreferences(
+          Preferences(preferences: updatedPreferencesList),
+        );
+      }
+    } else if (!labelers.contains(modServiceDid)) {
+      // Already checked this session but still need to include it in return
       labelers = [modServiceDid, ...labelers];
-
-      // Update preferences to include default labeler
-      final updatedLabelers = <LabelerPrefItem>[
-        LabelerPrefItem(did: modServiceDid),
-        ...(preferences.labelers ?? []),
-      ];
-      final updatedPreferencesList =
-          preferences.preferences
-              .where((pref) => !pref.isLabelersPref(pref))
-              .toList()
-            ..add(
-              Preference.labelersPref(labelers: updatedLabelers),
-            );
-
-      await _updatePreferences(Preferences(preferences: updatedPreferencesList));
     }
 
     // Ensure all labelers' label values are set as preferences
@@ -499,8 +554,9 @@ class Settings extends _$Settings {
   Future<void> syncLabelers() async {
     try {
       logger.d('Syncing labelers from server...');
-      // Clear the policies cache so we re-fetch them
+      // Clear the caches so we re-check everything
       _labelerPoliciesChecked.clear();
+      _defaultLabelerEnsured = false;
       // Refresh preferences from server first
       await ref.read(userPreferencesProvider.notifier).refresh();
 
@@ -510,6 +566,7 @@ class Settings extends _$Settings {
 
       // Ensure default mod service labeler is present
       final modServiceDid = _defaultModServiceDid;
+      _defaultLabelerEnsured = true;
       if (!labelers.contains(modServiceDid)) {
         labelers.insert(0, modServiceDid);
         final updatedLabelers = <LabelerPrefItem>[
@@ -523,7 +580,9 @@ class Settings extends _$Settings {
               ..add(
                 Preference.labelersPref(labelers: updatedLabelers),
               );
-        await _updatePreferences(Preferences(preferences: updatedPreferencesList));
+        await _updatePreferences(
+          Preferences(preferences: updatedPreferencesList),
+        );
       }
 
       logger.d(

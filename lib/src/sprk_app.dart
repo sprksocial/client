@@ -33,11 +33,9 @@ class _SprkAppState extends ConsumerState<SprkApp> {
     try {
       _logger.d('Syncing user preferences from server...');
       final settingsNotifier = ref.read(settingsProvider.notifier);
+      // syncPreferencesFromServer already calls loadSettings internally
       await settingsNotifier.syncPreferencesFromServer();
-      _logger
-        ..d('User preferences synced successfully')
-        ..d('Loading settings...');
-      await settingsNotifier.loadSettings();
+      _logger.d('User preferences synced successfully');
 
       if (!mounted) return;
 
