@@ -92,8 +92,15 @@ abstract class Preferences with _$Preferences {
   }) = _Preferences;
   const Preferences._();
 
-  factory Preferences.fromJson(Map<String, dynamic> json) =>
-      _$PreferencesFromJson(json);
+  factory Preferences.fromJson(Map<String, dynamic> json) {
+    // Parse the preferences list and use the custom factory constructor
+    // which extracts labelers, savedFeeds, etc.
+    final preferencesJson = json['preferences'] as List<dynamic>? ?? [];
+    final preferences = preferencesJson
+        .map((e) => Preference.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return Preferences(preferences: preferences);
+  }
 }
 
 @Freezed(unionKey: r'$type')
