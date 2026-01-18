@@ -182,10 +182,13 @@ class _PostResultsState extends ConsumerState<PostResults>
                 }
 
                 final post = state.searchResults[index];
-                final preferences =
-                    ref.read(userPreferencesProvider).asData?.value;
+                final preferences = ref
+                    .read(userPreferencesProvider)
+                    .asData
+                    ?.value;
                 final labels = post.labels ?? [];
-                final shouldBlur = preferences != null &&
+                final shouldBlur =
+                    preferences != null &&
                     labels.isNotEmpty &&
                     LabelUtils.shouldBlurContent(preferences, labels);
 

@@ -52,16 +52,16 @@ class FeedPostSkeleton extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Spacer(),
-                  Row(
+                  const Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       // Skeleton Info Bar (Left side)
-                      const Expanded(child: _SkeletonInfoBar()),
+                      Expanded(child: _SkeletonInfoBar()),
 
                       // Skeleton Side Action Bar (Right side)
                       Padding(
-                        padding: const EdgeInsets.only(right: 8, bottom: 8),
-                        child: const _SkeletonSideActionBar(),
+                        padding: EdgeInsets.only(right: 8, bottom: 8),
+                        child: _SkeletonSideActionBar(),
                       ),
                     ],
                   ),
@@ -185,20 +185,20 @@ class _SkeletonSideActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Like button
         _SkeletonActionItem(hasLabel: true),
-        const SizedBox(height: 13),
+        SizedBox(height: 13),
         // Comment button
         _SkeletonActionItem(hasLabel: true),
-        const SizedBox(height: 13),
+        SizedBox(height: 13),
         // Repost button
         _SkeletonActionItem(hasLabel: true),
-        const SizedBox(height: 13),
+        SizedBox(height: 13),
         // Share button
-        _SkeletonActionItem(hasLabel: false),
+        _SkeletonActionItem(),
       ],
     );
   }

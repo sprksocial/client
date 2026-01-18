@@ -91,7 +91,10 @@ class PostOverlay extends ConsumerWidget {
                         Builder(
                           builder: (context) {
                             final informLabels = preferences != null
-                                ? LabelUtils.getInformLabels(preferences, labels)
+                                ? LabelUtils.getInformLabels(
+                                    preferences,
+                                    labels,
+                                  )
                                 : <String>[];
                             return InfoBar(
                               username: post.author.handle,

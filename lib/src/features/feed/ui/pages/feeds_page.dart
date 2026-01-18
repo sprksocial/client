@@ -39,7 +39,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     if (_isPageControllerUpdating) return;
 
     final activeIndex = feeds.indexOf(activeFeed);
-    
+
     // Always try to create controller if we don't have one and have feeds
     if (_pageController == null && feeds.isNotEmpty) {
       _pageController = PageController(
@@ -50,9 +50,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
 
     if (activeIndex < 0 && feeds.isNotEmpty) {
       // If active feed not in list but we have feeds, ensure controller exists
-      if (_pageController == null) {
-        _pageController = PageController(initialPage: 0);
-      }
+      _pageController ??= PageController();
       return;
     }
 
@@ -118,7 +116,8 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
 
     // Ensure controller is created if we have feeds but controller is null
     // This prevents the FeedsBar from disappearing during initialization
-    // Also create it early if feeds list is still empty (handles transition from initial empty state)
+    // Also create it early if feeds list still empty
+    // (handles transition from initial empty state)
     if (_pageController == null) {
       if (feeds.isNotEmpty) {
         final activeIndex = feeds.indexOf(activeFeed);
@@ -126,9 +125,9 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
           initialPage: activeIndex >= 0 ? activeIndex : 0,
         );
       } else {
-        // Create controller even when feeds list is empty to keep FeedsBar visible
-        // This handles the case when settings are still loading (feeds will populate soon)
-        _pageController = PageController(initialPage: 0);
+        // Create controller even when feeds list empty to keep FeedsBar visible
+        // Handles case of settings still loading (feeds will populate soon)
+        _pageController = PageController();
       }
     }
 

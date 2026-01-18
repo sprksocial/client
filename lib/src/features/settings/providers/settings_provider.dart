@@ -39,7 +39,7 @@ class Settings extends _$Settings {
   /// Tracks if settings have been loaded to prevent resetting state on rebuild
   bool _hasLoadedSettings = false;
 
-  /// Tracks if loadSettings is currently in progress to prevent concurrent calls
+  /// Tracks if loadSettings currently in progress to prevent concurrent calls
   bool _isLoadingSettings = false;
 
   SettingsState? _preservedState;
@@ -51,9 +51,9 @@ class Settings extends _$Settings {
   SparkLogger get logger =>
       _logger ??= GetIt.instance<LogService>().getLogger('Settings');
   Feed get defaultFeed => _defaultFeed ??= Feed(
-        type: 'timeline',
-        config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
-      );
+    type: 'timeline',
+    config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
+  );
 
   String get _defaultModServiceDid {
     // Extract DID part from modDid (remove fragment if present)
@@ -77,9 +77,11 @@ class Settings extends _$Settings {
   /// Updates preferences through the UserPreferences provider.
   /// This ensures all watchers are notified of changes.
   Future<void> _updatePreferences(Preferences preferences) async {
-    await ref.read(userPreferencesProvider.notifier).updatePreferences(
-      preferences,
-    );
+    await ref
+        .read(userPreferencesProvider.notifier)
+        .updatePreferences(
+          preferences,
+        );
   }
 
   @override
@@ -87,7 +89,7 @@ class Settings extends _$Settings {
     // Watch the preferences provider - when it updates, we'll rebuild
     ref.watch(userPreferencesProvider);
 
-    // Preserve state across rebuilds to prevent the feeds tabs from disappearing
+    // Preserve state across rebuilds to prevent feeds tabs from disappearing
     listenSelf((previous, next) {
       _preservedState = next;
     });
@@ -119,7 +121,8 @@ class Settings extends _$Settings {
       return;
     }
 
-    // If already loaded, skip (but allow explicit refresh via syncPreferencesFromServer)
+    // Skip if already loaded
+    // (but allow explicit refresh via syncPreferencesFromServer)
     if (_hasLoadedSettings) {
       logger.d('Settings already loaded, skipping');
       return;
@@ -456,8 +459,8 @@ class Settings extends _$Settings {
     return labelers;
   }
 
-  /// Ensures all label values from all subscribed labelers have preferences set.
-  /// Only fetches policies for labelers that haven't been checked yet this session.
+  /// Ensures all label values from all subscribed labelers have prefs set.
+  /// Only fetch policies for labelers that haven't been checked this session.
   Future<void> _ensureAllLabelersPoliciesSet(List<String> labelerDids) async {
     final uncheckedLabelers = labelerDids
         .where((did) => !_labelerPoliciesChecked.contains(did))
@@ -500,7 +503,9 @@ class Settings extends _$Settings {
               Preference.labelersPref(labelers: updatedLabelers),
             );
 
-      await _updatePreferences(Preferences(preferences: updatedPreferencesList));
+      await _updatePreferences(
+        Preferences(preferences: updatedPreferencesList),
+      );
       logger.d('Labeler added successfully: $did');
 
       // Fetch and set default label preferences for this labeler
@@ -542,7 +547,9 @@ class Settings extends _$Settings {
               Preference.labelersPref(labelers: updatedLabelers),
             );
 
-      await _updatePreferences(Preferences(preferences: updatedPreferencesList));
+      await _updatePreferences(
+        Preferences(preferences: updatedPreferencesList),
+      );
       logger.d('Labeler removed successfully: $did');
     } catch (e) {
       logger.e('Error removing labeler: $e');

@@ -112,7 +112,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
             _revealedImages.add(index);
             // Use TweenAnimationBuilder for smooth fade-in on first render
             return TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: 1.0),
+              tween: Tween(begin: 0, end: 1),
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeIn,
               builder: (context, opacity, _) {

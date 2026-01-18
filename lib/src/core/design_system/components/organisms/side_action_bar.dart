@@ -212,7 +212,8 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
     final soundCover = widget.soundCover;
     if (soundCover != null &&
         soundCover.isNotEmpty &&
-        (soundCover.startsWith('http://') || soundCover.startsWith('https://'))) {
+        (soundCover.startsWith('http://') ||
+            soundCover.startsWith('https://'))) {
       children.addAll([
         const SizedBox(height: 13),
         _SoundItem(
@@ -336,7 +337,8 @@ class _SoundItem extends StatelessWidget {
     const albumSize = 35.0;
 
     // Don't render if cover URL is empty or invalid
-    final hasValidCover = cover.isNotEmpty &&
+    final hasValidCover =
+        cover.isNotEmpty &&
         (cover.startsWith('http://') || cover.startsWith('https://'));
 
     return GestureDetector(

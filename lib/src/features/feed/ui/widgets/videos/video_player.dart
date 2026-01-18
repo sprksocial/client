@@ -45,7 +45,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
 
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
-  
+
   // For fade-in animation
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -327,7 +327,8 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         Positioned.fill(
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: videoSize != null && videoSize.width > 0 && videoSize.height > 0
+            child:
+                videoSize != null && videoSize.width > 0 && videoSize.height > 0
                 ? FittedBox(
                     fit: fitMode,
                     child: SizedBox(
