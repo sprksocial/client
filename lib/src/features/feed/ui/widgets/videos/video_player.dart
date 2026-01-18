@@ -46,10 +46,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
 
-  // For fade-in animation
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
-
   int? _lastNavigationIndex;
   int? _lastFeedIndex;
   bool? _lastFeedSettingsVisible;
@@ -72,14 +68,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         ).animate(
           CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
         );
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    );
     initVideoPlayer();
     GetIt.I<LogService>()
         .getLogger('PostVideoPlayer')
@@ -98,7 +86,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
   @override
   void dispose() {
     _bounceController.dispose();
-    _fadeController.dispose();
     videoController?.dispose();
     super.dispose();
   }
@@ -158,8 +145,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       setState(() {
         videoController = videoControllerTemp;
       });
-      // Start fade-in animation
-      _fadeController.forward();
     } catch (e) {
       if (!mounted) return;
     }
@@ -325,20 +310,17 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       alignment: Alignment.center,
       children: [
         Positioned.fill(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child:
-                videoSize != null && videoSize.width > 0 && videoSize.height > 0
-                ? FittedBox(
-                    fit: fitMode,
-                    child: SizedBox(
-                      width: videoSize.width,
-                      height: videoSize.height,
-                      child: BetterPlayer(controller: videoController!),
-                    ),
-                  )
-                : BetterPlayer(controller: videoController!),
-          ),
+          child:
+              videoSize != null && videoSize.width > 0 && videoSize.height > 0
+              ? FittedBox(
+                  fit: fitMode,
+                  child: SizedBox(
+                    width: videoSize.width,
+                    height: videoSize.height,
+                    child: BetterPlayer(controller: videoController!),
+                  ),
+                )
+              : BetterPlayer(controller: videoController!),
         ),
         Positioned.fill(
           child: GestureDetector(
