@@ -699,78 +699,56 @@ class FeedRepositoryImpl implements FeedRepository {
         return [];
       }
 
-      // Separate timeline feeds from custom feeds
-      final timelineFeeds = <SavedFeed>[];
-      final customFeeds = <SavedFeed>[];
+      final bskyUris = <AtUri>[];
+      final sprkUris = <AtUri>[];
+
       for (final savedFeed in savedFeeds) {
         if (savedFeed.type == 'timeline') {
-          timelineFeeds.add(savedFeed);
-        } else {
-          customFeeds.add(savedFeed);
+          // Timeline feeds don't need generator views
+          continue;
         }
-      }
-
-      final feeds = <Feed>[];
-
-      // Add timeline feeds directly (they don't need generator views)
-      for (final savedFeed in timelineFeeds) {
-        feeds.add(Feed(type: 'timeline', config: savedFeed));
-      }
-
-      if (customFeeds.isEmpty) {
-        return feeds;
-      }
-
-      // Group custom feeds by type (Bluesky vs Spark)
-      final bskyFeeds = <SavedFeed>[];
-      final sprkFeeds = <SavedFeed>[];
-      for (final savedFeed in customFeeds) {
         final feedUri = AtUri(savedFeed.value);
         final isBskyFeed =
             feedUri.collection == NSID.parse('app.bsky.feed.generator');
         if (isBskyFeed) {
-          bskyFeeds.add(savedFeed);
+          bskyUris.add(feedUri);
         } else {
-          sprkFeeds.add(savedFeed);
+          sprkUris.add(feedUri);
         }
       }
 
-      // Fetch all Bluesky feed generators at once
-      if (bskyFeeds.isNotEmpty) {
-        final bskyUris = bskyFeeds
-            .map((savedFeed) => AtUri(savedFeed.value))
-            .toList();
-        final bskyViews = await getFeedGenerators(bskyUris, bluesky: true);
-        final viewMap = {for (final view in bskyViews) view.uri: view};
-        for (final savedFeed in bskyFeeds) {
+      // Batch fetch all generator views
+      final bskyViewsFuture = bskyUris.isNotEmpty
+          ? getFeedGenerators(bskyUris, bluesky: true)
+          : Future.value(<GeneratorView>[]);
+      final sprkViewsFuture = sprkUris.isNotEmpty
+          ? getFeedGenerators(sprkUris)
+          : Future.value(<GeneratorView>[]);
+
+      final bskyViews = await bskyViewsFuture;
+      final sprkViews = await sprkViewsFuture;
+
+      // Create view maps for quick lookup
+      final bskyViewMap = {for (final view in bskyViews) view.uri: view};
+      final sprkViewMap = {for (final view in sprkViews) view.uri: view};
+
+      // Build feeds list preserving the original order from savedFeeds
+      final feeds = <Feed>[];
+      for (final savedFeed in savedFeeds) {
+        if (savedFeed.type == 'timeline') {
+          feeds.add(Feed(type: 'timeline', config: savedFeed));
+        } else {
           final feedUri = AtUri(savedFeed.value);
+          final isBskyFeed =
+              feedUri.collection == NSID.parse('app.bsky.feed.generator');
+          final viewMap = isBskyFeed ? bskyViewMap : sprkViewMap;
           final view = viewMap[feedUri];
           if (view != null) {
             feeds.add(Feed(type: 'feed', config: savedFeed, view: view));
           } else {
             _logger.w(
-              'Feed generator view not found for Bluesky feed: $feedUri',
+              'Feed generator view not found for ${isBskyFeed ? 'Bluesky' : 'Spark'} feed: $feedUri',
             );
-            // Fallback: create feed without view
-            feeds.add(Feed(type: 'feed', config: savedFeed));
-          }
-        }
-      }
-
-      // Fetch all Spark feed generators at once
-      if (sprkFeeds.isNotEmpty) {
-        final sprkUris = sprkFeeds
-            .map((savedFeed) => AtUri(savedFeed.value))
-            .toList();
-        final sprkViews = await getFeedGenerators(sprkUris);
-        final viewMap = {for (final view in sprkViews) view.uri: view};
-        for (final savedFeed in sprkFeeds) {
-          final feedUri = AtUri(savedFeed.value);
-          final view = viewMap[feedUri];
-          if (view != null) {
-            feeds.add(Feed(type: 'feed', config: savedFeed, view: view));
-          } else {
-            _logger.w('Feed generator view not found for Spark feed: $feedUri');
             // Fallback: create feed without view
             feeds.add(Feed(type: 'feed', config: savedFeed));
           }
