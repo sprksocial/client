@@ -10,6 +10,7 @@ class FeedSettingsVisibility extends _$FeedSettingsVisibility {
   }
 
   void setVisible(bool visible) {
+    if (!ref.mounted) return;
     state = visible;
   }
 }
