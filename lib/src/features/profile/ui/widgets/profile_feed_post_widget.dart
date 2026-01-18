@@ -219,8 +219,8 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     ),
                     MediaViewImages() || MediaViewBskyImages() => ImageCarousel(
                       imageUrls: post.imageUrls,
-                      hasKnownInteractions: post.viewer?.knownInteractions !=
-                              null &&
+                      hasKnownInteractions:
+                          post.viewer?.knownInteractions != null &&
                           post.viewer!.knownInteractions!.isNotEmpty,
                     ),
                     MediaViewBskyRecordWithMedia(:final media) =>
@@ -241,14 +241,13 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                               : null,
                           index: widget.index,
                         ),
-                        MediaViewImages() || MediaViewBskyImages() =>
-                          ImageCarousel(
-                            imageUrls: post.imageUrls,
-                            hasKnownInteractions: post.viewer
-                                    ?.knownInteractions !=
-                                null &&
-                                post.viewer!.knownInteractions!.isNotEmpty,
-                          ),
+                        MediaViewImages() ||
+                        MediaViewBskyImages() => ImageCarousel(
+                          imageUrls: post.imageUrls,
+                          hasKnownInteractions:
+                              post.viewer?.knownInteractions != null &&
+                              post.viewer!.knownInteractions!.isNotEmpty,
+                        ),
                         _ => const DecoratedBox(
                           decoration: BoxDecoration(color: AppColors.black),
                         ),

@@ -85,14 +85,15 @@ class UserList extends _$UserList {
     List<ProfileView> profiles,
   ) async {
     // Check if profile is incomplete - need to check multiple fields
-    // A profile is incomplete if it's missing displayName, description, or avatar
-    // AND has a valid handle (if handle is missing, it's likely a deleted account)
+    // Profile is incomplete if it's missing displayName, description, or avatar
+    // AND has a valid handle (if handle missing, it's likely a deleted account)
     final didsToFetch = profiles
         .where((profile) {
-          // Profile is incomplete if it has a valid handle but is missing key fields
-          final hasValidHandle = profile.handle.isNotEmpty &&
-              profile.handle != 'unknown.invalid';
-          final isIncomplete = hasValidHandle &&
+          // Profile is incomplete if it has valid handle but missing key fields
+          final hasValidHandle =
+              profile.handle.isNotEmpty && profile.handle != 'unknown.invalid';
+          final isIncomplete =
+              hasValidHandle &&
               (profile.displayName == null ||
                   profile.description == null ||
                   profile.avatar == null);

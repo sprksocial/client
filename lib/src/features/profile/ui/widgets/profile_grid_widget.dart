@@ -200,9 +200,7 @@ class ProfileGridTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(15),
               ),
               child: SvgPicture.asset(
-                postSource == 'bsky'
-                    ? 'images/bsky.svg'
-                    : 'images/sprk.svg',
+                postSource == 'bsky' ? 'images/bsky.svg' : 'images/sprk.svg',
                 width: 12,
                 height: 12,
                 package: 'assets',

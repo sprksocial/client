@@ -61,7 +61,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
     // during widget tree finalization
     final notifier = _actionControllerNotifier;
     if (notifier != null) {
-      Future(() => notifier.clearController());
+      Future(notifier.clearController);
     }
     pageController.dispose();
     super.dispose();

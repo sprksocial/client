@@ -101,6 +101,10 @@ abstract class Preferences with _$Preferences {
         .toList();
     return Preferences(preferences: preferences);
   }
+
+  Map<String, dynamic> toJson() => {
+    'preferences': preferences.map((e) => e.toJson()).toList(),
+  };
 }
 
 @Freezed(unionKey: r'$type')
