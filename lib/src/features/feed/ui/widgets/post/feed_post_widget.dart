@@ -181,7 +181,10 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     }
 
     if (_postFuture == null) {
-      return const Center(child: CircularProgressIndicator());
+      // Show black background - skeleton is shown at feed_page level
+      return const DecoratedBox(
+        decoration: BoxDecoration(color: AppColors.black),
+      );
     }
 
     // If user is not on feeds tab, show empty container to dispose video
@@ -348,11 +351,9 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             ),
           );
         }
+        // Show black background - skeleton is shown at feed_page level
         return const DecoratedBox(
           decoration: BoxDecoration(color: AppColors.black),
-          child: Center(
-            child: CircularProgressIndicator(color: AppColors.white),
-          ),
         );
       },
     );

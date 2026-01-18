@@ -7,6 +7,7 @@ import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/feed_post_skeleton.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/no_more_posts.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
@@ -151,7 +152,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
       key: _refreshIndicatorKey,
       onRefresh: onRefresh,
       child: state.loadingFirstLoad
-          ? const Center(child: CircularProgressIndicator())
+          ? const FeedPostSkeleton()
           : state.error
           ? Center(
               child: Column(
@@ -223,14 +224,6 @@ class _FeedPageState extends ConsumerState<FeedPage>
                       decoration: BoxDecoration(color: AppColors.black),
                     );
                   }
-                }
-                // Handle first load state
-                else if (state.length == 0 && state.loadingFirstLoad) {
-                  return shouldBeActive
-                      ? const Center(child: CircularProgressIndicator())
-                      : const DecoratedBox(
-                          decoration: BoxDecoration(color: AppColors.black),
-                        );
                 }
                 // Handle empty state
                 else if (state.length == 0 && !state.loadingFirstLoad) {

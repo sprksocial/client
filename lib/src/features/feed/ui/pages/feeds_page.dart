@@ -168,7 +168,11 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
               },
             )
           else
-            const Center(child: CircularProgressIndicator()),
+            // Show black background briefly while feeds initialize
+            // The FeedPage will show skeleton once it renders
+            const DecoratedBox(
+              decoration: BoxDecoration(color: AppColors.black),
+            ),
           // Always show FeedsBar once we have a controller
           // The controller is created as soon as we have activeFeed,
           // keeping it visible through the initialization transition
