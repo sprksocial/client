@@ -25,6 +25,8 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
   late List<Widget> _cachedPages;
   int currentIndex = 0;
   bool _imagesPreloaded = false;
+  // Track which images have already been revealed to prevent animation restart
+  final Set<int> _revealedImages = {};
 
   @override
   void initState() {
@@ -97,10 +99,28 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
         width: double.infinity,
         gaplessPlayback: true,
         frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          if (wasSynchronouslyLoaded || frame != null) {
+          if (wasSynchronouslyLoaded) {
             return child;
           }
-          return const Center(child: CircularProgressIndicator());
+          if (frame != null) {
+            // Check if this image has already been revealed to prevent
+            // animation restart on subsequent frameBuilder calls
+            if (_revealedImages.contains(index)) {
+              return child;
+            }
+            // Mark as revealed before animating
+            _revealedImages.add(index);
+            // Use TweenAnimationBuilder for smooth fade-in on first render
+            return TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeIn,
+              builder: (context, opacity, _) {
+                return Opacity(opacity: opacity, child: child);
+              },
+            );
+          }
+          return const SizedBox.shrink();
         },
         errorBuilder: (context, error, stackTrace) => const Center(
           child: Icon(FluentIcons.error_circle_24_regular),
