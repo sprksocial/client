@@ -86,17 +86,17 @@ class Settings extends _$Settings {
 
   @override
   SettingsState build() {
-    // Watch the preferences provider - when it updates, we'll rebuild
-    ref.watch(userPreferencesProvider);
+    // Note: We intentionally don't watch userPreferencesProvider here.
+    // Watching it causes rebuilds that can race with loadSettings() and
+    // reset the state. Instead, we explicitly call syncPreferencesFromServer()
+    // when we need to refresh preferences.
 
     // Preserve state across rebuilds to prevent feeds tabs from disappearing
     listenSelf((previous, next) {
       _preservedState = next;
     });
 
-    // If we've already loaded settings once, preserve the state instead of
-    // resetting to default. This prevents the UI from flickering when
-    // userPreferencesProvider triggers a rebuild.
+    // If we've already loaded settings once, preserve the state
     if (_hasLoadedSettings && _preservedState != null) {
       return _preservedState!;
     }
@@ -136,6 +136,11 @@ class Settings extends _$Settings {
       // Wait for auth to be initialized before trying to load settings
       final authRepository = sprkRepository.authRepository;
       await authRepository.initializationComplete;
+
+      // Don't load settings if not authenticated - wait for login
+      if (!authRepository.isAuthenticated) {
+        return;
+      }
 
       // Get preferences from the provider (waits for it to load if needed)
       final preferences = await _getPreferences();
@@ -291,8 +296,16 @@ class Settings extends _$Settings {
   /// - Manually from the settings UI if user wants to refresh preferences
   Future<void> syncPreferencesFromServer() async {
     try {
-      // Reset load state to force a fresh load from server
+      // Reset all load state to force a fresh load from server
+      // Reset flags to handle race conditions (e.g., login while loading)
       _hasLoadedSettings = false;
+      _isLoadingSettings = false;
+      _defaultLabelerEnsured = false;
+      // Refresh preferences from server - use Future to avoid modifying
+      // provider during widget build phase
+      await Future(() async {
+        await ref.read(userPreferencesProvider.notifier).refresh();
+      });
       await loadSettings();
       logger.d('Preferences synced successfully');
     } catch (e) {

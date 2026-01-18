@@ -26,7 +26,11 @@ class _SprkAppState extends ConsumerState<SprkApp> {
   void initState() {
     super.initState();
     ref.read(themeProvider.notifier).initialize();
-    _initializeApp();
+    // Defer initialization to after the widget tree is built
+    // to avoid modifying providers during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeApp();
+    });
   }
 
   Future<void> _initializeApp() async {
