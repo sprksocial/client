@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/feed/ui/widgets/images/moderate_page_scroll_physics.dart';
 
 class ImageCarousel extends ConsumerStatefulWidget {
   const ImageCarousel({
@@ -29,7 +30,8 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: 0);
+    currentIndex = 0;
     // Create image providers for all images upfront
     _imageProviders = widget.imageUrls
         .map(CachedNetworkImageProvider.new)
@@ -46,7 +48,20 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
       _preloadAllImages();
       _buildCachedPages();
     }
+    // Ensure page controller is at page 0 after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _pageController.hasClients) {
+        final currentPage = _pageController.page?.round() ?? 0;
+        if (currentPage != 0) {
+          _pageController.jumpToPage(0);
+          setState(() {
+            currentIndex = 0;
+          });
+        }
+      }
+    });
   }
+
 
   @override
   void dispose() {
@@ -152,11 +167,20 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
           controller: _pageController,
           itemCount: _cachedPages.length,
           allowImplicitScrolling: true,
-          itemBuilder: (context, index) => _cachedPages[index],
+          physics: const ModeratePageScrollPhysics(),
+          itemBuilder: (context, index) {
+            // Ensure we only build pages that exist
+            if (index >= 0 && index < _cachedPages.length) {
+              return _cachedPages[index];
+            }
+            return const SizedBox.shrink();
+          },
           onPageChanged: (index) {
-            setState(() {
-              currentIndex = index;
-            });
+            if (index >= 0 && index < widget.imageUrls.length) {
+              setState(() {
+                currentIndex = index;
+              });
+            }
           },
         ),
         Positioned(
