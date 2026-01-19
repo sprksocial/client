@@ -747,7 +747,8 @@ class FeedRepositoryImpl implements FeedRepository {
             feeds.add(Feed(type: 'feed', config: savedFeed, view: view));
           } else {
             _logger.w(
-              'Feed generator view not found for ${isBskyFeed ? 'Bluesky' : 'Spark'} feed: $feedUri',
+              'Feed generator view not found for '
+              '${isBskyFeed ? 'Bluesky' : 'Spark'} feed: $feedUri',
             );
             // Fallback: create feed without view
             feeds.add(Feed(type: 'feed', config: savedFeed));
