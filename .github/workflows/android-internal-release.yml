@@ -58,7 +58,7 @@ jobs:
           echo "SIGNUPS_DISABLED=false" >> .env
           
           # Set versionCode (run number)
-          VERSION_CODE=$(github.run_number)
+          VERSION_CODE=${{ github.run_number }}
           sed -i "s/^\(version:.*\)+[0-9]*\$/\1+${VERSION_CODE}/" pubspec.yaml
           echo "Using versionCode: $VERSION_CODE"
 
