@@ -30,7 +30,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0);
+    _pageController = PageController();
     currentIndex = 0;
     // Create image providers for all images upfront
     _imageProviders = widget.imageUrls
@@ -61,7 +61,6 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
       }
     });
   }
-
 
   @override
   void dispose() {
