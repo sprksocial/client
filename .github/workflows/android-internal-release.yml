@@ -57,10 +57,8 @@ jobs:
           echo "SHOWCASES_LICENSE_FLUTTER=${{ secrets.SHOWCASES_LICENSE_FLUTTER }}" >> .env
           echo "SIGNUPS_DISABLED=false" >> .env
           
-          # Set versionCode (commit count + run attempt)
-          COMMIT_COUNT=$(git rev-list --count HEAD)
-          BUILD_ATTEMPT=${{ github.run_attempt }}
-          VERSION_CODE=$((COMMIT_COUNT * 10 + BUILD_ATTEMPT))
+          # Set versionCode (run number)
+          VERSION_CODE=$(github.run_number)
           sed -i "s/^\(version:.*\)+[0-9]*\$/\1+${VERSION_CODE}/" pubspec.yaml
           echo "Using versionCode: $VERSION_CODE"
 
