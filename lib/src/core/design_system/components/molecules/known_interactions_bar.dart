@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:spark/src/core/design_system/components/atoms/avatar_stack.dart';
@@ -83,23 +85,29 @@ class _InteractionPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: const BoxDecoration(
-        color: Color(0x33FFFFFF),
-        borderRadius: BorderRadius.all(Radius.circular(500)),
-        border: GradientBoxBorder(
-          gradient: AppGradients.glassStroke,
-          width: 2,
+    return ClipRRect(
+      borderRadius: const BorderRadius.all(Radius.circular(500)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: const BoxDecoration(
+            color: Color(0x33FFFFFF),
+            borderRadius: BorderRadius.all(Radius.circular(500)),
+            border: GradientBoxBorder(
+              gradient: AppGradients.glassStroke,
+              width: 2,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon,
+              const SizedBox(width: 6),
+              AvatarStack(avatars: avatars),
+            ],
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          icon,
-          const SizedBox(width: 6),
-          AvatarStack(avatars: avatars),
-        ],
       ),
     );
   }

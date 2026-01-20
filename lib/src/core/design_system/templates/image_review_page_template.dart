@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/design_system/components/atoms/toggles/toggle.dart';
 import 'package:spark/src/core/design_system/components/molecules/glass_input.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
@@ -407,7 +406,7 @@ class _CrossPostSection extends StatelessWidget {
                 color: AppColors.greyWhite,
               ),
             ),
-            trailing: Toggle(value: value, onChanged: onChanged),
+            trailing: Switch(value: value, onChanged: onChanged),
             onTap: () => onChanged(!value),
           ),
         ),
