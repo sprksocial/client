@@ -347,14 +347,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.5+3"
-  carousel_slider:
-    dependency: "direct main"
-    description:
-      name: carousel_slider
-      sha256: bcc61735345c9ab5cb81073896579e735f81e35fd588907a393143ea986be8ff
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.1.1"
   cbor:
     dependency: transitive
     description:
@@ -1870,7 +1862,7 @@ packages:
     source: hosted
     version: "1.0.1"
   web_socket_channel:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: web_socket_channel
       sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
