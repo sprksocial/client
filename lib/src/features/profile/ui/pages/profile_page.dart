@@ -215,7 +215,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         onPressed: () =>
-                            context.router.push(const ProfileSettingsRoute()),
+                            context.router.push(const SettingsRoute()),
                         icon: AppIcons.gear(color: colorScheme.onSurface),
                       ),
                     ),
@@ -291,8 +291,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 padding: const EdgeInsets.only(right: 8),
                 child: IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: () =>
-                      context.router.push(const ProfileSettingsRoute()),
+                  onPressed: () => context.router.push(const SettingsRoute()),
                   icon: AppIcons.gear(color: colorScheme.onSurface),
                 ),
               )
@@ -447,7 +446,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       onPressed: () =>
-                          context.router.push(const ProfileSettingsRoute()),
+                          context.router.push(const SettingsRoute()),
                       icon: AppIcons.gear(color: colorScheme.onSurface),
                     ),
                   ),

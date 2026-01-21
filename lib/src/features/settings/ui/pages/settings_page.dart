@@ -11,15 +11,14 @@ import 'package:spark/src/features/auth/auth.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 
 @RoutePage()
-class ProfileSettingsPage extends ConsumerStatefulWidget {
-  const ProfileSettingsPage({super.key});
+class SettingsPage extends ConsumerStatefulWidget {
+  const SettingsPage({super.key});
 
   @override
-  ConsumerState<ProfileSettingsPage> createState() =>
-      _ProfileSettingsPageState();
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
+class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _handleLogout() async {
     try {
       // Show loading indicator
@@ -50,7 +49,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
   }
 
   Future<void> _handleUpdateSparkPosts() async {
-    final logger = GetIt.instance<LogService>().getLogger('ProfileSettings');
+    final logger = GetIt.instance<LogService>().getLogger('Settings');
 
     try {
       // Show loading indicator
@@ -201,13 +200,36 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
         elevation: 0,
         leading: const AppLeadingButton(),
         title: const Text(
-          'Profile Settings',
+          'Settings',
         ),
         centerTitle: true,
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: const Text(
+                  'Labelers',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                trailing: const Icon(FluentIcons.tag_24_regular),
+                onTap: () => context.router.push(const LabelerManagementRoute()),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
