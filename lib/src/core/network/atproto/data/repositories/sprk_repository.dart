@@ -22,6 +22,7 @@ abstract class SprkRepository {
   String get sprkDid;
   String get bskyDid => 'did:web:api.bsky.app#bsky_appview';
   String get modDid => 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler';
+  String get bskyModDid => 'did:plc:ar7c4by46qjdydhdevvrndac#atproto_labeler';
 
   ActorRepository get actor;
   RepoRepository get repo;
