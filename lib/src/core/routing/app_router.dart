@@ -84,8 +84,9 @@ class AppRouter extends RootStackRouter {
 
     AutoRoute(page: EditProfileRoute.page, path: '/profile-editor'),
 
-    AutoRoute(page: ProfileSettingsRoute.page, path: '/profile-settings'),
-    AutoRoute(page: BlocksRoute.page, path: '/blocks'),
+    AutoRoute(page: SettingsRoute.page, path: '/settings'),
+    AutoRoute(page: LabelerManagementRoute.page, path: '/settings/labelers'),
+    AutoRoute(page: BlocksRoute.page, path: '/settings/blocks'),
 
     // Messages/DMs routes
     AutoRoute(page: ChatRoute.page, path: '/chat/:conversationId'),
@@ -105,7 +106,7 @@ class AppRouter extends RootStackRouter {
     ),
     CustomRoute(
       page: FeedSettingsRoute.page,
-      path: '/settings',
+      path: '/feed-settings',
       customRouteBuilder: feedSettingsBuilder,
     ),
     CustomRoute(

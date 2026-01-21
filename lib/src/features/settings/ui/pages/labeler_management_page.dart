@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
@@ -214,41 +215,41 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
     if (_isLoading) {
       return Scaffold(
         backgroundColor: colorScheme.surface,
+        appBar: AppBar(
+          backgroundColor: colorScheme.surface,
+          elevation: 0,
+          leading: const AppLeadingButton(),
+          title: const Text('Labelers'),
+          centerTitle: true,
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        leading: const AppLeadingButton(),
+        title: const Text('Labelers'),
+        centerTitle: true,
+      ),
       body: RefreshIndicator(
         onRefresh: _loadLabelers,
         child: CustomScrollView(
           slivers: [
-            // Header section
+            // Description section
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Labelers',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Manage the labelers that provide content moderation '
-                      'labels for your feeds.',
-                      style: TextStyle(
-                        color: colorScheme.onSurface.withAlpha(178),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Manage the labelers that provide content moderation '
+                  'labels for your feeds.',
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withAlpha(178),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),

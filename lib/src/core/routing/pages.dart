@@ -27,7 +27,7 @@ export 'package:spark/src/features/settings/ui/pages/feed_list_page.dart';
 export 'package:spark/src/features/settings/ui/pages/feed_settings_page.dart';
 export 'package:spark/src/features/settings/ui/pages/labeler_label_settings_page.dart';
 export 'package:spark/src/features/settings/ui/pages/labeler_management_page.dart';
-export 'package:spark/src/features/settings/ui/pages/profile_settings_page.dart';
+export 'package:spark/src/features/settings/ui/pages/settings_page.dart';
 export 'package:spark/src/features/sound/ui/pages/sound_page.dart';
 export 'package:spark/src/features/stories/ui/pages/all_stories_page.dart';
 export 'package:spark/src/features/stories/ui/pages/author_stories_page.dart';
