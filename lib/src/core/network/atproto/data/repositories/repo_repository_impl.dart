@@ -248,8 +248,14 @@ class RepoRepositoryImpl implements RepoRepository {
         final subjectData = input.subject.data;
 
         Map<String, dynamic> body;
+        var isBskyPost = false;
 
         if (subjectData is RepoStrongRef) {
+          // Check if this is a Bluesky post
+          isBskyPost = subjectData.uri.collection.toString().startsWith(
+            'app.bsky',
+          );
+
           body = {
             'subject': {
               r'$type': 'com.atproto.repo.strongRef',
@@ -267,11 +273,15 @@ class RepoRepositoryImpl implements RepoRepository {
           body['reason'] = input.reason;
         }
 
-        // Send to Spark's Mod service
+        // Route to appropriate moderation service
+        final modServiceDid = isBskyPost ? _client.bskyModDid : _client.modDid;
+        _logger.d(
+          'Routing report to ${isBskyPost ? 'Bluesky' : 'Spark'} moderation '
+          'service: $modServiceDid',
+        );
+
         final headers = {
-          'Authorization': 'Bearer ${atproto.session!.accessJwt}',
-          'Content-Type': 'application/json',
-          'atproto-proxy': _client.modDid,
+          'atproto-proxy': modServiceDid,
         };
 
         try {
