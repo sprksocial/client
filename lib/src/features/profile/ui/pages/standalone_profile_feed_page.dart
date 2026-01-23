@@ -19,11 +19,15 @@ class StandaloneProfileFeedPage extends ConsumerStatefulWidget {
     @PathParam('did') required this.did,
     required this.videosOnly,
     required this.initialPostIndex,
+    this.bsky = false,
     super.key,
   });
   final String did;
   final bool videosOnly;
   final int initialPostIndex;
+
+  /// Whether to use Bluesky API instead of Spark API.
+  final bool bsky;
 
   @override
   ConsumerState<StandaloneProfileFeedPage> createState() =>
@@ -63,7 +67,7 @@ class _StandaloneProfileFeedPageState
     }
 
     final feedState = ref.watch(
-      profileFeedProvider(profileAtUri, widget.videosOnly),
+      profileFeedProvider(profileAtUri, widget.videosOnly, widget.bsky),
     );
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -112,6 +116,7 @@ class _StandaloneProfileFeedPageState
                           profileFeedProvider(
                             profileAtUri,
                             widget.videosOnly,
+                            widget.bsky,
                           ).notifier,
                         )
                         .loadMore();
@@ -156,6 +161,7 @@ class _StandaloneProfileFeedPageState
                             profileFeedProvider(
                               profileAtUri,
                               widget.videosOnly,
+                              widget.bsky,
                             ).notifier,
                           )
                           .refresh();

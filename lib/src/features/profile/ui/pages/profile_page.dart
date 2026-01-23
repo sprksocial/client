@@ -34,6 +34,7 @@ class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({
     @PathParam('did') required this.did,
     this.initialProfile,
+    this.bsky = false,
     super.key,
   });
   final String did;
@@ -41,6 +42,10 @@ class ProfilePage extends ConsumerStatefulWidget {
   /// Optional initial profile data to show while loading.
   // Can be partially filled - only did & handle required in ProfileViewBasic.
   final actor_models.ProfileViewBasic? initialProfile;
+
+  /// Whether to use Bluesky API instead of Spark API.
+  /// Defaults to false (Spark API).
+  final bool bsky;
 
   @override
   ConsumerState<ProfilePage> createState() => _ProfilePageState();
@@ -77,10 +82,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             _scrollController.position.maxScrollExtent - 500) {
       final profileUri = AtUri.parse('at://${widget.did}');
       if (_activeTabIndex == 0) {
-        ref.read(profileFeedProvider(profileUri, false).notifier).loadMore();
+        ref
+            .read(profileFeedProvider(profileUri, false, widget.bsky).notifier)
+            .loadMore();
       } else if (_activeTabIndex == 1) {
         final actor = profileUri.hostname;
-        ref.read(profileRepostsProvider(actor).notifier).loadMore();
+        ref
+            .read(profileRepostsProvider(actor, widget.bsky).notifier)
+            .loadMore();
       }
     }
   }
@@ -98,13 +107,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     switch (tabIndex) {
       case 0:
         // First tab - default profile grid content (not a route)
-        tabWidget = ProfileGridTab(profileUri: profileUri);
+        tabWidget = ProfileGridTab(profileUri: profileUri, bsky: widget.bsky);
       case 1:
         // Second tab - reposts
-        tabWidget = ProfileRepostsTab(profileUri: profileUri);
+        tabWidget = ProfileRepostsTab(
+          profileUri: profileUri,
+          bsky: widget.bsky,
+        );
       default:
         // Fallback to first tab
-        tabWidget = ProfileGridTab(profileUri: profileUri);
+        tabWidget = ProfileGridTab(profileUri: profileUri, bsky: widget.bsky);
     }
 
     // Cache the tab widget to keep it loaded
@@ -159,8 +171,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final profileStateAsync = ref.watch(profileProvider(did: widget.did));
-    final notifier = ref.read(profileProvider(did: widget.did).notifier);
+    final profileStateAsync = ref.watch(
+      profileProvider(did: widget.did, bsky: widget.bsky),
+    );
+    final notifier = ref.read(
+      profileProvider(did: widget.did, bsky: widget.bsky).notifier,
+    );
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -173,10 +189,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     // Only watch the active tab's provider - lazy load other tabs
     // This reduces initial load time by not fetching data for hidden tabs
     if (_activeTabIndex == 0) {
-      ref.watch(profileFeedProvider(profileUri, false));
+      ref.watch(profileFeedProvider(profileUri, false, widget.bsky));
     } else if (_activeTabIndex == 1) {
       final actor = profileUri.hostname;
-      ref.watch(profileRepostsProvider(actor));
+      ref.watch(profileRepostsProvider(actor, widget.bsky));
     }
 
     // Build slivers for the active tab using cached widget
@@ -211,12 +227,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             appBarActions: isCurrentUser
                 ? [
                     Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: 4),
                       child: IconButton(
                         padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
                         onPressed: () =>
                             context.router.push(const SettingsRoute()),
-                        icon: AppIcons.gear(color: colorScheme.onSurface),
+                        icon: AppIcons.gear(
+                          color: colorScheme.onSurface,
+                          size: 28,
+                        ),
                       ),
                     ),
                   ]
@@ -280,97 +302,96 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               _logger.e('Error unblocking profile', error: e);
             }
           },
-          onShareTap: () =>
-              _logger.i('Share profile tapped for ${profile.did}'),
           onMentionTap: _handleUsernameTap,
           onAddStoryTap: isCurrentUser ? () => _handleAddStory(context) : null,
-          appBarTitle: profile.displayName ?? profile.handle,
+          appBarTitle: profile.handle,
           appBarActions: [
             if (isCurrentUser)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => context.router.push(const SettingsRoute()),
-                  icon: AppIcons.gear(color: colorScheme.onSurface),
-                ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onPressed: () => context.router.push(const SettingsRoute()),
+                icon: AppIcons.gear(color: colorScheme.onSurface, size: 28),
               )
             else
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: GestureDetector(
-                  onTap: () => OptionsPanel.show(
+              IconButton(
+                onPressed: () => OptionsPanel.show(
+                  context: context,
+                  onReport: () => showDialog(
                     context: context,
-                    onReport: () => showDialog(
-                      context: context,
-                      useRootNavigator: false,
-                      builder: (dContext) => ReportDialog(
-                        postUri:
-                            'at://${profile.did}/app.bsky.actor.profile/self',
-                        postCid: profile.did,
-                        onSubmit: (subject, reasonType, reason) async {
-                          try {
-                            await notifier.createReport(
-                              did: profile.did,
-                              reasonType: reasonType,
-                              reason: reason,
-                            );
-                          } catch (e) {
-                            _logger.e('Error creating report', error: e);
-                          }
-                        },
-                      ),
+                    useRootNavigator: false,
+                    builder: (dContext) => ReportDialog(
+                      postUri:
+                          'at://${profile.did}/app.bsky.actor.profile/self',
+                      postCid: profile.did,
+                      onSubmit: (subject, reasonType, reason) async {
+                        try {
+                          await notifier.createReport(
+                            did: profile.did,
+                            reasonType: reasonType,
+                            reason: reason,
+                          );
+                        } catch (e) {
+                          _logger.e('Error creating report', error: e);
+                        }
+                      },
                     ),
-                    onBlock: () async {
-                      final wasBlocked = isBlocking(profile.viewer);
+                  ),
+                  onBlock: () async {
+                    final wasBlocked = isBlocking(profile.viewer);
 
-                      // Show confirmation dialog
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(
-                            wasBlocked ? 'Unblock User' : 'Block User',
-                          ),
-                          content: Text(
-                            wasBlocked
-                                ? 'Are you sure you want to unblock this user?'
-                                : 'Are you sure you want to block this user? '
-                                      'You will no longer see their posts.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              style: TextButton.styleFrom(
-                                foregroundColor: wasBlocked ? null : Colors.red,
-                              ),
-                              child: Text(wasBlocked ? 'Unblock' : 'Block'),
-                            ),
-                          ],
+                    // Show confirmation dialog
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(
+                          wasBlocked ? 'Unblock User' : 'Block User',
                         ),
+                        content: Text(
+                          wasBlocked
+                              ? 'Are you sure you want to unblock this user?'
+                              : 'Are you sure you want to block this user? '
+                                    'You will no longer see their posts.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: wasBlocked ? null : Colors.red,
+                            ),
+                            child: Text(wasBlocked ? 'Unblock' : 'Block'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirmed != true) return;
+
+                    try {
+                      await notifier.toggleBlock();
+                    } catch (e) {
+                      _logger.e(
+                        'Error blocking/unblocking profile',
+                        error: e,
                       );
-
-                      if (confirmed != true) return;
-
-                      try {
-                        await notifier.toggleBlock();
-                      } catch (e) {
-                        _logger.e(
-                          'Error blocking/unblocking profile',
-                          error: e,
-                        );
-                      }
-                    },
-                    isBlocked: isBlocking(profile.viewer),
-                    isProfile: true,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    child: AppIcons.moreHoriz(color: colorScheme.onSurface),
-                  ),
+                    }
+                  },
+                  isBlocked: isBlocking(profile.viewer),
+                  isProfile: true,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                icon: AppIcons.moreHoriz(
+                  color: colorScheme.onSurface,
+                  size: 35,
                 ),
               ),
           ],
@@ -405,13 +426,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           followersCount: '0',
           followingCount: '0',
           isCurrentUser: false,
-          appBarTitle: initial?.displayName ?? initial?.handle,
+          appBarTitle: initial?.handle ?? 'loading',
           appBarActions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                child: AppIcons.moreHoriz(color: colorScheme.onSurface),
+            IconButton(
+              onPressed: () {},
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              icon: AppIcons.moreHoriz(
+                color: colorScheme.onSurface,
+                size: 28,
               ),
             ),
           ],
@@ -442,12 +467,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           appBarActions: isCurrentUser
               ? [
                   Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 4),
                     child: IconButton(
                       padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
                       onPressed: () =>
                           context.router.push(const SettingsRoute()),
-                      icon: AppIcons.gear(color: colorScheme.onSurface),
+                      icon: AppIcons.gear(
+                        color: colorScheme.onSurface,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ]

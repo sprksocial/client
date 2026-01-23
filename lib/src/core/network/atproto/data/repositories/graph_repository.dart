@@ -18,7 +18,8 @@ abstract class GraphRepository {
   /// Follow a user
   ///
   /// [did] The DID of the user to follow
-  Future<FollowUserResponse> followUser(String did);
+  /// [bsky] Whether to use Bluesky follow records instead of Spark
+  Future<FollowUserResponse> followUser(String did, {bool bsky = false});
 
   /// Unfollow a user
   ///
@@ -29,8 +30,13 @@ abstract class GraphRepository {
   ///
   /// [did] The DID of the user to toggle follow for
   /// [currentFollowUri] The follow URI if following, null if not
+  /// [bsky] Whether to use Bluesky follow records instead of Spark
   /// Returns the follow URI if now following, null if unfollowed
-  Future<String?> toggleFollow(String did, AtUri? currentFollowUri);
+  Future<String?> toggleFollow(
+    String did,
+    AtUri? currentFollowUri, {
+    bool bsky = false,
+  });
 
   /// Get blocks for a DID
   ///

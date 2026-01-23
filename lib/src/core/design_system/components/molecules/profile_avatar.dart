@@ -63,12 +63,6 @@ class ProfileAvatar extends StatelessWidget {
                         ? AppColors.darkPurple
                         : AppColors.lightLavender,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDarkMode
-                          ? AppColors.darkPurple
-                          : AppColors.lightLavender,
-                      width: 2,
-                    ),
                   ),
             child: hasStories
                 ? Container(

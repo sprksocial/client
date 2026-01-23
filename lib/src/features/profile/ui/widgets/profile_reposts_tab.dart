@@ -1,9 +1,9 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_grid_widget.dart';
@@ -13,10 +13,14 @@ import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
 class ProfileRepostsTab extends ProfileTabBase {
   const ProfileRepostsTab({
     required this.profileUri,
+    this.bsky = false,
     super.key,
   });
 
   final AtUri profileUri;
+
+  /// Whether to use Bluesky API instead of Spark API.
+  final bool bsky;
 
   @override
   List<Widget> buildSlivers(BuildContext context, WidgetRef ref) {
@@ -24,7 +28,7 @@ class ProfileRepostsTab extends ProfileTabBase {
     final actor = profileUri.hostname;
 
     void onPostTap(BuildContext context, WidgetRef ref, AtUri postUri) {
-      ref.read(profileRepostsProvider(actor)).whenData((repostsState) {
+      ref.read(profileRepostsProvider(actor, bsky)).whenData((repostsState) {
         final filteredUris = repostsState.loadedPosts;
         final postIndex = filteredUris.indexOf(postUri);
         if (postIndex != -1) {
@@ -32,6 +36,7 @@ class ProfileRepostsTab extends ProfileTabBase {
             StandaloneRepostsFeedRoute(
               did: actor,
               initialPostIndex: postIndex,
+              bsky: bsky,
             ),
           );
         } else {
@@ -64,7 +69,7 @@ class ProfileRepostsTab extends ProfileTabBase {
     required String actor,
     required Function(BuildContext, WidgetRef, AtUri) onPostTap,
   }) {
-    final repostsState = ref.watch(profileRepostsProvider(actor));
+    final repostsState = ref.watch(profileRepostsProvider(actor, bsky));
 
     return repostsState.when(
       data: (state) {
@@ -78,8 +83,7 @@ class ProfileRepostsTab extends ProfileTabBase {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      FluentIcons.arrow_repeat_all_24_regular,
+                    AppIcons.repost(
                       size: 48,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -161,13 +165,13 @@ class ProfileRepostsTab extends ProfileTabBase {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(FluentIcons.error_circle_24_regular, size: 48),
+                const Icon(Icons.error_outline, size: 48),
                 const SizedBox(height: 16),
                 Text('Error loading reposts: $error'),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref
-                      .read(profileRepostsProvider(actor).notifier)
+                      .read(profileRepostsProvider(actor, bsky).notifier)
                       .refresh(),
                   child: const Text('Retry'),
                 ),

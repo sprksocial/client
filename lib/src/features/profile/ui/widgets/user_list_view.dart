@@ -26,13 +26,23 @@ class UserListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (users.isEmpty) {
-      return const Center(
-        child: Text('No users to display.'),
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        controller: scrollController,
+        children: const [
+          Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('No users to display.'),
+            ),
+          ),
+        ],
       );
     }
 
     return ListView.builder(
       controller: scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: users.length + (isFetchingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (isFetchingMore && index == users.length) {

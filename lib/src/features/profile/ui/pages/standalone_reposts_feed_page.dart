@@ -18,10 +18,14 @@ class StandaloneRepostsFeedPage extends ConsumerStatefulWidget {
   const StandaloneRepostsFeedPage({
     @PathParam('did') required this.did,
     required this.initialPostIndex,
+    this.bsky = false,
     super.key,
   });
   final String did;
   final int initialPostIndex;
+
+  /// Whether to use Bluesky API instead of Spark API.
+  final bool bsky;
 
   @override
   ConsumerState<StandaloneRepostsFeedPage> createState() =>
@@ -58,7 +62,9 @@ class _StandaloneRepostsFeedPageState
       });
     }
 
-    final repostsState = ref.watch(profileRepostsProvider(widget.did));
+    final repostsState = ref.watch(
+      profileRepostsProvider(widget.did, widget.bsky),
+    );
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -102,7 +108,12 @@ class _StandaloneRepostsFeedPageState
                   if (index >= filteredUris.length - 3 &&
                       !state.isEndOfNetwork) {
                     ref
-                        .read(profileRepostsProvider(widget.did).notifier)
+                        .read(
+                          profileRepostsProvider(
+                            widget.did,
+                            widget.bsky,
+                          ).notifier,
+                        )
                         .loadMore();
                   }
                 },
@@ -143,7 +154,12 @@ class _StandaloneRepostsFeedPageState
                   ElevatedButton(
                     onPressed: () {
                       ref
-                          .read(profileRepostsProvider(widget.did).notifier)
+                          .read(
+                            profileRepostsProvider(
+                              widget.did,
+                              widget.bsky,
+                            ).notifier,
+                          )
                           .refresh();
                     },
                     child: const Text('Retry'),

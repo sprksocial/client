@@ -222,7 +222,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 trailing: const Icon(FluentIcons.tag_24_regular),
-                onTap: () => context.router.push(const LabelerManagementRoute()),
+                onTap: () =>
+                    context.router.push(const LabelerManagementRoute()),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,

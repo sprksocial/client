@@ -16,8 +16,11 @@ List<Widget> buildProfileGridSlivers({
   required bool videosOnly,
   required Function(BuildContext, WidgetRef, AtUri) onPostTap,
   bool both = false,
+  bool bsky = false,
 }) {
-  final feedState = ref.watch(profileFeedProvider(profileUri, videosOnly));
+  final feedState = ref.watch(
+    profileFeedProvider(profileUri, videosOnly, bsky),
+  );
 
   return feedState.when(
     data: (state) {
@@ -124,7 +127,13 @@ List<Widget> buildProfileGridSlivers({
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref
-                    .read(profileFeedProvider(profileUri, videosOnly).notifier)
+                    .read(
+                      profileFeedProvider(
+                        profileUri,
+                        videosOnly,
+                        bsky,
+                      ).notifier,
+                    )
                     .refresh(),
                 child: const Text('Retry'),
               ),

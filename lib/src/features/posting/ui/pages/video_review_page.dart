@@ -111,8 +111,12 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         final did = ref.read(currentDidProvider);
         if (did != null) {
           ref
-            ..invalidate(profileFeedProvider(AtUri.parse('at://$did'), false))
-            ..invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
+            ..invalidate(
+              profileFeedProvider(AtUri.parse('at://$did'), false, false),
+            )
+            ..invalidate(
+              profileFeedProvider(AtUri.parse('at://$did'), true, false),
+            );
         }
         if (postRef == null) {
           return;

@@ -71,41 +71,6 @@ class _InfoBarTemplateState extends State<InfoBarTemplate>
     widget.onDescriptionExpandToggle?.call(_isDescriptionExpanded);
   }
 
-  Widget _buildHandleText(BuildContext context, String handle) {
-    const color = AppColors.greyWhite;
-
-    final parts = handle.split('.');
-    if (parts.length == 1) {
-      return GestureDetector(
-        onTap: widget.onHandleTap,
-        child: Text(
-          '@$handle',
-          style: AppTypography.textSmallThin.copyWith(color: color),
-        ),
-      );
-    }
-
-    final first = parts.first;
-    final rest = parts.sublist(1).join('.');
-    return GestureDetector(
-      onTap: widget.onHandleTap,
-      child: RichText(
-        text: TextSpan(
-          style: AppTypography.textSmallThin.copyWith(color: color),
-          children: [
-            TextSpan(text: '@$first'),
-            TextSpan(
-              text: '.$rest',
-              style: AppTypography.textSmallThin.copyWith(
-                color: color.withAlpha(128),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     const textColor = AppColors.greyWhite;
@@ -117,43 +82,35 @@ class _InfoBarTemplateState extends State<InfoBarTemplate>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: ProfileAvatar(
-                  avatarUrl: widget.avatarUrl,
-                  displayName: widget.displayName,
-                  size: 36,
-                  onTap: widget.onAvatarTap ?? widget.onTitleTap,
-                ),
-              ),
-            ),
-
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: widget.onTitleTap,
-                    child: Text(
-                      widget.displayName,
-                      style: AppTypography.textMediumBold.copyWith(
-                        color: textColor,
+              child: GestureDetector(
+                onTap: widget.onTitleTap,
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: ProfileAvatar(
+                        avatarUrl: widget.avatarUrl,
+                        displayName: widget.displayName,
+                        size: 32,
+                        onTap: widget.onAvatarTap ?? widget.onTitleTap,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Expanded(child: _buildHandleText(context, widget.handle)),
-                      if (widget.altAvailable) _AltPill(onTap: widget.onAltTap),
-                    ],
-                  ),
-                ],
+
+                    Expanded(
+                      child: Text(
+                        widget.handle,
+                        style: AppTypography.textMediumBold.copyWith(
+                          color: textColor,
+                          fontSize: 17,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (widget.altAvailable) _AltPill(onTap: widget.onAltTap),
+                  ],
+                ),
               ),
             ),
             if (widget.showFollowButton)

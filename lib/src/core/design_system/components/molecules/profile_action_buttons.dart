@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/text_button.dart'
-    as ds;
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   const ProfileActionButtons({
@@ -13,7 +14,6 @@ class ProfileActionButtons extends StatelessWidget {
     this.onFollowTap,
     this.onUnfollowTap,
     this.onUnblockTap,
-    this.onShareTap,
   });
 
   final bool isCurrentUser;
@@ -23,7 +23,6 @@ class ProfileActionButtons extends StatelessWidget {
   final VoidCallback? onFollowTap;
   final VoidCallback? onUnfollowTap;
   final VoidCallback? onUnblockTap;
-  final VoidCallback? onShareTap;
 
   @override
   Widget build(BuildContext context) {
@@ -31,16 +30,8 @@ class ProfileActionButtons extends StatelessWidget {
       return Row(
         children: [
           Expanded(
-            child: ds.TextButton(
-              label: 'Edit',
+            child: _EditButton(
               onTap: onEditTap,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ds.TextButton(
-              label: 'Share Profile',
-              onTap: onShareTap,
             ),
           ),
         ],
@@ -62,6 +53,48 @@ class ProfileActionButtons extends StatelessWidget {
         ),
         const SizedBox(width: 8),
       ],
+    );
+  }
+}
+
+/// Edit button that matches the FollowButton's following state style
+class _EditButton extends StatelessWidget {
+  const _EditButton({
+    this.onTap,
+  });
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return InteractivePressable(
+      onTap: onTap,
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      child: Container(
+        width: double.infinity,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          border: Border.fromBorderSide(
+            BorderSide(
+              color: isDark
+                  ? AppColors.grey700.withValues(alpha: 0.3)
+                  : AppColors.grey100.withValues(alpha: 0.3),
+              width: 1.14667,
+            ),
+          ),
+        ),
+        child: const Align(
+          child: Text(
+            'Edit',
+            textAlign: TextAlign.center,
+            style: AppTypography.textSmallMedium,
+          ),
+        ),
+      ),
     );
   }
 }

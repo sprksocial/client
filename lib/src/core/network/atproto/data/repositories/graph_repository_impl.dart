@@ -93,8 +93,8 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<FollowUserResponse> followUser(String did) async {
-    _logger.d('Following user with DID: $did');
+  Future<FollowUserResponse> followUser(String did, {bool bsky = false}) async {
+    _logger.d('Following user with DID: $did, bsky: $bsky');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -113,7 +113,9 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('Session DID not available');
       }
 
-      const collection = 'so.sprk.graph.follow';
+      final collection = bsky
+          ? 'app.bsky.graph.follow'
+          : 'so.sprk.graph.follow';
 
       try {
         _logger.d('Checking if already following user: $did');
@@ -164,8 +166,15 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<String?> toggleFollow(String did, AtUri? currentFollowUri) async {
-    _logger.d('Toggling follow for DID: $did, current URI: $currentFollowUri');
+  Future<String?> toggleFollow(
+    String did,
+    AtUri? currentFollowUri, {
+    bool bsky = false,
+  }) async {
+    _logger.d(
+      'Toggling follow for DID: $did, current URI: $currentFollowUri, '
+      'bsky: $bsky',
+    );
     return _client.executeWithRetry(() async {
       if (currentFollowUri != null) {
         // User is following, so unfollow
@@ -174,7 +183,7 @@ class GraphRepositoryImpl implements GraphRepository {
         return null;
       } else {
         // User is not following, so follow
-        final response = await followUser(did);
+        final response = await followUser(did, bsky: bsky);
         _logger.i('User followed via toggle: ${response.uri}');
         return response.uri;
       }

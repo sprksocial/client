@@ -29,8 +29,8 @@ class ProfileNotifier extends _$ProfileNotifier {
   late final SparkLogger logger;
 
   @override
-  Future<ProfileState> build({String? did}) async {
-    logger.d('Building ProfileNotifier for did: $did');
+  Future<ProfileState> build({String? did, bool bsky = false}) async {
+    logger.d('Building ProfileNotifier for did: $did, bsky: $bsky');
     final initialState = ProfileState(currentViewDid: did);
     await loadProfileData(did, initialState);
     // Return the state value if available, otherwise return initial state
@@ -59,8 +59,11 @@ class ProfileNotifier extends _$ProfileNotifier {
     }
 
     try {
-      logger.d('Loading profile for DID: $effectiveDid');
-      final profile = await actorRepository.getProfile(effectiveDid);
+      logger.d('Loading profile for DID: $effectiveDid, bsky: $bsky');
+      final profile = await actorRepository.getProfile(
+        effectiveDid,
+        useBluesky: bsky,
+      );
 
       logger.d(
         'Profile loaded successfully for $effectiveDid: ${profile.handle}',
@@ -86,7 +89,7 @@ class ProfileNotifier extends _$ProfileNotifier {
   Future<void> refreshProfile() async {
     final currentProfileState = state.asData?.value;
     final currentDid = currentProfileState?.currentViewDid;
-    logger.d('Refreshing profile for DID: $currentDid');
+    logger.d('Refreshing profile for DID: $currentDid, bsky: $bsky');
 
     final didToRefresh = currentDid ?? authRepository.did;
     if (didToRefresh == null) {
@@ -100,8 +103,8 @@ class ProfileNotifier extends _$ProfileNotifier {
       // Invalidate feed providers to force a rebuild rather than calling
       // notifier methods directly, which can fail if providers are disposed
       ref
-        ..invalidate(profileFeedProvider(profileUri, true))
-        ..invalidate(profileFeedProvider(profileUri, false));
+        ..invalidate(profileFeedProvider(profileUri, true, bsky))
+        ..invalidate(profileFeedProvider(profileUri, false, bsky));
 
       // Load profile data
       await loadProfileData(
@@ -162,6 +165,7 @@ class ProfileNotifier extends _$ProfileNotifier {
       final newFollowUriResult = await sprkRepository.graph.toggleFollow(
         profile.did,
         profile.viewer?.following,
+        bsky: bsky,
       );
 
       if (newFollowUriResult != null) {
@@ -173,7 +177,14 @@ class ProfileNotifier extends _$ProfileNotifier {
         logger.i('Successfully unfollowed ${profile.did}.');
       }
 
-      // Update state optimistically first
+      // Optimistically update the UI: follow state and follower count
+      final currentFollowersCount = profile.followersCount ?? 0;
+
+      // Update follower count: increment on follow, decrement on unfollow
+      final newFollowersCount = newFollowUriResult != null
+          ? currentFollowersCount + 1
+          : (currentFollowersCount > 0 ? currentFollowersCount - 1 : 0);
+
       final optimisticViewer =
           profile.viewer?.copyWith(
             following: newFollowUriResult != null
@@ -186,34 +197,13 @@ class ProfileNotifier extends _$ProfileNotifier {
                 : null,
           );
 
-      final optimisticProfile = profile.copyWith(viewer: optimisticViewer);
-      state = AsyncData(
-        originalStateValue.copyWith(profile: optimisticProfile),
+      final optimisticProfile = profile.copyWith(
+        viewer: optimisticViewer,
+        followersCount: newFollowersCount,
       );
 
-      // Then refresh the profile data in the background to ensure consistency
-      // Use a small delay to allow backend to propagate changes
-      // Note: This is intentionally unawaited - we use optimistic updates above
-      // & refresh in the background. If this fails, optimistic state remains.
-      unawaited(
-        Future.delayed(const Duration(milliseconds: 500)).then((_) async {
-          try {
-            final refreshedProfile = await actorRepository.getProfile(
-              profile.did,
-            );
-
-            // Only update if state hasn't changed (user hasn't navigated away)
-            final currentState = state.asData?.value;
-            if (currentState?.profile?.did == profile.did) {
-              state = AsyncData(
-                currentState!.copyWith(profile: refreshedProfile),
-              );
-            }
-          } catch (e) {
-            logger.w('Background profile refresh failed: $e');
-            // Keep the optimistic state if refresh fails
-          }
-        }),
+      state = AsyncData(
+        originalStateValue.copyWith(profile: optimisticProfile),
       );
 
       return newFollowUriResult;
@@ -263,7 +253,7 @@ class ProfileNotifier extends _$ProfileNotifier {
         logger.i('Successfully unblocked ${profile.did}.');
       }
 
-      // Update state optimistically first
+      // Optimistically update the UI: block state
       final optimisticViewer =
           profile.viewer?.copyWith(
             blocking: newBlockUriResult != null
@@ -279,31 +269,6 @@ class ProfileNotifier extends _$ProfileNotifier {
       final optimisticProfile = profile.copyWith(viewer: optimisticViewer);
       state = AsyncData(
         originalStateValue.copyWith(profile: optimisticProfile),
-      );
-
-      // Then refresh the profile data in the background to ensure consistency
-      // Use a small delay to allow backend to propagate changes
-      // Note: This is intentionally unawaited - we use optimistic updates above
-      // & refresh in the background. If this fails, optimistic state remains.
-      unawaited(
-        Future.delayed(const Duration(milliseconds: 500)).then((_) async {
-          try {
-            final refreshedProfile = await actorRepository.getProfile(
-              profile.did,
-            );
-
-            // Only update if state hasn't changed (user hasn't navigated away)
-            final currentState = state.asData?.value;
-            if (currentState?.profile?.did == profile.did) {
-              state = AsyncData(
-                currentState!.copyWith(profile: refreshedProfile),
-              );
-            }
-          } catch (e) {
-            logger.w('Background profile refresh failed: $e');
-            // Keep the optimistic state if refresh fails
-          }
-        }),
       );
 
       return newBlockUriResult;

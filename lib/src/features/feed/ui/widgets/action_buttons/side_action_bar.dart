@@ -370,8 +370,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       } else {
         final profileUri = AtUri.parse('at://${currentPost.author.did}');
         ref
-          ..invalidate(profileFeedProvider(profileUri, false))
-          ..invalidate(profileFeedProvider(profileUri, true));
+          ..invalidate(profileFeedProvider(profileUri, false, false))
+          ..invalidate(profileFeedProvider(profileUri, true, false));
       }
     } catch (e) {
       // Error handling - snackbar removed

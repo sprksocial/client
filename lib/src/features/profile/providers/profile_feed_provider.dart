@@ -21,7 +21,11 @@ class ProfileFeed extends _$ProfileFeed {
   bool _isLoading = false;
 
   @override
-  Future<ProfileFeedState> build(AtUri profileUri, bool videosOnly) async {
+  Future<ProfileFeedState> build(
+    AtUri profileUri,
+    bool videosOnly,
+    bool bsky,
+  ) async {
     try {
       final result = await _loadUnifiedFeed(
         profileUri: profileUri,
@@ -40,8 +44,7 @@ class ProfileFeed extends _$ProfileFeed {
     }
   }
 
-  /// Load author feed from Spark first, falling back to Bluesky if Spark fails.
-  /// This mirrors the profile loading behavior where we only show one source.
+  /// Load author feed from API (Spark by default, Bluesky if bsky=true).
   Future<ProfileFeedState> _loadUnifiedFeed({
     required AtUri profileUri,
     required String? sparkCursor,
@@ -58,16 +61,16 @@ class ProfileFeed extends _$ProfileFeed {
 
     final newPosts = <PostView>[];
 
-    // Fetch from Spark API (internally falls back to Bluesky if Spark fails)
-    // This mirrors profile loading behavior
+    // Fetch from the specified API (Spark by default, Bluesky if bsky=true)
     final result = await _fetchFromSource(
       (cursor) => _feedRepository.getAuthorFeed(
         profileUri,
         limit: ProfileFeedState.fetchLimit,
         cursor: cursor,
+        bluesky: bsky,
       ),
       sparkCursor,
-      'AuthorFeed',
+      bsky ? 'BlueskyAuthorFeed' : 'SparkAuthorFeed',
     );
 
     for (final feedViewPost in result.posts) {

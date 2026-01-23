@@ -46,10 +46,14 @@ class _CommentItemState extends ConsumerState<CommentItem> {
 
   void _navigateToProfile() {
     final author = commentState.thread.post.author;
+    final isBskyPost = widget.mainPostUri.collection.toString().startsWith(
+      'app.bsky',
+    );
     context.router.push(
       ProfileRoute(
         did: author.did,
         initialProfile: author,
+        bsky: isBskyPost,
       ),
     );
   }
