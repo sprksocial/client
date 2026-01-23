@@ -36,7 +36,7 @@ class AppLeadingButton extends StatelessWidget {
                 child: GestureDetector(
                   onTap: action,
                   child: Center(
-                    child: AppIcons.chevronleft(color: iconColor, size: 35),
+                    child: AppIcons.chevronleft(color: iconColor, size: 28),
                   ),
                 ),
               ),

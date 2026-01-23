@@ -237,7 +237,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             context.router.push(const SettingsRoute()),
                         icon: AppIcons.gear(
                           color: colorScheme.onSurface,
-                          size: 28,
+                          size: 25,
                         ),
                       ),
                     ),
@@ -313,7 +313,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
                 onPressed: () => context.router.push(const SettingsRoute()),
-                icon: AppIcons.gear(color: colorScheme.onSurface, size: 28),
+                icon: AppIcons.gear(color: colorScheme.onSurface, size: 25),
               )
             else
               IconButton(
@@ -391,7 +391,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 highlightColor: Colors.transparent,
                 icon: AppIcons.moreHoriz(
                   color: colorScheme.onSurface,
-                  size: 35,
+                  size: 28,
                 ),
               ),
           ],
@@ -477,7 +477,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           context.router.push(const SettingsRoute()),
                       icon: AppIcons.gear(
                         color: colorScheme.onSurface,
-                        size: 28,
+                        size: 25,
                       ),
                     ),
                   ),
