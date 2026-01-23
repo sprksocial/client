@@ -104,7 +104,10 @@ class _InteractionPill extends StatelessWidget {
             children: [
               icon,
               const SizedBox(width: 6),
-              AvatarStack(avatars: avatars),
+              AvatarStack(
+                avatars: avatars,
+                largeSize: 32,
+              ),
             ],
           ),
         ),

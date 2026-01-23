@@ -28,10 +28,18 @@ class AppLeadingButton extends StatelessWidget {
             final theme = Theme.of(context);
             final iconColor = color ?? theme.textTheme.titleLarge?.color;
 
-            return IconButton(
-              onPressed: action,
-              icon: AppIcons.chevronleft(color: iconColor),
-              tooltip: tooltip ?? 'Back',
+            return SizedBox(
+              width: 40,
+              height: 40,
+              child: Tooltip(
+                message: tooltip ?? 'Back',
+                child: GestureDetector(
+                  onTap: action,
+                  child: Center(
+                    child: AppIcons.chevronleft(color: iconColor, size: 35),
+                  ),
+                ),
+              ),
             );
           },
     );

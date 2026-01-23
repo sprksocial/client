@@ -164,7 +164,6 @@ Widget buildProfilePageTemplateOtherUserNotFollowingUseCase(
     onFollowingTap: () => print('Following tapped'),
     onFollowTap: () => print('Follow tapped'),
     onUnfollowTap: () => print('Unfollow tapped'),
-    onShareTap: () => print('Share tapped'),
     onEarlySupporterTap: () => print('Early supporter badge tapped'),
     onMentionTap: (username) => print('Mention tapped: $username'),
     appBarActions: [
@@ -221,7 +220,6 @@ Widget buildProfilePageTemplateOtherUserFollowingUseCase(BuildContext context) {
     onFollowingTap: () => print('Following tapped'),
     onFollowTap: () => print('Follow tapped'),
     onUnfollowTap: () => print('Unfollow tapped'),
-    onShareTap: () => print('Share tapped'),
     onEarlySupporterTap: () => print('Early supporter badge tapped'),
     onMentionTap: (username) => print('Mention tapped: $username'),
     appBarActions: [

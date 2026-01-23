@@ -1527,10 +1527,16 @@ class FeedRepositoryImpl implements FeedRepository {
     String actor, {
     int limit = 50,
     String? cursor,
+    bool bluesky = false,
   }) async {
     _logger.d(
-      'Getting actor reposts for actor: $actor, limit: $limit, cursor: $cursor',
+      'Getting actor reposts for actor: $actor, limit: $limit, '
+      'cursor: $cursor, bluesky: $bluesky',
     );
+
+    if (bluesky) {
+      return _getActorRepostsFromBluesky(actor, limit: limit, cursor: cursor);
+    }
 
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -1577,6 +1583,21 @@ class FeedRepositoryImpl implements FeedRepository {
       );
       return result.data;
     });
+  }
+
+  /// Get actor reposts from Bluesky API
+  /// Note: Bluesky doesn't have a direct getActorReposts endpoint,
+  /// so we return an empty result in Bluesky mode.
+  Future<({List<FeedViewPost> posts, String? cursor})>
+  _getActorRepostsFromBluesky(
+    String actor, {
+    required int limit,
+    required String? cursor,
+  }) async {
+    _logger.w(
+      'getActorReposts is not available for Bluesky API, returning empty',
+    );
+    return (posts: <FeedViewPost>[], cursor: null);
   }
 
   /// Helper method to determine content type based on file extension

@@ -22,8 +22,11 @@ class ActorRepositoryImpl implements ActorRepository {
   );
 
   @override
-  Future<ProfileViewDetailed> getProfile(String did) async {
-    _logger.d('Getting profile for DID: $did');
+  Future<ProfileViewDetailed> getProfile(
+    String did, {
+    bool useBluesky = false,
+  }) async {
+    _logger.d('Getting profile for DID: $did, useBluesky: $useBluesky');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -35,35 +38,35 @@ class ActorRepositoryImpl implements ActorRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      try {
-        final result = await atproto.get(
-          NSID.parse('so.sprk.actor.getProfile'),
-          parameters: {'actor': did},
-          headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
-        );
-        return ProfileViewDetailed.fromJson(
-          result.data as Map<String, dynamic>,
-        );
-      } catch (e) {
-        _logger
-          ..e('Failed to retrieve profile for DID: $did', error: e)
-          ..i('Trying to get profile from bluesky');
+
+      // Use Bluesky API if explicitly requested
+      if (useBluesky) {
         final oauthSession = atproto.oAuthSession;
         if (oauthSession == null) {
           throw Exception('No OAuth session available');
         }
-        final bluesky = bsky.Bluesky.fromOAuthSession(oauthSession);
+        final blueskyClient = bsky.Bluesky.fromOAuthSession(oauthSession);
         final profile = await bskyActorAdapter.getProfileFromBluesky(
-          bluesky,
+          blueskyClient,
           did,
         );
-        _logger.d('Profile retrieved successfully from bluesky');
+        _logger.d('Profile retrieved successfully from Bluesky');
         return profile;
       }
+
+      // Use Spark API (no fallback)
+      final result = await atproto.get(
+        NSID.parse('so.sprk.actor.getProfile'),
+        parameters: {'actor': did},
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      _logger.d('Profile retrieved successfully from Spark');
+      return ProfileViewDetailed.fromJson(
+        result.data as Map<String, dynamic>,
+      );
     });
   }
 
@@ -176,9 +179,12 @@ class ActorRepositoryImpl implements ActorRepository {
   }
 
   @override
-  Future<List<ProfileViewDetailed>> getProfiles(List<String> dids) {
+  Future<List<ProfileViewDetailed>> getProfiles(
+    List<String> dids, {
+    bool useBluesky = false,
+  }) {
     return _client.executeWithRetry(() async {
-      _logger.d('Getting profiles for DIDs: $dids');
+      _logger.d('Getting profiles for DIDs: $dids, useBluesky: $useBluesky');
       if (dids.isEmpty) {
         _logger.w('No DIDs provided, returning empty list');
         return <ProfileViewDetailed>[];
@@ -193,38 +199,38 @@ class ActorRepositoryImpl implements ActorRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      try {
-        final result = await atproto.get(
-          NSID.parse('so.sprk.actor.getProfiles'),
-          parameters: {'actors': dids},
-          headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
-        );
-        return (result.data['profiles']! as List)
-            .map(
-              (json) =>
-                  ProfileViewDetailed.fromJson(json as Map<String, dynamic>),
-            )
-            .toList();
-      } catch (e) {
-        _logger
-          ..e('Failed to retrieve profile for DIDs: $dids', error: e)
-          ..i('Trying to get profiles from bluesky');
+
+      // Use Bluesky API if explicitly requested
+      if (useBluesky) {
         final oauthSession = atproto.oAuthSession;
         if (oauthSession == null) {
           throw Exception('No OAuth session available');
         }
-        final bluesky = bsky.Bluesky.fromOAuthSession(oauthSession);
+        final blueskyClient = bsky.Bluesky.fromOAuthSession(oauthSession);
         final profiles = await bskyActorAdapter.getProfilesFromBluesky(
-          bluesky,
+          blueskyClient,
           dids,
         );
-        _logger.d('Profiles retrieved successfully from bluesky');
+        _logger.d('Profiles retrieved successfully from Bluesky');
         return profiles;
       }
+
+      // Use Spark API (no fallback)
+      final result = await atproto.get(
+        NSID.parse('so.sprk.actor.getProfiles'),
+        parameters: {'actors': dids},
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      _logger.d('Profiles retrieved successfully from Spark');
+      return (result.data['profiles']! as List)
+          .map(
+            (json) =>
+                ProfileViewDetailed.fromJson(json as Map<String, dynamic>),
+          )
+          .toList();
     });
   }
 }

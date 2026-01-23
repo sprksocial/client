@@ -12,15 +12,21 @@ import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
 class ProfileGridTab extends ProfileTabBase {
   const ProfileGridTab({
     required this.profileUri,
+    this.bsky = false,
     super.key,
   });
 
   final AtUri profileUri;
 
+  /// Whether to use Bluesky API instead of Spark API.
+  final bool bsky;
+
   @override
   List<Widget> buildSlivers(BuildContext context, WidgetRef ref) {
     void onPostTap(BuildContext context, WidgetRef ref, AtUri postUri) {
-      ref.read(profileFeedProvider(profileUri, false)).whenData((feedState) {
+      ref.read(profileFeedProvider(profileUri, false, bsky)).whenData((
+        feedState,
+      ) {
         final filteredUris = feedState.loadedPosts;
         final postIndex = filteredUris.indexOf(postUri);
         if (postIndex != -1) {
@@ -29,6 +35,7 @@ class ProfileGridTab extends ProfileTabBase {
               did: profileUri.hostname,
               videosOnly: false,
               initialPostIndex: postIndex,
+              bsky: bsky,
             ),
           );
         } else {
@@ -46,6 +53,7 @@ class ProfileGridTab extends ProfileTabBase {
       videosOnly: false,
       both: true,
       onPostTap: onPostTap,
+      bsky: bsky,
     );
   }
 

@@ -183,10 +183,16 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                   onUsernameTap: () {
                     // Pause video before navigating to profile
                     _videoPlayerKey.currentState?.pauseVideo();
+                    final isBskyPost = postData.uri.collection
+                        .toString()
+                        .startsWith(
+                          'app.bsky',
+                        );
                     context.router.push(
                       ProfileRoute(
                         did: postData.author.did,
                         initialProfile: postData.author,
+                        bsky: isBskyPost,
                       ),
                     );
                   },

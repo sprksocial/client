@@ -7,7 +7,6 @@ import 'package:spark/src/core/design_system/components/molecules/profile_avatar
 import 'package:spark/src/core/design_system/components/molecules/profile_info.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_stats.dart';
 import 'package:spark/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class ProfilePageTemplate extends StatelessWidget {
@@ -35,7 +34,6 @@ class ProfilePageTemplate extends StatelessWidget {
     this.onFollowTap,
     this.onUnfollowTap,
     this.onUnblockTap,
-    this.onShareTap,
     this.onEarlySupporterTap,
     this.onMentionTap,
     this.onAddStoryTap,
@@ -69,7 +67,6 @@ class ProfilePageTemplate extends StatelessWidget {
   final VoidCallback? onFollowTap;
   final VoidCallback? onUnfollowTap;
   final VoidCallback? onUnblockTap;
-  final VoidCallback? onShareTap;
   final VoidCallback? onEarlySupporterTap;
   final Function(String username)? onMentionTap;
   final VoidCallback? onAddStoryTap;
@@ -88,7 +85,8 @@ class ProfilePageTemplate extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
+        centerTitle: isCurrentUser,
+        leadingWidth: 40,
         title: appBarTitle != null
             ? Text(
                 appBarTitle!,
@@ -107,6 +105,7 @@ class ProfilePageTemplate extends StatelessWidget {
           },
           child: CustomScrollView(
             controller: scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
                 child: Skeletonizer(
@@ -132,7 +131,6 @@ class ProfilePageTemplate extends StatelessWidget {
                     onFollowTap: onFollowTap,
                     onUnfollowTap: onUnfollowTap,
                     onUnblockTap: onUnblockTap,
-                    onShareTap: onShareTap,
                     onEarlySupporterTap: onEarlySupporterTap,
                     onMentionTap: onMentionTap,
                     onAddStoryTap: onAddStoryTap,
@@ -177,7 +175,6 @@ class _ProfileHeaderSection extends StatelessWidget {
     this.onFollowTap,
     this.onUnfollowTap,
     this.onUnblockTap,
-    this.onShareTap,
     this.onEarlySupporterTap,
     this.onMentionTap,
     this.onAddStoryTap,
@@ -203,43 +200,9 @@ class _ProfileHeaderSection extends StatelessWidget {
   final VoidCallback? onFollowTap;
   final VoidCallback? onUnfollowTap;
   final VoidCallback? onUnblockTap;
-  final VoidCallback? onShareTap;
   final VoidCallback? onEarlySupporterTap;
   final Function(String username)? onMentionTap;
   final VoidCallback? onAddStoryTap;
-
-  Widget _buildHandleText(BuildContext context, String handle) {
-    final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyMedium?.color ?? AppColors.greyWhite;
-
-    final parts = handle.split('.');
-    if (parts.length == 1) {
-      return Text(
-        '@$handle',
-        style: AppTypography.textSmallThin.copyWith(color: textColor),
-      );
-    }
-
-    final firstPart = parts[0];
-    final remainingPart = parts.sublist(1).join('.');
-
-    return RichText(
-      text: TextSpan(
-        style: AppTypography.textSmallThin.copyWith(
-          color: textColor,
-        ),
-        children: [
-          TextSpan(text: '@$firstPart'),
-          TextSpan(
-            text: '.$remainingPart',
-            style: AppTypography.textSmallThin.copyWith(
-              color: textColor.withAlpha(128),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,6 +219,7 @@ class _ProfileHeaderSection extends StatelessWidget {
                   avatarUrl: avatarUrl,
                   displayName: displayName,
                   hasStories: hasStories,
+                  size: 80,
                   onTap: onAvatarTap,
                   showAddButton: isCurrentUser,
                   onAddTap: onAddStoryTap,
@@ -284,10 +248,6 @@ class _ProfileHeaderSection extends StatelessWidget {
                             ),
                           ),
                       ],
-                    ),
-                    const SizedBox(height: 4),
-                    Skeleton.keep(
-                      child: _buildHandleText(context, handle),
                     ),
                     const SizedBox(height: 10),
                     ProfileStats(
@@ -323,7 +283,6 @@ class _ProfileHeaderSection extends StatelessWidget {
               onFollowTap: onFollowTap,
               onUnfollowTap: onUnfollowTap,
               onUnblockTap: onUnblockTap,
-              onShareTap: onShareTap,
             ),
           ),
         ],

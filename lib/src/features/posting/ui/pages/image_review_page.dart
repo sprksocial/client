@@ -197,10 +197,18 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                 if (did != null) {
                   ref
                     ..invalidate(
-                      profileFeedProvider(AtUri.parse('at://$did'), false),
+                      profileFeedProvider(
+                        AtUri.parse('at://$did'),
+                        false,
+                        false,
+                      ),
                     )
                     ..invalidate(
-                      profileFeedProvider(AtUri.parse('at://$did'), true),
+                      profileFeedProvider(
+                        AtUri.parse('at://$did'),
+                        true,
+                        false,
+                      ),
                     );
                 }
                 if (!widget.storyMode) {

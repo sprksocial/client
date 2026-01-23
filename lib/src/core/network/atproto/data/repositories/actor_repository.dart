@@ -6,12 +6,17 @@ abstract class ActorRepository {
   /// Get a profile by DID
   ///
   /// [did] The DID of the profile to get
-  Future<ProfileViewDetailed> getProfile(String did);
+  /// [useBluesky] Whether to use Bluesky API instead of Spark (default false)
+  Future<ProfileViewDetailed> getProfile(String did, {bool useBluesky = false});
 
   /// Get multiple profiles by their DIDs
   ///
   /// [dids] A list of DIDs to fetch profiles for
-  Future<List<ProfileViewDetailed>> getProfiles(List<String> dids);
+  /// [useBluesky] Whether to use Bluesky API instead of Spark (default false)
+  Future<List<ProfileViewDetailed>> getProfiles(
+    List<String> dids, {
+    bool useBluesky = false,
+  });
 
   /// Search actors by query string.
   ///

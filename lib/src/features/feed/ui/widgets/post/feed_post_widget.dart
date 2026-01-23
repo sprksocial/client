@@ -309,10 +309,16 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     },
                     onUsernameTap: () {
                       _videoPlayerKey.currentState?.pauseVideo();
+                      final isBskyPost = currentPost.uri.collection
+                          .toString()
+                          .startsWith(
+                            'app.bsky',
+                          );
                       context.router.push(
                         ProfileRoute(
                           did: currentPost.author.did,
                           initialProfile: currentPost.author,
+                          bsky: isBskyPost,
                         ),
                       );
                     },

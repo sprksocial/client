@@ -273,11 +273,18 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     if (post.author.did == currentProfileDid) {
                       context.router.maybePop();
                     } else {
+                      // Check if post is from Bluesky
+                      final isBskyPost = post.uri.collection
+                          .toString()
+                          .startsWith(
+                            'app.bsky',
+                          );
                       // Otherwise, navigate to the new profile
                       context.router.push(
                         ProfileRoute(
                           did: post.author.did,
                           initialProfile: post.author,
+                          bsky: isBskyPost,
                         ),
                       );
                     }

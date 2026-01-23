@@ -22,7 +22,7 @@ class ProfileReposts extends _$ProfileReposts {
   late final String _actor;
 
   @override
-  Future<ProfileFeedState> build(String actor) async {
+  Future<ProfileFeedState> build(String actor, bool bsky) async {
     _actor = actor;
     try {
       final result = await _loadReposts(
@@ -40,7 +40,7 @@ class ProfileReposts extends _$ProfileReposts {
     }
   }
 
-  /// Load reposts from Spark API
+  /// Load reposts from specified API (Spark by default, Bluesky if bsky=true)
   Future<ProfileFeedState> _loadReposts({
     required String actor,
     required String? cursor,
@@ -55,15 +55,16 @@ class ProfileReposts extends _$ProfileReposts {
 
     final newPosts = <PostView>[];
 
-    // Fetch from Spark API
+    // Fetch from the specified API (Spark by default, Bluesky if bsky=true)
     final result = await _fetchFromSource(
       (cursor) => _feedRepository.getActorReposts(
         actor,
         limit: ProfileFeedState.fetchLimit,
         cursor: cursor,
+        bluesky: bsky,
       ),
       cursor,
-      'ActorReposts',
+      bsky ? 'BlueskyActorReposts' : 'SparkActorReposts',
     );
 
     for (final feedViewPost in result.posts) {
