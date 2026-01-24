@@ -45,6 +45,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.isLoading = false,
     this.contentSlivers,
     this.scrollController,
+    this.leading,
   });
 
   final String displayName;
@@ -80,6 +81,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final Future<void> Function()? onRefresh;
   final bool isLoading;
   final ScrollController? scrollController;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +96,7 @@ class ProfilePageTemplate extends StatelessWidget {
             : null,
         elevation: 0,
         actions: appBarActions,
-        leading: const AppLeadingButton(),
+        leading: leading ?? const AppLeadingButton(),
       ),
       body: RefreshIndicator(
         onRefresh: onRefresh ?? () async {},

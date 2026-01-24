@@ -16,10 +16,12 @@ class CommentsPage extends ConsumerStatefulWidget {
     required this.isSprk,
     super.key,
     this.post,
+    this.highlightedReplyUri,
   });
   final String postUri;
   final bool isSprk;
   final PostView? post;
+  final String? highlightedReplyUri;
 
   @override
   ConsumerState<CommentsPage> createState() => _CommentsPageState();
@@ -100,7 +102,9 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
   late final String _postUri;
   late final bool _isSprk;
   PostView? _post;
+  String? _highlightedReplyUri;
   bool _initialized = false;
+  bool _hasScrolledToHighlighted = false;
 
   @override
   void initState() {
@@ -119,6 +123,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
       _postUri = parentArgs.postUri;
       _isSprk = parentArgs.isSprk;
       _post = parentArgs.post;
+      _highlightedReplyUri = parentArgs.highlightedReplyUri;
       _postAtUri = AtUri.parse(_postUri);
       _initialized = true;
     }
@@ -151,6 +156,31 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  void _scrollToHighlightedReply(List<dynamic> replies) {
+    if (_hasScrolledToHighlighted || _highlightedReplyUri == null) return;
+    _hasScrolledToHighlighted = true;
+
+    // Find the index of the highlighted reply
+    int? highlightedIndex;
+    for (var i = 0; i < replies.length; i++) {
+      final reply = replies[i] as ThreadViewPost;
+      if (reply.post.uri.toString() == _highlightedReplyUri) {
+        highlightedIndex = i;
+        break;
+      }
+    }
+
+    if (highlightedIndex != null && _scrollController.hasClients) {
+      // Estimate scroll position (assuming ~100 pixels per item)
+      final estimatedOffset = highlightedIndex * 100.0;
+      _scrollController.animateTo(
+        estimatedOffset.clamp(0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeOut,
       );
     }
@@ -222,16 +252,28 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
               if (data.thread.replies == null || data.thread.replies!.isEmpty) {
                 return const Center(child: Text('No comments yet.'));
               }
+
+              // Find the index of the highlighted reply and scroll to it
+              if (_highlightedReplyUri != null && !_hasScrolledToHighlighted) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToHighlightedReply(data.thread.replies!);
+                });
+              }
+
               return ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.only(bottom: 16),
                 itemCount: data.thread.replies?.length ?? 0,
                 itemBuilder: (context, index) {
                   final comment = data.thread.replies![index] as ThreadViewPost;
+                  final isHighlighted =
+                      _highlightedReplyUri != null &&
+                      comment.post.uri.toString() == _highlightedReplyUri;
                   return CommentItem(
                     key: ValueKey('comment-${comment.post.cid}'),
                     thread: comment,
                     mainPostUri: _postAtUri,
+                    isHighlighted: isHighlighted,
                   );
                 },
               );

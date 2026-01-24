@@ -137,6 +137,16 @@ class AppIcons {
         : null,
     package: 'assets',
   );
+  static Widget commentFilled({double size = 24, Color? color}) =>
+      SvgPicture.asset(
+        '$_path/comment_filled.svg',
+        width: size,
+        height: size,
+        colorFilter: color != null
+            ? ColorFilter.mode(color, BlendMode.srcIn)
+            : null,
+        package: 'assets',
+      );
   static Widget disk({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/disk.svg',
     width: size,

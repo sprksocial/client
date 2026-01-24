@@ -13,6 +13,7 @@ export 'package:spark/src/features/home/ui/pages/main_page.dart';
 export 'package:spark/src/features/messages/ui/pages/chat_page.dart';
 export 'package:spark/src/features/messages/ui/pages/messages_page.dart';
 export 'package:spark/src/features/messages/ui/pages/new_chat_search_page.dart';
+export 'package:spark/src/features/notifications/ui/pages/notifications_page.dart';
 export 'package:spark/src/features/posting/ui/pages/image_review_page.dart';
 export 'package:spark/src/features/posting/ui/pages/recording_page.dart';
 export 'package:spark/src/features/posting/ui/pages/video_review_page.dart';

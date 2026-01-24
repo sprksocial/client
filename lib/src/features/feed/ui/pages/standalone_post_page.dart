@@ -20,9 +20,16 @@ import 'package:spark/src/features/settings/providers/preferences_provider.dart'
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
-  const StandalonePostPage({required this.postUri, super.key});
+  const StandalonePostPage({
+    required this.postUri,
+    super.key,
+    this.highlightedReplyUri,
+  });
 
   final String postUri;
+
+  /// If provided, automatically opens comments modal with reply highlighted
+  final String? highlightedReplyUri;
 
   @override
   ConsumerState<StandalonePostPage> createState() => _StandalonePostPageState();
@@ -36,6 +43,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   bool _showWarningOverlay = false;
   List<String> _warningLabels = [];
   bool _shouldBlurContent = false;
+  bool _hasOpenedHighlightedReply = false;
 
   @override
   void initState() {
@@ -48,8 +56,29 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
     _postFuture?.then((post) {
       if (mounted) {
         _checkContentWarning(post);
+        _openHighlightedReplyIfNeeded(post);
       }
     });
+  }
+
+  void _openHighlightedReplyIfNeeded(PostView post) {
+    if (widget.highlightedReplyUri != null && !_hasOpenedHighlightedReply) {
+      _hasOpenedHighlightedReply = true;
+      // Open comments modal with highlighted reply after a short delay
+      // to ensure the page is fully rendered
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.router.push(
+            CommentsRoute(
+              postUri: post.uri.toString(),
+              isSprk: post.isSprk,
+              post: post,
+              highlightedReplyUri: widget.highlightedReplyUri,
+            ),
+          );
+        }
+      });
+    }
   }
 
   Future<PostView> _loadPostWithFallback() async {

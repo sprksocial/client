@@ -25,9 +25,11 @@ class CommentItem extends ConsumerStatefulWidget {
     required this.thread,
     required this.mainPostUri,
     super.key,
+    this.isHighlighted = false,
   });
   final ThreadViewPost thread;
   final AtUri mainPostUri;
+  final bool isHighlighted;
 
   @override
   ConsumerState<CommentItem> createState() => _CommentItemState();
@@ -132,133 +134,140 @@ class _CommentItemState extends ConsumerState<CommentItem> {
     // The adapter transforms Bluesky comments to this format
     final hasImages = commentState.thread.post.media is MediaViewImage;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: _navigateToProfile,
-                child: _Avatar(widget: widget),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: _navigateToProfile,
-                            child: Row(
-                              children: [
-                                Text(
-                                  commentState.thread.post.author.handle,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(
-                                      context,
-                                    ).textTheme.bodyLarge?.color,
+    return ColoredBox(
+      color: widget.isHighlighted
+          ? AppColors.pink.withValues(alpha: 0.15)
+          : Colors.transparent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: _navigateToProfile,
+                  child: _Avatar(widget: widget),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: _navigateToProfile,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    commentState.thread.post.author.handle,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _formatDate(
-                                    commentState.thread.post.indexedAt
-                                        .toLocal()
-                                        .toString(),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _formatDate(
+                                      commentState.thread.post.indexedAt
+                                          .toLocal()
+                                          .toString(),
+                                    ),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color,
+                                    ),
                                   ),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.color,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        Builder(
-                          builder: (context) {
-                            final authRepository =
-                                GetIt.instance<AuthRepository>();
-                            final userDid = authRepository.did;
-                            final isCurrentUserAuthor =
-                                userDid == commentState.thread.post.author.did;
-                            final theme = Theme.of(context);
-                            final isDark = theme.brightness == Brightness.dark;
-                            final iconColor = isDark
-                                ? AppColors.white
-                                : AppColors.black;
+                          Builder(
+                            builder: (context) {
+                              final authRepository =
+                                  GetIt.instance<AuthRepository>();
+                              final userDid = authRepository.did;
+                              final isCurrentUserAuthor =
+                                  userDid ==
+                                  commentState.thread.post.author.did;
+                              final theme = Theme.of(context);
+                              final isDark =
+                                  theme.brightness == Brightness.dark;
+                              final iconColor = isDark
+                                  ? AppColors.white
+                                  : AppColors.black;
 
-                            return GestureDetector(
-                              onTap: () => OptionsPanel.show(
-                                context: context,
-                                onReport: _handleReportComment,
-                                onDelete: isCurrentUserAuthor
-                                    ? _handleDeleteComment
-                                    : null,
-                              ),
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: Icon(
-                                  Icons.more_horiz,
-                                  color: iconColor,
-                                  size: 16,
+                              return GestureDetector(
+                                onTap: () => OptionsPanel.show(
+                                  context: context,
+                                  onReport: _handleReportComment,
+                                  onDelete: isCurrentUserAuthor
+                                      ? _handleDeleteComment
+                                      : null,
                                 ),
-                              ),
-                            );
-                          },
+                                child: SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: Icon(
+                                    Icons.more_horiz,
+                                    color: iconColor,
+                                    size: 16,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+
+                      if (commentState.thread.post.displayText.isNotEmpty)
+                        Text(
+                          commentState.thread.post.displayText,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+
+                      if (commentState.thread.post.media != null &&
+                          hasImages) ...[
+                        const SizedBox(height: 8),
+                        ImageContent(
+                          imageUrls: commentState.thread.post.imageUrls,
+                          borderRadius: borderRadius,
+                          thumbnailSize: thumbnailSize,
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 4),
 
-                    if (commentState.thread.post.displayText.isNotEmpty)
-                      Text(
-                        commentState.thread.post.displayText,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-
-                    if (commentState.thread.post.media != null &&
-                        hasImages) ...[
                       const SizedBox(height: 8),
-                      ImageContent(
-                        imageUrls: commentState.thread.post.imageUrls,
-                        borderRadius: borderRadius,
-                        thumbnailSize: thumbnailSize,
+                      _ActionButtons(
+                        ref: ref,
+                        commentState: commentState,
+                        widget: widget,
+                        secondaryTextColor: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium!.color!,
                       ),
                     ],
-
-                    const SizedBox(height: 8),
-                    _ActionButtons(
-                      ref: ref,
-                      commentState: commentState,
-                      widget: widget,
-                      secondaryTextColor: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium!.color!,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
 
-        if (commentState.thread.post.replyCount != null &&
-            commentState.thread.post.replyCount! > 0)
-          _RepliesSection(commentState),
+          if (commentState.thread.post.replyCount != null &&
+              commentState.thread.post.replyCount! > 0)
+            _RepliesSection(commentState),
 
-        Container(height: 0.5, color: Theme.of(context).colorScheme.surface),
-      ],
+          Container(height: 0.5, color: Theme.of(context).colorScheme.surface),
+        ],
+      ),
     );
   }
 

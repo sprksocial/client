@@ -1,10 +1,13 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/notifications/providers/unread_count_provider.dart';
 
-class SparkBottomNavBar extends StatelessWidget {
+class SparkBottomNavBar extends ConsumerWidget {
   const SparkBottomNavBar({
     required this.currentIndex,
     required this.onTap,
@@ -12,13 +15,13 @@ class SparkBottomNavBar extends StatelessWidget {
     super.key,
   });
 
-  /// 0 = home, 1 = explore, 2 = create/post, 3 = messages, 4 = profile
+  /// 0 = home, 1 = explore, 2 = messages, 3 = notifications, 4 = profile
   final int currentIndex;
   final ValueChanged<int> onTap;
   final ImageProvider userAvatar;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     // Always use dark mode when on home tab (index 0)
     final isDark =
@@ -62,22 +65,22 @@ class SparkBottomNavBar extends StatelessWidget {
                   isSelected: currentIndex == 2,
                   onTap: () => onTap(2),
                   builder: (c, selected) => selected
-                      ? AppIcons.navbarPostFilled(
-                          color: isDark ? null : Colors.black,
-                        )
-                      : AppIcons.navbarPost(
-                          color: isDark ? null : Colors.black,
-                        ),
-                ),
-
-                _NavIcon(
-                  isSelected: currentIndex == 3,
-                  onTap: () => onTap(3),
-                  builder: (c, selected) => selected
                       ? AppIcons.messagesFilled(
                           color: isDark ? null : Colors.black,
                         )
                       : AppIcons.messages(color: isDark ? null : Colors.black),
+                ),
+
+                _NavIconWithBadge(
+                  isSelected: currentIndex == 3,
+                  onTap: () => onTap(3),
+                  builder: (c, selected) => selected
+                      ? AppIcons.likeFilled(
+                          color: isDark ? Colors.white : Colors.black,
+                        )
+                      : AppIcons.like(color: isDark ? null : Colors.black),
+                  badgeCount: ref.watch(unreadCountProvider()),
+                  isDark: isDark,
                 ),
 
                 _ProfileAvatar(
@@ -143,6 +146,75 @@ class _NavIcon extends StatelessWidget {
         duration: AppConstants.animationFast,
         padding: const EdgeInsets.all(5),
         child: builder(context, isSelected),
+      ),
+    );
+  }
+}
+
+class _NavIconWithBadge extends StatelessWidget {
+  const _NavIconWithBadge({
+    required this.isSelected,
+    required this.onTap,
+    required this.builder,
+    required this.badgeCount,
+    required this.isDark,
+  });
+
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Widget Function(BuildContext, bool) builder;
+  final AsyncValue<int> badgeCount;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = badgeCount.value ?? 0;
+    final showBadge = count > 0;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: AppConstants.animationFast,
+        padding: const EdgeInsets.all(5),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            builder(context, isSelected),
+            if (showBadge)
+              Positioned(
+                right: -7,
+                top: -6,
+                child: Container(
+                  padding: count < 10
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(horizontal: 6),
+                  constraints: BoxConstraints(
+                    minWidth: count < 10 ? 18 : 20,
+                    minHeight: 18,
+                  ),
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: count < 10 ? BoxShape.circle : BoxShape.rectangle,
+                    borderRadius: count < 10
+                        ? null
+                        : const BorderRadius.all(Radius.circular(9)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    count > 99 ? '99+' : count.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

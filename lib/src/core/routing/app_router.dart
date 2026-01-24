@@ -73,8 +73,8 @@ class AppRouter extends RootStackRouter {
       children: [
         AutoRoute(page: FeedsRoute.page, path: 'feeds'),
         AutoRoute(page: SearchRoute.page, path: 'search'),
-        AutoRoute(page: EmptyRoute.page, path: 'create'),
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
+        AutoRoute(page: NotificationsRoute.page, path: 'notifications'),
         AutoRoute(
           page: UserProfileRoute.page,
           path: 'profile',
