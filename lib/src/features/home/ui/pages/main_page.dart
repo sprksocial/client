@@ -3,9 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
 import 'package:spark/src/core/design_system/components/organisms/bottom_nav_bar.dart';
-import 'package:spark/src/core/media/create_media_actions.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
@@ -49,21 +47,6 @@ class _MainPageState extends ConsumerState<MainPage> {
     }
   }
 
-  void _showCreateMenu(BuildContext context) {
-    showCreateMediaSheet(
-      context,
-      onRecord: CreateMediaActions.onRecord(context, storyMode: false),
-      onUploadVideo: CreateMediaActions.onUploadVideo(
-        context,
-        storyMode: false,
-      ),
-      onUploadImages: CreateMediaActions.onUploadImages(
-        context,
-        storyMode: false,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final userDid = ref.watch(currentDidProvider);
@@ -73,8 +56,8 @@ class _MainPageState extends ConsumerState<MainPage> {
       routes: const [
         FeedsRoute(),
         SearchRoute(),
-        EmptyRoute(),
         MessagesRoute(),
+        NotificationsRoute(),
         UserProfileRoute(),
       ],
       transitionBuilder: (context, child, animation) => child,
@@ -107,18 +90,14 @@ class _MainPageState extends ConsumerState<MainPage> {
             currentIndex: tabsRouter.activeIndex,
             userAvatar: avatarProvider,
             onTap: (index) {
-              if (index == 2) {
-                _showCreateMenu(context);
+              if (tabsRouter.activeIndex == index && index == 0) {
+                final activeFeed = ref.read(settingsProvider).activeFeed;
+                ref
+                    .read(feedRefreshTriggerProvider(activeFeed).notifier)
+                    .trigger();
               } else {
-                if (tabsRouter.activeIndex == index && index == 0) {
-                  final activeFeed = ref.read(settingsProvider).activeFeed;
-                  ref
-                      .read(feedRefreshTriggerProvider(activeFeed).notifier)
-                      .trigger();
-                } else {
-                  tabsRouter.setActiveIndex(index);
-                  ref.read(navigationProvider.notifier).updateIndex(index);
-                }
+                tabsRouter.setActiveIndex(index);
+                ref.read(navigationProvider.notifier).updateIndex(index);
               }
             },
           ),

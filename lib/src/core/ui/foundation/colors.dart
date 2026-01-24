@@ -63,8 +63,9 @@ class AppColors {
   static const Color info = blue;
 
   // Interaction colors
-  static const Color likeColor = red;
-  static const Color commentColor = green;
+  static const Color likeColor = pink;
+  static const Color commentColor = blue;
+  static const Color repostColor = green;
   static const Color followColor = blue;
   static const Color unreadIndicator = pink;
 

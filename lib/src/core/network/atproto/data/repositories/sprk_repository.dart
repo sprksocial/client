@@ -2,6 +2,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/actor_repositor
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
@@ -31,4 +32,5 @@ abstract class SprkRepository {
   GraphRepository get graph;
   LabelerRepository get labeler;
   SoundRepository get sound;
+  NotificationRepository get notification;
 }

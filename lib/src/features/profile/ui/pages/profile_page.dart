@@ -169,6 +169,21 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
+  void _showCreateMenu(BuildContext context) {
+    showCreateMediaSheet(
+      context,
+      onRecord: CreateMediaActions.onRecord(context, storyMode: false),
+      onUploadVideo: CreateMediaActions.onUploadVideo(
+        context,
+        storyMode: false,
+      ),
+      onUploadImages: CreateMediaActions.onUploadImages(
+        context,
+        storyMode: false,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileStateAsync = ref.watch(
@@ -305,6 +320,22 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           onMentionTap: _handleUsernameTap,
           onAddStoryTap: isCurrentUser ? () => _handleAddStory(context) : null,
           appBarTitle: profile.handle,
+          leading: isCurrentUser && !context.router.canPop()
+              ? SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onPressed: () => _showCreateMenu(context),
+                    icon: AppIcons.addPostFilled(
+                      size: 30,
+                    ),
+                  ),
+                )
+              : null,
           appBarActions: [
             if (isCurrentUser)
               IconButton(

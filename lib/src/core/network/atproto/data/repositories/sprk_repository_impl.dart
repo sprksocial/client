@@ -10,6 +10,8 @@ import 'package:spark/src/core/network/atproto/data/repositories/graph_repositor
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/notification_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
@@ -39,6 +41,7 @@ class SprkRepositoryImpl implements SprkRepository {
   StoryRepository? _story;
   LabelerRepository? _labeler;
   SoundRepository? _sound;
+  NotificationRepository? _notification;
 
   /// Get the authentication service
   @override
@@ -127,4 +130,8 @@ class SprkRepositoryImpl implements SprkRepository {
 
   @override
   SoundRepository get sound => _sound ??= SoundRepositoryImpl(this);
+
+  @override
+  NotificationRepository get notification =>
+      _notification ??= NotificationRepositoryImpl(this);
 }
