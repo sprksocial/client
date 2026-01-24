@@ -218,6 +218,29 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
               child: ListTile(
                 title: const Text(
+                  'Feeds',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                trailing: const Icon(FluentIcons.list_24_regular),
+                onTap: () => context.router.push(const FeedListRoute()),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: const Text(
                   'Labelers',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),

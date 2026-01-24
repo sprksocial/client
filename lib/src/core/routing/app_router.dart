@@ -85,6 +85,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: EditProfileRoute.page, path: '/profile-editor'),
 
     AutoRoute(page: SettingsRoute.page, path: '/settings'),
+    AutoRoute(page: FeedListRoute.page, path: '/settings/feeds'),
     AutoRoute(page: LabelerManagementRoute.page, path: '/settings/labelers'),
     AutoRoute(page: BlocksRoute.page, path: '/settings/blocks'),
 
@@ -103,11 +104,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: CommentsListRoute.page, path: '', initial: true),
         AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri'),
       ],
-    ),
-    CustomRoute(
-      page: FeedSettingsRoute.page,
-      path: '/feed-settings',
-      customRouteBuilder: feedSettingsBuilder,
     ),
     CustomRoute(
       page: LabelerLabelSettingsRoute.page,
