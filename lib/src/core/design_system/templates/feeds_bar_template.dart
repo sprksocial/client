@@ -10,14 +10,20 @@ class FeedsBarTemplate extends StatelessWidget {
     required this.tags,
     this.selectedTagId,
     this.onTagTap,
+    this.onReorder,
+    this.onLongPress,
+    this.enableReordering = false,
     this.action,
     this.height = kToolbarHeight,
     super.key,
   });
 
-  final List<({String id, String text})> tags;
+  final List<FeedTagData> tags;
   final String? selectedTagId;
   final ValueChanged<String>? onTagTap;
+  final Function(int oldIndex, int newIndex)? onReorder;
+  final Function(FeedTagData tag)? onLongPress;
+  final bool enableReordering;
   final Widget? action;
   final double height;
 
@@ -53,6 +59,9 @@ class FeedsBarTemplate extends StatelessWidget {
                       tags: tags,
                       selectedTagId: selectedTagId,
                       onTagTap: onTagTap,
+                      onReorder: onReorder,
+                      onLongPress: onLongPress,
+                      enableReordering: enableReordering,
                     ),
                   ),
                   if (action != null) ...[

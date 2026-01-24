@@ -19,7 +19,19 @@ Widget buildFeedTagListInteractiveUseCase(BuildContext context) {
     max: tagCount - 1,
     divisions: tagCount - 1,
   );
-  final tags = List.generate(tagCount, (i) => (id: 'tag_$i', text: 'Tag $i'));
+  final enableReordering = context.knobs.boolean(
+    label: 'enable_reordering',
+    initialValue: true,
+  );
+  final tags = List.generate(
+    tagCount,
+    (i) => FeedTagData(
+      id: 'tag_$i',
+      text: 'Tag $i',
+      isTimeline: i == 0,
+      canDelete: i != 0,
+    ),
+  );
   return Center(
     child: Container(
       constraints: BoxConstraints(
@@ -33,7 +45,11 @@ Widget buildFeedTagListInteractiveUseCase(BuildContext context) {
       child: FeedTagList(
         tags: tags,
         selectedTagId: tags[selectedIndex].id,
-        onTagTap: (id) => print('Tag tapped: $id'),
+        enableReordering: enableReordering,
+        onTagTap: (id) => debugPrint('Tag tapped: $id'),
+        onReorder: (oldIndex, newIndex) =>
+            debugPrint('Reorder: $oldIndex -> $newIndex'),
+        onLongPress: (tag) => debugPrint('Long press: ${tag.text}'),
       ),
     ),
   );

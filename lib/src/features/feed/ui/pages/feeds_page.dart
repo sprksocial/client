@@ -35,7 +35,11 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     super.dispose();
   }
 
-  void _updatePageController(List<Feed> feeds, Feed activeFeed) {
+  void _updatePageController(
+    List<Feed> feeds,
+    Feed activeFeed, {
+    bool forceJump = false,
+  }) {
     if (_isPageControllerUpdating) return;
 
     final activeIndex = feeds.indexOf(activeFeed);
@@ -58,7 +62,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     if (!_pageController!.hasClients) return;
 
     final currentPage = _pageController!.page?.round() ?? 0;
-    if (currentPage != activeIndex && activeIndex >= 0) {
+    if ((currentPage != activeIndex || forceJump) && activeIndex >= 0) {
       _isPageControllerUpdating = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _pageController!.hasClients) {
@@ -67,6 +71,19 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
         _isPageControllerUpdating = false;
       });
     }
+  }
+
+  /// Check if feeds list order has changed
+  bool _feedsOrderChanged(List<Feed> newFeeds) {
+    if (_lastFeedsList == null) return true;
+    if (_lastFeedsList!.length != newFeeds.length) return true;
+
+    for (var i = 0; i < newFeeds.length; i++) {
+      if (_lastFeedsList![i].config.id != newFeeds[i].config.id) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @override
@@ -102,13 +119,11 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     // Check if we need to initialize or update the page controller
     final needsInitialization = !_isInitialized;
     final activeFeedChanged = _lastActiveFeed != activeFeed;
-    final feedsListChanged =
-        _lastFeedsList == null ||
-        _lastFeedsList!.length != feeds.length ||
-        !_lastFeedsList!.every(feeds.contains);
+    final feedsOrderChanged = _feedsOrderChanged(feeds);
 
-    if (needsInitialization || activeFeedChanged || feedsListChanged) {
-      _updatePageController(feeds, activeFeed);
+    if (needsInitialization || activeFeedChanged || feedsOrderChanged) {
+      // Force jump when order changes to ensure we stay on the active feed
+      _updatePageController(feeds, activeFeed, forceJump: feedsOrderChanged);
       _isInitialized = true;
       _lastActiveFeed = activeFeed;
       _lastFeedsList = List.from(feeds); // Create a copy

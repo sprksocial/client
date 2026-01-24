@@ -25,7 +25,6 @@ export 'package:spark/src/features/profile/ui/pages/standalone_reposts_feed_page
 export 'package:spark/src/features/profile/ui/pages/user_profile_page.dart';
 export 'package:spark/src/features/search/ui/pages/search_page.dart';
 export 'package:spark/src/features/settings/ui/pages/feed_list_page.dart';
-export 'package:spark/src/features/settings/ui/pages/feed_settings_page.dart';
 export 'package:spark/src/features/settings/ui/pages/labeler_label_settings_page.dart';
 export 'package:spark/src/features/settings/ui/pages/labeler_management_page.dart';
 export 'package:spark/src/features/settings/ui/pages/settings_page.dart';

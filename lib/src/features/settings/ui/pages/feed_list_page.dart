@@ -3,6 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/settings_feed_card.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
@@ -33,45 +34,37 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: Column(
-        children: [
-          // Feeds List Header with Edit Toggle
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Text(
-                  'Your Feeds',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _isEditMode = !_isEditMode;
-                    });
-                  },
-                  icon: Icon(_isEditMode ? Icons.check : Icons.edit, size: 18),
-                  label: Text(
-                    _isEditMode ? 'Done' : 'Edit',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.primary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                  ),
-                ),
-              ],
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: const AppLeadingButton(),
+        title: const Text('Your Feeds'),
+        centerTitle: true,
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _isEditMode = !_isEditMode;
+              });
+            },
+            icon: Icon(_isEditMode ? Icons.check : Icons.edit, size: 18),
+            label: Text(
+              _isEditMode ? 'Done' : 'Edit',
+              style: const TextStyle(fontSize: 14),
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.primary,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
+        ],
+      ),
+      body: Column(
+        children: [
           // Feeds List
           Expanded(
             child: ReorderableListView.builder(
