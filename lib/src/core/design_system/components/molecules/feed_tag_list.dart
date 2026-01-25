@@ -30,6 +30,9 @@ class FeedTagList extends StatefulWidget {
     this.onReorder,
     this.onLongPress,
     this.enableReordering = false,
+    this.leadingSpacing = 0,
+    this.enableRightFade = false,
+    this.rightFadeWidth = 24,
   });
 
   final List<FeedTagData> tags;
@@ -38,6 +41,9 @@ class FeedTagList extends StatefulWidget {
   final Function(int oldIndex, int newIndex)? onReorder;
   final Function(FeedTagData tag)? onLongPress;
   final bool enableReordering;
+  final double leadingSpacing;
+  final bool enableRightFade;
+  final double rightFadeWidth;
 
   @override
   State<FeedTagList> createState() => _FeedTagListState();
@@ -148,15 +154,23 @@ class _FeedTagListState extends State<FeedTagList> {
     }
 
     // Non-reorderable version with long press support
-    return SizedBox(
-      height: 30,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        separatorBuilder: (context, index) => const SizedBox(width: 30),
-        itemCount: widget.tags.length,
-        itemBuilder: (context, index) {
-          final tag = widget.tags[index];
-          return GestureDetector(
+    final hasLeadingSpacing = widget.leadingSpacing > 0;
+    final itemCount = widget.tags.length + (hasLeadingSpacing ? 1 : 0);
+    final listView = ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        if (hasLeadingSpacing && index == 0) {
+          return SizedBox(width: widget.leadingSpacing);
+        }
+
+        final tagIndex = hasLeadingSpacing ? index - 1 : index;
+        final tag = widget.tags[tagIndex];
+        return Padding(
+          padding: EdgeInsets.only(
+            right: tagIndex < widget.tags.length - 1 ? 30 : 0,
+          ),
+          child: GestureDetector(
             onLongPress: widget.onLongPress != null
                 ? () => _handleLongPress(tag)
                 : null,
@@ -166,9 +180,49 @@ class _FeedTagListState extends State<FeedTagList> {
               selected: _selectedTagId == tag.id,
               onTap: () => _handleTagTap(tag.id),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
+    );
+
+    final fadedList = widget.enableRightFade
+        ? LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final fadeWidth = widget.rightFadeWidth.clamp(0, width);
+              return ShaderMask(
+                blendMode: BlendMode.dstIn,
+                shaderCallback: (bounds) {
+                  if (fadeWidth == 0 || width == 0) {
+                    return const LinearGradient(
+                      colors: [Colors.white, Colors.white],
+                    ).createShader(bounds);
+                  }
+
+                  final fadeStart = ((width - fadeWidth) / width).clamp(
+                    0.0,
+                    1.0,
+                  );
+                  return LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: const [
+                      Colors.white,
+                      Colors.white,
+                      Colors.transparent,
+                    ],
+                    stops: [0.0, fadeStart, 1.0],
+                  ).createShader(bounds);
+                },
+                child: listView,
+              );
+            },
+          )
+        : listView;
+
+    return SizedBox(
+      height: 30,
+      child: fadedList,
     );
   }
 }

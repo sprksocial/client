@@ -32,6 +32,7 @@ class FeedsBarTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const double tagStartInset = 20;
     return SizedBox(
       height: 30 + kToolbarHeight,
       child: Stack(
@@ -50,10 +51,9 @@ class FeedsBarTemplate extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.only(right: 12),
               child: Row(
                 children: [
-                  const SizedBox(width: 8),
                   Expanded(
                     child: FeedTagList(
                       tags: tags,
@@ -62,6 +62,8 @@ class FeedsBarTemplate extends StatelessWidget {
                       onReorder: onReorder,
                       onLongPress: onLongPress,
                       enableReordering: enableReordering,
+                      leadingSpacing: tagStartInset,
+                      enableRightFade: true,
                     ),
                   ),
                   if (action != null) ...[

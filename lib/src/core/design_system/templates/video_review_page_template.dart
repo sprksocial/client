@@ -236,18 +236,21 @@ class _CrossPostSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withAlpha(6),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withAlpha(24)),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.6)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         title: Text(
           'Post to Bluesky',
           style: AppTypography.textMediumBold.copyWith(
-            color: AppColors.greyWhite,
+            color: colorScheme.onSurface,
           ),
         ),
         trailing: Switch(value: value, onChanged: onChanged),
