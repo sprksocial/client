@@ -150,7 +150,7 @@ class NotificationNotifier extends _$NotificationNotifier {
       final mostRecent = state.notifications.first;
       await _notificationRepository.updateSeen(mostRecent.indexedAt);
       // Refresh the unread count
-      ref.invalidate(unreadCountProvider);
+      await ref.read(unreadCountProvider().notifier).refresh();
     } catch (e, stackTrace) {
       _logger.e(
         'Error marking notifications as seen: $e',
@@ -174,7 +174,7 @@ class NotificationNotifier extends _$NotificationNotifier {
       // Use this notification's indexedAt as the seenAt timestamp
       await _notificationRepository.updateSeen(notification.indexedAt);
       // Refresh the unread count
-      ref.invalidate(unreadCountProvider);
+      await ref.read(unreadCountProvider().notifier).refresh();
     } catch (e, stackTrace) {
       _logger.e(
         'Error marking notification as viewed: $e',

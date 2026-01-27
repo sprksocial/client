@@ -5,6 +5,8 @@ import 'package:spark/src/core/auth/data/repositories/onboarding_repository_impl
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/notification_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
@@ -14,6 +16,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/story_repositor
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository_xrpc.dart';
 import 'package:spark/src/core/network/xrpc/service_auth_helper.dart';
+import 'package:spark/src/core/notifications/push_notification_service.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository_impl.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
@@ -87,5 +90,13 @@ Future<void> initServiceLocator() async {
     )
     ..registerSingleton<ProVideoEditorRepository>(
       const ProVideoEditorRepositoryImpl(),
+    )
+    ..registerSingleton<NotificationRepository>(
+      NotificationRepositoryImpl(sl<SprkRepository>()),
     );
+
+  // Initialize push notification service asynchronously
+  final pushService = PushNotificationService();
+  await pushService.initialize();
+  sl.registerSingleton<PushNotificationService>(pushService);
 }

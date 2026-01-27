@@ -24,4 +24,26 @@ abstract class NotificationRepository {
   ///
   /// [seenAt] The timestamp to mark notifications as seen at
   Future<void> updateSeen(DateTime seenAt);
+
+  /// Register device for push notifications
+  ///
+  /// [token] The FCM/APNs device token
+  /// [platform] The platform identifier ('ios' or 'android')
+  /// [appId] The application identifier (e.g., 'so.sprk.app')
+  Future<void> registerPush({
+    required String token,
+    required String platform,
+    required String appId,
+  });
+
+  /// Unregister device from push notifications
+  ///
+  /// [token] The FCM/APNs device token to unregister
+  /// [platform] The platform identifier ('ios' or 'android')
+  /// [appId] The application identifier (e.g., 'so.sprk.app')
+  Future<void> unregisterPush({
+    required String token,
+    required String platform,
+    required String appId,
+  });
 }

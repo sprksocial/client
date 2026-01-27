@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/notifications/push_notification_service.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -128,7 +129,92 @@ class NotificationRepositoryImpl implements NotificationRepository {
         headers: {'atproto-proxy': _client.sprkDid},
       );
 
+      // Clear the app badge locally (server also sends silent push for background)
+      try {
+        await GetIt.instance<PushNotificationService>().clearBadge();
+      } catch (e) {
+        _logger.w('Failed to clear badge: $e');
+      }
+
       _logger.d('Seen timestamp updated successfully');
+    });
+  }
+
+  @override
+  Future<void> registerPush({
+    required String token,
+    required String platform,
+    required String appId,
+  }) async {
+    _logger.d('Registering push token: platform=$platform, appId=$appId');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      // serviceDid needs just the DID without fragment (format validation)
+      final serviceDid = _client.sprkDid.split('#').first;
+
+      final body = {
+        'serviceDid': serviceDid,
+        'token': token,
+        'platform': platform,
+        'appId': appId,
+      };
+
+      await atproto.post(
+        NSID.parse('so.sprk.notification.registerPush'),
+        body: body,
+        headers: {'atproto-proxy': _client.sprkDid},
+      );
+
+      _logger.i('Push token registered successfully');
+    });
+  }
+
+  @override
+  Future<void> unregisterPush({
+    required String token,
+    required String platform,
+    required String appId,
+  }) async {
+    _logger.d('Unregistering push token: platform=$platform, appId=$appId');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      // serviceDid needs just the DID without fragment (format validation)
+      final serviceDid = _client.sprkDid.split('#').first;
+
+      final body = {
+        'serviceDid': serviceDid,
+        'token': token,
+        'platform': platform,
+        'appId': appId,
+      };
+
+      await atproto.post(
+        NSID.parse('so.sprk.notification.unregisterPush'),
+        body: body,
+        headers: {'atproto-proxy': _client.sprkDid},
+      );
+
+      _logger.i('Push token unregistered successfully');
     });
   }
 }
