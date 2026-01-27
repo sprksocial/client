@@ -204,8 +204,6 @@ class _FeedTagListState extends State<FeedTagList> {
                     1.0,
                   );
                   return LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
                     colors: const [
                       Colors.white,
                       Colors.white,

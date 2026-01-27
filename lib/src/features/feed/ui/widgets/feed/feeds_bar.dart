@@ -63,10 +63,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withAlpha(50),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withAlpha(50),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -79,8 +78,8 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                   child: Text(
                     feed.view?.displayName ?? 'Following',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const Divider(),
@@ -142,7 +141,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                           ],
                         ),
                       );
-                      if (confirmed == true) {
+                      if (confirmed ?? false) {
                         await ref
                             .read(settingsProvider.notifier)
                             .removeFeed(feed);
@@ -168,8 +167,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
     final settings = ref.watch(settingsProvider);
 
     // Only show pinned feeds in the home view
-    final pinnedFeeds =
-        settings.feeds.where((feed) => feed.config.pinned).toList();
+    final pinnedFeeds = settings.feeds
+        .where((feed) => feed.config.pinned)
+        .toList();
 
     final tags = pinnedFeeds.map((feed) {
       final isTimeline =

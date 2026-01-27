@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:atproto/atproto.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';
+import 'package:spark/src/core/notifications/push_notification_service.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/auth/providers/auth_state.dart';
@@ -21,6 +25,8 @@ AuthRepository authRepository(Ref ref) {
 class Auth extends _$Auth {
   late final AuthRepository _authRepository;
   late final LogService _logService;
+  StreamSubscription<String>? _tokenRefreshSubscription;
+  bool _pendingPushRegistration = false;
 
   @override
   AuthState build() {
@@ -133,6 +139,9 @@ class Auth extends _$Auth {
       } else {
         _updateState();
         state = state.copyWith(isLoading: false);
+
+        // Register for push notifications after successful login
+        await _registerPushNotifications();
       }
 
       return result;
@@ -152,6 +161,9 @@ class Auth extends _$Auth {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
+      // Unregister push notifications before logout
+      await _unregisterPushNotifications();
+
       await _authRepository.logout();
       _updateState();
       state = state.copyWith(isLoading: false);
@@ -190,6 +202,154 @@ class Auth extends _$Auth {
       _logger.e('Token refresh error', error: e, stackTrace: stackTrace);
       state = state.copyWith(error: 'Token refresh failed: $e');
       return false;
+    }
+  }
+
+  /// Registers the device for push notifications
+  /// Only registers if permission is already granted, otherwise defers
+  Future<void> _registerPushNotifications() async {
+    try {
+      final pushService = GetIt.instance<PushNotificationService>();
+
+      // Check if we already have permission
+      final hasPermission = await pushService.hasPermission();
+
+      if (hasPermission) {
+        // Permission already granted, register immediately
+        await _doRegisterPush(pushService);
+      } else {
+        // Permission not granted yet, defer until main screen
+        _pendingPushRegistration = true;
+        _logger.i(
+          'Push permission not granted, deferring registration to main screen',
+        );
+      }
+    } catch (e, stackTrace) {
+      // Don't fail login if push registration fails
+      _logger.e(
+        'Failed to register push notifications',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  /// Actually performs push registration (called when we have permission)
+  Future<void> _doRegisterPush(PushNotificationService pushService) async {
+    final token = await pushService.getToken();
+
+    if (token != null) {
+      final notificationRepo = GetIt.instance<NotificationRepository>();
+      await notificationRepo.registerPush(
+        token: token,
+        platform: pushService.platform,
+        appId: 'so.sprk.app',
+      );
+      _logger.i('Push notifications registered successfully');
+
+      // Set up listener for token refresh
+      await _setupTokenRefreshListener(pushService, notificationRepo);
+      _pendingPushRegistration = false;
+    } else {
+      _logger.w('No push token available');
+    }
+  }
+
+  /// Returns true if push registration is pending (permission not yet requested)
+  bool get hasPendingPushRegistration => _pendingPushRegistration;
+
+  /// Requests push notification permission and registers if granted
+  /// Call this from the main screen after login
+  Future<bool> requestPushPermissionAndRegister() async {
+    if (!_pendingPushRegistration) {
+      _logger.d('No pending push registration');
+      return true;
+    }
+
+    try {
+      final pushService = GetIt.instance<PushNotificationService>();
+      final granted = await pushService.requestPermission();
+
+      if (granted) {
+        await _doRegisterPush(pushService);
+        return true;
+      } else {
+        _logger.w('User denied push notification permission');
+        _pendingPushRegistration = false;
+        return false;
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Failed to request push permission',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  /// Sets up a listener for FCM token refresh to re-register
+  Future<void> _setupTokenRefreshListener(
+    PushNotificationService pushService,
+    NotificationRepository notificationRepo,
+  ) async {
+    // Cancel any existing subscription and wait for it to complete
+    await _tokenRefreshSubscription?.cancel();
+
+    _tokenRefreshSubscription = pushService.onTokenRefresh.listen(
+      (newToken) async {
+        _logger.i('FCM token refreshed, re-registering push notifications');
+        try {
+          await notificationRepo.registerPush(
+            token: newToken,
+            platform: pushService.platform,
+            appId: 'so.sprk.app',
+          );
+          _logger.i('Push notifications re-registered with new token');
+        } catch (e, stackTrace) {
+          _logger.e(
+            'Failed to re-register push notifications after token refresh',
+            error: e,
+            stackTrace: stackTrace,
+          );
+        }
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        _logger.e(
+          'Error in token refresh stream',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      },
+    );
+  }
+
+  /// Unregisters the device from push notifications
+  Future<void> _unregisterPushNotifications() async {
+    // Cancel token refresh listener
+    await _tokenRefreshSubscription?.cancel();
+    _tokenRefreshSubscription = null;
+
+    try {
+      final pushService = GetIt.instance<PushNotificationService>();
+      final token = await pushService.getToken();
+
+      if (token != null) {
+        final notificationRepo = GetIt.instance<NotificationRepository>();
+        await notificationRepo.unregisterPush(
+          token: token,
+          platform: pushService.platform,
+          appId: 'so.sprk.app',
+        );
+        _logger.i('Push notifications unregistered successfully');
+      }
+    } catch (e, stackTrace) {
+      // Don't fail logout if push unregistration fails
+      _logger.e(
+        'Failed to unregister push notifications',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 }

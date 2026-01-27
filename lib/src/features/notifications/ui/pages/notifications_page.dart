@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/features/notifications/providers/notification_provider.dart'
     show notificationProvider;
-import 'package:spark/src/features/notifications/providers/unread_count_provider.dart'
-    show unreadCountProvider;
 import 'package:spark/src/features/notifications/ui/widgets/notifications_list.dart';
 
 @RoutePage()
@@ -17,23 +15,22 @@ class NotificationsPage extends ConsumerStatefulWidget {
 }
 
 class _NotificationsPageState extends ConsumerState<NotificationsPage> {
-  @override
-  void initState() {
-    super.initState();
-    // Mark notifications as seen when page is viewed
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(
-            notificationProvider().notifier,
-          )
-          .markAsSeen();
-      // Refresh unread count after marking as seen
-      ref.read(unreadCountProvider().notifier).refresh();
-    });
-  }
+  bool _hasMarkedAsSeen = false;
 
   @override
   Widget build(BuildContext context) {
+    final notificationState = ref.watch(notificationProvider());
+
+    // Mark notifications as seen once they're loaded
+    if (!_hasMarkedAsSeen &&
+        !notificationState.isLoading &&
+        notificationState.notifications.isNotEmpty) {
+      _hasMarkedAsSeen = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(notificationProvider().notifier).markAsSeen();
+      });
+    }
+
     return Scaffold(
       backgroundColor: AppColors.black,
       appBar: AppBar(

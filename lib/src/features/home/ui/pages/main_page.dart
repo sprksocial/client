@@ -26,6 +26,18 @@ class _MainPageState extends ConsumerState<MainPage> {
   @override
   void initState() {
     super.initState();
+    // Request push notification permission if pending (after login)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestPushPermissionIfNeeded();
+    });
+  }
+
+  /// Requests push notification permission if it was deferred during login
+  Future<void> _requestPushPermissionIfNeeded() async {
+    final auth = ref.read(authProvider.notifier);
+    if (auth.hasPendingPushRegistration) {
+      await auth.requestPushPermissionAndRegister();
+    }
   }
 
   void _updateSystemUIOverlayStyle(int activeIndex, BuildContext context) {
