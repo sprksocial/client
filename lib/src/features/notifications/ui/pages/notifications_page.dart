@@ -21,9 +21,15 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
   Widget build(BuildContext context) {
     final notificationState = ref.watch(notificationProvider());
 
+    // Reset the flag when refreshing so we can mark new notifications as seen
+    if (notificationState.isRefreshing) {
+      _hasMarkedAsSeen = false;
+    }
+
     // Mark notifications as seen once they're loaded
     if (!_hasMarkedAsSeen &&
         !notificationState.isLoading &&
+        !notificationState.isRefreshing &&
         notificationState.notifications.isNotEmpty) {
       _hasMarkedAsSeen = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -3,7 +3,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/organisms/bottom_nav_bar.dart';
+import 'package:spark/src/core/notifications/push_notification_service.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
@@ -26,17 +28,24 @@ class _MainPageState extends ConsumerState<MainPage> {
   @override
   void initState() {
     super.initState();
-    // Request push notification permission if pending (after login)
+    // Handle post-login tasks after the widget tree is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _requestPushPermissionIfNeeded();
+      _handlePostLoginTasks();
     });
   }
 
-  /// Requests push notification permission if it was deferred during login
-  Future<void> _requestPushPermissionIfNeeded() async {
+  /// Handles tasks that need to run after login/auth completes
+  Future<void> _handlePostLoginTasks() async {
+    // Request push notification permission if pending (after login)
     final auth = ref.read(authProvider.notifier);
     if (auth.hasPendingPushRegistration) {
       await auth.requestPushPermissionAndRegister();
+    }
+
+    // Process any pending notification navigation (cold start)
+    final pushService = GetIt.instance<PushNotificationService>();
+    if (pushService.hasPendingNotification) {
+      pushService.processPendingNotification();
     }
   }
 
