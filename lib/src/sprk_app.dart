@@ -25,6 +25,11 @@ class _SprkAppState extends ConsumerState<SprkApp> {
   @override
   void initState() {
     super.initState();
+    // Register AppRouter globally for push notification navigation
+    if (!GetIt.instance.isRegistered<AppRouter>()) {
+      GetIt.instance.registerSingleton<AppRouter>(_appRouter);
+    }
+
     ref.read(themeProvider.notifier).initialize();
     // Defer initialization to after the widget tree is built
     // to avoid modifying providers during build

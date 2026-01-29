@@ -255,7 +255,7 @@ class Auth extends _$Auth {
     }
   }
 
-  /// Returns true if push registration is pending (permission not yet requested)
+  /// True if push registration is pending (permission not yet requested)
   bool get hasPendingPushRegistration => _pendingPushRegistration;
 
   /// Requests push notification permission and registers if granted

@@ -129,7 +129,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         headers: {'atproto-proxy': _client.sprkDid},
       );
 
-      // Clear the app badge locally (server also sends silent push for background)
+      // Clear app badge locally (server also sends silent push for background)
       try {
         await GetIt.instance<PushNotificationService>().clearBadge();
       } catch (e) {

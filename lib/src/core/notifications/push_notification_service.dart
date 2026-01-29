@@ -4,6 +4,8 @@ import 'package:app_badge_plus/app_badge_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/firebase_options.dart';
+import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -22,13 +24,19 @@ class PushNotificationService {
   bool _badgeSupported = false;
   bool _initialized = false;
 
+  /// Queued notification data for cold start navigation
+  /// This is set when the app is opened from terminated state via notification
+  RemoteMessage? _pendingNotification;
+
   /// Initializes Firebase without requesting permissions
-  /// Permissions should be requested separately via [requestPermissionAndGetToken]
+  /// Permissions should be requested via [requestPermissionAndGetToken]
   Future<void> initialize() async {
     _logger.i('Initializing push notification service');
 
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       _messaging = FirebaseMessaging.instance;
       _logger.d('Firebase initialized');
 
@@ -41,12 +49,93 @@ class PushNotificationService {
 
       _initialized = true;
       _logger.i('Push notification service initialized successfully');
+
+      // Set up message handlers for deep linking
+      await _setupMessageHandlers();
     } catch (e, stackTrace) {
       _logger.e(
         'Failed to initialize push notifications',
         error: e,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  /// Sets up FCM message handlers for deep linking
+  Future<void> _setupMessageHandlers() async {
+    // Handle notification tap when app is in background
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+
+    // Handle notification tap when app was terminated
+    final initialMessage = await _messaging.getInitialMessage();
+    if (initialMessage != null) {
+      _logger.i('App opened from terminated state via notification');
+      // Queue the navigation - will be processed after auth completes
+      _pendingNotification = initialMessage;
+    }
+
+    // Handle foreground messages (for badge updates)
+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+    _logger.d('FCM message handlers set up');
+  }
+
+  /// Handles notification tap when app is in background or foreground
+  void _handleNotificationTap(RemoteMessage message) {
+    _logger.i('Notification tapped: ${message.data}');
+
+    final data = message.data;
+    final reason = data['reason'] as String?;
+    final author = data['author'] as String?;
+    final recordUri = data['recordUri'] as String?;
+    final reasonSubject = data['reasonSubject'] as String?;
+
+    if (!GetIt.instance.isRegistered<AppRouter>()) {
+      _logger.w('AppRouter not registered, queueing navigation');
+      _pendingNotification = message;
+      return;
+    }
+
+    final router = GetIt.instance<AppRouter>();
+
+    if (reason == 'follow' && author != null) {
+      // Navigate to profile for follow notifications
+      _logger.d('Navigating to profile: $author');
+      router.push(ProfileRoute(did: author));
+    } else if (reasonSubject != null) {
+      // For likes/reposts, navigate to the subject (the post being liked/reposted)
+      _logger.d('Navigating to post (reasonSubject): $reasonSubject');
+      router.push(StandalonePostRoute(postUri: reasonSubject));
+    } else if (recordUri != null) {
+      // For replies/mentions, navigate to the record itself
+      _logger.d('Navigating to post (recordUri): $recordUri');
+      router.push(StandalonePostRoute(postUri: recordUri));
+    } else if (author != null) {
+      // Fallback to author profile
+      _logger.d('Navigating to author profile (fallback): $author');
+      router.push(ProfileRoute(did: author));
+    } else {
+      _logger.w('No valid navigation target in notification data');
+    }
+  }
+
+  /// Handles foreground messages (updates badge count)
+  void _handleForegroundMessage(RemoteMessage message) {
+    _logger.d('Foreground message received: ${message.notification?.title}');
+
+    // Badge is already set by the server in the APNS payload
+    // We could optionally show an in-app notification here
+  }
+
+  /// Returns true if there's a pending notification navigation
+  bool get hasPendingNotification => _pendingNotification != null;
+
+  /// Processes pending notification navigation (call after auth completes)
+  void processPendingNotification() {
+    if (_pendingNotification != null) {
+      _logger.i('Processing pending notification navigation');
+      _handleNotificationTap(_pendingNotification!);
+      _pendingNotification = null;
     }
   }
 
