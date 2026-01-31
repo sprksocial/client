@@ -24,6 +24,7 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
     super.key,
     this.post,
     this.index,
+    this.isInitialPost = false,
   });
   final AtUri postUri;
   final AtUri profileUri;
@@ -31,6 +32,10 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   final PostView? post;
 
   final int? index;
+
+  /// Whether this is the initial post that was clicked on.
+  /// Used to trigger autoplay before the provider is initialized.
+  final bool isInitialPost;
 
   @override
   ConsumerState<ProfileFeedPostWidget> createState() =>
@@ -208,6 +213,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                           ? widget.profileUri.toString()
                           : null,
                       index: widget.index,
+                      isInitialPost: widget.isInitialPost,
                     ),
                     MediaViewBskyVideo() => PostVideoPlayer(
                       videoUrl: post.videoUrl,
@@ -216,6 +222,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                           ? widget.profileUri.toString()
                           : null,
                       index: widget.index,
+                      isInitialPost: widget.isInitialPost,
                     ),
                     MediaViewImages() || MediaViewBskyImages() => ImageCarousel(
                       imageUrls: post.imageUrls,
@@ -232,6 +239,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                               ? widget.profileUri.toString()
                               : null,
                           index: widget.index,
+                          isInitialPost: widget.isInitialPost,
                         ),
                         MediaViewBskyVideo() => PostVideoPlayer(
                           videoUrl: post.videoUrl,
@@ -240,6 +248,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                               ? widget.profileUri.toString()
                               : null,
                           index: widget.index,
+                          isInitialPost: widget.isInitialPost,
                         ),
                         MediaViewImages() ||
                         MediaViewBskyImages() => ImageCarousel(

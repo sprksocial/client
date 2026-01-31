@@ -18,7 +18,7 @@ class AppOverlayBackButton extends StatelessWidget {
   /// Color for the icon. Defaults to white for dark/overlay screens.
   final Color color;
 
-  /// Optional custom callback. If null, defaults to `context.router.maybePop()`.
+  /// Optional custom callback. If null, defaults to `context.router.maybePop()`
   final VoidCallback? onPressed;
 
   @override

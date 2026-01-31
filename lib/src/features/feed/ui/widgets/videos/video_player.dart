@@ -23,6 +23,7 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
     this.feed,
     this.index,
     this.profileFeedUri,
+    this.isInitialPost = false,
   });
 
   final String videoUrl;
@@ -33,6 +34,10 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
   /// The profile URI for standalone profile feed visibility tracking.
   /// When [index] provided, uses profile feed index provider not feed provider
   final String? profileFeedUri;
+
+  /// Whether this is the initial post that was clicked on.
+  /// Used to trigger autoplay before the provider is fully initialized.
+  final bool isInitialPost;
 
   @override
   ConsumerState<PostVideoPlayer> createState() => PostVideoPlayerState();
@@ -276,7 +281,20 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         });
       } else if (profileFeedIndex != null && widget.index != null) {
         // Profile feed visibility check
-        if (_lastFeedIndex != profileFeedIndex) {
+        if (profileFeedIndex == -1) {
+          // Provider not initialized yet - use isInitialPost for initial autoplay
+          if (widget.isInitialPost && _lastFeedIndex == null) {
+            _lastFeedIndex = -1; // Mark as handled
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !_userInteracted) {
+                _handleAutoPlayPause(
+                  true,
+                  isFeedSettingsVisible: feedSettingsVisible,
+                );
+              }
+            });
+          }
+        } else if (_lastFeedIndex != profileFeedIndex) {
           _lastFeedIndex = profileFeedIndex;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && !_userInteracted) {
