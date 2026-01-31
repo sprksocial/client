@@ -144,7 +144,7 @@ class _NavIcon extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: AppConstants.animationFast,
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         child: builder(context, isSelected),
       ),
     );
@@ -176,7 +176,7 @@ class _NavIconWithBadge extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: AppConstants.animationFast,
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         child: Stack(
           clipBehavior: Clip.none,
           children: [

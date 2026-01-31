@@ -89,13 +89,11 @@ class ProfileReposts extends _$ProfileReposts {
 
     // End of network when:
     // 1. API returns null cursor (no more pages)
-    // 2. API returns fewer posts than requested (last page)
-    // 3. No new posts were added (duplicates or empty response)
+    // 2. API returned posts but all were duplicates (prevents infinite loops)
+    // Note: Don't check posts.isEmpty - empty page with cursor means more exist
     final isEndOfNetwork =
         result.cursor == null ||
-        result.posts.length < ProfileFeedState.fetchLimit ||
-        (currentState != null &&
-            currentState.allPosts.length == allPosts.length);
+        (result.posts.isNotEmpty && newPosts.isEmpty);
 
     return ProfileFeedState(
       loadedPosts: allPosts,
