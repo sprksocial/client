@@ -125,6 +125,10 @@ class AppRouter extends RootStackRouter {
       page: StandaloneRepostsFeedRoute.page,
       path: '/profile/:did/reposts',
     ),
+    AutoRoute(
+      page: StandaloneLikesFeedRoute.page,
+      path: '/profile/:did/likes',
+    ),
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),
     AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),
     AutoRoute(page: ImageReviewRoute.page, path: '/image-review'),

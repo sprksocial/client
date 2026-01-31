@@ -74,7 +74,13 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           activityWidget: const ActivitiesTab(),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () {
+        final theme = Theme.of(context);
+        return Scaffold(
+          backgroundColor: theme.colorScheme.surface,
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      },
       error: (error, stack) {
         final theme = Theme.of(context);
         return Center(

@@ -11,12 +11,12 @@ import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';
-import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_likes_provider.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
 
 @RoutePage()
-class StandaloneRepostsFeedPage extends ConsumerStatefulWidget {
-  const StandaloneRepostsFeedPage({
+class StandaloneLikesFeedPage extends ConsumerStatefulWidget {
+  const StandaloneLikesFeedPage({
     @PathParam('did') required this.did,
     required this.initialPostIndex,
     this.bsky = false,
@@ -29,12 +29,12 @@ class StandaloneRepostsFeedPage extends ConsumerStatefulWidget {
   final bool bsky;
 
   @override
-  ConsumerState<StandaloneRepostsFeedPage> createState() =>
-      _StandaloneRepostsFeedPageState();
+  ConsumerState<StandaloneLikesFeedPage> createState() =>
+      _StandaloneLikesFeedPageState();
 }
 
-class _StandaloneRepostsFeedPageState
-    extends ConsumerState<StandaloneRepostsFeedPage> {
+class _StandaloneLikesFeedPageState
+    extends ConsumerState<StandaloneLikesFeedPage> {
   late final PageController pageController;
   int _currentIndex = 0;
   bool _hasInitializedIndex = false;
@@ -58,13 +58,13 @@ class _StandaloneRepostsFeedPageState
       _hasInitializedIndex = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref
-            .read(profileFeedIndexProvider('reposts:${widget.did}').notifier)
+            .read(profileFeedIndexProvider('likes:${widget.did}').notifier)
             .setIndex(widget.initialPostIndex);
       });
     }
 
-    final repostsState = ref.watch(
-      profileRepostsProvider(widget.did, widget.bsky),
+    final likesState = ref.watch(
+      profileLikesProvider(widget.did, widget.bsky),
     );
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -73,7 +73,7 @@ class _StandaloneRepostsFeedPageState
       body: Stack(
         children: [
           // Full-screen content
-          repostsState.when(
+          likesState.when(
             data: (state) {
               // Display all posts returned by server - no client-side filtering
               final filteredUris = state.loadedPosts;
@@ -81,7 +81,7 @@ class _StandaloneRepostsFeedPageState
               if (filteredUris.isEmpty) {
                 return const Center(
                   child: Text(
-                    'No reposts available',
+                    'No likes available',
                     style: TextStyle(color: AppColors.white),
                   ),
                 );
@@ -101,7 +101,7 @@ class _StandaloneRepostsFeedPageState
                   ref
                       .read(
                         profileFeedIndexProvider(
-                          'reposts:${widget.did}',
+                          'likes:${widget.did}',
                         ).notifier,
                       )
                       .setIndex(index);
@@ -110,7 +110,7 @@ class _StandaloneRepostsFeedPageState
                       !state.isEndOfNetwork) {
                     ref
                         .read(
-                          profileRepostsProvider(
+                          profileLikesProvider(
                             widget.did,
                             widget.bsky,
                           ).notifier,
@@ -147,7 +147,7 @@ class _StandaloneRepostsFeedPageState
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading reposts: $error',
+                    'Error loading likes: $error',
                     style: const TextStyle(color: AppColors.white),
                     textAlign: TextAlign.center,
                   ),
@@ -156,7 +156,7 @@ class _StandaloneRepostsFeedPageState
                     onPressed: () {
                       ref
                           .read(
-                            profileRepostsProvider(
+                            profileLikesProvider(
                               widget.did,
                               widget.bsky,
                             ).notifier,
@@ -180,7 +180,7 @@ class _StandaloneRepostsFeedPageState
       bottomNavigationBar: _CommentBar(
         bottomPadding: bottomPadding,
         onTap: () {
-          final state = repostsState.value;
+          final state = likesState.value;
           if (state != null && state.loadedPosts.isNotEmpty) {
             final currentPostUri = state.loadedPosts[_currentIndex];
             final post = state.postViews[currentPostUri];

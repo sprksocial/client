@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
-import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
@@ -276,20 +276,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           Positioned(
             top: 0,
             left: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: IconButton(
-                  icon: AppIcons.chevronleft(color: colorScheme.onSurface),
-                  onPressed: () {
-                    if (mounted) {
-                      context.router.maybePop();
-                    }
-                  },
-                  tooltip: 'Back',
-                ),
-              ),
-            ),
+            child: AppOverlayBackButton(color: colorScheme.onSurface),
           ),
         ],
       ),

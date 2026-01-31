@@ -212,8 +212,13 @@ class _UserResultsState extends ConsumerState<_UserResults> {
       return const Center(child: CircularProgressIndicator());
     }
     if (state.error != null) {
+      final theme = Theme.of(context);
+      final colorScheme = theme.colorScheme;
       return Center(
-        child: Text(state.error!, style: const TextStyle(color: Colors.red)),
+        child: Text(
+          state.error!,
+          style: TextStyle(color: colorScheme.error),
+        ),
       );
     }
     if (state.query.isEmpty) {

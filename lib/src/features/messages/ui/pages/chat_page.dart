@@ -93,7 +93,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         otherUserHandle: widget.otherUserHandle,
         otherUserAvatar: widget.otherUserAvatar,
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () {
+        final theme = Theme.of(context);
+        return Scaffold(
+          backgroundColor: theme.colorScheme.surface,
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      },
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

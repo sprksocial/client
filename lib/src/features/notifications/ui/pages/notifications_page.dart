@@ -20,6 +20,8 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     final notificationState = ref.watch(notificationProvider());
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     // Reset the flag when refreshing so we can mark new notifications as seen
     if (notificationState.isRefreshing) {
@@ -38,12 +40,12 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.black,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.black,
-        title: const Text(
+        backgroundColor: colorScheme.surface,
+        title: Text(
           'Notifications',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: colorScheme.onSurface),
         ),
       ),
       body: const NotificationsList(),
