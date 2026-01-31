@@ -56,10 +56,12 @@ class _StandaloneRepostsFeedPageState
   Widget build(BuildContext context) {
     if (!_hasInitializedIndex) {
       _hasInitializedIndex = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref
-            .read(profileFeedIndexProvider('reposts:${widget.did}').notifier)
-            .setIndex(widget.initialPostIndex);
+      Future(() {
+        if (mounted) {
+          ref
+              .read(profileFeedIndexProvider('reposts:${widget.did}').notifier)
+              .setIndex(widget.initialPostIndex);
+        }
       });
     }
 
@@ -129,6 +131,7 @@ class _StandaloneRepostsFeedPageState
                     videosOnly: false,
                     post: post,
                     index: index,
+                    isInitialPost: index == widget.initialPostIndex,
                   );
                 },
               );

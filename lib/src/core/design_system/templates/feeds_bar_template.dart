@@ -4,7 +4,7 @@ import 'package:spark/src/core/design_system/components/molecules/feed_tag_list.
 
 /// The preferred height for the feeds bar content (excludes status bar).
 /// The actual rendered height includes top safe area padding.
-/// This widget is designed for use with [Scaffold.extendBodyBehindAppBar] = true.
+/// This is designed for use with [Scaffold.extendBodyBehindAppBar] = true.
 const kFeedsBarHeight = kToolbarHeight;
 
 /// The width of the leading button area, matching [kToolbarHeight] like AppBar.
@@ -41,8 +41,8 @@ class FeedsBarTemplate extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onLeadingPressed;
 
   /// Returns the toolbar height for layout calculations.
-  /// The actual widget height includes status bar safe area padding.
-  /// This matches [AppBar]'s behavior and works with [Scaffold.extendBodyBehindAppBar] = true.
+  /// The actual widget height includes status bar safe area padding,
+  /// matching [AppBar] & works with [Scaffold.extendBodyBehindAppBar] = true.
   @override
   Size get preferredSize => const Size.fromHeight(kFeedsBarHeight);
 

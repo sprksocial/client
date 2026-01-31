@@ -101,6 +101,10 @@ class ProfileRepostsTab extends ProfileTabBase {
           ];
         }
 
+        // Add bottom padding to account for tab bar when on main navigation
+        final bottomPadding = MediaQuery.of(context).padding.bottom +
+            kBottomNavigationBarHeight;
+
         return [
           SliverPadding(
             padding: const EdgeInsets.all(5),
@@ -131,6 +135,8 @@ class ProfileRepostsTab extends ProfileTabBase {
               ),
             ),
           ),
+          // Bottom padding for tab bar
+          SliverPadding(padding: EdgeInsets.only(bottom: bottomPadding)),
         ];
       },
       loading: () => [

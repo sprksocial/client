@@ -56,10 +56,12 @@ class _StandaloneLikesFeedPageState
   Widget build(BuildContext context) {
     if (!_hasInitializedIndex) {
       _hasInitializedIndex = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref
-            .read(profileFeedIndexProvider('likes:${widget.did}').notifier)
-            .setIndex(widget.initialPostIndex);
+      Future(() {
+        if (mounted) {
+          ref
+              .read(profileFeedIndexProvider('likes:${widget.did}').notifier)
+              .setIndex(widget.initialPostIndex);
+        }
       });
     }
 
@@ -129,6 +131,7 @@ class _StandaloneLikesFeedPageState
                     videosOnly: false,
                     post: post,
                     index: index,
+                    isInitialPost: index == widget.initialPostIndex,
                   );
                 },
               );
