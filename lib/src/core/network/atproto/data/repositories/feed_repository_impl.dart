@@ -1600,6 +1600,84 @@ class FeedRepositoryImpl implements FeedRepository {
     return (posts: <FeedViewPost>[], cursor: null);
   }
 
+  @override
+  Future<({List<FeedViewPost> posts, String? cursor})> getActorLikes(
+    String actor, {
+    int limit = 50,
+    String? cursor,
+    bool bluesky = false,
+  }) async {
+    _logger.d(
+      'Getting actor likes for actor: $actor, limit: $limit, '
+      'cursor: $cursor, bluesky: $bluesky',
+    );
+
+    if (bluesky) {
+      return _getActorLikesFromBluesky(actor, limit: limit, cursor: cursor);
+    }
+
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{
+        'actor': actor,
+        'limit': limit,
+      };
+
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
+      }
+
+      final result = await atproto.get(
+        NSID.parse('so.sprk.feed.getActorLikes'),
+        parameters: parameters,
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) {
+          final rawFeed = jsonMap['feed']! as List<dynamic>;
+          final feedPosts = _parseAndFilterPosts<FeedViewPost>(
+            rawPosts: rawFeed,
+            fromJson: FeedViewPost.fromJson,
+            hasMedia: _feedViewPostHasMedia,
+            getUri: _getFeedViewPostUri,
+            source: 'sprk actor likes',
+          );
+          return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
+        },
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      _logger.d(
+        'Actor likes retrieved successfully: '
+        '${result.data.posts.length} posts',
+      );
+      return result.data;
+    });
+  }
+
+  /// Get actor likes from Bluesky API
+  /// Note: Bluesky doesn't have a direct getActorLikes endpoint,
+  /// so we return an empty result in Bluesky mode.
+  Future<({List<FeedViewPost> posts, String? cursor})>
+  _getActorLikesFromBluesky(
+    String actor, {
+    required int limit,
+    required String? cursor,
+  }) async {
+    _logger.w(
+      'getActorLikes is not available for Bluesky API, returning empty',
+    );
+    return (posts: <FeedViewPost>[], cursor: null);
+  }
+
   /// Helper method to determine content type based on file extension
   String _getContentType(String videoPath) {
     final extension = path.extension(videoPath).toLowerCase();

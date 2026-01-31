@@ -20,6 +20,7 @@ export 'package:spark/src/features/posting/ui/pages/video_review_page.dart';
 export 'package:spark/src/features/profile/ui/pages/blocks_page.dart';
 export 'package:spark/src/features/profile/ui/pages/edit_profile_page.dart';
 export 'package:spark/src/features/profile/ui/pages/profile_page.dart';
+export 'package:spark/src/features/profile/ui/pages/standalone_likes_feed_page.dart';
 export 'package:spark/src/features/profile/ui/pages/standalone_profile_feed_page.dart';
 export 'package:spark/src/features/profile/ui/pages/standalone_reposts_feed_page.dart';
 export 'package:spark/src/features/profile/ui/pages/user_profile_page.dart';

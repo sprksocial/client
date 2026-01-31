@@ -229,4 +229,17 @@ abstract class FeedRepository {
     String? cursor,
     bool bluesky = false,
   });
+
+  /// Get a list of posts liked by an actor
+  ///
+  /// [actor] The at-identifier of the actor (handle or DID)
+  /// [limit] The number of items to return (default 50, max 100)
+  /// [cursor] Pagination cursor for the next set of results
+  /// [bluesky] Whether to fetch from Bluesky API instead of Spark
+  Future<({List<FeedViewPost> posts, String? cursor})> getActorLikes(
+    String actor, {
+    int limit = 50,
+    String? cursor,
+    bool bluesky = false,
+  });
 }

@@ -484,34 +484,43 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
           }),
           // Show +N count if there are more
           if (extraCount > 0)
-            Transform.translate(
-              offset: Offset(-authors.length * 8.0, 0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '+$extraCount',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+            Builder(
+              builder: (context) {
+                final theme = Theme.of(context);
+                final colorScheme = theme.colorScheme;
+                return Transform.translate(
+                  offset: Offset(-authors.length * 8.0, 0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
                     ),
-                    const SizedBox(width: 2),
-                    const Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 14,
-                      color: Colors.white54,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                ),
-              ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '+$extraCount',
+                          style: TextStyle(
+                            color: colorScheme.onSurfaceVariant.withAlpha(179),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 14,
+                          color: colorScheme.onSurfaceVariant.withAlpha(138),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -563,46 +572,58 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Username, action, and timestamp in one line
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 4,
-                      children: [
-                        Text(
-                          username,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                        Text(
-                          reasonText,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 15,
-                          ),
-                        ),
-                        Text(
-                          '· $timeAgo',
-                          style: const TextStyle(
-                            color: Colors.white38,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                    Builder(
+                      builder: (context) {
+                        final theme = Theme.of(context);
+                        final colorScheme = theme.colorScheme;
+                        return Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 4,
+                          children: [
+                            Text(
+                              username,
+                              style: TextStyle(
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              reasonText,
+                              style: TextStyle(
+                                color: colorScheme.onSurface.withAlpha(179),
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              '· $timeAgo',
+                              style: TextStyle(
+                                color: colorScheme.onSurface.withAlpha(102),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     // Content preview below (if available)
                     if (contentPreview != null &&
                         contentPreview.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text(
-                        contentPreview,
-                        style: const TextStyle(
-                          color: Colors.white60,
-                          fontSize: 14,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
+                      Builder(
+                        builder: (context) {
+                          final theme = Theme.of(context);
+                          final colorScheme = theme.colorScheme;
+                          return Text(
+                            contentPreview,
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withAlpha(153),
+                              fontSize: 14,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        },
                       ),
                     ],
                   ],
@@ -624,17 +645,21 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
                     },
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
+                      final theme = Theme.of(context);
+                      final colorScheme = theme.colorScheme;
                       return Container(
                         width: 56,
                         height: 56,
-                        color: Colors.grey[800],
-                        child: const Center(
+                        color: colorScheme.surfaceContainerHighest,
+                        child: Center(
                           child: SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white54,
+                              color: colorScheme.onSurfaceVariant.withAlpha(
+                                138,
+                              ),
                             ),
                           ),
                         ),

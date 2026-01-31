@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -272,18 +273,10 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
           body: Stack(
             children: [
               content,
-              Positioned(
+              const Positioned(
                 top: 0,
                 left: 0,
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => context.router.maybePop(),
-                    ),
-                  ),
-                ),
+                child: AppOverlayBackButton(),
               ),
             ],
           ),

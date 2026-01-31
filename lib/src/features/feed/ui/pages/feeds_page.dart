@@ -148,10 +148,12 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
 
     return Scaffold(
       backgroundColor: AppColors.black,
-      body: Stack(
-        children: [
-          if (_pageController != null && feeds.isNotEmpty)
-            PageView.builder(
+      extendBodyBehindAppBar: true,
+      appBar: _pageController != null
+          ? FeedsBar(pageController: _pageController!)
+          : null,
+      body: _pageController != null && feeds.isNotEmpty
+          ? PageView.builder(
               controller: _pageController,
               itemCount: feeds.length,
               onPageChanged: (index) {
@@ -181,24 +183,11 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
                 );
               },
             )
-          else
-            // Show black background briefly while feeds initialize
-            // The FeedPage will show skeleton once it renders
-            const DecoratedBox(
+          : const DecoratedBox(
+              // Show black background briefly while feeds initialize
+              // The FeedPage will show skeleton once it renders
               decoration: BoxDecoration(color: AppColors.black),
             ),
-          // Always show FeedsBar once we have a controller
-          // The controller is created as soon as we have activeFeed,
-          // keeping it visible through the initialization transition
-          if (_pageController != null)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: FeedsBar(pageController: _pageController!),
-            ),
-        ],
-      ),
     );
   }
 }

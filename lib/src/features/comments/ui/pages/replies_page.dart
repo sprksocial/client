@@ -1,8 +1,8 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
 import 'package:spark/src/features/comments/ui/widgets/comment_input.dart';
@@ -75,10 +75,7 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
           'Replies',
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
-        leading: IconButton(
-          onPressed: () => context.router.maybePop(),
-          icon: Icon(FluentIcons.arrow_left_24_regular, color: textColor),
-        ),
+        leading: AppLeadingButton(color: textColor),
       ),
       body: state.when(
         data: (data) => SafeArea(

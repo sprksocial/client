@@ -28,15 +28,18 @@ class AppLeadingButton extends StatelessWidget {
             final theme = Theme.of(context);
             final iconColor = color ?? theme.textTheme.titleLarge?.color;
 
-            return SizedBox(
-              width: 40,
-              height: 40,
-              child: Tooltip(
-                message: tooltip ?? 'Back',
-                child: GestureDetector(
-                  onTap: action,
-                  child: Center(
-                    child: AppIcons.chevronleft(color: iconColor, size: 28),
+            return Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Tooltip(
+                  message: tooltip ?? 'Back',
+                  child: GestureDetector(
+                    onTap: action,
+                    child: Center(
+                      child: AppIcons.chevronleft(color: iconColor, size: 28),
+                    ),
                   ),
                 ),
               ),

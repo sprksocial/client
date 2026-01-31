@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_tag_list.dart';
 import 'package:spark/src/core/design_system/templates/feeds_bar_template.dart';
@@ -9,13 +8,16 @@ import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
+export 'package:spark/src/core/design_system/templates/feeds_bar_template.dart'
+    show kFeedsBarHeight;
+
 class FeedsBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   const FeedsBar({required this.pageController, super.key});
 
   final PageController pageController;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kFeedsBarHeight);
 
   @override
   ConsumerState<FeedsBar> createState() => _FeedsBarState();
@@ -186,6 +188,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
     return FeedsBarTemplate(
       tags: tags,
       selectedTagId: settings.activeFeed.config.id,
+      onLeadingPressed: () => _showCreateMenu(context),
       onTagTap: (tagId) {
         final feed = pinnedFeeds.firstWhere(
           (f) => f.config.id == tagId,
@@ -207,18 +210,6 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
         );
         _showFeedOptionsSheet(context, feed);
       },
-      action: SizedBox(
-        width: 40,
-        height: 40,
-        child: IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          onPressed: () => _showCreateMenu(context),
-          icon: AppIcons.addPostFilled(size: 30),
-        ),
-      ),
     );
   }
 }

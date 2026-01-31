@@ -73,6 +73,8 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
 
     if (hasError && isEmpty) {
       final errorMsg = notificationState.errorMessage;
+      final theme = Theme.of(context);
+      final colorScheme = theme.colorScheme;
       return RefreshIndicator(
         onRefresh: () async {
           await ref
@@ -95,16 +97,16 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.error_outline,
                     size: 64,
-                    color: Colors.white54,
+                    color: colorScheme.onSurface.withAlpha(128),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Failed to load notifications',
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: colorScheme.onSurface.withAlpha(179),
                       fontSize: 16,
                     ),
                   ),
@@ -112,8 +114,8 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                     const SizedBox(height: 8),
                     Text(
                       errorMsg,
-                      style: const TextStyle(
-                        color: Colors.white38,
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withAlpha(102),
                         fontSize: 12,
                       ),
                       textAlign: TextAlign.center,
@@ -145,6 +147,8 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
     }
 
     if (notificationState.notifications.isEmpty) {
+      final theme = Theme.of(context);
+      final colorScheme = theme.colorScheme;
       return RefreshIndicator(
         onRefresh: () async {
           await ref
@@ -163,29 +167,29 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
           physics: const AlwaysScrollableScrollPhysics(),
           child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.8,
-            child: const Center(
+            child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.notifications_none,
                     size: 64,
-                    color: Colors.white38,
+                    color: colorScheme.onSurface.withAlpha(102),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     'No notifications',
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: colorScheme.onSurface.withAlpha(179),
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     "You're all caught up!",
                     style: TextStyle(
-                      color: Colors.white38,
+                      color: colorScheme.onSurface.withAlpha(102),
                       fontSize: 14,
                     ),
                   ),

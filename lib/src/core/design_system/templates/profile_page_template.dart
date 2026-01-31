@@ -88,7 +88,6 @@ class ProfilePageTemplate extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: isCurrentUser,
-        leadingWidth: 40,
         title: appBarTitle != null
             ? Text(
                 appBarTitle!,

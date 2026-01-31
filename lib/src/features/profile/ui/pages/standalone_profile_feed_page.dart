@@ -4,6 +4,7 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
@@ -172,19 +173,11 @@ class _StandaloneProfileFeedPageState
               ),
             ),
           ),
-          // Back button overlay - respects safe area for the button only
-          Positioned(
+          // Back button overlay
+          const Positioned(
             top: 0,
             left: 0,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: AppColors.white),
-                  onPressed: () => context.router.maybePop(),
-                ),
-              ),
-            ),
+            child: AppOverlayBackButton(),
           ),
         ],
       ),

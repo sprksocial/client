@@ -22,10 +22,12 @@ import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_likes_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_grid_tab.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_likes_tab.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_reposts_tab.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
 
@@ -90,6 +92,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         ref
             .read(profileRepostsProvider(actor, widget.bsky).notifier)
             .loadMore();
+      } else if (_activeTabIndex == 2) {
+        final actor = profileUri.hostname;
+        ref.read(profileLikesProvider(actor, widget.bsky).notifier).loadMore();
       }
     }
   }
@@ -111,6 +116,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       case 1:
         // Second tab - reposts
         tabWidget = ProfileRepostsTab(
+          profileUri: profileUri,
+          bsky: widget.bsky,
+        );
+      case 2:
+        // Third tab - likes (only shown for current user)
+        tabWidget = ProfileLikesTab(
           profileUri: profileUri,
           bsky: widget.bsky,
         );
@@ -208,6 +219,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     } else if (_activeTabIndex == 1) {
       final actor = profileUri.hostname;
       ref.watch(profileRepostsProvider(actor, widget.bsky));
+    } else if (_activeTabIndex == 2) {
+      final actor = profileUri.hostname;
+      ref.watch(profileLikesProvider(actor, widget.bsky));
     }
 
     // Build slivers for the active tab using cached widget
@@ -331,7 +345,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     highlightColor: Colors.transparent,
                     onPressed: () => _showCreateMenu(context),
                     icon: AppIcons.addPostFilled(
-                      size: 30,
+                      size: 28,
                     ),
                   ),
                 )
@@ -344,7 +358,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
                 onPressed: () => context.router.push(const SettingsRoute()),
-                icon: AppIcons.gear(color: colorScheme.onSurface, size: 25),
+                icon: AppIcons.gear(color: colorScheme.onSurface, size: 28),
               )
             else
               IconButton(
@@ -428,7 +442,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ],
           tabsWidget: ProfileTabBar(
             selectedIndex: _activeTabIndex,
-            tabs: _buildTabItems(context, _activeTabIndex),
+            tabs: _buildTabItems(
+              context,
+              _activeTabIndex,
+              isCurrentUser: isCurrentUser,
+            ),
           ),
           onTabChanged: (index) {
             setState(() {
@@ -447,6 +465,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       },
       loading: () {
         final initial = widget.initialProfile;
+        // Check if this is the current user's profile during loading
+        final currentUserDid = ref.read(currentDidProvider);
+        final isCurrentUserLoading =
+            currentUserDid != null && currentUserDid == widget.did;
 
         return ProfilePageTemplate(
           isLoading: true,
@@ -456,7 +478,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           postsCount: '0',
           followersCount: '0',
           followingCount: '0',
-          isCurrentUser: false,
+          isCurrentUser: isCurrentUserLoading,
           appBarTitle: initial?.handle ?? 'loading',
           appBarActions: [
             IconButton(
@@ -473,7 +495,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ],
           tabsWidget: ProfileTabBar(
             selectedIndex: _activeTabIndex,
-            tabs: _buildTabItems(context, _activeTabIndex),
+            tabs: _buildTabItems(
+              context,
+              _activeTabIndex,
+              isCurrentUser: isCurrentUserLoading,
+            ),
           ),
           contentWidget:
               const SizedBox.shrink(), // Not used when contentSlivers provided
@@ -523,11 +549,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   // When adding tabs 1+, switch to AutoTabsRouter & pass TabsRouter not int
   List<ProfileTabItem> _buildTabItems(
     BuildContext context,
-    int activeIndex,
-  ) {
+    int activeIndex, {
+    bool isCurrentUser = false,
+  }) {
     final inactiveColor = Theme.of(context).colorScheme.onSurfaceVariant;
 
-    return [
+    final tabs = [
       ProfileTabItem(
         icon: AppIcons.grid(color: inactiveColor),
         filledIcon: AppIcons.gridFilled(),
@@ -549,14 +576,25 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           });
         },
       ),
-      // Add more tabs here (these will correspond to route pages):
-      // ProfileTabItem(
-      //   icon: AppIcons.profileLiked(),
-      //   filledIcon: AppIcons.likeFilled(),
-      //   isSelected: activeIndex == 2,
-      //   onTap: () => tabsRouter.setActiveIndex(2),
-      // ),
     ];
+
+    // Only show likes tab for current user
+    if (isCurrentUser) {
+      tabs.add(
+        ProfileTabItem(
+          icon: AppIcons.profileLiked(color: inactiveColor),
+          filledIcon: AppIcons.likeFilled(),
+          isSelected: activeIndex == 2,
+          onTap: () {
+            setState(() {
+              _activeTabIndex = 2;
+            });
+          },
+        ),
+      );
+    }
+
+    return tabs;
   }
 
   Future<void> _openStoriesViewer(
