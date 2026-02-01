@@ -60,8 +60,8 @@ List<Widget> buildProfileGridSlivers({
       }
 
       // Add bottom padding to account for tab bar when on main navigation
-      final bottomPadding = MediaQuery.of(context).padding.bottom +
-          kBottomNavigationBarHeight;
+      final bottomPadding =
+          MediaQuery.of(context).padding.bottom + kBottomNavigationBarHeight;
 
       return [
         SliverPadding(

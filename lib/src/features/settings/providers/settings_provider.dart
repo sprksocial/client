@@ -8,6 +8,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/feed_repository
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/storage/preferences/default_preferences.dart';
+import 'package:spark/src/core/storage/preferences/storage_manager.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
@@ -55,6 +56,12 @@ class Settings extends _$Settings {
     config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
   );
 
+  /// Storage key for the last active feed, unique per user (DID)
+  String get _activeFeedStorageKey {
+    final did = sprkRepository.authRepository.did ?? 'anonymous';
+    return 'active_feed_$did';
+  }
+
   String get _defaultModServiceDid {
     // Extract DID part from modDid (remove fragment if present)
     final modDid = sprkRepository.modDid;
@@ -82,6 +89,36 @@ class Settings extends _$Settings {
         .updatePreferences(
           preferences,
         );
+  }
+
+  /// Loads the last active feed from local storage
+  /// Returns null if no feed is saved or if loading fails
+  Future<Feed?> _loadLastActiveFeedFromStorage() async {
+    try {
+      final storage = GetIt.instance<StorageManager>().preferences;
+      final json = await storage.getObject<Map<String, dynamic>>(
+        _activeFeedStorageKey,
+      );
+      if (json != null) {
+        final feed = Feed.fromJson(json);
+        logger.d('Loaded saved active feed: ${feed.config.value}');
+        return feed;
+      }
+    } catch (e) {
+      logger.w('Error loading saved active feed: $e');
+    }
+    return null;
+  }
+
+  /// Saves the active feed to local storage
+  Future<void> _saveActiveFeedToStorage(Feed feed) async {
+    try {
+      final storage = GetIt.instance<StorageManager>().preferences;
+      await storage.setObject(_activeFeedStorageKey, feed.toJson());
+      logger.d('Saved active feed to storage: ${feed.config.value}');
+    } catch (e) {
+      logger.w('Error saving active feed: $e');
+    }
   }
 
   @override
@@ -180,6 +217,9 @@ class Settings extends _$Settings {
             likedFeeds: likedFeeds,
           );
           _hasLoadedSettings = true;
+
+          // Save the default active feed to storage
+          await _saveActiveFeedToStorage(updatedActiveFeed);
           return;
         } catch (e) {
           logger.e('Error setting default preferences: $e');
@@ -189,7 +229,25 @@ class Settings extends _$Settings {
 
       // Hydrate feeds with generator views using getFeedGenerators
       final feeds = await feedRepository.getFeedsFromSavedFeeds(savedFeeds);
-      final activeFeed = _getActiveFeedFromFeeds(feeds, savedFeeds);
+
+      // Try to load the last active feed from local storage
+      final savedActiveFeed = await _loadLastActiveFeedFromStorage();
+
+      // Determine active feed: use saved feed if it still exists in feeds list,
+      // otherwise fall back to server preferences (first pinned)
+      final Feed activeFeed;
+      if (savedActiveFeed != null &&
+          savedActiveFeed.config.pinned &&
+          feeds.any((f) => f.config.id == savedActiveFeed.config.id)) {
+        activeFeed = feeds.firstWhere(
+          (f) => f.config.id == savedActiveFeed.config.id,
+        );
+        logger.d(
+          'Restored last active feed from storage: ${activeFeed.config.value}',
+        );
+      } else {
+        activeFeed = _getActiveFeedFromFeeds(feeds, savedFeeds);
+      }
 
       logger.d(
         'Settings loaded - activeFeed: ${activeFeed.config.value}, '
@@ -375,9 +433,10 @@ class Settings extends _$Settings {
     await _updateFeedsInPreferences(updatedList);
   }
 
-  /// Sets selected feed index
+  /// Sets selected feed index and saves to local storage
   Future<void> setActiveFeed(Feed feed) async {
     state = state.copyWith(activeFeed: feed);
+    await _saveActiveFeedToStorage(feed);
   }
 
   /// Debug method to reload settings and verify persistence

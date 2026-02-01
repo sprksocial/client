@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/features/notifications/providers/notification_provider.dart'
     show notificationProvider;
 import 'package:spark/src/features/notifications/ui/widgets/notifications_list.dart';

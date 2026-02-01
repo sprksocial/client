@@ -92,8 +92,7 @@ class ProfileLikes extends _$ProfileLikes {
     // 2. API returned posts but all were duplicates (prevents infinite loops)
     // Note: Don't check posts.isEmpty - empty page with cursor means more exist
     final isEndOfNetwork =
-        result.cursor == null ||
-        (result.posts.isNotEmpty && newPosts.isEmpty);
+        result.cursor == null || (result.posts.isNotEmpty && newPosts.isEmpty);
 
     return ProfileFeedState(
       loadedPosts: allPosts,
