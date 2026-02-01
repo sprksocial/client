@@ -282,7 +282,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       } else if (profileFeedIndex != null && widget.index != null) {
         // Profile feed visibility check
         if (profileFeedIndex == -1) {
-          // Provider not initialized yet - use isInitialPost for initial autoplay
+          // Provider not initialized, use isInitialPost for initial autoplay
           if (widget.isInitialPost && _lastFeedIndex == null) {
             _lastFeedIndex = -1; // Mark as handled
             WidgetsBinding.instance.addPostFrameCallback((_) {

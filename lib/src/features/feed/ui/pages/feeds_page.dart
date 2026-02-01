@@ -59,7 +59,17 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     }
 
     if (_pageController == null) return;
-    if (!_pageController!.hasClients) return;
+    if (!_pageController!.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted ||
+            _pageController == null ||
+            !_pageController!.hasClients) {
+          return;
+        }
+        _updatePageController(feeds, activeFeed, forceJump: forceJump);
+      });
+      return;
+    }
 
     final currentPage = _pageController!.page?.round() ?? 0;
     if ((currentPage != activeIndex || forceJump) && activeIndex >= 0) {
@@ -124,9 +134,11 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     if (needsInitialization || activeFeedChanged || feedsOrderChanged) {
       // Force jump when order changes to ensure we stay on the active feed
       _updatePageController(feeds, activeFeed, forceJump: feedsOrderChanged);
-      _isInitialized = true;
-      _lastActiveFeed = activeFeed;
-      _lastFeedsList = List.from(feeds); // Create a copy
+      if (_pageController != null && _pageController!.hasClients) {
+        _isInitialized = true;
+        _lastActiveFeed = activeFeed;
+        _lastFeedsList = List.from(feeds); // Create a copy
+      }
     }
 
     // Ensure controller is created if we have feeds but controller is null
