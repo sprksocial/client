@@ -1,8 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/components/molecules/recording_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/recording_timer.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
+
+export 'package:spark/src/core/design_system/components/molecules/recording_button.dart'
+    show CaptureMode;
 
 class RecordingPageTemplate extends StatelessWidget {
   const RecordingPageTemplate({
@@ -13,8 +17,11 @@ class RecordingPageTemplate extends StatelessWidget {
     required this.maxDuration,
     required this.onBack,
     required this.onFlipCamera,
-    required this.onRecordPressed,
     required this.canFlipCamera,
+    required this.captureMode,
+    this.onTap,
+    this.onRecordStart,
+    this.onRecordStop,
     super.key,
   });
 
@@ -25,12 +32,23 @@ class RecordingPageTemplate extends StatelessWidget {
   final Duration maxDuration;
   final VoidCallback onBack;
   final VoidCallback? onFlipCamera;
-  final VoidCallback? onRecordPressed;
   final bool canFlipCamera;
+  final CaptureMode captureMode;
+
+  /// Called on tap. In videoOnly: toggle recording. In hybrid: take photo.
+  final VoidCallback? onTap;
+
+  /// Called when hold starts (hybrid mode only).
+  final VoidCallback? onRecordStart;
+
+  /// Called when hold ends (hybrid mode only).
+  final VoidCallback? onRecordStop;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final footerHeight = kBottomNavigationBarHeight + 12;
+    const borderRadius = BorderRadius.all(Radius.circular(20));
 
     // Calculate scale based on camera aspect ratio and screen aspect ratio
     var scale = size.aspectRatio * aspectRatio;
@@ -40,39 +58,54 @@ class RecordingPageTemplate extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Camera preview fills entire screen (including safe areas)
-          // For camera package v0.7.0+, AspectRatio is handled by the package
-          Positioned.fill(
-            child: Transform.scale(
-              scale: scale,
-              child: Center(
-                child: cameraPreview,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: borderRadius,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Camera preview fills rounded view area
+                    Positioned.fill(
+                      child: Transform.scale(
+                        scale: scale,
+                        child: Center(
+                          child: cameraPreview,
+                        ),
+                      ),
+                    ),
+                    // Top controls aligned within rounded view
+                    _TopOverlay(
+                      onBack: onBack,
+                      timer: RecordingTimer(
+                        duration: elapsedDuration,
+                        maxDuration: maxDuration,
+                      ),
+                    ),
+                    // Bottom overlay sits inside rounded view
+                    _BottomOverlay(
+                      onFlipCamera: canFlipCamera ? onFlipCamera : null,
+                      recordingButton: RecordingButton(
+                        isRecording: isRecording,
+                        mode: captureMode,
+                        onTap: onTap,
+                        onRecordStart: onRecordStart,
+                        onRecordStop: onRecordStop,
+                      ),
+                      bottomPadding: 24,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          // Top controls respect safe area
-          SafeArea(
-            bottom: false,
-            child: _TopOverlay(
-              onBack: onBack,
-              timer: RecordingTimer(
-                duration: elapsedDuration,
-                maxDuration: maxDuration,
-              ),
+            SizedBox(
+              height: footerHeight,
+              child: const ColoredBox(color: Colors.black),
             ),
-          ),
-          // Bottom overlay extends to bottom edge (no safe area)
-          _BottomOverlay(
-            onFlipCamera: canFlipCamera ? onFlipCamera : null,
-            recordingButton: RecordingButton(
-              isRecording: isRecording,
-              onPressed: onRecordPressed,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -96,20 +129,45 @@ class _TopOverlay extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(128),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withAlpha(50),
-                  width: 1.5,
-                ),
-              ),
-              child: const AppLeadingButton(color: AppColors.greyWhite),
-            ),
+            _CloseButton(onPressed: onBack),
             timer,
-            const SizedBox(width: 48),
+            const SizedBox(width: 40),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// iOS-style close button with blur background.
+class _CloseButton extends StatelessWidget {
+  const _CloseButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onPressed();
+      },
+      child: ClipOval(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.black.withAlpha(90),
+            ),
+            child: const Icon(
+              Icons.close_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
         ),
       ),
     );
@@ -120,10 +178,12 @@ class _BottomOverlay extends StatelessWidget {
   const _BottomOverlay({
     required this.onFlipCamera,
     required this.recordingButton,
+    required this.bottomPadding,
   });
 
   final VoidCallback? onFlipCamera;
   final Widget recordingButton;
+  final double bottomPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -140,16 +200,21 @@ class _BottomOverlay extends StatelessWidget {
             ],
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 40,
+          bottom: bottomPadding,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             if (onFlipCamera != null)
               _FlipCameraButton(onPressed: onFlipCamera!)
             else
-              const SizedBox(width: 72),
+              const SizedBox(width: 80),
             recordingButton,
-            const SizedBox(width: 72),
+            const SizedBox(width: 80),
           ],
         ),
       ),
@@ -157,6 +222,7 @@ class _BottomOverlay extends StatelessWidget {
   }
 }
 
+/// iOS-style flip camera button with blur background.
 class _FlipCameraButton extends StatelessWidget {
   const _FlipCameraButton({required this.onPressed});
 
@@ -165,26 +231,30 @@ class _FlipCameraButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onPressed();
+      },
       child: SizedBox(
-        width: 72,
-        height: 72,
+        width: 80,
+        height: 80,
         child: Center(
-          child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.black.withAlpha(128),
-              border: Border.all(
-                color: Colors.white.withAlpha(100),
-                width: 2,
+          child: ClipOval(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withAlpha(90),
+                ),
+                child: const Icon(
+                  Icons.flip_camera_ios_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
               ),
-            ),
-            child: const Icon(
-              Icons.flip_camera_ios,
-              color: AppColors.greyWhite,
-              size: 28,
             ),
           ),
         ),

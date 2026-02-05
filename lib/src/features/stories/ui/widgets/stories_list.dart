@@ -1,11 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
 import 'package:spark/src/core/design_system/components/molecules/story_circle.dart';
-import 'package:spark/src/core/media/create_media_actions.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
 import 'package:spark/src/features/profile/providers/profile_provider.dart';
 import 'package:spark/src/features/stories/providers/stories_by_author.dart';
 
@@ -19,14 +18,11 @@ class StoriesList extends ConsumerStatefulWidget {
 class _StoriesListState extends ConsumerState<StoriesList> {
   String? _cursor;
 
-  void _showCreateMenu(BuildContext context) {
-    showCreateMediaSheet(
-      context,
-      onRecord: CreateMediaActions.onRecord(context, storyMode: true),
-      onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: true),
-      onUploadImages: CreateMediaActions.onUploadImages(
-        context,
+  void _openStoryRecorder(BuildContext context) {
+    context.router.push(
+      RecordingRoute(
         storyMode: true,
+        captureMode: CaptureMode.hybrid,
       ),
     );
   }
@@ -93,7 +89,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                         );
 
                     return GestureDetector(
-                      onTap: () => _showCreateMenu(context),
+                      onTap: () => _openStoryRecorder(context),
                       child: Padding(
                         padding: const EdgeInsets.only(right: 12),
                         child: StoryCircle.create(

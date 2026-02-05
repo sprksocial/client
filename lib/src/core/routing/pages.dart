@@ -16,6 +16,7 @@ export 'package:spark/src/features/messages/ui/pages/new_chat_search_page.dart';
 export 'package:spark/src/features/notifications/ui/pages/notifications_page.dart';
 export 'package:spark/src/features/posting/ui/pages/image_review_page.dart';
 export 'package:spark/src/features/posting/ui/pages/recording_page.dart';
+export 'package:spark/src/features/posting/ui/pages/story_post_page.dart';
 export 'package:spark/src/features/posting/ui/pages/video_review_page.dart';
 export 'package:spark/src/features/profile/ui/pages/blocks_page.dart';
 export 'package:spark/src/features/profile/ui/pages/edit_profile_page.dart';

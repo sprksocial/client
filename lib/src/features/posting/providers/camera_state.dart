@@ -11,6 +11,7 @@ abstract class CameraState with _$CameraState {
     @Default(0) int selectedCameraIndex,
     @Default(false) bool isInitialized,
     @Default(false) bool isRecording,
+    @Default(false) bool isFlipping,
     @Default(0) int initAttempts,
     String? error,
   }) = _CameraState;

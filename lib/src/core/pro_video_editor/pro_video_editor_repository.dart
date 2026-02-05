@@ -45,4 +45,35 @@ abstract class ProVideoEditorRepository {
     BuildContext context,
     EditorVideo video,
   );
+
+  /// Opens the Story Image Editor with a fixed 9:16 aspect ratio canvas.
+  ///
+  /// The [source] image is displayed in the editor with story-appropriate
+  /// tools (text, paint, stickers, emoji, filter, blur - NO crop/rotate).
+  ///
+  /// Returns `null` if the user cancels without completing the edit.
+  Future<XFile?> openStoryImageEditor(BuildContext context, XFile source);
+
+  /// Opens a blank canvas Story Image Editor (1080x1920).
+  ///
+  /// Optionally adds [backgroundImage] as a movable layer on the canvas.
+  /// This gives more flexibility for positioning the image.
+  ///
+  /// Returns `null` if the user cancels without completing the edit.
+  Future<XFile?> openStoryBlankCanvasEditor(
+    BuildContext context, {
+    XFile? backgroundImage,
+    Color backgroundColor = const Color(0xFF000000),
+  });
+
+  /// Opens the Story Video Editor with story-appropriate tools.
+  ///
+  /// Uses the same limited toolset as the story image editor
+  /// (paint, text, filter, blur, emoji, stickers - NO crop/rotate/tune).
+  ///
+  /// Returns `null` if the user cancels without completing the edit.
+  Future<VideoEditorResult?> openStoryVideoEditor(
+    BuildContext context,
+    EditorVideo video,
+  );
 }

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
 
 /// Centralized factories for the create media actions used across the app.
 ///
@@ -16,17 +17,28 @@ class CreateMediaActions {
   const CreateMediaActions._();
 
   /// Record flow: camera capture -> editor -> review.
+  ///
+  /// For stories, uses hybrid mode (tap for photo, hold for video).
+  /// For posts, uses video-only mode (tap toggles recording).
   static VoidCallback onRecord(
     BuildContext context, {
     required bool storyMode,
   }) {
     return () async {
       if (!context.mounted) return;
-      await context.router.push(RecordingRoute(storyMode: storyMode));
+      await context.router.push(
+        RecordingRoute(
+          storyMode: storyMode,
+          captureMode: storyMode ? CaptureMode.hybrid : CaptureMode.videoOnly,
+        ),
+      );
     };
   }
 
-  /// Upload video flow: pick from gallery -> open editor -> review (story/post mode decided here).
+  /// Upload video flow: pick from gallery -> open editor -> direct post/review.
+  ///
+  /// For stories, posts directly after editing (with story-specific tools).
+  /// For posts, goes to review page (with full editing tools).
   static VoidCallback onUploadVideo(
     BuildContext context, {
     required bool storyMode,
@@ -38,35 +50,67 @@ class CreateMediaActions {
       );
       if (pickedVideo != null && context.mounted) {
         final editorVideo = EditorVideo.file(File(pickedVideo.path));
-        final result = await GetIt.I<ProVideoEditorRepository>()
-            .openVideoEditor(context, editorVideo);
+        final repository = GetIt.I<ProVideoEditorRepository>();
+        final result = storyMode
+            ? await repository.openStoryVideoEditor(context, editorVideo)
+            : await repository.openVideoEditor(context, editorVideo);
         if (result != null && context.mounted) {
-          await context.router.push(
-            VideoReviewRoute(
-              videoPath: result.video.path,
-              storyMode: storyMode,
-              soundRef: result.soundRef,
-            ),
-          );
+          if (storyMode) {
+            // For stories, post directly
+            await context.router.push(
+              StoryPostRoute(videoPath: result.video.path),
+            );
+          } else {
+            // For posts, go to review
+            await context.router.push(
+              VideoReviewRoute(
+                videoPath: result.video.path,
+                storyMode: storyMode,
+                soundRef: result.soundRef,
+              ),
+            );
+          }
         }
       }
     };
   }
 
-  /// Upload images flow: multi-pick -> image review (story/post mode decided here).
+  /// Upload images flow: multi-pick -> story editor/image review.
+  ///
+  /// For stories, opens story editor then posts directly.
+  /// For posts, goes to image review page.
   static VoidCallback onUploadImages(
     BuildContext context, {
     required bool storyMode,
   }) {
     return () async {
-      final pickedImages = await ImagePicker().pickMultiImage(limit: 12);
-      if (context.mounted && pickedImages.isNotEmpty) {
-        await context.router.push(
-          ImageReviewRoute(
-            imageFiles: pickedImages,
-            storyMode: storyMode,
-          ),
+      if (storyMode) {
+        // For stories, pick single image and open story editor
+        final pickedImage = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
         );
+        if (pickedImage != null && context.mounted) {
+          // Open story editor
+          final editedImage = await GetIt.I<ProVideoEditorRepository>()
+              .openStoryImageEditor(context, pickedImage);
+          if (editedImage != null && context.mounted) {
+            // Post directly
+            await context.router.push(
+              StoryPostRoute(imageFile: editedImage),
+            );
+          }
+        }
+      } else {
+        // For posts, multi-pick and go to review
+        final pickedImages = await ImagePicker().pickMultiImage(limit: 12);
+        if (context.mounted && pickedImages.isNotEmpty) {
+          await context.router.push(
+            ImageReviewRoute(
+              imageFiles: pickedImages,
+              storyMode: storyMode,
+            ),
+          );
+        }
       }
     };
   }

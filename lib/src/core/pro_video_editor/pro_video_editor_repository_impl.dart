@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/pro_image_editor/ui/story_image_editor_page.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/pro_video_editor/ui/video_editor_grounded_page.dart';
@@ -82,6 +83,40 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
     return Navigator.of(context).push<VideoEditorResult?>(
       MaterialPageRoute(
         builder: (_) => VideoEditorGroundedPage(video: video),
+      ),
+    );
+  }
+
+  @override
+  Future<XFile?> openStoryImageEditor(BuildContext context, XFile source) {
+    return StoryBlankCanvasEditorPage.open(
+      context,
+      backgroundImage: File(source.path),
+    );
+  }
+
+  @override
+  Future<XFile?> openStoryBlankCanvasEditor(
+    BuildContext context, {
+    XFile? backgroundImage,
+    Color backgroundColor = const Color(0xFF000000),
+  }) {
+    return StoryBlankCanvasEditorPage.open(
+      context,
+      backgroundImage:
+          backgroundImage != null ? File(backgroundImage.path) : null,
+      backgroundColor: backgroundColor,
+    );
+  }
+
+  @override
+  Future<VideoEditorResult?> openStoryVideoEditor(
+    BuildContext context,
+    EditorVideo video,
+  ) async {
+    return Navigator.of(context).push<VideoEditorResult?>(
+      MaterialPageRoute(
+        builder: (_) => VideoEditorGroundedPage(video: video, storyMode: true),
       ),
     );
   }
