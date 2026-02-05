@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
@@ -20,7 +21,10 @@ class Camera extends _$Camera {
 
     _logger.i('Initializing camera provider');
 
-    // Initialize camera on build
+    // Yield so the loading UI can paint before blocking on camera init
+    await Future<void>.delayed(Duration.zero);
+    if (!ref.mounted) return const CameraState(error: 'Disposed during init');
+
     try {
       return await _initializeCamera();
     } catch (e, stackTrace) {
@@ -76,6 +80,8 @@ class Camera extends _$Camera {
     await controller.initialize();
 
     if (controller.value.isInitialized) {
+      // Pre-initialize audio session on iOS to eliminate recording start lag
+      await controller.prepareForVideoRecording();
       _logger.i('Camera controller successfully initialized');
       return controller;
     } else {
@@ -117,33 +123,47 @@ class Camera extends _$Camera {
 
     _logger.d('Flipping camera');
 
-    try {
-      final newIndex =
-          (currentState.selectedCameraIndex + 1) % currentState.cameras.length;
-      final newCamera = currentState.cameras[newIndex];
+    final newIndex =
+        (currentState.selectedCameraIndex + 1) % currentState.cameras.length;
+    final newCamera = currentState.cameras[newIndex];
 
-      _logger.d('Switching to camera: ${newCamera.name}');
+    // Show flipping state immediately so the UI can paint a loading overlay
+    state = AsyncValue.data(
+      currentState.copyWith(isFlipping: true, error: null),
+    );
 
-      // Dispose current controller
-      await currentState.controller?.dispose();
+    // Defer heavy work to after the next frame so the current frame paints
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      if (!ref.mounted) return;
+      try {
+        _logger.d('Switching to camera: ${newCamera.name}');
 
-      // Create new controller
-      final newController = await _createCameraController(newCamera);
+        await currentState.controller?.dispose();
+        if (!ref.mounted) return;
 
-      state = AsyncValue.data(
-        currentState.copyWith(
-          controller: newController,
-          selectedCameraIndex: newIndex,
-          isInitialized: true,
-          error: null,
-        ),
-      );
+        final newController = await _createCameraController(newCamera);
+        if (!ref.mounted) return;
 
-      _logger.i('Camera flipped successfully to ${newCamera.name}');
-    } catch (e, stackTrace) {
-      _logger.e('Error flipping camera', error: e, stackTrace: stackTrace);
-      state = AsyncValue.data(currentState.copyWith(error: e.toString()));
-    }
+        state = AsyncValue.data(
+          currentState.copyWith(
+            controller: newController,
+            selectedCameraIndex: newIndex,
+            isInitialized: true,
+            isFlipping: false,
+            error: null,
+          ),
+        );
+
+        _logger.i('Camera flipped successfully to ${newCamera.name}');
+      } catch (e, stackTrace) {
+        _logger.e('Error flipping camera', error: e, stackTrace: stackTrace);
+        if (ref.mounted) {
+          state = AsyncValue.data(
+            currentState.copyWith(isFlipping: false, error: e.toString()),
+          );
+        }
+      }
+    });
   }
 
   Future<XFile?> takePhoto() async {
@@ -189,9 +209,11 @@ class Camera extends _$Camera {
 
     _logger.d('Starting video recording');
 
+    // Update state optimistically BEFORE native call so UI responds immediately
+    state = AsyncValue.data(currentState.copyWith(isRecording: true));
+
     try {
       await currentState.controller!.startVideoRecording();
-      state = AsyncValue.data(currentState.copyWith(isRecording: true));
       _logger.i('Video recording started successfully');
       return true;
     } catch (e, stackTrace) {
@@ -200,7 +222,10 @@ class Camera extends _$Camera {
         error: e,
         stackTrace: stackTrace,
       );
-      state = AsyncValue.data(currentState.copyWith(error: e.toString()));
+      // Revert optimistic update on failure
+      state = AsyncValue.data(
+        currentState.copyWith(isRecording: false, error: e.toString()),
+      );
       return false;
     }
   }
@@ -221,9 +246,11 @@ class Camera extends _$Camera {
 
     _logger.d('Stopping video recording');
 
+    // Update state optimistically BEFORE the native call so UI responds immediately
+    state = AsyncValue.data(currentState.copyWith(isRecording: false));
+
     try {
       final file = await currentState.controller!.stopVideoRecording();
-      state = AsyncValue.data(currentState.copyWith(isRecording: false));
       _logger.i('Video recording stopped successfully: ${file.path}');
       return file;
     } catch (e, stackTrace) {
@@ -232,9 +259,7 @@ class Camera extends _$Camera {
         error: e,
         stackTrace: stackTrace,
       );
-      state = AsyncValue.data(
-        currentState.copyWith(isRecording: false, error: e.toString()),
-      );
+      state = AsyncValue.data(currentState.copyWith(error: e.toString()));
       return null;
     }
   }

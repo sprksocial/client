@@ -1,17 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
 
+/// Camera capture mode.
+enum CaptureMode {
+  /// Video only - tap to start/stop recording.
+  videoOnly,
+
+  /// Hybrid - tap for photo, hold for video.
+  hybrid,
+}
+
+/// iOS-style camera recording button.
+///
+/// In [CaptureMode.videoOnly]: tap toggles recording.
+/// In [CaptureMode.hybrid]: tap takes photo, hold records video.
 class RecordingButton extends StatefulWidget {
   const RecordingButton({
     required this.isRecording,
-    required this.onPressed,
+    required this.mode,
+    this.onTap,
+    this.onRecordStart,
+    this.onRecordStop,
     super.key,
   });
 
   final bool isRecording;
-  final VoidCallback? onPressed;
+  final CaptureMode mode;
+
+  /// Called on tap. In videoOnly mode, toggles recording.
+  /// In hybrid mode, takes photo.
+  final VoidCallback? onTap;
+
+  /// Called when hold starts (hybrid mode only).
+  final VoidCallback? onRecordStart;
+
+  /// Called when hold ends (hybrid mode only).
+  final VoidCallback? onRecordStop;
 
   @override
   State<RecordingButton> createState() => _RecordingButtonState();
@@ -19,101 +43,130 @@ class RecordingButton extends StatefulWidget {
 
 class _RecordingButtonState extends State<RecordingButton>
     with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
+  late AnimationController _controller;
+  late Animation<double> _sizeAnimation;
+  late Animation<double> _borderRadiusAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  static const _outerSize = 80.0;
+  static const _ringWidth = 4.0;
+  static const _idleInnerSize = 66.0;
+  static const _recordingInnerSize = 32.0;
+  static const _idleColor = Colors.white;
+  static const _recordingColor = Color(0xFFFF3B30); // iOS red
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
+    _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 200),
+    );
+
+    _sizeAnimation = Tween<double>(
+      begin: _idleInnerSize,
+      end: _recordingInnerSize,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _borderRadiusAnimation = Tween<double>(
+      begin: _idleInnerSize / 2,
+      end: 8,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _colorAnimation = ColorTween(
+      begin: _idleColor,
+      end: _recordingColor,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    if (widget.isRecording) {
+      _controller.value = 1.0;
+    }
   }
 
   @override
   void didUpdateWidget(RecordingButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isRecording && !oldWidget.isRecording) {
-      _pulseController.repeat(reverse: true);
-    } else if (!widget.isRecording && oldWidget.isRecording) {
-      _pulseController
-        ..stop()
-        ..reset();
+    if (widget.isRecording != oldWidget.isRecording) {
+      if (widget.isRecording) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
     }
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   void _handleTap() {
-    if (widget.onPressed == null) return;
-
+    if (widget.onTap == null) return;
     HapticFeedback.mediumImpact();
-    widget.onPressed!();
+    widget.onTap!();
+  }
+
+  void _handleLongPressStart(LongPressStartDetails details) {
+    if (widget.mode != CaptureMode.hybrid) return;
+    if (widget.onRecordStart == null) return;
+    HapticFeedback.mediumImpact();
+    widget.onRecordStart!();
+  }
+
+  void _handleLongPressEnd(LongPressEndDetails details) {
+    if (widget.mode != CaptureMode.hybrid) return;
+    if (widget.onRecordStop == null) return;
+    HapticFeedback.lightImpact();
+    widget.onRecordStop!();
   }
 
   @override
   Widget build(BuildContext context) {
-    const size = 72.0;
-
-    return InteractivePressable(
+    return GestureDetector(
       onTap: _handleTap,
-      pressedScale: 0.9,
-      borderRadius: BorderRadius.circular(size),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withAlpha(100),
-            width: 3,
-          ),
-        ),
-        child: AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            return Container(
-              margin: EdgeInsets.all(widget.isRecording ? 8 : 4),
+      onLongPressStart: widget.mode == CaptureMode.hybrid
+          ? _handleLongPressStart
+          : null,
+      onLongPressEnd: widget.mode == CaptureMode.hybrid
+          ? _handleLongPressEnd
+          : null,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: _outerSize,
+        height: _outerSize,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Outer white ring
+            Container(
+              width: _outerSize,
+              height: _outerSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.isRecording
-                    ? AppColors.red500
-                    : AppColors.greyWhite,
-                boxShadow: widget.isRecording
-                    ? [
-                        BoxShadow(
-                          color: AppColors.red500.withAlpha(
-                            (128 * (0.5 + 0.5 * _pulseController.value))
-                                .toInt(),
-                          ),
-                          blurRadius: 20,
-                          spreadRadius: 4,
-                        ),
-                      ]
-                    : null,
+                border: Border.all(
+                  color: Colors.white,
+                  width: _ringWidth,
+                ),
               ),
-              child: Center(
-                child: widget.isRecording
-                    ? Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: AppColors.greyWhite,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      )
-                    : const Icon(
-                        Icons.circle,
-                        color: AppColors.red500,
-                        size: 24,
-                      ),
-              ),
-            );
-          },
+            ),
+            // Animated inner shape (white circle -> red square)
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Container(
+                  width: _sizeAnimation.value,
+                  height: _sizeAnimation.value,
+                  decoration: BoxDecoration(
+                    color: _colorAnimation.value,
+                    borderRadius: BorderRadius.circular(
+                      _borderRadiusAnimation.value,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

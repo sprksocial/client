@@ -3,91 +3,65 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/design_system/theme/color_scheme.dart';
 import 'package:spark/src/core/design_system/theme/text_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_bottom_section.dart';
+import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_header.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/build_stickers.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_progress_alert.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/filter/filter_editor_bar.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_bottom_section.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_header.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/paint/paint_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_color_picker.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
 
-class VideoEditorConfigsBuilder {
-  const VideoEditorConfigsBuilder._();
+/// Border radius for the story editor preview area (top and bottom).
+const _storyEditorBorderRadius = BorderRadius.vertical(
+  top: Radius.circular(20),
+  bottom: Radius.circular(20),
+);
 
-  /// Tools available in story mode (matches story image editor).
-  static const _storyModeTools = [
-    SubEditorMode.audio,
-    SubEditorMode.paint,
-    SubEditorMode.text,
-    SubEditorMode.filter,
-    SubEditorMode.blur,
-    SubEditorMode.emoji,
-    SubEditorMode.sticker,
-  ];
+/// Configuration builder for the Story Image Editor.
+///
+/// Creates a fixed 9:16 aspect ratio editor optimized for stories.
+class StoryImageEditorConfigs {
+  const StoryImageEditorConfigs._();
 
-  /// Full set of tools for regular video editing.
-  static const _fullTools = [
-    SubEditorMode.audio,
-    SubEditorMode.paint,
-    SubEditorMode.text,
-    SubEditorMode.cropRotate,
-    SubEditorMode.tune,
-    SubEditorMode.filter,
-    SubEditorMode.blur,
-    SubEditorMode.emoji,
-    SubEditorMode.sticker,
-  ];
+  /// Fixed story canvas size (1080x1920 = 9:16 aspect ratio).
+  static const Size storySize = Size(1080, 1920);
 
+  /// Builds the ProImageEditor configuration for story editing.
+  ///
+  /// This configuration:
+  /// - Uses a fixed 9:16 aspect ratio canvas
+  /// - Excludes crop/rotate tools to maintain aspect ratio
+  /// - Provides text, paint, stickers, emoji, filter, and blur tools
   static ProImageEditorConfigs build({
-    required EditorVideo video,
-    required String taskId,
     required bool useMaterialDesign,
-    required Widget Function() videoPlayerBuilder,
-    required VideoTimelineState videoTimelineState,
-    required void Function(double progress) onSeek,
-    required VoidCallback onTogglePlay,
-    required VoidCallback onToggleMute,
-    required VoidCallback onAddSound,
-    required VoidCallback onToggleFullscreen,
-    bool storyMode = false,
-    List<AudioTrack> audioTracks = const [],
-    VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
-      initialMuted: true,
-      enableTrimBar: false,
-      playTimeSmoothingDuration: Duration(milliseconds: 300),
-      widgets: VideoEditorWidgets(
-        headerToolbar: SizedBox.shrink(),
-      ),
-    ),
+    required Widget Function() imagePreviewBuilder,
   }) {
-    final tools = storyMode ? _storyModeTools : _fullTools;
-
     return ProImageEditorConfigs(
       designMode: platformDesignMode,
-      dialogConfigs: DialogConfigs(
-        widgets: DialogWidgets(
-          loadingDialog: (message, configs) =>
-              VideoProgressAlert(taskId: taskId),
-        ),
-      ),
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: AppColorScheme.dark,
         textTheme: AppTextTheme.dark,
       ),
+      // Force output to story dimensions
+      imageGeneration: const ImageGenerationConfigs(
+        outputFormat: OutputFormat.png,
+        maxOutputSize: storySize,
+      ),
       mainEditor: MainEditorConfigs(
-        tools: tools,
+        // Story-appropriate tools only - NO crop/rotate
+        tools: const [
+          SubEditorMode.paint,
+          SubEditorMode.text,
+          SubEditorMode.filter,
+          SubEditorMode.blur,
+          SubEditorMode.emoji,
+          SubEditorMode.sticker,
+        ],
         widgets: MainEditorWidgets(
           removeLayerArea:
               (
@@ -105,18 +79,22 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
             builder: (context) {
-              return VideoEditorBottomSection(
-                editor: editor,
-                videoTimelineState: videoTimelineState,
-                onSeek: onSeek,
-                onTogglePlay: onTogglePlay,
-                onToggleMute: onToggleMute,
-                onAddSound: onAddSound,
-                onToggleFullscreen: onToggleFullscreen,
-              );
+              return StoryEditorBottomSection(editor: editor);
             },
             stream: rebuildStream,
           ),
+          wrapBody: (editor, rebuildStream, content) {
+            // Fill behind content so no letterboxing shows as dark lines on sides
+            return ClipRRect(
+              borderRadius: _storyEditorBorderRadius,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.black,
+                child: content,
+              ),
+            );
+          },
           bodyItems: (editor, rebuildStream) => [
             ReactiveWidget(
               stream: rebuildStream,
@@ -126,9 +104,13 @@ class VideoEditorConfigsBuilder {
                 right: 0,
                 child: SafeArea(
                   bottom: false,
-                  child: VideoEditorHeader(
+                  child: StoryEditorHeader(
                     onBack: editor.closeEditor,
-                    onNext: editor.doneEditing,
+                    onDone: editor.doneEditing,
+                    canUndo: editor.canUndo,
+                    canRedo: editor.canRedo,
+                    onUndo: editor.undoAction,
+                    onRedo: editor.redoAction,
                   ),
                 ),
               ),
@@ -136,7 +118,7 @@ class VideoEditorConfigsBuilder {
           ],
         ),
         style: const MainEditorStyle(
-          background: AppColors.greyBlack,
+          background: Colors.black,
           bottomBarBackground: AppColors.grey800,
         ),
       ),
@@ -158,9 +140,7 @@ class VideoEditorConfigsBuilder {
                   callbacks: editorState.callbacks,
                   editor: editorState,
                   i18nColor: 'Color',
-                  showColorPicker: (currentColor) {
-                    // Color picker is handled by the colorPicker widget slot
-                  },
+                  showColorPicker: (currentColor) {},
                 );
               },
               stream: rebuildStream,
@@ -168,7 +148,6 @@ class VideoEditorConfigsBuilder {
           },
         ),
       ),
-
       textEditor: TextEditorConfigs(
         customTextStyles: [
           GoogleFonts.roboto(),
@@ -207,9 +186,7 @@ class VideoEditorConfigsBuilder {
                   callbacks: editorState.callbacks,
                   editor: editorState,
                   i18nColor: 'Color',
-                  showColorPicker: (currentColor) {
-                    // Color picker is handled by the colorPicker widget slot
-                  },
+                  showColorPicker: (currentColor) {},
                 );
               },
               stream: rebuildStream,
@@ -224,29 +201,6 @@ class VideoEditorConfigsBuilder {
               ),
             ),
           ],
-        ),
-      ),
-      cropRotateEditor: CropRotateEditorConfigs(
-        style: CropRotateEditorStyle(
-          cropCornerColor: AppColors.greyWhite,
-          cropCornerThickness: 4,
-          background: AppColors.greyBlack,
-          bottomBarBackground: AppColors.grey800,
-          helperLineColor: AppColors.greyWhite.withAlpha(37),
-        ),
-        widgets: CropRotateEditorWidgets(
-          appBar: (cropRotateEditor, rebuildStream) => null,
-          bottomBar: (cropRotateEditor, rebuildStream) => ReactiveWidget(
-            stream: rebuildStream,
-            builder: (context) {
-              return CropRotateEditorBar(
-                configs: cropRotateEditor.configs,
-                callbacks: cropRotateEditor.callbacks,
-                editor: cropRotateEditor,
-                selectedRatioColor: AppColors.primary500,
-              );
-            },
-          ),
         ),
       ),
       filterEditor: FilterEditorConfigs(
@@ -274,28 +228,7 @@ class VideoEditorConfigsBuilder {
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
-                  image: videoPlayerBuilder(),
-                );
-              },
-              stream: rebuildStream,
-            );
-          },
-        ),
-      ),
-      tuneEditor: TuneEditorConfigs(
-        style: const TuneEditorStyle(
-          background: AppColors.greyBlack,
-          bottomBarBackground: AppColors.grey800,
-        ),
-        widgets: TuneEditorWidgets(
-          appBar: (editor, rebuildStream) => null,
-          bottomBar: (editorState, rebuildStream) {
-            return ReactiveWidget(
-              builder: (context) {
-                return TuneEditorBar(
-                  configs: editorState.configs,
-                  callbacks: editorState.callbacks,
-                  editor: editorState,
+                  image: imagePreviewBuilder(),
                 );
               },
               stream: rebuildStream,
@@ -356,59 +289,6 @@ class VideoEditorConfigsBuilder {
           textAlign: 'Align',
         ),
       ),
-      // audioEditor: const AudioEditorConfigs(
-      //   // Audio selection is now handled by the custom bottom sheet
-      //   // in _showAudioSelectionBottomSheet, so we provide an empty list here
-      //   // to prevent the default audio editor from showing
-      //   audioTracks: const [],
-      // ),
-      clipsEditor: ClipsEditorConfigs(
-        style: const ClipsEditorStyle(
-          reversedClipsList: true,
-        ),
-        widgets: ClipsEditorWidgets(
-          appBar: (editorState, rebuildStream) => null,
-          bottomBar: (editorState, rebuildStream) {
-            return ReactiveWidget(
-              builder: (context) {
-                return ClipsEditorBar(
-                  configs: editorState.configs,
-                  callbacks: editorState.callbacks,
-                  editor: editorState,
-                );
-              },
-              stream: rebuildStream,
-            );
-          },
-          editClipAppBar: (editorState, rebuildStream) => null,
-          editClipBottomBar: (editorState, rebuildStream) {
-            return ReactiveWidget(
-              builder: (context) {
-                return ClipEditorBar(
-                  configs: editorState.configs,
-                  callbacks: editorState.callbacks,
-                  editor: editorState,
-                );
-              },
-              stream: rebuildStream,
-            );
-          },
-        ),
-        clips: [
-          VideoClip(
-            id: '001',
-            title: 'My awesome video',
-            duration: Duration.zero,
-            clip: EditorVideoClip.autoSource(
-              assetPath: video.assetPath,
-              bytes: video.byteArray,
-              file: video.file,
-              networkUrl: video.networkUrl,
-            ),
-          ),
-        ],
-      ),
-      videoEditor: videoEditorConfigs,
     );
   }
 }

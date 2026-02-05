@@ -105,6 +105,9 @@ class _StoryPageState extends ConsumerState<StoryPage>
 
   @override
   Widget build(BuildContext context) {
+    final footerHeight = kBottomNavigationBarHeight + 12;
+    const borderRadius = BorderRadius.all(Radius.circular(20));
+
     // Determine the main media widget (video or image) first.
     late final Widget mediaContent;
 
@@ -116,6 +119,7 @@ class _StoryPageState extends ConsumerState<StoryPage>
             color: Colors.black,
             alignment: Alignment.center,
             child: FittedBox(
+              fit: BoxFit.cover,
               child: SizedBox(
                 width: (size.width > 0 ? size.width : 1280),
                 height: (size.height > 0 ? size.height : 720),
@@ -169,51 +173,64 @@ class _StoryPageState extends ConsumerState<StoryPage>
     }
 
     // Wrap the media in a Stack to overlay gradient shadows for readability.
-    return Stack(
-      fit: StackFit.expand,
+    return Column(
       children: [
-        mediaContent,
-        // Top shadow overlay
-        Positioned(
-          left: 0,
-          right: 0,
-          top: 0,
-          child: IgnorePointer(
-            child: Container(
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black87.withAlpha(100),
-                    Colors.transparent,
-                  ],
+        Expanded(
+          child: ClipRRect(
+            borderRadius: borderRadius,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                mediaContent,
+                // Top shadow overlay
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black87.withAlpha(100),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                // Bottom shadow overlay
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black87.withAlpha(100),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        // Bottom shadow overlay
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            child: Container(
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black87.withAlpha(100),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
+        SizedBox(
+          height: footerHeight,
+          child: const ColoredBox(color: Colors.black),
         ),
       ],
     );

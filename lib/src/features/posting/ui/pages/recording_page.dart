@@ -12,15 +12,25 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/posting/providers/camera_provider.dart';
 import 'package:spark/src/features/posting/providers/recording_provider.dart';
+import 'package:spark/src/features/posting/utils/story_direct_post.dart';
+
+export 'package:spark/src/core/design_system/templates/recording_page_template.dart'
+    show CaptureMode;
 
 @RoutePage()
 class RecordingPage extends ConsumerStatefulWidget {
   const RecordingPage({
     required this.storyMode,
+    this.captureMode = CaptureMode.videoOnly,
     super.key,
   });
 
   final bool storyMode;
+
+  /// Camera capture mode:
+  /// - [CaptureMode.videoOnly]: tap to start/stop recording (default)
+  /// - [CaptureMode.hybrid]: tap for photo, hold for video
+  final CaptureMode captureMode;
 
   @override
   ConsumerState<RecordingPage> createState() => _RecordingPageState();
@@ -29,48 +39,184 @@ class RecordingPage extends ConsumerStatefulWidget {
 class _RecordingPageState extends ConsumerState<RecordingPage> {
   late final SparkLogger _logger;
   bool _isProcessing = false;
+  bool _isExiting = false;
+
+  // Store notifier reference for safe disposal
+  Recording? _recordingNotifier;
 
   @override
   void initState() {
     super.initState();
     _logger = GetIt.instance<LogService>().getLogger('RecordingPage');
+    // Save reference to notifier for use in dispose
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _recordingNotifier = ref.read(recordingProvider.notifier);
+      }
+    });
   }
 
-  Future<void> _handleRecordPressed() async {
+  bool _isCameraReady() {
     final cameraAsync = ref.read(cameraProvider);
-    final recordingState = ref.read(recordingProvider);
-
-    if (cameraAsync.hasError) {
-      return;
-    }
-
+    if (cameraAsync.hasError) return false;
     final cameraState = cameraAsync.value;
-    if (cameraState == null ||
-        !cameraState.isInitialized ||
-        cameraState.controller == null) {
-      return;
-    }
+    return cameraState != null &&
+        cameraState.isInitialized &&
+        cameraState.controller != null;
+  }
 
-    if (recordingState.isRecording) {
-      await _stopRecording();
+  /// Handle tap on record button.
+  /// In videoOnly mode: toggle recording.
+  /// In hybrid mode: take photo.
+  void _handleTap() {
+    if (!_isCameraReady()) return;
+
+    if (widget.captureMode == CaptureMode.videoOnly) {
+      final recordingState = ref.read(recordingProvider);
+      if (recordingState.isRecording) {
+        _stopRecording();
+      } else {
+        _startRecording();
+      }
     } else {
-      await _startRecording();
+      // Hybrid mode - tap takes photo
+      _takePhoto();
     }
   }
 
-  Future<void> _startRecording() async {
+  /// Handle hold start (hybrid mode only).
+  void _handleRecordStart() {
+    if (!_isCameraReady()) return;
+    if (widget.captureMode != CaptureMode.hybrid) return;
+    _startRecording();
+  }
+
+  /// Handle hold end (hybrid mode only).
+  void _handleRecordStop() {
+    if (!_isCameraReady()) return;
+    if (widget.captureMode != CaptureMode.hybrid) return;
+    final recordingState = ref.read(recordingProvider);
+    if (recordingState.isRecording) {
+      _stopRecording();
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    if (_isProcessing) return;
+
+    final cameraNotifier = ref.read(cameraProvider.notifier);
+    _logger.d('Taking photo');
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    final photoFile = await cameraNotifier.takePhoto();
+
+    if (!mounted) return;
+    if (photoFile == null) {
+      setState(() {
+        _isProcessing = false;
+      });
+      return;
+    }
+
+    await _processPhoto(photoFile);
+  }
+
+  Future<void> _processPhoto(XFile photoFile) async {
+    if (!mounted) return;
+
+    try {
+      _logger.d('Processing photo: ${photoFile.path}');
+
+      // Open the story image editor
+      final editedImage = await GetIt.I<ProVideoEditorRepository>()
+          .openStoryImageEditor(context, photoFile);
+
+      if (!mounted) return;
+
+      if (editedImage != null) {
+        if (widget.storyMode) {
+          // For stories, post directly without review
+          // Show exiting state to prevent camera rendering issues
+          setState(() {
+            _isExiting = true;
+          });
+
+          try {
+            final result = await StoryDirectPost.postPhotoStory(
+              context,
+              ref,
+              editedImage,
+            );
+            if (result != null && mounted) {
+              _logger.i('Story posted successfully');
+              // Exit the recording flow completely
+              if (mounted) context.router.maybePop();
+              return;
+            }
+          } catch (e, stackTrace) {
+            _logger.e('Error posting story', error: e, stackTrace: stackTrace);
+            if (mounted) {
+              setState(() {
+                _isExiting = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to post story: $e')),
+              );
+            }
+          }
+        } else {
+          // For posts, go to review page
+          await context.router.push(
+            ImageReviewRoute(
+              imageFiles: [editedImage],
+              storyMode: widget.storyMode,
+            ),
+          );
+        }
+      }
+
+      // Reset processing state and reinitialize camera
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        // Reinitialize camera after returning from editor
+        ref.read(cameraProvider.notifier).reinitializeCamera();
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Error processing photo', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  void _startRecording() {
     final cameraNotifier = ref.read(cameraProvider.notifier);
     final recordingNotifier = ref.read(recordingProvider.notifier);
 
     _logger.d('Starting video recording');
 
-    final success = await cameraNotifier.startVideoRecording();
-    if (success) {
-      recordingNotifier.startRecording();
-    }
+    // Start timer optimistically so UI responds immediately
+    recordingNotifier.startRecording();
+
+    // Start native recording; revert timer if it fails
+    cameraNotifier.startVideoRecording().then((success) {
+      if (!success && mounted) {
+        recordingNotifier.stopRecording();
+      }
+    });
   }
 
-  Future<void> _stopRecording() async {
+  void _stopRecording() {
     if (_isProcessing) return;
 
     setState(() {
@@ -83,16 +229,21 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     _logger.d('Stopping video recording');
 
     recordingNotifier.stopRecording();
-    final videoFile = await cameraNotifier.stopVideoRecording();
 
-    if (videoFile == null) {
-      setState(() {
-        _isProcessing = false;
-      });
-      return;
-    }
+    // Defer heavy stop so the "processing" frame paints before blocking
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final videoFile = await cameraNotifier.stopVideoRecording();
 
-    await _processVideo(videoFile);
+      if (!mounted) return;
+      if (videoFile == null) {
+        setState(() {
+          _isProcessing = false;
+        });
+        return;
+      }
+
+      await _processVideo(videoFile);
+    });
   }
 
   Future<void> _processVideo(XFile videoFile) async {
@@ -107,10 +258,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       if (!mounted) return;
 
       final editorVideo = EditorVideo.file(File(videoFile.path));
-      final result = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(
-        context,
-        editorVideo,
-      );
+      final repository = GetIt.I<ProVideoEditorRepository>();
+      final result = widget.storyMode
+          ? await repository.openStoryVideoEditor(context, editorVideo)
+          : await repository.openVideoEditor(context, editorVideo);
 
       if (!mounted) return;
 
@@ -123,16 +274,58 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         return;
       }
 
-      await context.router.push(
-        VideoReviewRoute(
-          videoPath: result.video.path,
-          storyMode: widget.storyMode,
-          soundRef: result.soundRef,
-        ),
-      );
+      if (widget.storyMode) {
+        // For stories, post directly without review
+        // Show exiting state to prevent camera rendering issues
+        setState(() {
+          _isExiting = true;
+        });
 
-      if (mounted) {
-        context.router.pop();
+        try {
+          final postResult = await StoryDirectPost.postVideoStory(
+            context,
+            ref,
+            result.video.path,
+            soundRef: result.soundRef,
+          );
+          if (postResult != null && mounted) {
+            _logger.i('Video story posted successfully');
+            // Exit the recording flow completely
+            if (mounted) context.router.maybePop();
+            return;
+          }
+        } catch (e, stackTrace) {
+          _logger.e(
+            'Error posting video story',
+            error: e,
+            stackTrace: stackTrace,
+          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to post story: $e')),
+            );
+          }
+        }
+        // If posting failed or was cancelled, reset state
+        if (mounted) {
+          setState(() {
+            _isExiting = false;
+            _isProcessing = false;
+          });
+        }
+      } else {
+        // For posts, go to review page
+        await context.router.push(
+          VideoReviewRoute(
+            videoPath: result.video.path,
+            storyMode: widget.storyMode,
+            soundRef: result.soundRef,
+          ),
+        );
+
+        if (mounted) {
+          context.router.pop();
+        }
       }
     } catch (e, stackTrace) {
       _logger.e('Error processing video', error: e, stackTrace: stackTrace);
@@ -140,6 +333,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     }
   }
@@ -211,25 +407,55 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           );
         }
 
+        // Show loading when exiting to prevent camera rendering issues
+        if (_isExiting) {
+          return const Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
+        }
+
         final canFlipCamera =
-            cameraState.cameras.length > 1 && !recordingState.isRecording;
+            cameraState.cameras.length > 1 &&
+            !recordingState.isRecording &&
+            !cameraState.isFlipping;
         final aspectRatio = cameraState.controller!.value.aspectRatio;
 
-        return RecordingPageTemplate(
-          cameraPreview: CameraPreview(cameraState.controller!),
-          aspectRatio: aspectRatio,
-          isRecording: recordingState.isRecording,
-          elapsedDuration: recordingState.elapsedDuration,
-          maxDuration: recordingState.maxDuration,
-          onBack: () {
-            if (recordingState.isRecording) {
-              return;
-            }
-            context.router.pop();
-          },
-          onFlipCamera: canFlipCamera ? _handleFlipCamera : null,
-          onRecordPressed: _isProcessing ? null : _handleRecordPressed,
-          canFlipCamera: canFlipCamera,
+        return Stack(
+          children: [
+            RecordingPageTemplate(
+              cameraPreview: RepaintBoundary(
+                child: CameraPreview(cameraState.controller!),
+              ),
+              aspectRatio: aspectRatio,
+              isRecording: recordingState.isRecording,
+              elapsedDuration: recordingState.elapsedDuration,
+              maxDuration: recordingState.maxDuration,
+              onBack: () {
+                if (recordingState.isRecording) {
+                  return;
+                }
+                context.router.pop();
+              },
+              onFlipCamera: canFlipCamera ? _handleFlipCamera : null,
+              canFlipCamera: canFlipCamera,
+              captureMode: widget.captureMode,
+              onTap: _isProcessing ? null : _handleTap,
+              onRecordStart: _isProcessing ? null : _handleRecordStart,
+              onRecordStop: _isProcessing ? null : _handleRecordStop,
+            ),
+            if (cameraState.isFlipping)
+              const Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.black,
+                  child: Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                ),
+              ),
+          ],
         );
       },
       loading: () => const Scaffold(
@@ -274,7 +500,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   @override
   void dispose() {
-    ref.read(recordingProvider.notifier).reset();
+    // Defer provider modification to avoid modifying during widget tree finalization
+    final notifier = _recordingNotifier;
+    if (notifier != null) {
+      Future(notifier.reset);
+    }
     super.dispose();
   }
 }

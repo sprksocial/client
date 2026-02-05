@@ -27,11 +27,15 @@ import 'package:video_player/video_player.dart';
 class VideoEditorGroundedPage extends StatefulWidget {
   const VideoEditorGroundedPage({
     required this.video,
+    this.storyMode = false,
     super.key,
   });
 
   /// Input video to be edited.
   final EditorVideo video;
+
+  /// When true, uses story-specific tools (no crop/rotate/tune).
+  final bool storyMode;
 
   @override
   State<VideoEditorGroundedPage> createState() =>
@@ -192,6 +196,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       video: widget.video,
       taskId: _taskId,
       useMaterialDesign: _useMaterialDesign,
+      storyMode: widget.storyMode,
       videoPlayerBuilder: () => VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
@@ -227,23 +232,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     ]);
     if (!mounted) return;
 
-    // Adjust resolution based on rotation metadata
-    final rotation = _videoMetadata.rotation;
-    final convertedRotation = rotation % 360;
-    final is90DegRotated = convertedRotation == 90 || convertedRotation == 270;
-    final adjustedResolution = is90DegRotated
-        ? Size(
-            _videoMetadata.resolution.height,
-            _videoMetadata.resolution.width,
-          )
-        : _videoMetadata.resolution;
-
     _proVideoController = ProVideoController(
       videoPlayer: VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
       ),
-      initialResolution: adjustedResolution,
+      initialResolution: _videoMetadata.resolution,
       videoDuration: _videoMetadata.duration,
       fileSize: _videoMetadata.fileSize,
       thumbnails: _thumbnails,

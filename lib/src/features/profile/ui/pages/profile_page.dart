@@ -14,6 +14,7 @@ import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart'
     as actor_models;
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/utils/blocking_utils.dart';
@@ -169,13 +170,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Future<void> _handleAddStory(BuildContext context) async {
-    showCreateMediaSheet(
-      context,
-      onRecord: CreateMediaActions.onRecord(context, storyMode: true),
-      onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: true),
-      onUploadImages: CreateMediaActions.onUploadImages(
-        context,
+    context.router.push(
+      RecordingRoute(
         storyMode: true,
+        captureMode: CaptureMode.hybrid,
       ),
     );
   }

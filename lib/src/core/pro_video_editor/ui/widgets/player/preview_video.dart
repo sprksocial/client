@@ -96,16 +96,12 @@ class _PreviewVideoState extends State<PreviewVideo> {
         }
 
         final aspectRatio = snapshot.data?.resolution.aspectRatio ?? 1;
-        final rotation = snapshot.data?.rotation ?? 0;
-        final convertedRotation = rotation % 360;
-        final is90DegRotated =
-            convertedRotation == 90 || convertedRotation == 270;
 
         final maxWidth = constraints.maxWidth;
         final maxHeight = constraints.maxHeight;
 
         var width = maxWidth;
-        var height = is90DegRotated ? width * aspectRatio : width / aspectRatio;
+        var height = width / aspectRatio;
 
         if (height > maxHeight) {
           height = maxHeight;
