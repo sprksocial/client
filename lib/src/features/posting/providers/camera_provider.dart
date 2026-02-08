@@ -246,7 +246,7 @@ class Camera extends _$Camera {
 
     _logger.d('Stopping video recording');
 
-    // Update state optimistically BEFORE the native call so UI responds immediately
+    // Update state optimistically BEFORE native call so UI responds immediately
     state = AsyncValue.data(currentState.copyWith(isRecording: false));
 
     try {

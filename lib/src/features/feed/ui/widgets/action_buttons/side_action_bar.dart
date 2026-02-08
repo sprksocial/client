@@ -162,8 +162,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         _isLiked = wasLiked;
         _likeCount += wasLiked ? 1 : -1;
       });
-
-      // Error handling - snackbar removed
     }
   }
 
@@ -230,8 +228,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         _isReposted = wasReposted;
         _repostCount += wasReposted ? 1 : -1;
       });
-
-      // Error handling - snackbar removed
     }
   }
 
@@ -373,9 +369,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
           ..invalidate(profileFeedProvider(profileUri, false, false))
           ..invalidate(profileFeedProvider(profileUri, true, false));
       }
-    } catch (e) {
-      // Error handling - snackbar removed
-    }
+    } catch (_) {}
   }
 
   Future<void> _handleBlock() async {
@@ -426,9 +420,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         );
         controller?.onAdvanceAndRemove();
       }
-    } catch (e) {
-      // Error handling - snackbar removed
-    }
+    } catch (_) {}
   }
 
   // Future<void> _handleCurate() async {

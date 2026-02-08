@@ -77,11 +77,6 @@ class Search extends _$Search {
         isLoading: false,
         isLoadingMore: false,
       );
-
-      _logger.d(
-        'Search completed with ${response.actors.length} results, '
-        'nextCursor: ${response.cursor}',
-      );
     } catch (e) {
       _logger.e('Failed to search users', error: e);
       state = state.copyWith(error: 'Failed to search users', isLoading: false);
@@ -108,11 +103,6 @@ class Search extends _$Search {
         nextCursor: response.cursor,
         isLoadingMore: false,
       );
-
-      _logger.d(
-        'Loaded more users: +${response.actors.length}, '
-        'nextCursor: ${response.cursor}',
-      );
     } catch (e) {
       _logger.e('Failed to load more users', error: e);
       state = state.copyWith(isLoadingMore: false);
@@ -124,7 +114,6 @@ class Search extends _$Search {
     try {
       final authRepo = _authRepository;
       if (!authRepo.isAuthenticated) {
-        _logger.w('User not authenticated, cannot follow');
         return;
       }
 
@@ -147,8 +136,6 @@ class Search extends _$Search {
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);
       }
-
-      _logger.i('Successfully followed user: $userDid');
     } catch (e) {
       _logger.e('Failed to follow user', error: e);
     }
@@ -159,7 +146,6 @@ class Search extends _$Search {
     try {
       final authRepo = _authRepository;
       if (!authRepo.isAuthenticated) {
-        _logger.w('User not authenticated, cannot unfollow');
         return;
       }
 
@@ -180,8 +166,6 @@ class Search extends _$Search {
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);
       }
-
-      _logger.i('Successfully unfollowed user: $userDid');
     } catch (e) {
       _logger.e('Failed to unfollow user', error: e);
     }
@@ -190,7 +174,6 @@ class Search extends _$Search {
   bool isCurrentUser(String did) {
     final authRepo = _authRepository;
     if (!authRepo.isAuthenticated) {
-      _logger.w('User not authenticated, cannot check if current user');
       return false;
     }
     final currentDid = authRepo.did;

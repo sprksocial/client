@@ -53,7 +53,7 @@ class StoryImageCropper {
 
     // Draw the cropped portion scaled to target size
     final srcRect = Rect.fromLTWH(cropX, cropY, cropWidth, cropHeight);
-    final dstRect = Rect.fromLTWH(0, 0, targetWidth, targetHeight);
+    const dstRect = Rect.fromLTWH(0, 0, targetWidth, targetHeight);
 
     canvas.drawImageRect(image, srcRect, dstRect, Paint());
 

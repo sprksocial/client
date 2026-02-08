@@ -105,7 +105,7 @@ class _StoryPageState extends ConsumerState<StoryPage>
 
   @override
   Widget build(BuildContext context) {
-    final footerHeight = kBottomNavigationBarHeight + 12;
+    const footerHeight = kBottomNavigationBarHeight + 12;
     const borderRadius = BorderRadius.all(Radius.circular(20));
 
     // Determine the main media widget (video or image) first.
@@ -228,9 +228,9 @@ class _StoryPageState extends ConsumerState<StoryPage>
             ),
           ),
         ),
-        SizedBox(
+        const SizedBox(
           height: footerHeight,
-          child: const ColoredBox(color: Colors.black),
+          child: ColoredBox(color: Colors.black),
         ),
       ],
     );

@@ -103,8 +103,9 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   }) {
     return StoryBlankCanvasEditorPage.open(
       context,
-      backgroundImage:
-          backgroundImage != null ? File(backgroundImage.path) : null,
+      backgroundImage: backgroundImage != null
+          ? File(backgroundImage.path)
+          : null,
       backgroundColor: backgroundColor,
     );
   }

@@ -23,7 +23,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
       type: 'timeline',
       config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
     );
-    _logger.d('DownloadManager initialized with default feed');
   }
 
   @override
@@ -44,7 +43,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
   @override
   void setActiveFeed(Feed feed) {
-    _logger.d('Setting active feed to: ${feed.config.id}');
     _activeFeed = feed;
     _updateTaskPriorities();
     _processQueue(); // Re-evaluate queue processing if active feed changed
@@ -74,7 +72,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   void submitTask(DownloadTask task) {
     // Prevent duplicate tasks for the same post if one is already pending/active
     if (_tasks.contains(task)) {
-      _logger.d('Task for ${task.uri} already in queue. Skipping.');
       return;
     }
 
@@ -88,7 +85,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   Future<void> _processQueue() async {
     if (_isProcessing) return; // Already processing
     _isProcessing = true;
-    _logger.d('Processing queue. Queue size: ${_tasks.length}');
     final newTasks = <DownloadTask>[];
 
     while (_tasks.isNotEmpty) {
@@ -124,7 +120,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               }
               _tasks.remove(task); // Ensure removal on unhandled pool error
             });
-        _logger.d('Task ${task.uri} submitted to pool for execution.');
       }
       if (task.status != DownloadTaskStatus.completed &&
           task.status != DownloadTaskStatus.failed) {
@@ -135,16 +130,13 @@ class DownloadManagerImpl implements DownloadManagerInterface {
     _tasks.addAll(newTasks);
 
     _isProcessing = false;
-    _logger.d('Finished a processing pass. Queue size: ${_tasks.length}');
   }
 
   @override
   Future<void> dispose() async {
-    _logger.d('Disposing DownloadManager...');
     _cancelAllPendingTasks(); // Attempt to clean up
     await _pool
         .close(); // Closes the pool and waits for active tasks to complete
-    _logger.d('DownloadManager disposed.');
   }
 
   bool _areTherePendingActiveFeedTasks() {
@@ -156,17 +148,9 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   }
 
   Future<void> _executeTask(DownloadTask task) async {
-    _logger.d(
-      'Executing task: ${task.uri} for feed ${task.feed.config.id} '
-      'with priority ${task.priority}',
-    );
     if (_activeFeed != task.feed &&
         task.priority > activeFeedPriority &&
         _areTherePendingActiveFeedTasks()) {
-      _logger.d(
-        'Task ${task.uri} is for an inactive feed, but there are still '
-        'pending active feed tasks. Skipping.',
-      );
       return;
     }
     try {
@@ -174,8 +158,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
       // This is a softer check than full cancellation.
 
       task.status = DownloadTaskStatus.active;
-
-      _logger.d('Caching media for post: ${task.uri}');
       // Actual caching work - start downloading the media
       switch (task.post.media) {
         case MediaViewVideo():
@@ -191,7 +173,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               ),
             ),
           );
-          _logger.d('Video file successfully cached: ${task.post.videoUrl}');
         case MediaViewImages():
           for (final url in task.post.imageUrls) {
             // Download the image and verify it's cached
@@ -222,20 +203,11 @@ class DownloadManagerImpl implements DownloadManagerInterface {
                   ),
                 ),
               );
-              _logger.d(
-                'Video file successfully cached: ${task.post.videoUrl}',
-              );
             case MediaViewImage() || MediaViewImages() || MediaViewBskyImages():
               for (final url in task.post.imageUrls) {
                 // Download the image and verify it's cached
-                final fileInfo = await CachedNetworkImageProvider
-                    .defaultCacheManager
+                await CachedNetworkImageProvider.defaultCacheManager
                     .downloadFile(url, key: url);
-                if (fileInfo.statusCode != 200) {
-                  _logger.w(
-                    'Image file was not properly cached after download: $url',
-                  );
-                }
               }
             default:
               throw Exception('Unsupported media type: ${media.runtimeType}');
@@ -263,11 +235,10 @@ class DownloadManagerImpl implements DownloadManagerInterface {
       }
 
       task.status = DownloadTaskStatus.completed;
-      _logger.d('Task ${task.uri} completed successfully.');
       task.onComplete(task);
     } catch (e, s) {
       task.status = DownloadTaskStatus.failed;
-      _logger.e('Task ${task.uri} failed: $e', error: e, stackTrace: s);
+      _logger.w('Failed to cache media for ${task.uri}');
       task.onError(task, e, s);
     } finally {
       // Remove from the main queue regardless of outcome, as it's processed.

@@ -79,9 +79,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
       // Go back to previous screen
       context.router.pop();
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      // Error handling - snackbar removed
     } finally {
       if (mounted) {
         setState(() {

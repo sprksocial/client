@@ -1,150 +1,128 @@
-# Spark Social
+# Spark Client
 
-A decentralized social network for video sharing built on the AT Protocol, putting users in control of their digital presence and data.
+Flutter client for Spark social. This repository contains the production mobile app,
+plus workspace packages used by the app (assets, fonts, and widgetbook).
 
-![Spark Logo](https://static.sprk.so/branding/logo-horizontal-t6.png)
+## What This Repo Contains
 
-## Spark Your Creativity
+- `spark` app package at repo root (`pubspec.yaml`)
+- Flutter workspace members:
+  - `widgetbook` (component/dev preview package)
+  - `fonts` (shared font package)
+  - `assets` (shared assets package)
 
-Share videos freely while maintaining complete control over your data. Break free from corporate control and gain digital autonomy.
+The app is organized with a feature-first structure and uses Riverpod + GetIt +
+Freezed + AutoRoute.
 
-## About Spark
+## Tech Stack
 
-We are building a decentralized social network on the AT Protocol, empowering users to share content without compromising privacy or control. With Spark, you own your data and decide how it's used.
+- Flutter / Dart
+- Riverpod (with code generation)
+- GetIt for dependency injection
+- Freezed + json_serializable for immutable models
+- AutoRoute for navigation
+- AT Protocol client libraries (`atproto`, `bluesky`)
 
-## Core Principles
+## Prerequisites
 
-- **Decentralized Network**: Built on the AT Protocol, giving you full control over your digital presence
-- **User-First Approach**: Your data belongs to you, share content freely without compromising privacy
-- **Digital Autonomy**: Break free from corporate control and take charge of your online experience
+- Flutter SDK (CI uses stable `3.38.4`)
+- Dart SDK matching Flutter toolchain
+- Xcode (for iOS builds) and/or Android SDK
 
-## Features
+## Quick Start
 
-- **Content Filters**: Customize your feed with advanced content filters
-- **Moderation Lists**: Create and subscribe to moderation lists for a healthier online environment
-- **Custom Feeds**: Build personalized feeds based on your interests and favorite creators
-- **Music & Audio Gallery**: Platform for musicians to reach wider audiences and listeners to discover new talent
-- **Built-in Video Editor**: Create and edit professional-quality videos directly in the app
-- **Creative Effects**: Share your creativity with Spark effects or design your own
-- **Full Content Control**: You decide what to share and with whom
-- **Social Media Detox**: Tools to reduce social media addiction and improve focus
-- **Community Building**: Connect with like-minded individuals and build genuine communities
-- **Human-first Discovery**: Find real creators and build genuine connections
-
-## What Makes Spark Different?
-
-- **Authenticity**: Rediscover genuine connections with real creators
-- **Decentralization**: Break free from corporate control and gain digital autonomy
-- **Custom Lexicon**: Our own lexicon provides more flexibility for content creators
-- **Higher Content Limits**: Increased limits for video length and image quality
-- **User Control**: You own your data and decide how it's used
-- **Community Focus**: Build meaningful relationships in a supportive environment
-
-## Screenshots
-
-(Screenshots coming soon)
-
-## Getting Started
-
-### Prerequisites
-
-- Flutter SDK
-- Dart SDK
-- iOS/Android development environment
-
-### Installation
-
-1. Clone this repository
+From repository root:
 
 ```bash
-git clone https://github.com/sprksocial/spark-front-end.git
-```
-
-2. Navigate to the project directory
-
-```bash
-cd spark-front-end
-```
-
-3. Install dependencies
-
-```bash
-flutter pub get
-```
-
-4. Generate code
-
-```bash
+touch .env
+flutter pub get --enforce-lockfile
 dart run build_runner build --delete-conflicting-outputs
-```
-
-5. Run the app
-
-```bash
 flutter run
 ```
 
-## Technologies Used
+## Common Commands
 
-- Flutter
-- AT Protocol for decentralized social networking
-- Cupertino (iOS-style) widgets
-- Riverpod for state management
-- AutoRoute for routing
-- GetIt for dependency injection
-- Freezed for data models
-- Logger for logging
-- Ionicons for beautiful icons
-- Video player for media playback
-- Camera for video recording
-- Animation for smooth transitions
+### Dependencies and codegen
 
-## Project Structure
-
-```
-  lib/
-  ├── main.dart                  # App entry point
-  └── src/
-      ├── sprk_app.dart          # Main MaterialApp
-      ├── core/                  # Shared code across features
-      │   ├── config/            # Application-wide configurations
-      │   ├── di/                # Dependency injection setup
-      │   ├── network/           # ATProto client, API base
-      │   ├── routing/           # AutoRoute setup
-      │   ├── storage/           # Local storage utilities
-      │   ├── theme/             # Theme definitions
-      │   ├── l10n/              # Localization
-      │   ├── widgets/           # Common widgets
-      │   └── utils/             # Shared utilities
-      └── features/              # Feature modules
-          └── feature/
-              ├── data/          # Data layer for this feature
-              │   ├── repositories/
-              │   └── models/
-              ├── providers/     # Riverpod providers
-              └── ui/            # UI components
-                  ├── pages/
-                  └── widgets/
+```bash
+flutter pub get --enforce-lockfile
+dart run build_runner build --delete-conflicting-outputs
+dart run build_runner watch --delete-conflicting-outputs
 ```
 
-## Future Enhancements
+### Lint and format
 
-- Enhanced data portability
-- Custom server hosting options
-- Advanced content creation tools
-- Cross-platform federation
-- Community moderation tools
-- Expanded creative effects library
+```bash
+flutter analyze lib
+flutter analyze .
+dart format .
+dart format --set-exit-if-changed .
+```
+
+### Tests
+
+No tests are currently committed, but these are the standard commands:
+
+```bash
+flutter test
+flutter test test/path/to/some_test.dart
+flutter test test/path/to/some_test.dart --plain-name "does something specific"
+```
+
+For `widgetbook` (run inside `widgetbook/`):
+
+```bash
+flutter test
+```
+
+### Builds
+
+```bash
+flutter build appbundle
+flutter build apk
+flutter build ios --no-codesign
+```
+
+## Project Layout
+
+```text
+lib/
+  main.dart
+  src/
+    core/        # shared infrastructure (network, routing, utils, theme, etc.)
+    features/    # feature modules
+      <feature>/
+        data/
+        providers/
+        ui/
+widgetbook/      # widgetbook workspace package
+fonts/           # local font package
+assets/          # local assets package
+```
+
+## Architecture Notes
+
+- Prefer package imports (`package:spark/...`) for app code.
+- Typical flow is: external/API/storage -> repository -> provider -> widget.
+- Providers are generated with `@riverpod`; immutable state is typically Freezed.
+- Generated files (`*.g.dart`, `*.freezed.dart`, `*.gr.dart`) should not be edited manually.
+
+## CI Overview
+
+- Lint workflow runs codegen, then `flutter analyze`.
+- Android internal release workflow runs codegen, config setup, then `flutter build appbundle`.
+
+See:
+
+- `.github/workflows/flutter_lint.yml`
+- `.github/workflows/android-internal-release.yml`
 
 ## Contributing
 
-Contributions are welcome! Feel free to submit a Pull Request.
+1. Keep changes scoped to the feature you are editing.
+2. Run format, codegen (if needed), and analyze before opening a PR.
+3. Do not commit secrets (`.env`, signing keys, service credentials).
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Connect With Us
-
-- [Subscribe to Newsletter](https://spark-social-link-to-newsletter.com)
-- [Learn More](https://spark-social-learn-more.com)
+MIT. See `LICENSE`.

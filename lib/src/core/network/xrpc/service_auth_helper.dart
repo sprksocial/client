@@ -29,7 +29,6 @@ class ServiceAuthHelper {
         DateTime.now().isBefore(
           cached.expiry.subtract(const Duration(seconds: 30)),
         )) {
-      _logger.d('Using cached service token for $nsid');
       return cached.token;
     }
 
@@ -38,10 +37,6 @@ class ServiceAuthHelper {
       if (atproto == null) {
         throw Exception('Not authenticated - ATProto client not available');
       }
-
-      _logger.d(
-        'Requesting service auth token for $nsid with aud: $serviceDid',
-      );
 
       // Calculate expiration (60 seconds from now)
       final exp =
@@ -65,7 +60,6 @@ class ServiceAuthHelper {
         expiry: DateTime.fromMillisecondsSinceEpoch(exp * 1000),
       );
 
-      _logger.d('Successfully obtained service auth token for $nsid');
       return token;
     } catch (e) {
       _logger.e('Failed to get service auth token for $nsid', error: e);
@@ -76,12 +70,10 @@ class ServiceAuthHelper {
   /// Clears the token cache
   void clearCache() {
     _tokenCache.clear();
-    _logger.d('Service auth token cache cleared');
   }
 
   /// Clears a specific token from cache
   void clearToken(String nsid) {
     _tokenCache.remove(nsid);
-    _logger.d('Cleared service auth token for $nsid');
   }
 }

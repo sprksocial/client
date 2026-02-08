@@ -38,8 +38,7 @@ class AudioWaveformExtractor {
       );
 
       return _normalizeWaveform(waveformData);
-    } catch (e) {
-      debugPrint('Failed to extract waveform: $e');
+    } catch (_) {
       return [];
     }
   }

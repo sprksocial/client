@@ -43,7 +43,6 @@ class NotificationNotifier extends _$NotificationNotifier {
     bool refresh = false,
   }) async {
     if (_isLoading && !refresh) {
-      _logger.w('Load already in progress, skipping');
       return;
     }
 
@@ -59,11 +58,6 @@ class NotificationNotifier extends _$NotificationNotifier {
       final response = await _notificationRepository.listNotifications(
         priority: priority,
         reasons: reasons,
-      );
-
-      _logger.d(
-        'Loaded ${response.notifications.length} notifications, '
-        'cursor: ${response.cursor}',
       );
 
       state = state.copyWith(
@@ -96,10 +90,6 @@ class NotificationNotifier extends _$NotificationNotifier {
     List<String>? reasons,
   }) async {
     if (_isLoading || state.isLoadingMore || !state.hasMore) {
-      _logger.w(
-        'Cannot load more: isLoading=$_isLoading, '
-        'isLoadingMore=${state.isLoadingMore}, hasMore=${state.hasMore}',
-      );
       return;
     }
 
@@ -111,11 +101,6 @@ class NotificationNotifier extends _$NotificationNotifier {
         cursor: state.cursor,
         priority: priority,
         reasons: reasons,
-      );
-
-      _logger.d(
-        'Loaded ${response.notifications.length} more notifications, '
-        'cursor: ${response.cursor}',
       );
 
       state = state.copyWith(

@@ -41,8 +41,6 @@ class _SharePanelState extends ConsumerState<SharePanel> {
       }
     });
 
-    // Snackbar removed
-
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
@@ -249,7 +247,6 @@ class _SharePanelState extends ConsumerState<SharePanel> {
 
                                 navigator.maybePop();
                               } catch (e) {
-                                // Error handling - snackbar removed
                                 logger.d(
                                   'Failed to share video to conversation',
                                   error: e,

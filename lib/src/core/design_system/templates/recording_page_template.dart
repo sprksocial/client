@@ -47,7 +47,7 @@ class RecordingPageTemplate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-    final footerHeight = kBottomNavigationBarHeight + 12;
+    const footerHeight = kBottomNavigationBarHeight + 12;
     const borderRadius = BorderRadius.all(Radius.circular(20));
 
     // Calculate scale based on camera aspect ratio and screen aspect ratio
@@ -100,9 +100,9 @@ class RecordingPageTemplate extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: footerHeight,
-              child: const ColoredBox(color: Colors.black),
+              child: ColoredBox(color: Colors.black),
             ),
           ],
         ),

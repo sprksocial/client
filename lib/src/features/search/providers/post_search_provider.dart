@@ -115,10 +115,6 @@ class PostSearch extends _$PostSearch {
           .cast<PostView>()
           .toList();
 
-      _logger.d(
-        'Successfully converted ${bskyPosts.length}/${bskyResponse.data.posts.length} bsky posts',
-      );
-
       final filteredSprkPosts = _filterHiddenPosts(sprkResponse.posts);
       final filteredBskyPosts = _filterHiddenPosts(bskyPosts);
 
@@ -129,11 +125,6 @@ class PostSearch extends _$PostSearch {
         sprkNextCursor: sprkResponse.cursor,
         bskyNextCursor: bskyResponse.data.cursor,
         isLoading: false,
-      );
-      _logger.d(
-        'Search completed with ${combinedPosts.length} results, '
-        'sprkNextCursor: ${sprkResponse.cursor}, '
-        'bskyNextCursor: ${bskyResponse.data.cursor}',
       );
 
       // If we have very few results, try to load more immediately

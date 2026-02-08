@@ -18,10 +18,8 @@ class SuggestedFeeds extends _$SuggestedFeeds {
   @override
   Future<List<GeneratorView>> build() async {
     try {
-      _logger.d('Fetching suggested Spark feeds...');
       // Only fetch Spark feeds
       final feeds = await _feedRepository.getSuggestedFeeds();
-      _logger.d('Fetched ${feeds.length} suggested Spark feeds');
       return feeds;
     } catch (e, stackTrace) {
       _logger.e(
@@ -38,10 +36,8 @@ class SuggestedFeeds extends _$SuggestedFeeds {
     state = const AsyncValue.loading();
 
     try {
-      _logger.d('Refreshing suggested Spark feeds...');
       // Only fetch Spark feeds
       final feeds = await _feedRepository.getSuggestedFeeds();
-      _logger.d('Refreshed ${feeds.length} suggested Spark feeds');
       state = AsyncValue.data(feeds);
     } catch (e, stackTrace) {
       _logger.e(

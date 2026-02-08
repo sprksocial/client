@@ -62,9 +62,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         conversationProvider(widget.conversationId).notifier,
       );
       await chatService.sendMessage(widget.conversationId, content);
-    } catch (e) {
-      // Error handling - snackbar removed
-    }
+    } catch (_) {}
   }
 
   @override

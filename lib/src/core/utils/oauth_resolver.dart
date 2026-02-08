@@ -32,15 +32,12 @@ import 'package:spark/src/core/utils/did_utils.dart';
 /// ```dart
 /// // From PDS URL
 /// final authServer = await resolveOAuthServer('https://suillus.us-west.host.bsky.network');
-/// print('Authorization server: $authServer'); // 'bsky.social'
 ///
 /// // From handle
 /// final authServer = await resolveOAuthServer('user.bsky.social');
-/// print('Authorization server: $authServer'); // 'bsky.social'
 ///
 /// // From DID
 /// final authServer = await resolveOAuthServer('did:plc:abc123');
-/// print('Authorization server: $authServer'); // 'bsky.social'
 /// ```
 Future<String> resolveOAuthServer(
   String input, {

@@ -1,5 +1,4 @@
 import 'package:atproto/com_atproto_repo_strongref.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -22,9 +21,6 @@ class StoryDirectPost {
     WidgetRef ref,
     XFile imageFile,
   ) async {
-    debugPrint('[StoryDirectPost] Starting photo story post');
-    debugPrint('[StoryDirectPost] Image path: ${imageFile.path}');
-
     // Show loading overlay
     final navigator = Navigator.of(context);
 
@@ -37,21 +33,17 @@ class StoryDirectPost {
     try {
       final feedRepository = GetIt.I<SprkRepository>().feed;
 
-      debugPrint('[StoryDirectPost] Uploading image...');
       // Upload the image
       final uploadedImages = await feedRepository.uploadImages(
         imageFiles: [imageFile],
         altTexts: {imageFile.path: ''},
       );
 
-      debugPrint('[StoryDirectPost] Upload result: ${uploadedImages.length} images');
-
       if (uploadedImages.isEmpty) {
         throw Exception('Failed to upload image');
       }
 
       final uploadedImage = uploadedImages.first;
-      debugPrint('[StoryDirectPost] Image uploaded, posting story...');
 
       // Post the story
       final result = await ref.read(
@@ -64,17 +56,13 @@ class StoryDirectPost {
         throw Exception('Failed to post story');
       }
 
-      debugPrint('[StoryDirectPost] Story posted: ${result.uri}');
-
       // Dismiss loading
       if (navigator.mounted) {
         navigator.pop();
       }
 
       return result;
-    } catch (e, stackTrace) {
-      debugPrint('[StoryDirectPost] Error: $e');
-      debugPrint('[StoryDirectPost] StackTrace: $stackTrace');
+    } catch (_) {
       // Dismiss loading
       if (navigator.mounted) {
         navigator.pop();

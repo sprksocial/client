@@ -9,7 +9,7 @@ import 'package:spark/src/core/utils/logging/logger.dart';
 /// Factory for creating logger instances
 class LoggerFactory {
   /// Global minimum log level
-  static LogLevel _globalMinLevel = kDebugMode ? LogLevel.debug : LogLevel.info;
+  static LogLevel _globalMinLevel = LogLevel.warning;
 
   /// List of default outputs
   static final List<LogOutput> _defaultOutputs = [
@@ -72,6 +72,6 @@ class LoggerFactory {
     if (!kIsWeb) {
       _defaultOutputs.add(FileOutput());
     }
-    _globalMinLevel = kDebugMode ? LogLevel.debug : LogLevel.info;
+    _globalMinLevel = LogLevel.warning;
   }
 }

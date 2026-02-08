@@ -19,9 +19,9 @@ class StoryPostPage extends ConsumerStatefulWidget {
     this.videoPath,
     super.key,
   }) : assert(
-          imageFile != null || videoPath != null,
-          'Either imageFile or videoPath must be provided',
-        );
+         imageFile != null || videoPath != null,
+         'Either imageFile or videoPath must be provided',
+       );
 
   final XFile? imageFile;
   final String? videoPath;

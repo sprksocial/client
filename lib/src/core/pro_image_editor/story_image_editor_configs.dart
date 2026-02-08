@@ -84,7 +84,6 @@ class StoryImageEditorConfigs {
             stream: rebuildStream,
           ),
           wrapBody: (editor, rebuildStream, content) {
-            // Fill behind content so no letterboxing shows as dark lines on sides
             return ClipRRect(
               borderRadius: _storyEditorBorderRadius,
               child: Container(

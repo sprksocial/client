@@ -296,9 +296,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
           ),
         ),
       );
-    } catch (e) {
-      debugPrint('Failed to fetch trending audios: $e');
-    }
+    } catch (_) {}
     return audioTracks;
   }
 
@@ -639,10 +637,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
             ),
             mainEditorCallbacks: const MainEditorCallbacks(),
             stickerEditorCallbacks: StickerEditorCallbacks(
-              onSearchChanged: (value) {
-                /// Filter your stickers
-                debugPrint(value);
-              },
+              onSearchChanged: (_) {},
             ),
           ),
           configs: _configs,

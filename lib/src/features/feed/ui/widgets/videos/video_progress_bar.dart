@@ -174,7 +174,9 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
     setState(() {});
     try {
       await _vp?.seekTo(finalPos);
-    } catch (_) {}
+    } catch (_) {
+      // Video controller may be disposed during seek, ignore error
+    }
     widget.onSeekEnd?.call(finalPos);
     _dragging = false;
     _pendingSeek = null;
