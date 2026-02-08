@@ -14,7 +14,6 @@ import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart'
     as actor_models;
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/utils/blocking_utils.dart';
@@ -22,6 +21,7 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_likes_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_provider.dart';
@@ -152,13 +152,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       final cleanUsername = username.startsWith('@')
           ? username.substring(1)
           : username;
-      _logger.d('Username clicked: $cleanUsername');
 
       final didRes = await _identityRepository.resolveHandleToDid(
         cleanUsername,
       );
       if (didRes == null) {
-        _logger.w('Could not resolve handle to DID for $cleanUsername');
         return;
       }
       if (mounted) {

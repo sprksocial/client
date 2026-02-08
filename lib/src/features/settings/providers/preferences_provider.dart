@@ -28,19 +28,15 @@ class UserPreferences extends _$UserPreferences {
     _sprkRepository = GetIt.instance<SprkRepository>();
     _logger = GetIt.instance<LogService>().getLogger('UserPreferences');
 
-    _logger.d('Loading preferences...');
-
     // Wait for auth to be initialized
     await _sprkRepository.authRepository.initializationComplete;
 
     if (!_sprkRepository.authRepository.isAuthenticated) {
-      _logger.w('Not authenticated, returning empty preferences');
       return Preferences(preferences: []);
     }
 
     try {
       final preferences = await _prefRepository.getPreferences();
-      _logger.d('Preferences loaded successfully');
       return preferences;
     } catch (e) {
       _logger.e('Error loading preferences: $e');
@@ -55,13 +51,11 @@ class UserPreferences extends _$UserPreferences {
   /// Refreshes preferences from the server.
   /// This should be called when logging in or when syncing from another device.
   Future<void> refresh() async {
-    _logger.d('Refreshing preferences from server...');
     state = const AsyncValue.loading();
 
     try {
       final preferences = await _prefRepository.getPreferences();
       state = AsyncValue.data(preferences);
-      _logger.d('Preferences refreshed successfully');
     } catch (e, st) {
       _logger.e('Error refreshing preferences: $e');
       state = AsyncValue.error(e, st);
@@ -71,12 +65,9 @@ class UserPreferences extends _$UserPreferences {
   /// Updates preferences on the server and in local state.
   /// This should be called whenever preferences are modified.
   Future<void> updatePreferences(Preferences preferences) async {
-    _logger.d('Updating preferences...');
-
     try {
       await _prefRepository.putPreferences(preferences);
       state = AsyncValue.data(preferences);
-      _logger.d('Preferences updated successfully');
     } catch (e, st) {
       _logger.e('Error updating preferences: $e');
       state = AsyncValue.error(e, st);

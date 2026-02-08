@@ -56,7 +56,9 @@ Future<VideoPlayerController> createVideoPlayerControllerFromEditorVideo(
       if (path != null && path.isNotEmpty) {
         return VideoPlayerController.networkUrl(Uri.file(path));
       }
-    } catch (_) {}
+    } catch (_) {
+      // File doesn't expose path, will fall back to network URL
+    }
   }
   // Fallback controller (should not happen when a valid video is provided)
   return VideoPlayerController.networkUrl(Uri.parse('about:blank'));

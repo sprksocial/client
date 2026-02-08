@@ -24,7 +24,6 @@ OAuthClientMetadata? _cachedClientMetadata;
 /// Implementation of the authentication repository for AT Protocol using OAuth
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl() {
-    _logger.i('Initializing AuthRepository');
     _initialize();
   }
 
@@ -87,11 +86,9 @@ class AuthRepositoryImpl implements AuthRepository {
   /// Fetches a DID document, handling both did:plc and did:web methods.
   Future<Map<String, dynamic>> _fetchDidDocument(String did) async {
     final url = DidUtils.buildDidDocumentUrl(did);
-    _logger.d('Fetching DID document from: $url');
     final response = await http.get(url);
 
     if (response.statusCode != 200) {
-      _logger.e('Failed to fetch DID document: ${response.statusCode}');
       throw Exception('Failed to fetch DID document: ${response.statusCode}');
     }
 
@@ -118,15 +115,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<void> _loadSavedSession() async {
     try {
-      _logger.d('Loading saved account');
-
       // Load account as single JSON object - much faster than multiple reads
       final accountJson = await StorageManager.instance.secure.getString(
         StorageKeys.account,
       );
 
       if (accountJson == null) {
-        _logger.d('No saved account found');
         return;
       }
 
@@ -160,10 +154,8 @@ class AuthRepositoryImpl implements AuthRepository {
       if (tokenNeedsRefresh && _oauthServer != null) {
         final metadata = await _getCachedClientMetadata();
         _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-        _logger.d('Access token expired or expiring soon, refreshing');
         final refreshed = await refreshToken();
         if (!refreshed) {
-          _logger.w('Token refresh failed during restore, clearing session');
           await _clearSavedSession();
           _oauthSession = null;
           _atProto = null;
@@ -174,7 +166,6 @@ class AuthRepositoryImpl implements AuthRepository {
           _oauthClient = null;
           return;
         }
-        _logger.i('Token refreshed successfully during restore');
       }
 
       // Extract just the host from the PDS endpoint
@@ -186,8 +177,6 @@ class AuthRepositoryImpl implements AuthRepository {
         _oauthSession!,
         service: pdsHost,
       );
-
-      _logger.i('Account loaded successfully for user: $_handle');
     } catch (e) {
       _logger.e('Error loading saved account', error: e);
     }
@@ -197,8 +186,6 @@ class AuthRepositoryImpl implements AuthRepository {
     if (_oauthSession == null) return;
 
     try {
-      _logger.d('Saving account for user: $_handle');
-
       final account = Account(
         accessToken: _oauthSession!.accessToken,
         refreshToken: _oauthSession!.refreshToken,
@@ -216,8 +203,6 @@ class AuthRepositoryImpl implements AuthRepository {
         StorageKeys.account,
         account.toJsonString(),
       );
-
-      _logger.d('Account saved successfully');
     } catch (e) {
       _logger.e('Failed to save account', error: e);
     }
@@ -225,14 +210,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<void> _clearSavedSession() async {
     try {
-      _logger.d('Clearing saved account');
       await StorageManager.instance.secure.remove(StorageKeys.account);
       await StorageManager.instance.secure.remove(
         StorageKeys.pendingAuthContext,
       );
       // Also clear old session format if exists
       await StorageManager.instance.secure.remove(StorageKeys.userSession);
-      _logger.d('Account cleared successfully');
     } catch (e) {
       _logger.e('Failed to clear account', error: e);
     }
@@ -241,14 +224,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<String> initiateOAuth(String handle) async {
     try {
-      _logger.i('Initiating OAuth for handle: $handle');
-
       // Resolve handle to DID
       final at = ATProto.anonymous(service: 'public.api.bsky.app');
-      _logger.d('Resolving handle: $handle');
       final didRes = await at.identity.resolveHandle(handle: handle);
       final resolvedDid = didRes.data.did;
-      _logger.d('Resolved DID: $resolvedDid');
 
       final didDoc = await _fetchDidDocument(resolvedDid);
       final pdsEndpoint = _extractPdsEndpoint(didDoc);
@@ -257,8 +236,6 @@ class AuthRepositoryImpl implements AuthRepository {
         _logger.e('PDS endpoint not found in DID document');
         throw Exception('PDS endpoint not found in DID document');
       }
-
-      _logger.d('Found PDS endpoint: $pdsEndpoint');
 
       // Store user info for later
       _did = resolvedDid;
@@ -269,7 +246,6 @@ class AuthRepositoryImpl implements AuthRepository {
       final metadata = await _getCachedClientMetadata();
       // Resolve OAuth server from PDS endpoint
       _oauthServer = await resolveOAuthServer(pdsEndpoint);
-      _logger.d('Resolved OAuth server: $_oauthServer');
       _oauthClient = OAuthClient(metadata, service: _oauthServer!);
 
       // Start OAuth authorization
@@ -292,7 +268,6 @@ class AuthRepositoryImpl implements AuthRepository {
         }),
       );
 
-      _logger.i('OAuth authorization URL generated');
       return authUrl.toString();
     } catch (e) {
       _logger.e('Failed to initiate OAuth', error: e);
@@ -303,15 +278,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<String> initiateOAuthWithService(String service) async {
     try {
-      _logger.i('Initiating OAuth with service: $service');
-
       // Store service for later
       _pdsEndpoint = 'https://$service';
       _oauthServer = service;
 
       // Get client metadata (cached)
       final metadata = await _getCachedClientMetadata();
-      _logger.d('Using OAuth server: $service');
       _oauthClient = OAuthClient(metadata, service: _oauthServer!);
 
       // Start OAuth authorization without login hint
@@ -332,7 +304,6 @@ class AuthRepositoryImpl implements AuthRepository {
         }),
       );
 
-      _logger.i('OAuth authorization URL generated');
       return authUrl.toString();
     } catch (e) {
       _logger.e('Failed to initiate OAuth with service', error: e);
@@ -427,7 +398,6 @@ class AuthRepositoryImpl implements AuthRepository {
           final sessionResponse = await _atProto!.server.getSession();
           _did = sessionResponse.data.did;
           _handle = sessionResponse.data.handle;
-          _logger.d('Fetched session info - DID: $_did, Handle: $_handle');
         } catch (e) {
           _logger.e('Failed to fetch session info', error: e);
           return LoginResult.failed('Failed to get session info: $e');
@@ -443,7 +413,6 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       _pendingContext = null;
 
-      _logger.i('OAuth login successful for user: $_handle');
       return LoginResult.success();
     } catch (e, stackTrace) {
       _logger.e('OAuth callback failed', error: e, stackTrace: stackTrace);
@@ -454,7 +423,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      _logger.i('Logging out user: $_handle');
       await _clearSavedSession();
       _oauthSession = null;
       _atProto = null;
@@ -464,7 +432,6 @@ class AuthRepositoryImpl implements AuthRepository {
       _oauthServer = null;
       _oauthClient = null;
       _pendingContext = null;
-      _logger.i('Logout successful');
     } catch (e) {
       _logger.e('Logout failed', error: e);
     }
@@ -476,29 +443,19 @@ class AuthRepositoryImpl implements AuthRepository {
     await initializationComplete;
 
     if (_atProto == null || _oauthSession == null) {
-      _logger.d('No session to validate');
       return false;
     }
 
     try {
-      _logger.d('Validating OAuth session for user: $_handle');
       await _atProto!.identity.resolveHandle(handle: _handle ?? '');
-      _logger.d('Session validation successful');
       return true;
     } catch (e) {
-      _logger.w(
-        'Session validation failed, attempting token refresh',
-        error: e,
-      );
-
       // Try to refresh the token before giving up
       final refreshed = await refreshToken();
       if (refreshed) {
-        _logger.i('Token refresh successful, session is now valid');
         return true;
       }
 
-      _logger.w('Token refresh failed, logging out');
       await logout();
       return false;
     }
@@ -508,20 +465,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<bool> refreshToken() async {
     try {
       if (_oauthSession == null || _oauthClient == null) {
-        _logger.w('No OAuth session or client to refresh');
-
         // Try to recreate OAuth client if we have a session but no client
         if (_oauthSession != null && _oauthServer != null) {
           final metadata = await _getCachedClientMetadata();
           _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-          _logger.d('OAuthClient recreated with service: $_oauthServer');
         } else {
-          _logger.w('Cannot refresh: missing session or OAuth server');
           return false;
         }
       }
 
-      _logger.i('Refreshing OAuth token');
       final refreshedSession = await _oauthClient!.refresh(_oauthSession!);
       _oauthSession = refreshedSession;
 
@@ -534,7 +486,6 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       await _saveSession();
-      _logger.i('OAuth token refresh successful');
       return true;
     } catch (e) {
       _logger.e('OAuth token refresh failed', error: e);

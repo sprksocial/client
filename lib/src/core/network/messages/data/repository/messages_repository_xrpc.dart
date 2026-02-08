@@ -31,8 +31,6 @@ class MessagesRepositoryXrpc implements MessagesRepository {
         queryParameters: params.isEmpty ? null : params,
       );
 
-      _logger.d('GET $url');
-
       final response = await http.get(
         url,
         headers: {
@@ -40,8 +38,6 @@ class MessagesRepositoryXrpc implements MessagesRepository {
           'Authorization': 'Bearer $token',
         },
       );
-
-      _logger.d('Response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
@@ -65,10 +61,6 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       final token = await _serviceAuthHelper.getServiceToken(nsid);
       final url = Uri.parse('$_baseUrl/xrpc/$nsid');
 
-      _logger
-        ..d('POST $url')
-        ..d('Body: ${jsonEncode(body)}');
-
       final response = await http.post(
         url,
         headers: {
@@ -78,8 +70,6 @@ class MessagesRepositoryXrpc implements MessagesRepository {
         },
         body: jsonEncode(body),
       );
-
-      _logger.d('Response: ${response.statusCode}');
 
       if (response.statusCode == 204) {
         // No content, but considered success
@@ -149,8 +139,6 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'so.sprk.chat.convo.getConvoForMembers',
     );
 
-    _logger.d('GET $url');
-
     final response = await http.get(
       url,
       headers: {
@@ -158,8 +146,6 @@ class MessagesRepositoryXrpc implements MessagesRepository {
         'Authorization': 'Bearer $token',
       },
     );
-
-    _logger.d('Response: ${response.statusCode}');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;

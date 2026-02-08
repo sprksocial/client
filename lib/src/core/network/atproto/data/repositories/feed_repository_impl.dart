@@ -79,7 +79,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
         if (hasMedia(parsedPost)) {
           posts.add(parsedPost);
-        } else {}
+        }
       } catch (e) {
         _logger.w('Failed to parse $source post, skipping: $e');
       }

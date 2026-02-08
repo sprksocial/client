@@ -181,15 +181,13 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: ProImageEditor.file(
-        _croppedImageFile!,
+        _croppedImageFile,
         key: _editorKey,
         callbacks: ProImageEditorCallbacks(
           onImageEditingComplete: _onImageEditingComplete,
           onCloseEditor: _onCloseEditor,
           stickerEditorCallbacks: StickerEditorCallbacks(
-            onSearchChanged: (value) {
-              debugPrint('Sticker search: $value');
-            },
+            onSearchChanged: (_) {},
           ),
         ),
         configs: _configs,
@@ -270,9 +268,7 @@ class _StoryBlankCanvasEditorPageState
         });
         _addBackgroundImageLayer();
       }
-    } catch (e) {
-      debugPrint('Failed to load image size: $e');
-    }
+    } catch (_) {}
   }
 
   void _initializeEditor() {
@@ -372,9 +368,7 @@ class _StoryBlankCanvasEditorPageState
                 onAfterViewInit: _addBackgroundImageLayer,
               ),
               stickerEditorCallbacks: StickerEditorCallbacks(
-                onSearchChanged: (value) {
-                  debugPrint('Sticker search: $value');
-                },
+                onSearchChanged: (_) {},
               ),
             ),
             configs: _configs.copyWith(

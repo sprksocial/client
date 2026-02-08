@@ -5,7 +5,6 @@ import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository
 import 'package:spark/src/core/storage/preferences/storage_constants.dart';
 import 'package:spark/src/core/storage/preferences/storage_manager.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
 
 part 'story_auto_delete_provider.g.dart';
@@ -13,19 +12,13 @@ part 'story_auto_delete_provider.g.dart';
 /// Holds the auto delete preference state (bool)
 @riverpod
 class StoryAutoDeletePref extends _$StoryAutoDeletePref {
-  late final SparkLogger _logger;
-
   @override
   Future<bool> build() async {
-    _logger = GetIt.I<LogService>().getLogger('StoryAutoDeletePref');
     final prefs = StorageManager.instance.preferences;
     var stored = await prefs.getBool(StorageKeys.storyAutoDeleteEnabled);
     if (stored == null) {
       stored = true;
       await prefs.setBool(StorageKeys.storyAutoDeleteEnabled, true);
-      _logger.d('Auto delete preference not found. Setting default to true.');
-    } else {
-      _logger.d('Loaded auto delete preference: $stored');
     }
     return stored;
   }
@@ -33,7 +26,6 @@ class StoryAutoDeletePref extends _$StoryAutoDeletePref {
   Future<void> setEnabled(bool value) async {
     final prefs = StorageManager.instance.preferences;
     await prefs.setBool(StorageKeys.storyAutoDeleteEnabled, value);
-    _logger.d('Set auto delete preference to $value');
     // Update state immutably
     state = AsyncData(value);
   }
@@ -77,12 +69,8 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
       cursor = page.data.cursor;
     } while (cursor != null);
 
-    if (expiredUris.isEmpty) {
-      logger.d('Auto delete: no expired stories');
-      return;
-    }
+    if (expiredUris.isEmpty) return;
 
-    logger.d('Auto delete: deleting ${expiredUris.length} expired stories');
     for (final uri in expiredUris) {
       try {
         await sprk.repo.deleteRecord(uri: uri);

@@ -45,11 +45,6 @@ class FeedNotifier extends _$FeedNotifier {
       _logger = GetIt.instance<LogService>().getLogger(
         'FeedNotifier ${feed.config.id}',
       );
-    } else {
-      _logger.d(
-        'Build called again for ${feed.config.id}, '
-        'hasBeenBuilt: $_hasBeenBuilt',
-      );
     }
 
     listenSelf((previous, next) {
@@ -97,13 +92,11 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<void> loadAndUpdateFirstLoad() async {
     if (_isLoadingInProgress || state.loadingFirstLoad) {
-      _logger.w('Load already in progress, skipping duplicate call');
       return;
     }
 
     if (_lastErrorTime != null &&
         DateTime.now().difference(_lastErrorTime!) < _errorCooldown) {
-      _logger.w('In error cooldown, skipping load');
       return;
     }
 
@@ -147,7 +140,6 @@ class FeedNotifier extends _$FeedNotifier {
       // We just need to merge them with self-labels and process them
       final allLabels = <Label>[];
       final postsWithMergedLabels = <PostView>[];
-      var postsWithoutLabels = 0;
 
       for (final post in posts) {
         final key = post.uri.toString();
@@ -168,25 +160,8 @@ class FeedNotifier extends _$FeedNotifier {
           }
         }
 
-        // Check if post has no labels (after adding self-labels check original)
-        if (post.labels == null || post.labels!.isEmpty) {
-          postsWithoutLabels++;
-        }
-
         allLabels.addAll(postLabels);
         postsWithMergedLabels.add(post.copyWith(labels: postLabels));
-      }
-
-      // Log warning if many posts missing labels (may indicate header issue)
-      if (postsWithoutLabels > 0 && postsWithoutLabels == posts.length) {
-        _logger.w(
-          'All ${posts.length} posts are missing labels - '
-          'check if labelers header is being sent',
-        );
-      } else if (postsWithoutLabels > posts.length / 2) {
-        _logger.w(
-          '$postsWithoutLabels/${posts.length} posts are missing labels - some labels may not be included',
-        );
       }
 
       final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
@@ -264,7 +239,7 @@ class FeedNotifier extends _$FeedNotifier {
             uri: post.uri,
             post: post,
             feed: _feed,
-            onComplete: (task) => _logger.d('Media cached for ${task.uri}'),
+            onComplete: (_) {},
             onError: (task, error, stackTrace) => _logger.e(
               'Error caching media for ${task.uri}: $error',
               error: error,
@@ -477,7 +452,6 @@ class FeedNotifier extends _$FeedNotifier {
         final labelPreference = await settings.getLabelPreference(label.val);
         if (labelPreference.setting == Setting.hide ||
             labelPreference.adultOnly) {
-          _logger.d('Hiding post $uri due to label: ${label.val}');
           return true;
         }
       } catch (e) {

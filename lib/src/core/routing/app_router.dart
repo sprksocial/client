@@ -9,17 +9,11 @@ import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/pages.dart';
-import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
 
 part 'app_router.gr.dart';
 
 class AuthGuard extends AutoRouteGuard {
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'AuthGuard',
-  );
-
   @override
   Future<void> onNavigation(
     NavigationResolver resolver,
@@ -32,7 +26,6 @@ class AuthGuard extends AutoRouteGuard {
       final hasSpark = await onboardingRepository.hasSparkProfile();
 
       if (!hasSpark) {
-        _logger.d('No Spark profile found, redirecting to register');
         resolver.redirectUntil(const RegisterRoute());
         return;
       }
@@ -40,15 +33,12 @@ class AuthGuard extends AutoRouteGuard {
       final isSessionValid = await authRepository.validateSession();
 
       if (!isSessionValid) {
-        _logger.d('Session invalid, redirecting to login');
         resolver.redirectUntil(const LoginRoute());
         return;
       }
 
-      _logger.d('Authentication valid, continuing to route');
       resolver.next();
     } catch (e) {
-      _logger.e('Error during auth check', error: e);
       resolver.redirectUntil(const RegisterRoute());
     }
   }

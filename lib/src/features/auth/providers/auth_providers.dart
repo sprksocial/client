@@ -74,8 +74,6 @@ class Auth extends _$Auth {
   ///
   /// Returns the authorization URL that the user should be redirected to
   Future<String> initiateOAuth(String handle) async {
-    _logger.i('Initiating OAuth for handle: $handle');
-
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -98,8 +96,6 @@ class Auth extends _$Auth {
   ///
   /// Returns the authorization URL that the user should be redirected to
   Future<String> initiateOAuthWithService(String service) async {
-    _logger.i('Initiating OAuth with service: $service');
-
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -129,8 +125,6 @@ class Auth extends _$Auth {
   ///
   /// Returns the result of the login attempt
   Future<LoginResult> completeOAuth(String callbackUrl) async {
-    _logger.i('Completing OAuth with callback');
-
     try {
       final result = await _authRepository.completeOAuth(callbackUrl);
 
@@ -157,7 +151,6 @@ class Auth extends _$Auth {
 
   /// Logs out the current user
   Future<void> logout() async {
-    _logger.i('Logout attempt by service layer');
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -176,8 +169,6 @@ class Auth extends _$Auth {
   /// Validates if the current session is still active
   /// Returns true if valid, false otherwise
   Future<bool> validateSession() async {
-    _logger.d('Session validation by service layer');
-
     try {
       final result = await _authRepository.validateSession();
       _updateState();
@@ -192,8 +183,6 @@ class Auth extends _$Auth {
   /// Refreshes the authentication token
   /// Returns true if the session was successfully refreshed
   Future<bool> refreshToken() async {
-    _logger.i('Token refresh by service layer');
-
     try {
       final result = await _authRepository.refreshToken();
       _updateState();
@@ -220,9 +209,6 @@ class Auth extends _$Auth {
       } else {
         // Permission not granted yet, defer until main screen
         _pendingPushRegistration = true;
-        _logger.i(
-          'Push permission not granted, deferring registration to main screen',
-        );
       }
     } catch (e, stackTrace) {
       // Don't fail login if push registration fails
@@ -245,13 +231,10 @@ class Auth extends _$Auth {
         platform: pushService.platform,
         appId: 'so.sprk.app',
       );
-      _logger.i('Push notifications registered successfully');
 
       // Set up listener for token refresh
       await _setupTokenRefreshListener(pushService, notificationRepo);
       _pendingPushRegistration = false;
-    } else {
-      _logger.w('No push token available');
     }
   }
 
@@ -262,7 +245,6 @@ class Auth extends _$Auth {
   /// Call this from the main screen after login
   Future<bool> requestPushPermissionAndRegister() async {
     if (!_pendingPushRegistration) {
-      _logger.d('No pending push registration');
       return true;
     }
 
@@ -274,7 +256,6 @@ class Auth extends _$Auth {
         await _doRegisterPush(pushService);
         return true;
       } else {
-        _logger.w('User denied push notification permission');
         _pendingPushRegistration = false;
         return false;
       }
@@ -298,14 +279,12 @@ class Auth extends _$Auth {
 
     _tokenRefreshSubscription = pushService.onTokenRefresh.listen(
       (newToken) async {
-        _logger.i('FCM token refreshed, re-registering push notifications');
         try {
           await notificationRepo.registerPush(
             token: newToken,
             platform: pushService.platform,
             appId: 'so.sprk.app',
           );
-          _logger.i('Push notifications re-registered with new token');
         } catch (e, stackTrace) {
           _logger.e(
             'Failed to re-register push notifications after token refresh',
@@ -341,7 +320,6 @@ class Auth extends _$Auth {
           platform: pushService.platform,
           appId: 'so.sprk.app',
         );
-        _logger.i('Push notifications unregistered successfully');
       }
     } catch (e, stackTrace) {
       // Don't fail logout if push unregistration fails

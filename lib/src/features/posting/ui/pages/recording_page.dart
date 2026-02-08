@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/design_system/templates/recording_page_template.dart';
+import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
@@ -105,8 +106,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (_isProcessing) return;
 
     final cameraNotifier = ref.read(cameraProvider.notifier);
-    _logger.d('Taking photo');
-
     setState(() {
       _isProcessing = true;
     });
@@ -128,8 +127,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (!mounted) return;
 
     try {
-      _logger.d('Processing photo: ${photoFile.path}');
-
       // Open the story image editor
       final editedImage = await GetIt.I<ProVideoEditorRepository>()
           .openStoryImageEditor(context, photoFile);
@@ -151,7 +148,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               editedImage,
             );
             if (result != null && mounted) {
-              _logger.i('Story posted successfully');
               // Exit the recording flow completely
               if (mounted) context.router.maybePop();
               return;
@@ -201,12 +197,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   void _startRecording() {
     final cameraNotifier = ref.read(cameraProvider.notifier);
-    final recordingNotifier = ref.read(recordingProvider.notifier);
-
-    _logger.d('Starting video recording');
-
-    // Start timer optimistically so UI responds immediately
-    recordingNotifier.startRecording();
+    final recordingNotifier = ref.read(recordingProvider.notifier)
+      // Start timer optimistically so UI responds immediately
+      ..startRecording();
 
     // Start native recording; revert timer if it fails
     cameraNotifier.startVideoRecording().then((success) {
@@ -224,11 +217,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     });
 
     final cameraNotifier = ref.read(cameraProvider.notifier);
-    final recordingNotifier = ref.read(recordingProvider.notifier);
-
-    _logger.d('Stopping video recording');
-
-    recordingNotifier.stopRecording();
+    ref.read(recordingProvider.notifier).stopRecording();
 
     // Defer heavy stop so the "processing" frame paints before blocking
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -250,18 +239,21 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (!mounted) return;
 
     try {
-      _logger.d('Processing recorded video: ${videoFile.path}');
-
       final cameraNotifier = ref.read(cameraProvider.notifier);
       await cameraNotifier.disposeCamera();
 
-      if (!mounted) return;
+      if (!mounted || !context.mounted) return;
 
       final editorVideo = EditorVideo.file(File(videoFile.path));
       final repository = GetIt.I<ProVideoEditorRepository>();
-      final result = widget.storyMode
-          ? await repository.openStoryVideoEditor(context, editorVideo)
-          : await repository.openVideoEditor(context, editorVideo);
+      VideoEditorResult? result;
+      if (widget.storyMode) {
+        if (!context.mounted) return;
+        result = await repository.openStoryVideoEditor(context, editorVideo);
+      } else {
+        if (!context.mounted) return;
+        result = await repository.openVideoEditor(context, editorVideo);
+      }
 
       if (!mounted) return;
 
@@ -269,7 +261,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        _logger.d('User cancelled video editing');
         await cameraNotifier.reinitializeCamera();
         return;
       }
@@ -289,7 +280,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             soundRef: result.soundRef,
           );
           if (postResult != null && mounted) {
-            _logger.i('Video story posted successfully');
             // Exit the recording flow completely
             if (mounted) context.router.maybePop();
             return;
@@ -500,7 +490,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   @override
   void dispose() {
-    // Defer provider modification to avoid modifying during widget tree finalization
+    // Defer modifying provider to avoid modifying while finalizing widget tree
     final notifier = _recordingNotifier;
     if (notifier != null) {
       Future(notifier.reset);

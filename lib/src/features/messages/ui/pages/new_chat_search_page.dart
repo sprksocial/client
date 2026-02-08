@@ -198,9 +198,8 @@ class _UserResultsState extends ConsumerState<_UserResults> {
           otherUserAvatar: actor.avatar?.toString(),
         ),
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      // Error handling - snackbar removed
     }
   }
 

@@ -43,7 +43,7 @@ class StoryManager extends _$StoryManager {
     _sprk = GetIt.I<SprkRepository>();
     _storyRepo = GetIt.I<StoryRepository>();
     _logger = GetIt.I<LogService>().getLogger('StoryManager');
-    ref.read(storyAutoDeleteExecutorProvider.future).catchError((_) {});
+    ref.read(storyAutoDeleteExecutorProvider.future).ignore();
     return _loadInitial();
   }
 

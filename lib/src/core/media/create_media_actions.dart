@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
@@ -48,28 +49,35 @@ class CreateMediaActions {
         source: ImageSource.gallery,
         maxDuration: const Duration(seconds: 180),
       );
-      if (pickedVideo != null && context.mounted) {
-        final editorVideo = EditorVideo.file(File(pickedVideo.path));
-        final repository = GetIt.I<ProVideoEditorRepository>();
-        final result = storyMode
-            ? await repository.openStoryVideoEditor(context, editorVideo)
-            : await repository.openVideoEditor(context, editorVideo);
-        if (result != null && context.mounted) {
-          if (storyMode) {
-            // For stories, post directly
-            await context.router.push(
-              StoryPostRoute(videoPath: result.video.path),
-            );
-          } else {
-            // For posts, go to review
-            await context.router.push(
-              VideoReviewRoute(
-                videoPath: result.video.path,
-                storyMode: storyMode,
-                soundRef: result.soundRef,
-              ),
-            );
-          }
+      if (pickedVideo == null) return;
+      if (!context.mounted) return;
+
+      final editorVideo = EditorVideo.file(File(pickedVideo.path));
+      final repository = GetIt.I<ProVideoEditorRepository>();
+      VideoEditorResult? result;
+      if (storyMode) {
+        if (!context.mounted) return;
+        result = await repository.openStoryVideoEditor(context, editorVideo);
+      } else {
+        if (!context.mounted) return;
+        result = await repository.openVideoEditor(context, editorVideo);
+      }
+
+      if (result != null && context.mounted) {
+        if (storyMode) {
+          // For stories, post directly
+          await context.router.push(
+            StoryPostRoute(videoPath: result.video.path),
+          );
+        } else {
+          // For posts, go to review
+          await context.router.push(
+            VideoReviewRoute(
+              videoPath: result.video.path,
+              storyMode: storyMode,
+              soundRef: result.soundRef,
+            ),
+          );
         }
       }
     };

@@ -96,9 +96,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
       // Navigate to main screen
       context.router.replaceAll([const MainRoute()]);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      // Error handling - snackbar removed
     } finally {
       if (mounted) {
         setState(() {

@@ -102,9 +102,8 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
           _altTexts[file.path] = '';
         }
       });
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
-      // Error handling - snackbar removed
     }
   }
 

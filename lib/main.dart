@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -48,16 +47,7 @@ void main() async {
 
 /// Setup logging framework based on environment
 void _setupLogging() {
-  final logService = sl<LogService>();
-
-  // Set log level based on debug mode
-  if (kDebugMode) {
-    logService.setGlobalLogLevel(LogLevel.debug);
-    logService.appLogger.i('Debug logging enabled');
-  } else {
-    logService.setGlobalLogLevel(LogLevel.info);
-    logService.appLogger.i('Production logging enabled');
-  }
+  sl<LogService>().setGlobalLogLevel(LogLevel.warning);
 }
 
 /// Initialize auth repository and wait for it to be ready
@@ -69,9 +59,7 @@ Future<void> _initializeAuth() async {
     final authRepository = sl<AuthRepository>();
 
     if (authRepository is AuthRepositoryImpl) {
-      logger.d('Waiting for AuthRepository initialization...');
       await authRepository.initializationComplete;
-      logger.d('AuthRepository initialized successfully');
     }
   } catch (e) {
     logger.e('AuthRepository initialization failed', error: e);

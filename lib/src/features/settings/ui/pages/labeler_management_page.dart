@@ -64,7 +64,6 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
       }
 
       setState(() => _isLoading = false);
-      _logger.d('Loaded ${labelerDids.length} labelers');
     } catch (e) {
       _logger.e('Error loading labelers: $e');
       setState(() => _isLoading = false);
@@ -82,8 +81,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
             (p) => p.did == did,
           );
           profileMap[did] = profile;
-        } catch (e) {
-          _logger.w('Profile not found for DID: $did');
+        } catch (_) {
           profileMap[did] = null;
         }
       }

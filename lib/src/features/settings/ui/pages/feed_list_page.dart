@@ -98,9 +98,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                   await ref
                       .read(settingsProvider.notifier)
                       .reorderFeed(actualOldIndex, actualNewIndex);
-                } catch (e) {
-                  // Error handling - snackbar removed
-                }
+                } catch (_) {}
               },
               proxyDecorator: (child, index, animation) {
                 return AnimatedBuilder(
@@ -161,9 +159,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .removeFeed(feed);
-                            } catch (e) {
-                              // Error handling - snackbar removed
-                            }
+                            } catch (_) {}
                           }
                         : null,
                     onPin: _isEditMode
@@ -208,9 +204,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .likeFeed(feed);
-                            } catch (e) {
-                              // Error handling - snackbar removed
-                            }
+                            } catch (_) {}
                           }
                         : null,
                     onUnlike: feed.view?.viewer?.like != null
