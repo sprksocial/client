@@ -143,7 +143,7 @@ class AppRouter extends RootStackRouter {
     ),
 
     // Story Manager
-    AutoRoute(page: StoryManagerRoute.page, path: '/story-manager'),
+    AutoRoute(page: StoryArchiveRoute.page, path: '/story-archive'),
 
     // Sound page
     AutoRoute(page: SoundRoute.page, path: '/sound/:audioUri'),

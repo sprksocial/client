@@ -180,6 +180,62 @@ class StoryRepositoryImpl implements StoryRepository {
   }
 
   @override
+  Future<({String? cursor, List<StoryView> stories})> getArchive({
+    int limit = 50,
+    String? cursor,
+  }) {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{'limit': limit};
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
+      }
+
+      final response = await atproto.get(
+        NSID.parse('so.sprk.story.getArchive'),
+        parameters: parameters,
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) {
+          final storiesArray = jsonMap['stories'] as List<dynamic>?;
+          if (storiesArray == null) {
+            return (
+              cursor: jsonMap['cursor'] as String?,
+              stories: <StoryView>[],
+            );
+          }
+
+          final stories = <StoryView>[];
+          for (final story in storiesArray) {
+            try {
+              final storyMap = Map<String, dynamic>.from(
+                story as Map<String, dynamic>,
+              );
+              _fixMediaStructure(storyMap);
+
+              final storyView = StoryView.fromJson(storyMap);
+              stories.add(storyView);
+            } catch (e) {
+              // Don't rethrow - continue with other stories
+            }
+          }
+
+          return (cursor: jsonMap['cursor'] as String?, stories: stories);
+        },
+      );
+
+      return response.data;
+    });
+  }
+
+  @override
   Future<RepoStrongRef> postStory(
     Media media, {
     List<SelfLabel>? selfLabels,
