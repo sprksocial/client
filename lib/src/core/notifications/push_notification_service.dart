@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:app_badge_plus/app_badge_plus.dart';
@@ -59,15 +60,29 @@ class PushNotificationService {
     // Handle notification tap when app is in background
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
-    // Handle notification tap when app was terminated
-    final initialMessage = await _messaging.getInitialMessage();
-    if (initialMessage != null) {
-      // Queue the navigation - will be processed after auth completes
-      _pendingNotification = initialMessage;
-    }
-
     // Handle foreground messages (for badge updates)
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+    // Handle notification tap when app was terminated
+    try {
+      final initialMessage = await _messaging.getInitialMessage().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          _logger.w('Timed out waiting for initial FCM message');
+          return null;
+        },
+      );
+      if (initialMessage != null) {
+        // Queue the navigation - will be processed after auth completes
+        _pendingNotification = initialMessage;
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Failed to fetch initial FCM message',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   /// Handles notification tap when app is in background or foreground
