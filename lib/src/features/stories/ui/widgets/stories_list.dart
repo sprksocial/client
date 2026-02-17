@@ -49,8 +49,8 @@ class _StoriesListState extends ConsumerState<StoriesList> {
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.manage_history_outlined, size: 20),
-                tooltip: 'Archive',
-                onPressed: () => context.router.push(const StoryArchiveRoute()),
+                tooltip: 'Manage',
+                onPressed: () => context.router.push(const StoryManagerRoute()),
               ),
             ],
           ),

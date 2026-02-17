@@ -32,13 +32,4 @@ abstract class StoryRepository {
   ///
   /// [storyUris] List of story URIs to fetch
   Future<List<StoryView>> getStoryViews(List<AtUri> storyUris);
-
-  /// Get archived stories for the requesting account.
-  ///
-  /// [limit] The number of items to return (default 50)
-  /// [cursor] Pagination cursor for the next set of results
-  Future<({String? cursor, List<StoryView> stories})> getArchive({
-    int limit = 50,
-    String? cursor,
-  });
 }
