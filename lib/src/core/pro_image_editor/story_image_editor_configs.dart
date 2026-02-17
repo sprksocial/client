@@ -49,6 +49,11 @@ class StoryImageEditorConfigs {
       ),
       // Force output to story dimensions
       imageGeneration: const ImageGenerationConfigs(
+        enableUseOriginalBytes: false,
+        // Avoid corrupted bytes from background/isolate generation path
+        // for blank-canvas story exports.
+        enableBackgroundGeneration: false,
+        enableIsolateGeneration: false,
         outputFormat: OutputFormat.png,
         maxOutputSize: storySize,
       ),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/com_atproto_repo_strongref.dart';
@@ -1017,45 +1018,38 @@ class FeedRepositoryImpl implements FeedRepository {
 
         final originalBytes = await imageFile.readAsBytes();
 
-        // Decode and process the image to strip EXIF data
-        switch (img.decodeImage(originalBytes)) {
+        final processedBytes = await _prepareImageBytesForUpload(
+          originalBytes,
+          imageName: imageFile.name,
+        );
+
+        // Upload the processed image
+        switch (_client.authRepository.atproto) {
           case null:
-            _logger.e('Failed to decode image ${imageFile.name}');
-            throw Exception('Failed to decode image ${imageFile.name}');
-          case final img.Image decodedImage:
-            // Re-encode the image with reduced quality to optimize size
-            final processedBytes = Uint8List.fromList(
-              img.encodeJpg(decodedImage, quality: 85),
+            _logger.e('AtProto not initialized');
+            throw Exception('AtProto not initialized');
+          case final atproto:
+            final response = await atproto.repo.uploadBlob(
+              bytes: processedBytes,
             );
 
-            // Upload the processed image
-            switch (_client.authRepository.atproto) {
-              case null:
-                _logger.e('AtProto not initialized');
-                throw Exception('AtProto not initialized');
-              case final atproto:
-                final response = await atproto.repo.uploadBlob(
-                  bytes: processedBytes,
+            switch (response.status.code) {
+              case 200:
+                // Add the uploaded image to our result list
+                uploadedImageMaps.add(
+                  Image(
+                    alt: altTexts?[imageFile.path] ?? '',
+                    image: response.data.blob,
+                  ),
                 );
-
-                switch (response.status.code) {
-                  case 200:
-                    // Add the uploaded image to our result list
-                    uploadedImageMaps.add(
-                      Image(
-                        alt: altTexts?[imageFile.path] ?? '',
-                        image: response.data.blob,
-                      ),
-                    );
-                  default:
-                    _logger.e(
-                      'Failed to upload image blob: ${response.status.code}',
-                    );
-                    throw Exception(
-                      'Blob upload failed for ${imageFile.name}: '
-                      '${response.status.code}',
-                    );
-                }
+              default:
+                _logger.e(
+                  'Failed to upload image blob: ${response.status.code}',
+                );
+                throw Exception(
+                  'Blob upload failed for ${imageFile.name}: '
+                  '${response.status.code}',
+                );
             }
         }
       } catch (e) {
@@ -1071,6 +1065,69 @@ class FeedRepositoryImpl implements FeedRepository {
       'Successfully processed and uploaded ${uploadedImageMaps.length} images',
     );
     return uploadedImageMaps;
+  }
+
+  Future<Uint8List> _prepareImageBytesForUpload(
+    Uint8List originalBytes, {
+    required String imageName,
+  }) async {
+    img.Image? decodedImage;
+    try {
+      decodedImage = img.decodeImage(originalBytes);
+      if (decodedImage == null) {
+        _logger.w('Failed to decode image $imageName with package:image');
+      } else {
+        return Uint8List.fromList(img.encodeJpg(decodedImage, quality: 85));
+      }
+    } catch (e, stackTrace) {
+      _logger.w(
+        'Error decoding image $imageName with package:image',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+
+    final uiProcessedBytes = await _reencodeWithUiCodec(
+      originalBytes,
+      imageName: imageName,
+    );
+    if (uiProcessedBytes != null) {
+      return uiProcessedBytes;
+    }
+
+    throw Exception('Failed to process image $imageName');
+  }
+
+  Future<Uint8List?> _reencodeWithUiCodec(
+    Uint8List originalBytes, {
+    required String imageName,
+  }) async {
+    ui.Codec? codec;
+    ui.Image? image;
+    try {
+      codec = await ui.instantiateImageCodec(originalBytes);
+      final frame = await codec.getNextFrame();
+      image = frame.image;
+
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        _logger.w(
+          'Failed to encode image $imageName with dart:ui codec',
+        );
+        return null;
+      }
+      return byteData.buffer.asUint8List();
+    } catch (e, stackTrace) {
+      _logger.w(
+        'Error processing image $imageName with dart:ui codec',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return null;
+    } finally {
+      image?.dispose();
+      codec?.dispose();
+    }
   }
 
   @override
