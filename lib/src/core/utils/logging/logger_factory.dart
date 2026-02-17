@@ -14,7 +14,7 @@ class LoggerFactory {
   /// List of default outputs
   static final List<LogOutput> _defaultOutputs = [
     ConsoleOutput(),
-    if (!kIsWeb && defaultTargetPlatform != TargetPlatform.iOS) FileOutput(),
+    if (!kIsWeb) FileOutput(),
   ];
 
   /// Map of logger instances by name
@@ -69,7 +69,7 @@ class LoggerFactory {
     _defaultOutputs
       ..clear()
       ..add(ConsoleOutput());
-    if (!kIsWeb && defaultTargetPlatform != TargetPlatform.iOS) {
+    if (!kIsWeb) {
       _defaultOutputs.add(FileOutput());
     }
     _globalMinLevel = LogLevel.warning;

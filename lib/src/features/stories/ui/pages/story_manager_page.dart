@@ -4,97 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/features/stories/providers/story_archive_provider.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
+import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
 
 @RoutePage()
-class StoryArchivePage extends ConsumerWidget {
-  const StoryArchivePage({super.key});
-
-  String _resolveAtUriToHttpUrl(Uri uri, {bool isFullsize = false}) {
-    final uriString = uri.toString();
-
-    if (uriString.startsWith('http://') || uriString.startsWith('https://')) {
-      return uriString;
-    }
-
-    final match = RegExp(r'^at://([^/]+)/([^/]+)/(.+)$').firstMatch(uriString);
-    if (match == null) return '';
-
-    final did = match.group(1)!;
-    final collection = match.group(2)!;
-    final rkey = match.group(3)!;
-
-    if (collection != 'blob') return '';
-
-    if (isFullsize) {
-      return 'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$rkey@jpeg';
-    }
-
-    return 'https://cdn.bsky.app/img/feed_thumbnail/plain/$did/$rkey@jpeg';
-  }
-
-  String _storyThumbUrl(StoryView story) {
-    String pickImageThumb(ViewImage image) {
-      final fullsize = image.fullsize.toString();
-      if (fullsize.startsWith('http://') || fullsize.startsWith('https://')) {
-        return fullsize;
-      }
-
-      final fullsizeFromAt = _resolveAtUriToHttpUrl(
-        image.fullsize,
-        isFullsize: true,
-      );
-      if (fullsizeFromAt.isNotEmpty) return fullsizeFromAt;
-
-      final thumb = image.thumb.toString();
-      if (thumb.startsWith('http://') || thumb.startsWith('https://')) {
-        return thumb;
-      }
-
-      return _resolveAtUriToHttpUrl(image.thumb);
-    }
-
-    final media = story.media;
-
-    final mediaUrl = switch (media) {
-      MediaViewVideo(:final thumbnail) => _resolveAtUriToHttpUrl(thumbnail),
-      MediaViewBskyVideo(:final thumbnail) => _resolveAtUriToHttpUrl(thumbnail),
-      MediaViewImage(:final image) => pickImageThumb(image),
-      MediaViewImages(:final images) when images.isNotEmpty => pickImageThumb(
-        images.first,
-      ),
-      MediaViewBskyImages(:final images) when images.isNotEmpty =>
-        pickImageThumb(images.first),
-      MediaViewBskyRecordWithMedia(:final media) => switch (media) {
-        MediaViewVideo(:final thumbnail) => _resolveAtUriToHttpUrl(thumbnail),
-        MediaViewBskyVideo(:final thumbnail) => _resolveAtUriToHttpUrl(
-          thumbnail,
-        ),
-        MediaViewImage(:final image) => pickImageThumb(image),
-        MediaViewImages(:final images) when images.isNotEmpty => pickImageThumb(
-          images.first,
-        ),
-        MediaViewBskyImages(:final images) when images.isNotEmpty =>
-          pickImageThumb(images.first),
-        _ => '',
-      },
-      _ => '',
-    };
-
-    if (mediaUrl.isNotEmpty) return mediaUrl;
-
-    final avatarUrl = story.author.avatar?.toString();
-    if (avatarUrl != null &&
-        (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://'))) {
-      return avatarUrl;
-    }
-
-    return '';
-  }
+class StoryManagerPage extends ConsumerWidget {
+  const StoryManagerPage({super.key});
 
   void _openStoryViewer(BuildContext context, WidgetRef ref, int index) {
-    final state = ref.read(storyArchiveProvider).value;
+    final state = ref.read(storyManagerProvider).value;
     if (state == null) return;
     // Build map required by AllStoriesRoute (single author -> list)
     if (state.stories.isEmpty) return;
@@ -107,21 +25,54 @@ class StoryArchivePage extends ConsumerWidget {
     );
   }
 
+  Future<void> _deleteStory(
+    BuildContext context,
+    WidgetRef ref,
+    int index,
+  ) async {
+    final notifier = ref.read(storyManagerProvider.notifier);
+    final stories = ref.read(storyManagerProvider).value?.stories ?? [];
+    if (index >= stories.length) return;
+    final story = stories[index];
+    final shouldDelete =
+        await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Delete Story'),
+            content: const Text('Are you sure you want to delete this story?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).maybePop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).maybePop(true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!shouldDelete) return;
+    await notifier.deleteStory(story);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncState = ref.watch(storyArchiveProvider);
+    final asyncState = ref.watch(storyManagerProvider);
     final theme = Theme.of(context);
 
     final autoDeletePref = ref.watch(storyAutoDeletePrefProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stories Archive'),
+        title: const Text('Story Manager'),
       ),
       body: asyncState.when(
         data: (data) {
           return RefreshIndicator(
-            onRefresh: () => ref.read(storyArchiveProvider.notifier).refresh(),
+            onRefresh: () => ref.read(storyManagerProvider.notifier).refresh(),
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               separatorBuilder: (_, _) => const SizedBox(height: 12),
@@ -146,17 +97,18 @@ class StoryArchivePage extends ConsumerWidget {
                     : age.inMinutes >= 1
                     ? '${age.inMinutes}m'
                     : 'now';
-                final thumbUrl = _storyThumbUrl(story);
+                final thumbUrl = switch (story.media) {
+                  MediaViewVideo(:final thumbnail) => thumbnail.toString(),
+                  MediaViewImage(:final image) => image.thumb.toString(),
+                  _ => story.author.avatar.toString(),
+                };
                 return Material(
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () => _openStoryViewer(context, ref, storyIndex),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 10,
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(
                         children: [
                           ClipRRect(
@@ -178,10 +130,29 @@ class StoryArchivePage extends ConsumerWidget {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Text(
-                              '$ageStr ago',
-                              style: theme.textTheme.titleMedium,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Story ${data.stories.length - storyIndex}',
+                                  style: theme.textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Posted $ageStr ago',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ],
                             ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                            ),
+                            tooltip: 'Delete',
+                            onPressed: () =>
+                                _deleteStory(context, ref, storyIndex),
                           ),
                         ],
                       ),
@@ -201,7 +172,7 @@ class StoryArchivePage extends ConsumerWidget {
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () =>
-                    ref.read(storyArchiveProvider.notifier).refresh(),
+                    ref.read(storyManagerProvider.notifier).refresh(),
                 child: const Text('Retry'),
               ),
             ],
@@ -255,7 +226,7 @@ class _AutoDeleteHeader extends StatelessWidget {
                         storyAutoDeleteExecutorProvider.future,
                       );
                       await f;
-                      await ref.read(storyArchiveProvider.notifier).refresh();
+                      await ref.read(storyManagerProvider.notifier).refresh();
                     }
                   },
                 ),

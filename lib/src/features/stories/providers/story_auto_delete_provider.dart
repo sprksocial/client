@@ -5,7 +5,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository
 import 'package:spark/src/core/storage/preferences/storage_constants.dart';
 import 'package:spark/src/core/storage/preferences/storage_manager.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/stories/providers/story_archive_provider.dart';
+import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
 
 part 'story_auto_delete_provider.g.dart';
 
@@ -81,7 +81,7 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
 
     // Refresh manager state if it's already loaded
     // Refresh story manager provider so UI reflects deletions
-    final manager = ref.read(storyArchiveProvider.notifier);
+    final manager = ref.read(storyManagerProvider.notifier);
     await manager.refresh();
   } catch (e, s) {
     GetIt.I<LogService>()
