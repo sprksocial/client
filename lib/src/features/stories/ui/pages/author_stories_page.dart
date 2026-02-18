@@ -38,8 +38,10 @@ class AuthorStoriesPage extends ConsumerStatefulWidget {
 
 class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
     with TickerProviderStateMixin {
+  static const _defaultStoryDuration = Duration(seconds: 5);
   late final PageController _pageController;
   late final List<AnimationController> _progressControllers;
+  late final List<bool> _storyLoadingStates;
   int _currentStoryIndex = 0;
   double _dragOffset = 0;
   double _dragScale = 1;
@@ -71,20 +73,39 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
     _progressControllers = List.generate(
       widget.stories.length,
       (_) => AnimationController(
-        duration: const Duration(seconds: 5),
+        duration: _defaultStoryDuration,
         vsync: this,
       ),
     );
+    _storyLoadingStates = List<bool>.filled(widget.stories.length, true);
+  }
+
+  void _onStoryDurationChanged(int index, Duration duration) {
+    if (index < 0 || index >= _progressControllers.length) return;
+    final normalized = duration > Duration.zero
+        ? duration
+        : _defaultStoryDuration;
+    _progressControllers[index].duration = normalized;
   }
 
   void _startCurrentStory() {
     if (_currentStoryIndex >= widget.stories.length) return;
 
     if (!_isCurrentStoryLoading) {
-      _progressControllers[_currentStoryIndex].forward().whenComplete(
-        _nextStory,
-      );
+      _startProgressForCurrentStory();
     }
+  }
+
+  void _startProgressForCurrentStory() {
+    final storyIndex = _currentStoryIndex;
+    final controller = _progressControllers[storyIndex];
+    controller.forward().whenComplete(() {
+      if (!mounted) return;
+      if (_currentStoryIndex != storyIndex) return;
+      if (controller.status == AnimationStatus.completed) {
+        _nextStory();
+      }
+    });
   }
 
   void _pause() {
@@ -95,11 +116,15 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
     final controller = _progressControllers[_currentStoryIndex];
     if (controller.status != AnimationStatus.completed &&
         !_isCurrentStoryLoading) {
-      controller.forward();
+      _startProgressForCurrentStory();
     }
   }
 
-  void _onStoryLoadingStateChanged(bool isLoading) {
+  void _onStoryLoadingStateChanged(int index, bool isLoading) {
+    if (index < 0 || index >= _storyLoadingStates.length) return;
+    _storyLoadingStates[index] = isLoading;
+    if (index != _currentStoryIndex) return;
+
     if (_isCurrentStoryLoading != isLoading) {
       setState(() {
         _isCurrentStoryLoading = isLoading;
@@ -109,10 +134,9 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
         _pause();
       } else {
         final controller = _progressControllers[_currentStoryIndex];
-        if (controller.status == AnimationStatus.dismissed) {
-          controller.forward().whenComplete(_nextStory);
-        } else if (controller.status == AnimationStatus.forward) {
-          controller.forward();
+        if (controller.status != AnimationStatus.completed &&
+            !controller.isAnimating) {
+          _startProgressForCurrentStory();
         }
       }
     }
@@ -251,20 +275,26 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                     itemCount: widget.stories.length,
                     onPageChanged: (index) {
                       if (!_isDragging) {
-                        _progressControllers[_currentStoryIndex].reset();
+                        final previousIndex = _currentStoryIndex;
+                        _progressControllers[previousIndex].stop();
+                        _progressControllers[index].reset();
                         setState(() {
                           _currentStoryIndex = index;
-                          _isCurrentStoryLoading = true;
+                          _isCurrentStoryLoading = _storyLoadingStates[index];
                         });
+                        if (!_isCurrentStoryLoading) {
+                          _startProgressForCurrentStory();
+                        }
                       }
                     },
                     itemBuilder: (context, index) {
                       final story = widget.stories[index];
                       return StoryPage(
                         story: story,
-                        onLoadingStateChanged: index == _currentStoryIndex
-                            ? _onStoryLoadingStateChanged
-                            : null,
+                        onLoadingStateChanged: (isLoading) =>
+                            _onStoryLoadingStateChanged(index, isLoading),
+                        onStoryDurationChanged: (duration) =>
+                            _onStoryDurationChanged(index, duration),
                       );
                     },
                   ),

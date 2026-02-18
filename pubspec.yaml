@@ -79,6 +79,8 @@ dependency_overrides:
     git:
       url: https://github.com/knotbin/atproto.dart.git
       path: packages/atproto_oauth
+  # temporary env fix
+  path_provider_foundation: 2.5.1
 
 dev_dependencies:
   auto_route_generator: ^10.2.3

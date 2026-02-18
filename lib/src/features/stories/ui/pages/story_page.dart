@@ -11,10 +11,12 @@ class StoryPage extends ConsumerStatefulWidget {
     required this.story,
     super.key,
     this.onLoadingStateChanged,
+    this.onStoryDurationChanged,
   });
 
   final StoryView story;
   final ValueChanged<bool>? onLoadingStateChanged;
+  final ValueChanged<Duration>? onStoryDurationChanged;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _StoryPageState();
@@ -22,6 +24,7 @@ class StoryPage extends ConsumerStatefulWidget {
 
 class _StoryPageState extends ConsumerState<StoryPage>
     with TickerProviderStateMixin {
+  static const _defaultStoryDuration = Duration(seconds: 5);
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isImageLoaded = false;
@@ -30,6 +33,9 @@ class _StoryPageState extends ConsumerState<StoryPage>
   @override
   void initState() {
     super.initState();
+    if (!_isVideoStory(widget.story)) {
+      widget.onStoryDurationChanged?.call(_defaultStoryDuration);
+    }
     _initializeMedia();
   }
 
@@ -37,6 +43,32 @@ class _StoryPageState extends ConsumerState<StoryPage>
   void dispose() {
     _videoController?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant StoryPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // If this page becomes active after being prebuilt, ensure the parent gets
+    // the latest loading state immediately.
+    if (oldWidget.onLoadingStateChanged != widget.onLoadingStateChanged &&
+        widget.onLoadingStateChanged != null) {
+      widget.onLoadingStateChanged!(_isLoading);
+    }
+    if (oldWidget.onStoryDurationChanged != widget.onStoryDurationChanged &&
+        widget.onStoryDurationChanged != null) {
+      widget.onStoryDurationChanged!(_resolvedStoryDuration());
+    }
+  }
+
+  Duration _resolvedStoryDuration() {
+    if (_isVideoStory(widget.story)) {
+      final duration = _videoController?.value.duration;
+      if (duration != null && duration > Duration.zero) {
+        return duration;
+      }
+    }
+    return _defaultStoryDuration;
   }
 
   void _updateLoadingState() {
@@ -60,6 +92,7 @@ class _StoryPageState extends ConsumerState<StoryPage>
         try {
           await _videoController!.initialize();
           await _videoController!.setLooping(true);
+          widget.onStoryDurationChanged?.call(_resolvedStoryDuration());
           await _videoController!.play();
           if (mounted) {
             setState(() {
