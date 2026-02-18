@@ -991,17 +991,28 @@ class FeedRepositoryImpl implements FeedRepository {
 
     _logger.i('Image post created successfully: ${result.uri}');
 
+    var finalResult = result;
+
     // Crosspost to Bluesky if enabled
     if (crosspostToBsky) {
       try {
-        await _crosspostToBlueSky(text, uploadedImageMaps, result, altTexts);
+        final bskyResult = await _crosspostToBlueSky(
+          text,
+          uploadedImageMaps,
+          result,
+          altTexts,
+        );
+        finalResult = await _client.repo.editRecord(
+          uri: result.uri,
+          record: record.copyWith(crossposts: [bskyResult]),
+        );
       } catch (e) {
         _logger.w('Failed to crosspost to Bluesky: $e');
         // Don't fail the entire operation if Bluesky crossposting fails
       }
     }
 
-    return result;
+    return finalResult;
   }
 
   @override
@@ -1287,7 +1298,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   /// Crosspost images to Bluesky using adapter to handle Bluesky-specific model
-  Future<void> _crosspostToBlueSky(
+  Future<RepoStrongRef> _crosspostToBlueSky(
     String text,
     List<Image> sparkImages,
     RepoStrongRef sparkPostData,
@@ -1338,6 +1349,7 @@ class FeedRepositoryImpl implements FeedRepository {
     );
 
     _logger.i('Successfully crossposted to Bluesky: ${bskyResult.uri}');
+    return bskyResult;
   }
 
   /// Prepare text for Bluesky post, handling link addition and truncation

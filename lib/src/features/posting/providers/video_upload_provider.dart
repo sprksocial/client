@@ -65,21 +65,27 @@ Future<RepoStrongRef?> postVideo(
       record: postRecord.toJson(),
     );
 
+    var finalResult = result;
+
     if (crosspostToBsky) {
       try {
-        await _crosspostVideoToBlueSky(
+        final bskyResult = await _crosspostVideoToBlueSky(
           ref,
           description,
           blob,
           altText,
           result.uri.rkey,
         );
+        finalResult = await GetIt.I<SprkRepository>().repo.editRecord(
+          uri: result.uri,
+          record: postRecord.copyWith(crossposts: [bskyResult]),
+        );
       } catch (e, s) {
         logger.w('Crosspost to Bluesky failed: $e', error: e, stackTrace: s);
       }
     }
-    logger.i('Video posted successfully: ${result.uri}');
-    return result;
+    logger.i('Video posted successfully: ${finalResult.uri}');
+    return finalResult;
   } catch (error, stackTrace) {
     logger.e('Error posting video', error: error, stackTrace: stackTrace);
   }
@@ -163,7 +169,7 @@ Future<RepoStrongRef?> processAndPostVideo(
 
 /// Crosspost video to Bluesky using same blob but Bluesky models
 @riverpod
-Future<void> _crosspostVideoToBlueSky(
+Future<RepoStrongRef> _crosspostVideoToBlueSky(
   Ref ref,
   String text,
   Blob blob,
@@ -184,14 +190,11 @@ Future<void> _crosspostVideoToBlueSky(
     'createdAt': DateTime.now().toUtc().toIso8601String(),
   };
 
-  try {
-    final result = await GetIt.I<SprkRepository>().repo.createRecord(
-      collection: 'app.bsky.feed.post',
-      record: bskyPostRecord,
-      rkey: rkey,
-    );
-    logger.i('Crossposted video to Bluesky: ${result.uri}');
-  } catch (e, s) {
-    logger.w('Failed to crosspost video: $e', error: e, stackTrace: s);
-  }
+  final result = await GetIt.I<SprkRepository>().repo.createRecord(
+    collection: 'app.bsky.feed.post',
+    record: bskyPostRecord,
+    rkey: rkey,
+  );
+  logger.i('Crossposted video to Bluesky: ${result.uri}');
+  return result;
 }
