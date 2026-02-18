@@ -40,7 +40,7 @@ jobs:
 
       - name: Generated code setup
         run: |
-          flutter pub get --enforce-lockfile
+          flutter pub get
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Setup Firebase config
@@ -59,7 +59,7 @@ jobs:
           echo "MESSAGES_SERVICE_URL=https://chat.sprk.so" >> .env
           echo "SHOWCASES_LICENSE_FLUTTER=${{ secrets.SHOWCASES_LICENSE_FLUTTER }}" >> .env
           echo "SIGNUPS_DISABLED=false" >> .env
-          
+
           # Set versionCode (run number)
           START_VERSION_CODE=4000
           VERSION_CODE=$((START_VERSION_CODE + ${{ github.run_number }}))
