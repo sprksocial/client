@@ -807,17 +807,27 @@ extension BskyRecordAdapter on Record {
   Record toSparkRecord() {
     return when(
       post:
-          (caption, createdAt, reply, langs, tags, selfLabels, media, sound) =>
-              PostRecord(
-                caption: caption,
-                createdAt: createdAt,
-                reply: reply,
-                langs: langs,
-                tags: tags,
-                selfLabels: selfLabels,
-                media: media,
-                sound: sound,
-              ),
+          (
+            caption,
+            createdAt,
+            reply,
+            langs,
+            tags,
+            selfLabels,
+            crossposts,
+            media,
+            sound,
+          ) => PostRecord(
+            caption: caption,
+            createdAt: createdAt,
+            reply: reply,
+            langs: langs,
+            tags: tags,
+            selfLabels: selfLabels,
+            crossposts: crossposts,
+            media: media,
+            sound: sound,
+          ),
       reply: (caption, reply, createdAt, langs, labels, media) => ReplyRecord(
         caption: caption,
         reply: reply,

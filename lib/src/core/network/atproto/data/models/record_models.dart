@@ -20,6 +20,7 @@ abstract class Record with _$Record {
     List<String>? langs,
     List<String>? tags,
     List<SelfLabel>? selfLabels,
+    List<RepoStrongRef>? crossposts,
     Media? media,
     RepoStrongRef? sound,
   }) = PostRecord;
