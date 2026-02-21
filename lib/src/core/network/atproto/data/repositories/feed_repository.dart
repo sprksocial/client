@@ -193,6 +193,17 @@ abstract class FeedRepository {
     bool bluesky = false,
   });
 
+  /// Get crosspost-only thread items for an anchor.
+  ///
+  /// Uses `so.sprk.feed.getCrosspostThread` and returns a thread structure
+  /// derived from the flat list response.
+  Future<Thread> getCrosspostThread(
+    AtUri anchor, {
+    int depth = 1,
+    int parentHeight = 0,
+    String sort = 'newest',
+  });
+
   /// Get labels for a list of URIs
   ///
   /// [uris] List of post URIs to fetch labels for

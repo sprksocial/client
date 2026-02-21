@@ -1481,6 +1481,75 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
+  Future<Thread> getCrosspostThread(
+    AtUri anchor, {
+    int depth = 1,
+    int parentHeight = 0,
+    String sort = 'newest',
+  }) async {
+    _logger.d('Getting crosspost thread for anchor: $anchor');
+
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      const source = 'so.sprk.feed.getCrosspostThread';
+      final threadItems = <dynamic>[];
+      String? cursor;
+
+      bool isAnchorItem(dynamic item) {
+        if (item is! Map<String, dynamic>) return false;
+        return item['depth'] == 0 && item['uri'] == anchor.toString();
+      }
+
+      do {
+        final response = await atproto.get(
+          NSID.parse(source),
+          parameters: {
+            'anchor': anchor.toString(),
+            'depth': depth,
+            'parentHeight': parentHeight,
+            'sort': sort,
+            'limit': 100,
+            'cursor': cursor,
+          },
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
+        );
+
+        final pageItems =
+            response.data['thread'] as List<dynamic>? ?? const <dynamic>[];
+
+        var itemsToAppend = pageItems;
+        while (threadItems.isNotEmpty &&
+            itemsToAppend.isNotEmpty &&
+            isAnchorItem(itemsToAppend.first)) {
+          itemsToAppend = itemsToAppend.sublist(1);
+        }
+
+        threadItems.addAll(itemsToAppend);
+        cursor = response.data['cursor'] as String?;
+      } while (cursor != null && cursor.isNotEmpty);
+
+      return Thread.fromSparkFlatList(
+        threadItems: threadItems,
+        isCrosspostThread: true,
+      );
+    });
+  }
+
+  @override
   Future<({List<Label> labels, String? cursor})> getLabels(
     List<AtUri> uris, {
     List<String>? sources,
