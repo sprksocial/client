@@ -93,6 +93,10 @@ class AppRouter extends RootStackRouter {
       children: [
         AutoRoute(page: CommentsListRoute.page, path: '', initial: true),
         AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri'),
+        AutoRoute(
+          page: CrosspostCommentsRoute.page,
+          path: 'crossposts/:postUri',
+        ),
       ],
     ),
     CustomRoute(

@@ -79,7 +79,35 @@ class _CommentsPageState extends ConsumerState<CommentsPage>
             topLeft: Radius.circular(12),
             topRight: Radius.circular(12),
           ),
-          child: SafeArea(child: AutoRouter()),
+          child: SafeArea(
+            child: Column(
+              children: [
+                _CommentsTrayHandle(),
+                Expanded(child: AutoRouter()),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CommentsTrayHandle extends StatelessWidget {
+  const _CommentsTrayHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = Theme.of(context).colorScheme.outline;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Container(
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: borderColor,
+          borderRadius: BorderRadius.circular(2),
         ),
       ),
     );
@@ -192,13 +220,17 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
     final threadPost = asyncState.value?.thread.post;
     final displayPost =
         _post ?? (threadPost is ThreadPostView ? threadPost.post : null);
-    final commentCount = asyncState.value?.thread.replies?.length ?? 0;
+    final visibleCommentCount = asyncState.value?.thread.replies?.length ?? 0;
+    final totalCommentCount =
+        asyncState.value?.thread.post.replyCount ?? visibleCommentCount;
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
     if (displayPost == null) {
       return const Center(child: CircularProgressIndicator());
     }
+
+    final hasCrossposts = displayPost.record.crossposts?.isNotEmpty ?? false;
 
     return Column(
       children: [
@@ -207,45 +239,38 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: borderColor, width: 0.2)),
           ),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: borderColor,
-                  borderRadius: BorderRadius.circular(2),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '$totalCommentCount comments',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '$commentCount comments',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: _closeComments,
-                      icon: Icon(
-                        FluentIcons.dismiss_24_regular,
-                        color: textColor,
-                      ),
-                    ),
-                  ],
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: _closeComments,
+                  icon: Icon(
+                    FluentIcons.dismiss_24_regular,
+                    color: textColor,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+        if (hasCrossposts)
+          _CrosspostCommentsBanner(
+            onTap: () => context.router.push(
+              CrosspostCommentsRoute(postUri: _postUri),
+            ),
+          ),
         Expanded(
           child: asyncState.when(
             data: (data) {
@@ -294,6 +319,53 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
           focusNode: _focusNode,
         ),
       ],
+    );
+  }
+}
+
+class _CrosspostCommentsBanner extends StatelessWidget {
+  const _CrosspostCommentsBanner({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colors.surfaceContainerHighest.withValues(alpha: 0.45),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Icon(
+                FluentIcons.arrow_swap_24_regular,
+                size: 18,
+                color: colors.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Crosspost comments available',
+                  style: TextStyle(
+                    color: colors.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                'View',
+                style: TextStyle(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

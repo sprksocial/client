@@ -960,9 +960,64 @@ sealed class Thread with _$Thread {
     );
   }
 
-  factory Thread.fromSparkFlatList({required List<dynamic> threadItems}) {
+  factory Thread.fromSparkFlatList({
+    required List<dynamic> threadItems,
+    bool isCrosspostThread = false,
+  }) {
     if (threadItems.isEmpty) {
       throw Exception('Thread items list is empty');
+    }
+
+    void ensureRecordType(
+      Map<String, dynamic> postPayload,
+      String postUnionType,
+    ) {
+      final record = postPayload['record'];
+      if (record is! Map<String, dynamic>) return;
+
+      final currentType = record[r'$type'] as String?;
+      if (currentType != null && currentType.isNotEmpty) return;
+
+      final inferredType = switch (postUnionType) {
+        'so.sprk.feed.defs#postView' => 'so.sprk.feed.post',
+        'so.sprk.feed.defs#replyView' =>
+          (record.containsKey('text') ||
+                  record.containsKey('facets') ||
+                  record.containsKey('embed'))
+              ? 'app.bsky.feed.post'
+              : 'so.sprk.feed.reply',
+        _ => null,
+      };
+
+      if (inferredType != null) {
+        record[r'$type'] = inferredType;
+      }
+    }
+
+    String? inferThreadPostViewType(Map<String, dynamic> postPayload) {
+      final record = postPayload['record'];
+      if (record is Map<String, dynamic>) {
+        final recordType = record[r'$type'] as String?;
+        if (recordType == 'so.sprk.feed.reply' ||
+            recordType == 'app.bsky.feed.post') {
+          return 'so.sprk.feed.defs#replyView';
+        }
+        if (recordType == 'so.sprk.feed.post') {
+          return 'so.sprk.feed.defs#postView';
+        }
+      }
+
+      final uri = postPayload['uri'] as String?;
+      if (uri != null) {
+        if (uri.contains('/so.sprk.feed.reply/')) {
+          return 'so.sprk.feed.defs#replyView';
+        }
+        if (uri.contains('/so.sprk.feed.post/')) {
+          return 'so.sprk.feed.defs#postView';
+        }
+      }
+
+      return null;
     }
 
     // Parse all thread items with their indices
@@ -974,46 +1029,168 @@ sealed class Thread with _$Thread {
         final uri = itemMap['uri'] as String;
         final value = itemMap['value'] as Map<String, dynamic>;
 
-        // Ensure $type is set correctly for the thread
-        if (!value.containsKey(r'$type')) {
-          value[r'$type'] = 'so.sprk.feed.defs#threadViewPost';
+        final itemType = itemMap[r'$type'] as String?;
+        final isCrosspostItem =
+            itemType == 'so.sprk.feed.getCrosspostThread#threadItem';
+        final allowCrosspostNormalization =
+            isCrosspostThread || isCrosspostItem;
+
+        var valueType = value[r'$type'] as String?;
+
+        // Defensive fallback: some thread payloads can omit value.$type.
+        // Preserve prior behavior for standard getPostThread responses.
+        if (valueType == null) {
+          if (value['post'] != null) {
+            value[r'$type'] = 'so.sprk.feed.defs#threadViewPost';
+          } else if (value['notFound'] == true) {
+            value[r'$type'] = 'so.sprk.feed.defs#notFoundPost';
+          } else if (value['blocked'] == true) {
+            value[r'$type'] = 'so.sprk.feed.defs#blockedPost';
+          }
+          valueType = value[r'$type'] as String?;
         }
 
-        // If it's a threadViewPost, ensure post field is properly structured
-        if (value[r'$type'] == 'so.sprk.feed.defs#threadViewPost' &&
-            value['post'] != null) {
-          final postMap = value['post'] as Map<String, dynamic>;
+        // Crosspost endpoint can return bare post/reply values.
+        if (allowCrosspostNormalization &&
+            (valueType == null ||
+                valueType == 'so.sprk.feed.defs#postView' ||
+                valueType == 'so.sprk.feed.defs#replyView')) {
+          final normalizedPostType = valueType == 'so.sprk.feed.defs#replyView'
+              ? 'so.sprk.feed.defs#replyView'
+              : 'so.sprk.feed.defs#postView';
+          final raw = Map<String, dynamic>.from(value)..remove(r'$type');
+          value
+            ..clear()
+            ..[r'$type'] = 'so.sprk.feed.defs#threadViewPost'
+            ..['post'] = <String, dynamic>{
+              r'$type': normalizedPostType,
+              normalizedPostType == 'so.sprk.feed.defs#replyView'
+                      ? 'reply'
+                      : 'post':
+                  raw,
+            };
+        }
 
-          // Determine the post/reply type based on the record type
-          var postViewType = 'so.sprk.feed.defs#postView';
-          if (postMap['record'] != null) {
-            final recordMap = postMap['record'] as Map<String, dynamic>;
-            final recordType = recordMap[r'$type'] as String?;
+        final normalizedValueType = value[r'$type'] as String?;
+        final isAllowedValueType =
+            normalizedValueType == 'so.sprk.feed.defs#threadViewPost' ||
+            normalizedValueType == 'so.sprk.feed.defs#notFoundPost' ||
+            normalizedValueType == 'so.sprk.feed.defs#blockedPost';
+        if (!isAllowedValueType) {
+          throw Exception(
+            'Invalid thread item value type: $normalizedValueType',
+          );
+        }
 
-            if (recordType == 'so.sprk.feed.reply') {
-              postViewType = 'so.sprk.feed.defs#replyView';
-            } else if (recordType == 'so.sprk.feed.post') {
-              postViewType = 'so.sprk.feed.defs#postView';
-            }
+        if (normalizedValueType == 'so.sprk.feed.defs#threadViewPost') {
+          if (value['post'] is! Map<String, dynamic>) {
+            throw Exception('Invalid threadViewPost: missing post map');
           }
 
-          // The API returns post/reply directly, but ThreadPost expects it wrapped
-          // ThreadPost is a union that wraps either PostView or ReplyView
-          // Set the correct $type and wrap accordingly
-          postMap[r'$type'] = postViewType;
+          var postContainer = value['post'] as Map<String, dynamic>;
+          var postContainerType = postContainer[r'$type'] as String?;
+          var postPayload =
+              (postContainer['post'] ?? postContainer['reply'])
+                  as Map<String, dynamic>?;
 
-          if (postViewType == 'so.sprk.feed.defs#replyView') {
-            // Wrap as ThreadReplyView
-            value['post'] = <String, dynamic>{
-              r'$type': 'so.sprk.feed.defs#replyView',
-              'reply': postMap,
-            };
-          } else {
-            // Wrap as ThreadPostView
+          // Canonicalize standard thread payloads where post/reply union type
+          // is present, but payload is not wrapped under post/reply key yet.
+          if (postContainerType == 'so.sprk.feed.defs#postView' &&
+              postContainer['post'] is! Map<String, dynamic>) {
+            final rawPost = Map<String, dynamic>.from(postContainer)
+              ..remove(r'$type');
             value['post'] = <String, dynamic>{
               r'$type': 'so.sprk.feed.defs#postView',
-              'post': postMap,
+              'post': rawPost,
             };
+            postPayload = rawPost;
+          } else if (postContainerType == 'so.sprk.feed.defs#replyView' &&
+              postContainer['reply'] is! Map<String, dynamic>) {
+            final rawReply = Map<String, dynamic>.from(postContainer)
+              ..remove(r'$type');
+            value['post'] = <String, dynamic>{
+              r'$type': 'so.sprk.feed.defs#replyView',
+              'reply': rawReply,
+            };
+            postPayload = rawReply;
+          }
+
+          postContainer = value['post'] as Map<String, dynamic>;
+          postContainerType = postContainer[r'$type'] as String?;
+          postPayload =
+              (postContainer['post'] ?? postContainer['reply'])
+                  as Map<String, dynamic>?;
+
+          final inferredFromPayload = postPayload != null
+              ? inferThreadPostViewType(postPayload)
+              : null;
+          if (inferredFromPayload != null &&
+              postContainerType != inferredFromPayload) {
+            value['post'] = <String, dynamic>{
+              r'$type': inferredFromPayload,
+              inferredFromPayload == 'so.sprk.feed.defs#replyView'
+                      ? 'reply'
+                      : 'post':
+                  postPayload,
+            };
+            postContainer = value['post'] as Map<String, dynamic>;
+            postContainerType = postContainer[r'$type'] as String?;
+            postPayload =
+                (postContainer['post'] ?? postContainer['reply'])
+                    as Map<String, dynamic>?;
+          }
+
+          final isValidWrappedPost =
+              postContainerType == 'so.sprk.feed.defs#postView' &&
+              postContainer['post'] is Map<String, dynamic>;
+          final isValidWrappedReply =
+              postContainerType == 'so.sprk.feed.defs#replyView' &&
+              postContainer['reply'] is Map<String, dynamic>;
+
+          // Crosspost-only normalization for legacy/raw post container shapes.
+          if (!(isValidWrappedPost || isValidWrappedReply) &&
+              allowCrosspostNormalization) {
+            final rawPost = Map<String, dynamic>.from(postContainer)
+              ..remove(r'$type');
+            final inferredPostType =
+                inferThreadPostViewType(rawPost) ??
+                'so.sprk.feed.defs#postView';
+
+            value['post'] = <String, dynamic>{
+              r'$type': inferredPostType,
+              inferredPostType == 'so.sprk.feed.defs#replyView'
+                      ? 'reply'
+                      : 'post':
+                  rawPost,
+            };
+            postContainer = value['post'] as Map<String, dynamic>;
+            postContainerType = postContainer[r'$type'] as String?;
+            postPayload =
+                (postContainer['post'] ?? postContainer['reply'])
+                    as Map<String, dynamic>?;
+          }
+
+          final isValidAfterNormalization =
+              (postContainerType == 'so.sprk.feed.defs#postView' &&
+                  value['post'] is Map<String, dynamic> &&
+                  (value['post'] as Map<String, dynamic>)['post']
+                      is Map<String, dynamic>) ||
+              (postContainerType == 'so.sprk.feed.defs#replyView' &&
+                  value['post'] is Map<String, dynamic> &&
+                  (value['post'] as Map<String, dynamic>)['reply']
+                      is Map<String, dynamic>);
+
+          if (!isValidAfterNormalization) {
+            throw Exception(
+              'Invalid threadViewPost.post union shape: '
+              'type=$postContainerType',
+            );
+          }
+
+          if (allowCrosspostNormalization &&
+              postPayload != null &&
+              postContainerType != null) {
+            ensureRecordType(postPayload, postContainerType);
           }
         }
 
@@ -1037,11 +1214,14 @@ sealed class Thread with _$Thread {
         } catch (e) {
           // Try to identify which field is failing
           final postMap = value['post'] as Map<String, dynamic>?;
-          final recordMap = postMap?['record'] as Map<String, dynamic>?;
+          final postPayload =
+              (postMap?['post'] ?? postMap?['reply']) as Map<String, dynamic>?;
+          final recordMap = postPayload?['record'] as Map<String, dynamic>?;
           throw Exception(
             'Failed to parse Thread.fromJson: $e\n'
             'Value keys: ${value.keys.join(", ")}\n'
             'Post keys: ${postMap?.keys.join(", ")}\n'
+            'Post payload keys: ${postPayload?.keys.join(", ")}\n'
             'Record keys: ${recordMap?.keys.join(", ")}',
           );
         }
@@ -1074,6 +1254,15 @@ sealed class Thread with _$Thread {
         final item = items[i];
 
         if (item.depth <= currentDepth) {
+          final isRepeatedAnchorBoundary =
+              currentDepth == 0 &&
+              item.depth == 0 &&
+              item.uri == currentItem.uri;
+          if (isRepeatedAnchorBoundary) {
+            i++;
+            continue;
+          }
+
           // We've moved to a sibling or back up the tree
           break;
         }

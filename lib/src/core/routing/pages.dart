@@ -4,6 +4,7 @@ export 'package:spark/src/features/auth/ui/pages/login_page.dart';
 export 'package:spark/src/features/auth/ui/pages/onboarding_page.dart';
 export 'package:spark/src/features/auth/ui/pages/register_page.dart';
 export 'package:spark/src/features/comments/ui/pages/comments_page.dart';
+export 'package:spark/src/features/comments/ui/pages/crosspost_comments_page.dart';
 export 'package:spark/src/features/comments/ui/pages/replies_page.dart';
 export 'package:spark/src/features/feed/ui/pages/feed_page.dart';
 export 'package:spark/src/features/feed/ui/pages/feeds_page.dart';
