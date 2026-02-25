@@ -109,28 +109,26 @@ packages:
     dependency: "direct main"
     description:
       name: atproto
-      sha256: "160da2b0bc9207336aee4be8bf67a801f4eb2d7e7574550b2ab8e6bbac8728d4"
+      sha256: "115944b8e4859bdaa0fe0d5162725ddf80269f14e79a33ab7ee05db972932ef9"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.0"
+    version: "1.4.1"
   atproto_core:
     dependency: "direct main"
     description:
-      path: "packages/atproto_core"
-      ref: HEAD
-      resolved-ref: "97db730543f6551e80f7e4043804d0fd36147e99"
-      url: "https://github.com/knotbin/atproto.dart.git"
-    source: git
-    version: "1.1.0"
+      name: atproto_core
+      sha256: "76b8c6237cf0c446c2f056cd76723eb5d7993ecaf7f7cc417b1b6bf26d8f24ce"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   atproto_oauth:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
-      path: "packages/atproto_oauth"
-      ref: HEAD
-      resolved-ref: "97db730543f6551e80f7e4043804d0fd36147e99"
-      url: "https://github.com/knotbin/atproto.dart.git"
-    source: git
-    version: "0.1.2"
+      name: atproto_oauth
+      sha256: "42a3a98dae11eb8c2a8a83051ebda9d0a711aec998c280c4f94a1a7127ba0aed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   audio_waveforms:
     dependency: "direct main"
     description:
@@ -231,10 +229,10 @@ packages:
     dependency: "direct main"
     description:
       name: bluesky
-      sha256: "37b970b31b4b4b7ba0a6416f11133005854ae409f452e0d90266f465e35f33ae"
+      sha256: "21539161860842fde4f03094d2e3f117624808b606c6a6f5905bf1238683dc4f"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.0"
+    version: "1.4.1"
   boolean_selector:
     dependency: transitive
     description:
