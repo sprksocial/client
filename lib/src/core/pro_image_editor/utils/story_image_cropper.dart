@@ -4,14 +4,12 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Utility to crop images to story aspect ratio (9:16 / 1080x1920).
+/// Utility to crop images to story aspect ratio (9:16).
 class StoryImageCropper {
   StoryImageCropper._();
 
-  /// Target story dimensions.
-  static const double targetWidth = 1080;
-  static const double targetHeight = 1920;
-  static const double targetAspectRatio = targetWidth / targetHeight; // 0.5625
+  /// Target story aspect ratio (9:16 = 0.5625).
+  static const double targetAspectRatio = 9 / 16;
 
   /// Crops the given image file to 9:16 aspect ratio (center crop).
   ///
@@ -51,17 +49,17 @@ class StoryImageCropper {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
-    // Draw the cropped portion scaled to target size
+    // Draw only the cropped portion at native pixel size.
     final srcRect = Rect.fromLTWH(cropX, cropY, cropWidth, cropHeight);
-    const dstRect = Rect.fromLTWH(0, 0, targetWidth, targetHeight);
+    final dstRect = Rect.fromLTWH(0, 0, cropWidth, cropHeight);
 
     canvas.drawImageRect(image, srcRect, dstRect, Paint());
 
     // Convert to image
     final picture = recorder.endRecording();
     final croppedImage = await picture.toImage(
-      targetWidth.toInt(),
-      targetHeight.toInt(),
+      cropWidth.round(),
+      cropHeight.round(),
     );
 
     // Encode to PNG

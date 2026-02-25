@@ -27,8 +27,8 @@ const _storyEditorBorderRadius = BorderRadius.vertical(
 class StoryImageEditorConfigs {
   const StoryImageEditorConfigs._();
 
-  /// Fixed story canvas size (1080x1920 = 9:16 aspect ratio).
-  static const Size storySize = Size(1080, 1920);
+  /// Fixed story canvas size (1440x2560 = 9:16 aspect ratio).
+  static const Size storySize = Size(1440, 2560);
 
   /// Builds the ProImageEditor configuration for story editing.
   ///
