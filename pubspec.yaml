@@ -15,13 +15,13 @@ dependencies:
   app_badge_plus: ^1.1.5
   assets:
     path: assets
-  atproto: ^1.3.0
-  atproto_core: ^1.1.0
+  atproto: ^1.4.1
+  atproto_core: ^1.2.0
   audio_waveforms: ^2.0.2
   audioplayers: ^6.5.1
   auto_route: ^10.1.0+1
   better_player_plus: ^1.1.5
-  bluesky: ^1.3.0
+  bluesky: ^1.4.1
   cached_network_image: ^3.3.1
   camera: ^0.11.3
   collection: ^1.19.1
@@ -69,16 +69,7 @@ dependencies:
   url_launcher: ^6.2.5
   video_player: ^2.10.0
 
-# Overrides only needed until atproto.dart PR #2224 is merged
 dependency_overrides:
-  atproto_core:
-    git:
-      url: https://github.com/knotbin/atproto.dart.git
-      path: packages/atproto_core
-  atproto_oauth:
-    git:
-      url: https://github.com/knotbin/atproto.dart.git
-      path: packages/atproto_oauth
   # temporary env fix
   path_provider_foundation: 2.5.1
 
