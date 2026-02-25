@@ -12,7 +12,7 @@ import 'package:spark/src/core/pro_image_editor/utils/story_image_cropper.dart';
 
 /// A story-specific image editor page.
 ///
-/// This editor uses a fixed 9:16 aspect ratio canvas (1080x1920) optimized
+/// This editor uses a fixed 9:16 aspect ratio canvas optimized
 /// for Instagram Stories-style content.
 ///
 /// Features:
@@ -240,38 +240,39 @@ class _StoryBlankCanvasEditorPageState
   final bool _useMaterialDesign =
       platformDesignMode == ImageEditorDesignMode.material;
 
+  static const _storyBackgroundWidgetLayerId = 'story-background-image';
+
   late ProImageEditorConfigs _configs;
   bool _isInitialized = false;
-  Size? _canvasSize;
   Size? _imageSize;
-  bool _hasAddedBackgroundLayer = false;
+  ImportStateHistory? _initialStateHistory;
 
   @override
   void initState() {
     super.initState();
-    _loadBackgroundImageSize();
     _initializeEditor();
   }
 
-  Future<void> _loadBackgroundImageSize() async {
-    if (widget.backgroundImage == null) return;
+  Future<Size?> _readImageSize(File imageFile) async {
     try {
-      final bytes = await widget.backgroundImage!.readAsBytes();
+      final bytes = await imageFile.readAsBytes();
       final completer = Completer<ui.Image>();
       ui.decodeImageFromList(bytes, completer.complete);
       final image = await completer.future;
       final size = Size(image.width.toDouble(), image.height.toDouble());
       image.dispose();
-      if (mounted) {
-        setState(() {
-          _imageSize = size;
-        });
-        _addBackgroundImageLayer();
-      }
-    } catch (_) {}
+      return size;
+    } catch (_) {
+      return null;
+    }
   }
 
-  void _initializeEditor() {
+  Future<void> _initializeEditor() async {
+    Size? imageSize;
+    if (widget.backgroundImage != null) {
+      imageSize = await _readImageSize(widget.backgroundImage!);
+    }
+
     _configs = StoryImageEditorConfigs.build(
       useMaterialDesign: _useMaterialDesign,
       imagePreviewBuilder: () => widget.backgroundImage != null
@@ -279,8 +280,12 @@ class _StoryBlankCanvasEditorPageState
           : const SizedBox.shrink(),
     );
 
+    if (!mounted) return;
+
     setState(() {
+      _imageSize = imageSize;
       _isInitialized = true;
+      _initialStateHistory = null;
     });
   }
 
@@ -308,32 +313,81 @@ class _StoryBlankCanvasEditorPageState
     }
   }
 
-  void _addBackgroundImageLayer() {
-    if (widget.backgroundImage == null) return;
-    if (_hasAddedBackgroundLayer) return;
-    if (_imageSize == null) return;
+  double _computeInitialBackgroundScale(Size previewSize) {
+    final imageSize = _imageSize;
+    if (imageSize == null) return 1;
 
-    final editorState = _editorKey.currentState;
-    if (editorState == null) return;
-
-    final size = _canvasSize ?? StoryImageEditorConfigs.storySize;
+    final size =
+        previewSize.width.isFinite &&
+            previewSize.height.isFinite &&
+            previewSize.width > 0 &&
+            previewSize.height > 0
+        ? previewSize
+        : StoryImageEditorConfigs.storySize;
     final initWidth = _configs.stickerEditor.initWidth;
-    final imageSize = _imageSize!;
-    final widthForCover = size.height * (imageSize.width / imageSize.height);
+    final sourceAspectRatio = imageSize.height > 0
+        ? imageSize.width / imageSize.height
+        : 1.0;
+    final widthForCover = size.height * sourceAspectRatio;
     final targetWidth = widthForCover > size.width ? widthForCover : size.width;
-    final scale = initWidth > 0 ? targetWidth / initWidth : 1.0;
-    // Use original image aspect (no forced 9:16 crop).
-    // Scale fills the canvas (cover), while preserving aspect ratio.
-    editorState.addLayer(
-      WidgetLayer(
-        widget: Image.file(
-          widget.backgroundImage!,
-          fit: BoxFit.contain,
-        ),
-        scale: scale,
+    final rawScale = initWidth > 0 ? targetWidth / initWidth : 1.0;
+    return rawScale.isFinite && rawScale > 0 ? rawScale : 1.0;
+  }
+
+  ImportStateHistory? _createInitialStateHistory(Size previewSize) {
+    final backgroundImage = widget.backgroundImage;
+    final imageSize = _imageSize;
+    if (backgroundImage == null || imageSize == null) return null;
+
+    final layer = WidgetLayer(
+      widget: const SizedBox.shrink(),
+      scale: _computeInitialBackgroundScale(previewSize),
+      exportConfigs: WidgetLayerExportConfigs(
+        id: _storyBackgroundWidgetLayerId,
+        meta: {'path': backgroundImage.path},
       ),
     );
-    _hasAddedBackgroundLayer = true;
+
+    const storySize = StoryImageEditorConfigs.storySize;
+    final historyMap = {
+      'version': '4.0.0',
+      'position': 0,
+      'history': [
+        {
+          'layers': [layer.toMap()],
+        },
+      ],
+      'imgSize': {
+        'width': storySize.width,
+        'height': storySize.height,
+      },
+      'lastRenderedImgSize': {
+        'width': storySize.width,
+        'height': storySize.height,
+      },
+    };
+
+    return ImportStateHistory.fromMap(
+      historyMap,
+      configs: ImportEditorConfigs(
+        recalculateSizeAndPosition: false,
+        enableInitialEmptyState: false,
+        widgetLoader: (id, {meta}) {
+          if (id != _storyBackgroundWidgetLayerId) {
+            return const SizedBox.shrink();
+          }
+
+          final path = meta?['path'] as String?;
+          if (path == null || path.isEmpty) return const SizedBox.shrink();
+
+          return Image.file(
+            File(path),
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+          );
+        },
+      ),
+    );
   }
 
   @override
@@ -355,23 +409,24 @@ class _StoryBlankCanvasEditorPageState
           final aspect =
               StoryImageEditorConfigs.storySize.height /
               StoryImageEditorConfigs.storySize.width;
-          final canvasSize = Size(viewWidth, viewWidth * aspect);
-          _canvasSize = canvasSize;
+          final previewSize = Size(viewWidth, viewWidth * aspect);
+
+          _initialStateHistory ??= _createInitialStateHistory(previewSize);
 
           return ProImageEditor.blank(
-            canvasSize,
+            StoryImageEditorConfigs.storySize,
             key: _editorKey,
             callbacks: ProImageEditorCallbacks(
               onImageEditingComplete: _onImageEditingComplete,
               onCloseEditor: _onCloseEditor,
-              mainEditorCallbacks: MainEditorCallbacks(
-                onAfterViewInit: _addBackgroundImageLayer,
-              ),
               stickerEditorCallbacks: StickerEditorCallbacks(
                 onSearchChanged: (_) {},
               ),
             ),
             configs: _configs.copyWith(
+              stateHistory: _configs.stateHistory.copyWith(
+                initStateHistory: _initialStateHistory,
+              ),
               mainEditor: _configs.mainEditor.copyWith(
                 style: MainEditorStyle(
                   background: widget.backgroundColor,

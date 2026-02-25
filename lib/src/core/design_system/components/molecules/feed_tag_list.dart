@@ -102,8 +102,10 @@ class _FeedTagListState extends State<FeedTagList> {
             });
           },
           onReorder: (oldIndex, newIndex) {
-            if (newIndex > oldIndex) newIndex -= 1;
-            widget.onReorder?.call(oldIndex, newIndex);
+            final adjustedNewIndex = newIndex > oldIndex
+                ? newIndex - 1
+                : newIndex;
+            widget.onReorder?.call(oldIndex, adjustedNewIndex);
           },
           proxyDecorator: (child, index, animation) {
             return AnimatedBuilder(

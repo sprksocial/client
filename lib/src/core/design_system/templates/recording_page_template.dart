@@ -46,15 +46,8 @@ class RecordingPageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
     const footerHeight = kBottomNavigationBarHeight + 12;
     const borderRadius = BorderRadius.all(Radius.circular(20));
-
-    // Calculate scale based on camera aspect ratio and screen aspect ratio
-    var scale = size.aspectRatio * aspectRatio;
-
-    // To prevent scaling down, invert the value if scale < 1
-    if (scale < 1) scale = 1 / scale;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -62,42 +55,56 @@ class RecordingPageTemplate extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius: borderRadius,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Camera preview fills rounded view area
-                    Positioned.fill(
-                      child: Transform.scale(
-                        scale: scale,
-                        child: Center(
-                          child: cameraPreview,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final viewportSize = Size(
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  );
+
+                  // Calculate scale against the real preview viewport instead
+                  // of the full screen to avoid over-zooming.
+                  var scale = viewportSize.aspectRatio * aspectRatio;
+                  if (scale < 1) scale = 1 / scale;
+
+                  return ClipRRect(
+                    borderRadius: borderRadius,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Camera preview fills rounded view area
+                        Positioned.fill(
+                          child: Transform.scale(
+                            scale: scale,
+                            child: Center(
+                              child: cameraPreview,
+                            ),
+                          ),
                         ),
-                      ),
+                        // Top controls aligned within rounded view
+                        _TopOverlay(
+                          onBack: onBack,
+                          timer: RecordingTimer(
+                            duration: elapsedDuration,
+                            maxDuration: maxDuration,
+                          ),
+                        ),
+                        // Bottom overlay sits inside rounded view
+                        _BottomOverlay(
+                          onFlipCamera: canFlipCamera ? onFlipCamera : null,
+                          recordingButton: RecordingButton(
+                            isRecording: isRecording,
+                            mode: captureMode,
+                            onTap: onTap,
+                            onRecordStart: onRecordStart,
+                            onRecordStop: onRecordStop,
+                          ),
+                          bottomPadding: 24,
+                        ),
+                      ],
                     ),
-                    // Top controls aligned within rounded view
-                    _TopOverlay(
-                      onBack: onBack,
-                      timer: RecordingTimer(
-                        duration: elapsedDuration,
-                        maxDuration: maxDuration,
-                      ),
-                    ),
-                    // Bottom overlay sits inside rounded view
-                    _BottomOverlay(
-                      onFlipCamera: canFlipCamera ? onFlipCamera : null,
-                      recordingButton: RecordingButton(
-                        isRecording: isRecording,
-                        mode: captureMode,
-                        onTap: onTap,
-                        onRecordStart: onRecordStart,
-                        onRecordStop: onRecordStop,
-                      ),
-                      bottomPadding: 24,
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
             const SizedBox(

@@ -83,7 +83,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
               },
               onReorder: (oldIndex, newIndex) async {
                 // Adjust newIndex if moving down the list
-                if (newIndex > oldIndex) newIndex -= 1;
+                final adjustedNewIndex = newIndex > oldIndex
+                    ? newIndex - 1
+                    : newIndex;
 
                 try {
                   // Get the actual indices in the full feeds list
@@ -91,8 +93,10 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                   final actualOldIndex = settingsState.feeds.indexOf(
                     filteredFeeds[oldIndex],
                   );
-                  final actualNewIndex = newIndex < filteredFeeds.length
-                      ? settingsState.feeds.indexOf(filteredFeeds[newIndex])
+                  final actualNewIndex = adjustedNewIndex < filteredFeeds.length
+                      ? settingsState.feeds.indexOf(
+                          filteredFeeds[adjustedNewIndex],
+                        )
                       : settingsState.feeds.length - 1;
 
                   await ref
