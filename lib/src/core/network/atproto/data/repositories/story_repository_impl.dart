@@ -185,11 +185,16 @@ class StoryRepositoryImpl implements StoryRepository {
     List<SelfLabel>? selfLabels,
     List<String>? tags,
   }) async {
+    final normalizedLabels = selfLabels == null || selfLabels.isEmpty
+        ? null
+        : selfLabels;
+    final normalizedTags = tags == null || tags.isEmpty ? null : tags;
+
     final record = StoryRecord(
       createdAt: DateTime.now().toUtc(),
       media: media,
-      tags: tags,
-      labels: selfLabels,
+      tags: normalizedTags,
+      labels: normalizedLabels,
     );
 
     return _client.repo.createRecord(

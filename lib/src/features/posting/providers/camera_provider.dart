@@ -93,6 +93,9 @@ class Camera extends _$Camera {
   Future<void> reinitializeCamera() async {
     _logger.i('Reinitializing camera');
 
+    await _disposeCamera();
+    if (!ref.mounted) return;
+
     state = const AsyncValue.loading();
 
     try {
@@ -126,44 +129,57 @@ class Camera extends _$Camera {
     final newIndex =
         (currentState.selectedCameraIndex + 1) % currentState.cameras.length;
     final newCamera = currentState.cameras[newIndex];
+    final oldController = currentState.controller;
 
-    // Show flipping state immediately so the UI can paint a loading overlay
+    // Detach preview first, then dispose old controller.
     state = AsyncValue.data(
-      currentState.copyWith(isFlipping: true, error: null),
+      currentState.copyWith(
+        controller: null,
+        isInitialized: false,
+        isFlipping: true,
+        error: null,
+      ),
     );
 
-    // Defer heavy work to after the next frame so the current frame paints
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
+    await _waitForPreviewDetach();
+    if (!ref.mounted) return;
+
+    try {
+      _logger.d('Switching to camera: ${newCamera.name}');
+
+      await oldController?.dispose();
       if (!ref.mounted) return;
-      try {
-        _logger.d('Switching to camera: ${newCamera.name}');
 
-        await currentState.controller?.dispose();
-        if (!ref.mounted) return;
+      final newController = await _createCameraController(newCamera);
+      if (!ref.mounted) {
+        await newController.dispose();
+        return;
+      }
 
-        final newController = await _createCameraController(newCamera);
-        if (!ref.mounted) return;
+      state = AsyncValue.data(
+        currentState.copyWith(
+          controller: newController,
+          selectedCameraIndex: newIndex,
+          isInitialized: true,
+          isFlipping: false,
+          error: null,
+        ),
+      );
 
+      _logger.i('Camera flipped successfully to ${newCamera.name}');
+    } catch (e, stackTrace) {
+      _logger.e('Error flipping camera', error: e, stackTrace: stackTrace);
+      if (ref.mounted) {
         state = AsyncValue.data(
           currentState.copyWith(
-            controller: newController,
-            selectedCameraIndex: newIndex,
-            isInitialized: true,
+            controller: null,
+            isInitialized: false,
             isFlipping: false,
-            error: null,
+            error: e.toString(),
           ),
         );
-
-        _logger.i('Camera flipped successfully to ${newCamera.name}');
-      } catch (e, stackTrace) {
-        _logger.e('Error flipping camera', error: e, stackTrace: stackTrace);
-        if (ref.mounted) {
-          state = AsyncValue.data(
-            currentState.copyWith(isFlipping: false, error: e.toString()),
-          );
-        }
       }
-    });
+    }
   }
 
   Future<XFile?> takePhoto() async {
@@ -269,26 +285,56 @@ class Camera extends _$Camera {
 
     try {
       final currentState = state.value;
-
-      if (currentState?.controller != null) {
-        if (currentState!.isRecording) {
-          _logger.d('Stopping recording before disposal');
-          await stopVideoRecording();
-        }
-        await currentState.controller!.dispose();
-        _logger.i('Camera controller disposed successfully');
-      }
+      final controller = currentState?.controller;
+      final wasRecording = currentState?.isRecording ?? false;
 
       state = AsyncValue.data(
         currentState?.copyWith(
               controller: null,
               isInitialized: false,
+              isRecording: false,
+              isFlipping: false,
             ) ??
             const CameraState(),
       );
+
+      if (controller != null) {
+        await _waitForPreviewDetach();
+
+        if (wasRecording) {
+          _logger.d('Stopping recording before disposal');
+          try {
+            if (controller.value.isRecordingVideo) {
+              await controller.stopVideoRecording();
+            }
+          } catch (e, stackTrace) {
+            _logger.e(
+              'Error stopping recording during disposal',
+              error: e,
+              stackTrace: stackTrace,
+            );
+          }
+        }
+
+        await controller.dispose();
+        _logger.i('Camera controller disposed successfully');
+      }
     } catch (e, stackTrace) {
       _logger.e('Error disposing camera', error: e, stackTrace: stackTrace);
     }
+  }
+
+  Future<void> _waitForPreviewDetach() async {
+    if (!ref.mounted) return;
+
+    final completer = Completer<void>();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    });
+    SchedulerBinding.instance.scheduleFrame();
+    await completer.future;
   }
 
   void clearError() {

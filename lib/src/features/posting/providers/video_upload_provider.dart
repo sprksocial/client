@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/posting/providers/post_story.dart';
 
 part 'video_upload_provider.g.dart';
 
@@ -139,14 +138,11 @@ Future<RepoStrongRef?> processAndPostVideo(
 
   if (storyMode) {
     try {
-      final res = await ref.read(
-        postStoryProvider(
-          Media.video(video: videoBlob),
-          selfLabels: [],
-          tags: [],
-        ).future,
+      final storyRepository = GetIt.I<StoryRepository>();
+      final res = await storyRepository.postStory(
+        Media.video(video: videoBlob),
       );
-      logger.i('Story posted: ${res?.uri}');
+      logger.i('Story posted: ${res.uri}');
       return res;
     } catch (e, s) {
       logger.e('Failed to post story', error: e, stackTrace: s);
