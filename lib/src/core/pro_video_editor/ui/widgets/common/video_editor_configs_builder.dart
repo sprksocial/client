@@ -7,6 +7,8 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/design_system/theme/color_scheme.dart';
 import 'package:spark/src/core/design_system/theme/text_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_bottom_section.dart';
+import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_header.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
@@ -22,12 +24,16 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_colo
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
 
+const _storyEditorBorderRadius = BorderRadius.vertical(
+  top: Radius.circular(20),
+  bottom: Radius.circular(20),
+);
+
 class VideoEditorConfigsBuilder {
   const VideoEditorConfigsBuilder._();
 
   /// Tools available in story mode (matches story image editor).
   static const _storyModeTools = [
-    SubEditorMode.audio,
     SubEditorMode.paint,
     SubEditorMode.text,
     SubEditorMode.filter,
@@ -105,6 +111,10 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
             builder: (context) {
+              if (storyMode) {
+                return StoryEditorBottomSection(editor: editor);
+              }
+
               return VideoEditorBottomSection(
                 editor: editor,
                 videoTimelineState: videoTimelineState,
@@ -117,6 +127,21 @@ class VideoEditorConfigsBuilder {
             },
             stream: rebuildStream,
           ),
+          wrapBody: (editor, rebuildStream, content) {
+            if (!storyMode) {
+              return content;
+            }
+
+            return ClipRRect(
+              borderRadius: _storyEditorBorderRadius,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.black,
+                child: content,
+              ),
+            );
+          },
           bodyItems: (editor, rebuildStream) => [
             ReactiveWidget(
               stream: rebuildStream,
@@ -126,10 +151,19 @@ class VideoEditorConfigsBuilder {
                 right: 0,
                 child: SafeArea(
                   bottom: false,
-                  child: VideoEditorHeader(
-                    onBack: editor.closeEditor,
-                    onNext: editor.doneEditing,
-                  ),
+                  child: storyMode
+                      ? StoryEditorHeader(
+                          onBack: editor.closeEditor,
+                          onDone: editor.doneEditing,
+                          canUndo: editor.canUndo,
+                          canRedo: editor.canRedo,
+                          onUndo: editor.undoAction,
+                          onRedo: editor.redoAction,
+                        )
+                      : VideoEditorHeader(
+                          onBack: editor.closeEditor,
+                          onNext: editor.doneEditing,
+                        ),
                 ),
               ),
             ),

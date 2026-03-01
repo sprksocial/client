@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
@@ -43,6 +44,8 @@ class VideoEditorGroundedPage extends StatefulWidget {
 }
 
 class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
+  static const _storyCanvasSize = Size(1440, 2560);
+
   final _editorKey = GlobalKey<ProImageEditorState>();
   final bool _useMaterialDesign =
       platformDesignMode == ImageEditorDesignMode.material;
@@ -179,7 +182,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   Future<void> _initializePlayer() async {
     // Start parallel initialization
     final metadataFuture = _setMetadata();
-    final trendingAudiosFuture = _fetchTrendingAudioTracks();
+    final trendingAudiosFuture = widget.storyMode
+        ? Future.value(<AudioTrack>[])
+        : _fetchTrendingAudioTracks();
     final controllerFuture = createVideoPlayerControllerFromEditorVideo(_video);
 
     // Wait for completion
@@ -200,6 +205,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       videoPlayerBuilder: () => VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
+        useCoverFit: widget.storyMode,
       ),
       videoEditorConfigs: _videoConfigs,
       audioTracks: _audioTracks,
@@ -216,10 +222,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
         .copyWith(
           duration: _videoMetadata.duration,
         );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _generateThumbnails();
-      _extractVideoWaveform();
-    });
+    if (!widget.storyMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _generateThumbnails();
+        _extractVideoWaveform();
+      });
+    }
 
     await Future.wait([
       _videoController.initialize(),
@@ -236,8 +244,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       videoPlayer: VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
+        useCoverFit: widget.storyMode,
       ),
-      initialResolution: _videoMetadata.resolution,
+      initialResolution: widget.storyMode
+          ? _storyCanvasSize
+          : _videoMetadata.resolution,
       videoDuration: _videoMetadata.duration,
       fileSize: _videoMetadata.fileSize,
       thumbnails: _thumbnails,
@@ -517,17 +528,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       colorMatrixList: parameters.colorFilters,
       startTime: parameters.startTime,
       endTime: parameters.endTime,
-      transform: parameters.isTransformed
-          ? ExportTransform(
-              width: parameters.cropWidth,
-              height: parameters.cropHeight,
-              rotateTurns: parameters.rotateTurns,
-              x: parameters.cropX,
-              y: parameters.cropY,
-              flipX: parameters.flipX,
-              flipY: parameters.flipY,
-            )
-          : null,
+      transform: _buildExportTransform(parameters),
+      bitrate: _videoMetadata.bitrate,
       customAudioPath: await _audioService.safeCustomAudioPath(
         customAudioTrack,
       ),
@@ -539,6 +541,75 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     _outputPath = await ProVideoEditor.instance.renderVideoToFile(
       '${directory.path}/spark_edited_$now.mp4',
       exportModel,
+    );
+  }
+
+  ExportTransform? _buildExportTransform(CompleteParameters parameters) {
+    if (!widget.storyMode) {
+      if (!parameters.isTransformed) {
+        return null;
+      }
+
+      return ExportTransform(
+        width: parameters.cropWidth,
+        height: parameters.cropHeight,
+        rotateTurns: parameters.rotateTurns,
+        x: parameters.cropX,
+        y: parameters.cropY,
+        flipX: parameters.flipX,
+        flipY: parameters.flipY,
+      );
+    }
+
+    final coverCrop = _computeStoryCoverCrop(_videoMetadata.resolution);
+    final targetWidth = _storyCanvasSize.width.round();
+    final targetHeight = _storyCanvasSize.height.round();
+
+    return ExportTransform(
+      width: coverCrop.width,
+      height: coverCrop.height,
+      x: coverCrop.x,
+      y: coverCrop.y,
+      rotateTurns: parameters.rotateTurns,
+      flipX: parameters.flipX,
+      flipY: parameters.flipY,
+      scaleX: targetWidth / coverCrop.width,
+      scaleY: targetHeight / coverCrop.height,
+    );
+  }
+
+  _StoryCoverCrop _computeStoryCoverCrop(Size sourceSize) {
+    final sourceWidth = math.max(1, sourceSize.width.round());
+    final sourceHeight = math.max(1, sourceSize.height.round());
+
+    final targetAspect = _storyCanvasSize.width / _storyCanvasSize.height;
+    final sourceAspect = sourceWidth / sourceHeight;
+
+    var cropWidth = sourceWidth;
+    var cropHeight = sourceHeight;
+    var cropX = 0;
+    var cropY = 0;
+
+    if ((sourceAspect - targetAspect).abs() > 0.0001) {
+      if (sourceAspect > targetAspect) {
+        cropWidth = (sourceHeight * targetAspect).round();
+        cropX = ((sourceWidth - cropWidth) / 2).round();
+      } else {
+        cropHeight = (sourceWidth / targetAspect).round();
+        cropY = ((sourceHeight - cropHeight) / 2).round();
+      }
+    }
+
+    cropWidth = cropWidth.clamp(1, sourceWidth);
+    cropHeight = cropHeight.clamp(1, sourceHeight);
+    cropX = cropX.clamp(0, sourceWidth - cropWidth);
+    cropY = cropY.clamp(0, sourceHeight - cropHeight);
+
+    return _StoryCoverCrop(
+      x: cropX,
+      y: cropY,
+      width: cropWidth,
+      height: cropHeight,
     );
   }
 
@@ -645,4 +716,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       },
     );
   }
+}
+
+class _StoryCoverCrop {
+  const _StoryCoverCrop({
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+  });
+
+  final int x;
+  final int y;
+  final int width;
+  final int height;
 }
