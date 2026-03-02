@@ -13,6 +13,8 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/posting/providers/camera_provider.dart';
 import 'package:spark/src/features/posting/providers/recording_provider.dart';
+import 'package:spark/src/features/posting/ui/models/media_selection.dart';
+import 'package:spark/src/features/posting/ui/pages/media_picker_page.dart';
 import 'package:spark/src/features/posting/utils/story_direct_post.dart';
 
 export 'package:spark/src/core/design_system/templates/recording_page_template.dart'
@@ -121,6 +123,80 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     }
 
     await _processPhoto(photoFile);
+  }
+
+  Future<void> _openMediaLibraryPicker() async {
+    if (_isProcessing) return;
+
+    final recordingState = ref.read(recordingProvider);
+    if (recordingState.isRecording) return;
+
+    final selection = await showMediaLibraryPickerSheet(
+      context,
+      showMultiPhotoButton: !widget.storyMode,
+    );
+
+    if (!mounted || selection == null) return;
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    await _processLibrarySelection(selection);
+  }
+
+  Future<void> _processLibrarySelection(MediaLibrarySelection selection) async {
+    switch (selection) {
+      case SinglePhotoSelection(:final photo):
+        await _processPhoto(photo);
+        return;
+      case SingleVideoSelection(:final video):
+        await _processVideo(video);
+        return;
+      case MultiPhotoSelection(:final photos):
+        await _processMultiPhotos(photos);
+        return;
+    }
+  }
+
+  Future<void> _processMultiPhotos(List<XFile> photos) async {
+    if (photos.isEmpty) {
+      if (!mounted) return;
+      setState(() {
+        _isProcessing = false;
+      });
+      return;
+    }
+
+    try {
+      await context.router.push(
+        ImageReviewRoute(
+          imageFiles: photos,
+          storyMode: widget.storyMode,
+        ),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _isProcessing = false;
+      });
+      await ref.read(cameraProvider.notifier).reinitializeCamera();
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error processing multiple photos',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _processPhoto(XFile photoFile) async {
@@ -435,6 +511,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               onTap: _isProcessing ? null : _handleTap,
               onRecordStart: _isProcessing ? null : _handleRecordStart,
               onRecordStop: _isProcessing ? null : _handleRecordStop,
+              onOpenLibrary: _isProcessing || recordingState.isRecording
+                  ? null
+                  : _openMediaLibraryPicker,
             ),
             if (cameraState.isFlipping)
               const Positioned.fill(
