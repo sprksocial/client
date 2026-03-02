@@ -54,6 +54,7 @@ dependencies:
   json_annotation: ^4.9.0
   path: ^1.9.1
   path_provider: ^2.1.2
+  photo_manager: ^3.7.1
   pool: ^1.5.0
   posthog_flutter: ^5.11.1
   pro_image_editor: ^12.0.0-beta.5

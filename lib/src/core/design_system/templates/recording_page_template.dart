@@ -19,6 +19,7 @@ class RecordingPageTemplate extends StatelessWidget {
     required this.onFlipCamera,
     required this.canFlipCamera,
     required this.captureMode,
+    this.onOpenLibrary,
     this.onTap,
     this.onRecordStart,
     this.onRecordStop,
@@ -34,6 +35,7 @@ class RecordingPageTemplate extends StatelessWidget {
   final VoidCallback? onFlipCamera;
   final bool canFlipCamera;
   final CaptureMode captureMode;
+  final VoidCallback? onOpenLibrary;
 
   /// Called on tap. In videoOnly: toggle recording. In hybrid: take photo.
   final VoidCallback? onTap;
@@ -92,6 +94,7 @@ class RecordingPageTemplate extends StatelessWidget {
                         // Bottom overlay sits inside rounded view
                         _BottomOverlay(
                           onFlipCamera: canFlipCamera ? onFlipCamera : null,
+                          onOpenLibrary: onOpenLibrary,
                           recordingButton: RecordingButton(
                             isRecording: isRecording,
                             mode: captureMode,
@@ -184,11 +187,13 @@ class _CloseButton extends StatelessWidget {
 class _BottomOverlay extends StatelessWidget {
   const _BottomOverlay({
     required this.onFlipCamera,
+    required this.onOpenLibrary,
     required this.recordingButton,
     required this.bottomPadding,
   });
 
   final VoidCallback? onFlipCamera;
+  final VoidCallback? onOpenLibrary;
   final Widget recordingButton;
   final double bottomPadding;
 
@@ -221,7 +226,10 @@ class _BottomOverlay extends StatelessWidget {
             else
               const SizedBox(width: 80),
             recordingButton,
-            const SizedBox(width: 80),
+            if (onOpenLibrary != null)
+              _LibraryButton(onPressed: onOpenLibrary!)
+            else
+              const SizedBox(width: 80),
           ],
         ),
       ),
@@ -260,6 +268,46 @@ class _FlipCameraButton extends StatelessWidget {
                   Icons.flip_camera_ios_rounded,
                   color: Colors.white,
                   size: 26,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LibraryButton extends StatelessWidget {
+  const _LibraryButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onPressed();
+      },
+      child: SizedBox(
+        width: 80,
+        height: 80,
+        child: Center(
+          child: ClipOval(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withAlpha(90),
+                ),
+                child: const Icon(
+                  Icons.photo_library_outlined,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
             ),
