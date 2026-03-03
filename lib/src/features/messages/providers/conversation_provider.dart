@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:spark/src/features/messages/providers/conversation_state.dart';
@@ -15,16 +14,14 @@ class Conversation extends _$Conversation {
   @override
   FutureOr<ConversationState> build(String convoId) async {
     final repo = GetIt.I<MessagesRepository>();
-    final sprk = GetIt.I<SprkRepository>();
 
     // Load conversation and initial messages
     final convo = await repo.getConversation(convoId);
     final meDid = GetIt.I<AuthRepository>().did;
-    final otherDid = convo.members.firstWhere(
-      (d) => d != meDid,
+    final other = convo.members.firstWhere(
+      (member) => member.did != meDid,
       orElse: () => convo.members.first,
     );
-    final other = await sprk.actor.getProfile(otherDid);
 
     final result = await repo.getMessages(convoId, limit: 50);
     _oldestCursor = result.cursor;

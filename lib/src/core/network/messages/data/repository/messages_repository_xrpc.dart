@@ -102,7 +102,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'readState': ?readState,
     };
 
-    final data = await _callQuery('so.sprk.chat.convo.listConvos', params);
+    final data = await _callQuery('so.sprk.chat.listConvos', params);
 
     final convos =
         (data['convos'] as List<dynamic>?)
@@ -116,7 +116,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
   @override
   Future<ConvoView> getConversation(String convoId) async {
     final data = await _callQuery(
-      'so.sprk.chat.convo.getConvo',
+      'so.sprk.chat.getConvo',
       {'convoId': convoId},
     );
 
@@ -128,7 +128,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     // Build URL with repeated members parameters
     // Need to manually construct query string for repeated params
     final baseUri = Uri.parse(
-      '$_baseUrl/xrpc/so.sprk.chat.convo.getConvoForMembers',
+      '$_baseUrl/xrpc/so.sprk.chat.getConvoForMembers',
     );
     final queryParts = members
         .map((m) => 'members=${Uri.encodeComponent(m)}')
@@ -136,7 +136,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     final url = Uri.parse('$baseUri?$queryParts');
 
     final token = await _serviceAuthHelper.getServiceToken(
-      'so.sprk.chat.convo.getConvoForMembers',
+      'so.sprk.chat.getConvoForMembers',
     );
 
     final response = await http.get(
@@ -169,7 +169,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'cursor': ?cursor,
     };
 
-    final data = await _callQuery('so.sprk.chat.convo.getMessages', params);
+    final data = await _callQuery('so.sprk.chat.getMessages', params);
 
     final messages =
         (data['messages'] as List<dynamic>?)
@@ -196,7 +196,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       },
     };
 
-    final data = await _callProcedure('so.sprk.chat.convo.sendMessage', body);
+    final data = await _callProcedure('so.sprk.chat.sendMessage', body);
 
     return MessageView.fromJson(data);
   }
@@ -213,7 +213,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'value': value,
     };
 
-    final data = await _callProcedure('so.sprk.chat.convo.addReaction', body);
+    final data = await _callProcedure('so.sprk.chat.addReaction', body);
 
     return MessageView.fromJson(data);
   }
@@ -231,7 +231,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     };
 
     final data = await _callProcedure(
-      'so.sprk.chat.convo.removeReaction',
+      'so.sprk.chat.removeReaction',
       body,
     );
 
@@ -245,7 +245,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'messageId': messageId,
     };
 
-    final data = await _callProcedure('so.sprk.chat.convo.updateRead', body);
+    final data = await _callProcedure('so.sprk.chat.updateRead', body);
 
     return ConvoView.fromJson(data['convo'] as Map<String, dynamic>);
   }

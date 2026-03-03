@@ -7,6 +7,6 @@ part 'conversations._state.freezed.dart';
 @freezed
 abstract class ConversationsState with _$ConversationsState {
   factory ConversationsState(
-    List<(ProfileViewDetailed, ConvoView)> conversations,
+    List<(ProfileViewBasic, ConvoView)> conversations,
   ) = _ConversationsState;
 }
