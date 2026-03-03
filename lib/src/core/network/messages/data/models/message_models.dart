@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 part 'message_models.freezed.dart';
 part 'message_models.g.dart';
@@ -99,7 +100,7 @@ abstract class ConvoView with _$ConvoView {
   const factory ConvoView({
     required String id,
     required String rev,
-    required List<String> members,
+    required List<ProfileViewBasic> members,
     MessageView? lastMessage,
     @Default('accepted') String status,
     @Default(false) bool muted,

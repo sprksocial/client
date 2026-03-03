@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:spark/src/features/messages/providers/conversations._state.dart';
@@ -15,20 +15,18 @@ class Conversations extends _$Conversations {
   @override
   FutureOr<ConversationsState> build() async {
     final repo = GetIt.I<MessagesRepository>();
-    final sprk = GetIt.I<SprkRepository>();
 
     final res = await repo.listConversations(limit: 50);
     cursor = res.cursor;
 
-    // Resolve profiles for the counterpart in each convo
+    // Pick counterpart profile from hydrated conversation members
     final meDid = GetIt.I<AuthRepository>().did;
-    final items = <(ProfileViewDetailed, ConvoView)>[];
+    final items = <(ProfileViewBasic, ConvoView)>[];
     for (final convo in res.conversations) {
-      final otherDid = convo.members.firstWhere(
-        (d) => d != meDid,
+      final profile = convo.members.firstWhere(
+        (member) => member.did != meDid,
         orElse: () => convo.members.first,
       );
-      final profile = await sprk.actor.getProfile(otherDid);
       items.add((profile, convo));
     }
 
