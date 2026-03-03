@@ -17,8 +17,6 @@ class MessagesPage extends ConsumerStatefulWidget {
 }
 
 class _MessagesPageState extends ConsumerState<MessagesPage> {
-  int _selectedTabIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final logger = GetIt.instance<LogService>().getLogger('MessagesPage');
@@ -53,8 +51,6 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
 
         return ChatListPageTemplate(
           items: items,
-          selectedTabIndex: _selectedTabIndex,
-          onTabChanged: (i) => setState(() => _selectedTabIndex = i),
           onItemTap: (index) async {
             final profile = data.conversations[index].$1;
             final convo = data.conversations[index].$2;
@@ -71,7 +67,6 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           onAddTap: () => context.router.push(const NewChatSearchRoute()),
           onSearchTap: () {},
           onRefresh: refreshAndInvalidate,
-          activityWidget: const ActivitiesTab(),
         );
       },
       loading: () {
@@ -119,43 +114,5 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
     } catch (_) {
       return '';
     }
-  }
-}
-
-class ActivitiesTab extends StatelessWidget {
-  const ActivitiesTab({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: Implement activities functionality when ActivityList is available
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            FluentIcons.star_24_regular,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Activities',
-            style: TextStyle(
-              fontSize: 18,
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Activity features coming soon',
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

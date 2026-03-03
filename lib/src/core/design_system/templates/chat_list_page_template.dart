@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/design_system/components/atoms/tab_item.dart';
-import 'package:spark/src/core/design_system/components/molecules/app_tab_bar.dart';
 import 'package:spark/src/core/design_system/components/molecules/glass_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
@@ -29,24 +27,18 @@ class ChatListPageTemplate extends StatelessWidget {
   const ChatListPageTemplate({
     required this.items,
     required this.onItemTap,
-    required this.selectedTabIndex,
-    required this.onTabChanged,
     super.key,
     this.title = 'Chat',
     this.onAddTap,
     this.onSearchTap,
-    this.activityWidget,
     this.onRefresh,
   });
 
   final String title;
   final List<ChatListItemData> items;
   final void Function(int index) onItemTap;
-  final int selectedTabIndex;
-  final void Function(int index) onTabChanged;
   final VoidCallback? onAddTap;
   final VoidCallback? onSearchTap;
-  final Widget? activityWidget;
   final Future<void> Function()? onRefresh;
 
   @override
@@ -72,70 +64,22 @@ class ChatListPageTemplate extends StatelessWidget {
       ),
       body: Column(
         children: [
-          _Tabs(selectedIndex: selectedTabIndex, onChanged: onTabChanged),
           Expanded(
-            child: selectedTabIndex == 0
-                ? RefreshIndicator(
-                    onRefresh: onRefresh ?? () async {},
-                    child: ListView.separated(
-                      padding: EdgeInsets.zero,
-                      itemCount: items.length,
-                      separatorBuilder: (_, _) => const SizedBox.shrink(),
-                      itemBuilder: (context, index) => _ChatTile(
-                        data: items[index],
-                        onTap: () => onItemTap(index),
-                      ),
-                    ),
-                  )
-                : (activityWidget ?? const SizedBox.shrink()),
+            child: RefreshIndicator(
+              onRefresh: onRefresh ?? () async {},
+              child: ListView.separated(
+                padding: EdgeInsets.zero,
+                itemCount: items.length,
+                separatorBuilder: (_, _) => const SizedBox.shrink(),
+                itemBuilder: (context, index) => _ChatTile(
+                  data: items[index],
+                  onTap: () => onItemTap(index),
+                ),
+              ),
+            ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Tabs extends StatelessWidget {
-  const _Tabs({required this.selectedIndex, required this.onChanged});
-  final int selectedIndex;
-  final void Function(int) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final inactive = theme.colorScheme.onSurface.withAlpha(179);
-
-    return AppTabBar(
-      tabs: [
-        AppTabItem(
-          activeChild: const Text(
-            'Messages',
-            style: AppTypography.textMediumBold,
-          ),
-          inactiveChild: Text(
-            'Messages',
-            style: AppTypography.textMediumBold.copyWith(color: inactive),
-          ),
-          isSelected: selectedIndex == 0,
-          onTap: () => onChanged(0),
-          indicatorColor: theme.colorScheme.onSurface,
-        ),
-        // AppTabItem(
-        //   activeChild: Text(
-        //     'Activity',
-        //     style: AppTypography.textMediumBold.copyWith(
-        //       color: theme.colorScheme.onSurface,
-        //     ),
-        //   ),
-        //   inactiveChild: Text(
-        //     'Activity',
-        //     style: AppTypography.textMediumBold.copyWith(color: inactive),
-        //   ),
-        //   isSelected: selectedIndex == 1,
-        //   onTap: () => onChanged(1),
-        //   indicatorColor: theme.colorScheme.onSurface,
-        // ),
-      ],
     );
   }
 }

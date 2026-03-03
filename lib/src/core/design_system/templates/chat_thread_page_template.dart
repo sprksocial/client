@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:spark/src/core/design_system/components/molecules/glass_input.dart';
+import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
@@ -75,7 +75,7 @@ class ChatThreadPageTemplate extends StatelessWidget {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: GlassInput.chat(
+              child: InputField.chat(
                 controller: textController,
                 hintText: 'Message...',
                 onSendMessage: onSend,
