@@ -483,8 +483,12 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           );
         }
 
+        final availableLensDirections = cameraState.cameras
+            .map((camera) => camera.lensDirection)
+            .toSet();
         final canFlipCamera =
-            cameraState.cameras.length > 1 &&
+            availableLensDirections.contains(CameraLensDirection.front) &&
+            availableLensDirections.contains(CameraLensDirection.back) &&
             !recordingState.isRecording &&
             !cameraState.isFlipping;
         final aspectRatio = cameraState.controller!.value.aspectRatio;
