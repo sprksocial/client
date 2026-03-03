@@ -240,16 +240,15 @@ class MessagesList extends StatelessWidget {
       reverse: true,
       itemCount: messages.length,
       itemBuilder: (context, index) {
-        final message = messages[messages.length - 1 - index];
+        final messageIndex = messages.length - 1 - index;
+        final message = messages[messageIndex];
         final isCurrentUser =
             currentUserDid != null && message.sender.did == currentUserDid;
-        final hasPreviousMessage = index < messages.length - 1;
+        final hasNewerMessage = messageIndex + 1 < messages.length;
         final showAvatar =
             !isCurrentUser &&
-            (index == 0 ||
-                (hasPreviousMessage &&
-                    messages[messages.length - 1 - index - 1].sender.did !=
-                        message.sender.did));
+            (!hasNewerMessage ||
+                messages[messageIndex + 1].sender.did != message.sender.did);
 
         return Column(
           children: [
@@ -637,8 +636,11 @@ class _PostEmbedPreview extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _embedSkeleton(context);
         }
+        if (snapshot.hasError) {
+          return _embedUnavailableIndicator(context);
+        }
         final post = snapshot.data;
-        if (post == null) return const SizedBox.shrink();
+        if (post == null) return _embedUnavailableIndicator(context);
 
         final (thumbUrl, isVideo) = _deriveThumb(post);
 
@@ -710,6 +712,19 @@ class _PostEmbedPreview extends StatelessWidget {
             color: theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(18),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _embedUnavailableIndicator(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: Text(
+        'Post unavailable',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurface.withAlpha(150),
         ),
       ),
     );

@@ -64,30 +64,39 @@ class MessageBubble extends StatelessWidget {
           ] else if (!isCurrentUser) ...[
             const SizedBox(width: 40),
           ],
-          Flexible(
-            child: Container(
-              padding: hasEmbeds
-                  ? const EdgeInsets.symmetric(horizontal: 2, vertical: 2)
-                  : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: isCurrentUser
-                    ? AppColors.primary
-                    : isDarkMode
-                    ? Colors.grey.shade800
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(20),
-              ),
+          if (!hasText && hasEmbeds)
+            Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (hasEmbeds) ...embeds!,
-                  if (hasEmbeds && hasText) const SizedBox(height: 2),
-                  if (hasText) Text(cleanedMessage),
-                ],
+                children: embeds!,
+              ),
+            )
+          else
+            Flexible(
+              child: Container(
+                padding: hasEmbeds
+                    ? const EdgeInsets.symmetric(horizontal: 2, vertical: 2)
+                    : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isCurrentUser
+                      ? AppColors.primary
+                      : isDarkMode
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasEmbeds) ...embeds!,
+                    if (hasEmbeds && hasText) const SizedBox(height: 2),
+                    if (hasText) Text(cleanedMessage),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

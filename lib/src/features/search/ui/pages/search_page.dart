@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/design_system/components/molecules/glass_input.dart';
+import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/templates/explore_page_template.dart';
 import 'package:spark/src/features/search/providers/post_search_provider.dart';
 import 'package:spark/src/features/search/providers/search_provider.dart';
@@ -52,7 +52,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return DefaultTabController(
       length: 2,
       child: ExplorePageTemplate(
-        searchWidget: GlassInput.search(
+        searchWidget: InputField.search(
           controller: _searchController,
           hintText: 'Search users, posts...',
           leadingWidgets: const [

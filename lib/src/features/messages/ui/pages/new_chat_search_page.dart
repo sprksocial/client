@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
@@ -56,40 +57,37 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search users',
-                    prefixIcon: Icon(
-                      FluentIcons.search_24_regular,
-                      color: theme.textTheme.bodyMedium?.color,
+                child: Row(
+                  children: [
+                    const AppLeadingButton(tooltip: 'Back'),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search users',
+                          prefixIcon: const Icon(
+                            FluentIcons.search_24_regular,
+                          ),
+                          suffixIcon: _searchController.text.isNotEmpty
+                              ? IconButton(
+                                  iconSize: 20,
+                                  splashRadius: 20,
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    ref
+                                        .read(searchProvider.notifier)
+                                        .updateQuery('');
+                                  },
+                                  icon: const Icon(
+                                    FluentIcons.dismiss_24_regular,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ),
                     ),
-                    filled: true,
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            iconSize: 20,
-                            splashRadius: 20,
-                            onPressed: () {
-                              _searchController.clear();
-                              ref.read(searchProvider.notifier).updateQuery('');
-                            },
-                            icon: const Icon(FluentIcons.dismiss_24_regular),
-                          )
-                        : null,
-                    fillColor: colorScheme.surfaceContainerLow.withAlpha(50),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colorScheme.outline),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colorScheme.outline),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
+                  ],
                 ),
               ),
               // ==== Stories or Search Results ====
