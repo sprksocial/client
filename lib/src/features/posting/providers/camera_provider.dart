@@ -124,10 +124,40 @@ class Camera extends _$Camera {
       return;
     }
 
-    _logger.d('Flipping camera');
+    final fallbackIndex = currentState.selectedCameraIndex.clamp(
+      0,
+      currentState.cameras.length - 1,
+    );
+    final currentCamera = currentState.controller?.description;
+    final currentLensDirection =
+        currentCamera?.lensDirection ??
+        currentState.cameras[fallbackIndex].lensDirection;
+    final targetLensDirection = switch (currentLensDirection) {
+      CameraLensDirection.front => CameraLensDirection.back,
+      CameraLensDirection.back => CameraLensDirection.front,
+      _ => null,
+    };
 
-    final newIndex =
-        (currentState.selectedCameraIndex + 1) % currentState.cameras.length;
+    if (targetLensDirection == null) {
+      _logger.w(
+        'Cannot flip camera - unsupported lens direction: '
+        '$currentLensDirection',
+      );
+      return;
+    }
+
+    final newIndex = currentState.cameras.indexWhere(
+      (camera) => camera.lensDirection == targetLensDirection,
+    );
+    if (newIndex < 0) {
+      _logger.w(
+        'Cannot flip camera - no camera found for lens direction: '
+        '$targetLensDirection',
+      );
+      return;
+    }
+
+    _logger.d('Flipping camera');
     final newCamera = currentState.cameras[newIndex];
     final oldController = currentState.controller;
 
