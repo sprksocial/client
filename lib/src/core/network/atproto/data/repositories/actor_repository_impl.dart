@@ -117,6 +117,40 @@ class ActorRepositoryImpl implements ActorRepository {
   }
 
   @override
+  Future<SearchActorsTypeaheadResponse> searchActorsTypeahead(
+    String query, {
+    int limit = 10,
+  }) async {
+    _logger.d('Searching actor typeahead with query: $query, limit: $limit');
+    return _client.executeWithRetry(() async {
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final clampedLimit = limit.clamp(1, 100);
+      final result = await atproto.get(
+        NSID.parse('so.sprk.actor.searchActorsTypeahead'),
+        parameters: {
+          'q': query,
+          'limit': clampedLimit.toString(),
+        },
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+
+      _logger.d('Actor typeahead search completed successfully');
+
+      return SearchActorsTypeaheadResponse.fromJson(
+        result.data as Map<String, dynamic>,
+      );
+    });
+  }
+
+  @override
   Future<void> updateProfile({
     required String displayName,
     required String description,

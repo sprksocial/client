@@ -113,6 +113,29 @@ class SearchActorsResponse {
   };
 }
 
+/// Response wrapper for actor typeahead suggestions.
+class SearchActorsTypeaheadResponse {
+  SearchActorsTypeaheadResponse({required this.actors});
+
+  /// Create a [SearchActorsTypeaheadResponse] from JSON.
+  factory SearchActorsTypeaheadResponse.fromJson(Map<String, dynamic> json) {
+    final actorsJson = json['actors'] as List<dynamic>? ?? <dynamic>[];
+    return SearchActorsTypeaheadResponse(
+      actors: actorsJson
+          .map((e) => ProfileViewBasic.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  /// List of returned actor suggestions.
+  final List<ProfileViewBasic> actors;
+
+  /// Convert the object back to JSON.
+  Map<String, dynamic> toJson() => {
+    'actors': actors.map((e) => e.toJson()).toList(),
+  };
+}
+
 @freezed
 abstract class ProfileViewDetailed with _$ProfileViewDetailed {
   @JsonSerializable(explicitToJson: true)

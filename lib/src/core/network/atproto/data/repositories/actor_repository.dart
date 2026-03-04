@@ -23,6 +23,15 @@ abstract class ActorRepository {
   /// [query] The search query.
   Future<SearchActorsResponse> searchActors(String query, {String? cursor});
 
+  /// Search actor suggestions by query prefix.
+  ///
+  /// [query] The search query prefix.
+  /// [limit] Maximum number of suggestions to return.
+  Future<SearchActorsTypeaheadResponse> searchActorsTypeahead(
+    String query, {
+    int limit = 10,
+  });
+
   /// Update the user's profile
   ///
   /// [displayName] The new display name

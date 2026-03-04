@@ -7,6 +7,8 @@ class InputField extends StatelessWidget {
   final List<Widget>? leadingWidgets;
   final List<Widget>? actionWidgets;
   final VoidCallback? onSendMessage;
+  final ValueChanged<String>? onSubmitted;
+  final TextInputAction? textInputAction;
 
   const InputField._({
     required this.controller,
@@ -14,6 +16,8 @@ class InputField extends StatelessWidget {
     required this.leadingWidgets,
     required this.actionWidgets,
     required this.onSendMessage,
+    required this.onSubmitted,
+    required this.textInputAction,
     super.key,
   });
 
@@ -30,6 +34,8 @@ class InputField extends StatelessWidget {
          leadingWidgets: leadingWidgets,
          actionWidgets: actionWidgets,
          onSendMessage: null,
+         onSubmitted: null,
+         textInputAction: null,
        );
 
   const InputField.chat({
@@ -45,6 +51,8 @@ class InputField extends StatelessWidget {
          leadingWidgets: leadingWidgets,
          onSendMessage: onSendMessage,
          actionWidgets: null,
+         onSubmitted: null,
+         textInputAction: null,
        );
 
   const InputField.search({
@@ -53,6 +61,8 @@ class InputField extends StatelessWidget {
     String hintText = '',
     List<Widget>? leadingWidgets,
     List<Widget>? actionWidgets,
+    ValueChanged<String>? onSubmitted,
+    TextInputAction? textInputAction,
   }) : this._(
          key: key,
          controller: controller,
@@ -60,6 +70,8 @@ class InputField extends StatelessWidget {
          leadingWidgets: leadingWidgets,
          actionWidgets: actionWidgets,
          onSendMessage: null,
+         onSubmitted: onSubmitted,
+         textInputAction: textInputAction,
        );
 
   @override
@@ -94,6 +106,8 @@ class InputField extends StatelessWidget {
 
     return TextField(
       controller: controller,
+      onSubmitted: onSubmitted,
+      textInputAction: textInputAction,
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: leading,

@@ -19,6 +19,7 @@ part 'post_search_provider.g.dart';
 @riverpod
 class PostSearch extends _$PostSearch {
   Timer? _debounce;
+  int _activeSearchToken = 0;
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
     'PostSearchProvider',
   );
@@ -36,16 +37,20 @@ class PostSearch extends _$PostSearch {
 
   /// Update the search query and trigger search with debounce
   void updateQuery(String query) {
+    final trimmedQuery = query.trim();
+
     // Update query and reset pagination state
     state = state.copyWith(
-      query: query,
+      query: trimmedQuery,
       searchResults: [],
       sprkNextCursor: null,
       bskyNextCursor: null,
+      isLoadingMore: false,
       error: null,
     );
 
-    if (query.isEmpty) {
+    if (trimmedQuery.isEmpty) {
+      _activeSearchToken++;
       state = state.copyWith(isLoading: false);
       return;
     }
@@ -55,14 +60,43 @@ class PostSearch extends _$PostSearch {
 
     // Debounce the search
     if (_debounce?.isActive ?? false) _debounce!.cancel();
+    final requestToken = ++_activeSearchToken;
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      _searchPosts(query);
+      _searchPosts(trimmedQuery, requestToken: requestToken);
     });
   }
 
+  /// Submit the search query and run search immediately.
+  Future<void> submitQuery(String query) async {
+    final trimmedQuery = query.trim();
+
+    _debounce?.cancel();
+
+    state = state.copyWith(
+      query: trimmedQuery,
+      searchResults: [],
+      sprkNextCursor: null,
+      bskyNextCursor: null,
+      error: null,
+      isLoadingMore: false,
+    );
+
+    if (trimmedQuery.isEmpty) {
+      _activeSearchToken++;
+      state = state.copyWith(isLoading: false);
+      return;
+    }
+
+    final requestToken = ++_activeSearchToken;
+    await _searchPosts(trimmedQuery, requestToken: requestToken);
+  }
+
   /// Search for posts with the given query
-  Future<void> _searchPosts(String query) async {
+  Future<void> _searchPosts(String query, {required int requestToken}) async {
     if (query.isEmpty) return;
+    if (requestToken != _activeSearchToken || state.query != query) {
+      return;
+    }
 
     state = state.copyWith(isLoading: true, error: null);
 
@@ -80,6 +114,12 @@ class PostSearch extends _$PostSearch {
       );
 
       final results = await Future.wait([sprkSearch, bskySearch]);
+
+      if (!ref.mounted ||
+          requestToken != _activeSearchToken ||
+          state.query != query) {
+        return;
+      }
 
       final sprkResponse =
           results[0] as ({String? cursor, List<PostView> posts});
@@ -130,9 +170,15 @@ class PostSearch extends _$PostSearch {
       // If we have very few results, try to load more immediately
       if (state.searchResults.length < 10 &&
           (state.sprkNextCursor != null || state.bskyNextCursor != null)) {
-        await loadMorePosts();
+        await _loadMorePostsForToken(requestToken);
       }
     } catch (e) {
+      if (!ref.mounted ||
+          requestToken != _activeSearchToken ||
+          state.query != query) {
+        return;
+      }
+
       _logger.e('Error searching posts: $e');
       state = state.copyWith(error: e.toString(), isLoading: false);
     }
@@ -140,29 +186,52 @@ class PostSearch extends _$PostSearch {
 
   /// Load more posts using the next cursor if available
   Future<void> loadMorePosts() async {
+    await _loadMorePostsForToken(_activeSearchToken);
+  }
+
+  Future<void> _loadMorePostsForToken(int requestToken) async {
+    if (requestToken != _activeSearchToken) {
+      return;
+    }
+
     if (state.isLoadingMore) return;
 
     state = state.copyWith(isLoadingMore: true);
 
     try {
-      await _loadMorePostsRecursive();
+      await _loadMorePostsRecursive(requestToken);
     } catch (e) {
+      if (!ref.mounted || requestToken != _activeSearchToken) {
+        return;
+      }
+
       _logger.e('Error loading more posts: $e');
       state = state.copyWith(error: e.toString(), isLoadingMore: false);
     } finally {
-      if (state.isLoadingMore) {
+      if (ref.mounted &&
+          requestToken == _activeSearchToken &&
+          state.isLoadingMore) {
         state = state.copyWith(isLoadingMore: false);
       }
     }
   }
 
-  Future<void> _loadMorePostsRecursive() async {
+  Future<void> _loadMorePostsRecursive(int requestToken) async {
+    final query = state.query;
+
     final sprkCursor = state.sprkNextCursor;
     if (sprkCursor != null && sprkCursor.isNotEmpty) {
       final response = await _feedRepository.searchPosts(
-        state.query,
+        query,
         cursor: sprkCursor,
       );
+
+      if (!ref.mounted ||
+          requestToken != _activeSearchToken ||
+          state.query != query) {
+        return;
+      }
+
       final filteredPosts = _filterHiddenPosts(response.posts);
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredPosts],
@@ -172,7 +241,7 @@ class PostSearch extends _$PostSearch {
       // If sprk is exhausted now and we have a bsky cursor, fetch from bsky.
       if ((response.cursor == null || response.cursor!.isEmpty) &&
           (state.bskyNextCursor != null && state.bskyNextCursor!.isNotEmpty)) {
-        await _loadMorePostsRecursive();
+        await _loadMorePostsRecursive(requestToken);
       }
       return;
     }
@@ -185,10 +254,16 @@ class PostSearch extends _$PostSearch {
       }
       final bskyApi = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
       final response = await bskyApi.feed.searchPosts(
-        q: state.query,
+        q: query,
         sort: const FeedSearchPostsSort.unknown(data: 'latest'),
         cursor: bskyCursor,
       );
+
+      if (!ref.mounted ||
+          requestToken != _activeSearchToken ||
+          state.query != query) {
+        return;
+      }
 
       final bskyPosts = response.data.posts
           .asMap()
@@ -231,7 +306,7 @@ class PostSearch extends _$PostSearch {
       if (state.searchResults.length < 10 &&
           (state.bskyNextCursor != null && state.bskyNextCursor!.isNotEmpty) &&
           state.searchResults.length > initialCount) {
-        await _loadMorePostsRecursive();
+        await _loadMorePostsRecursive(requestToken);
       }
     }
   }
