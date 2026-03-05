@@ -436,9 +436,15 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
   }
 
   Widget _buildAvatarsSection() {
-    final authors = widget.groupedNotification.getUniqueAuthors();
     final totalCount = widget.groupedNotification.actorCount;
-    final extraCount = totalCount - authors.length;
+    final hasOverflow = totalCount > 3;
+    final avatarCountToShow = hasOverflow
+        ? 2
+        : (totalCount >= 3 ? 3 : totalCount);
+    final authors = widget.groupedNotification.getUniqueAuthors(
+      limit: avatarCountToShow,
+    );
+    final extraCount = hasOverflow ? totalCount - avatarCountToShow : 0;
 
     if (authors.length == 1) {
       // Single avatar
@@ -459,12 +465,17 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     }
 
     // Multiple avatars in a row
+    const avatarSize = 28.0;
+    const overlapStep = 20.0;
+    final visibleItemCount = authors.length + (extraCount > 0 ? 1 : 0);
+    final stackWidth = avatarSize + ((visibleItemCount - 1) * overlapStep);
+
     return SizedBox(
+      width: stackWidth,
       height: 32,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          // Show avatars with overlap
           ...authors.asMap().entries.map((entry) {
             final index = entry.key;
             final author = entry.value.author;
@@ -472,55 +483,42 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
             final username = author.displayName ?? author.handle;
             final handleHash = author.handle.hashCode;
 
-            return Transform.translate(
-              offset: Offset(-index * 8.0, 0),
+            return Positioned(
+              left: index * overlapStep,
               child: UserAvatar(
                 imageUrl: avatarUrl,
                 username: username,
-                size: 28,
+                size: avatarSize,
                 backgroundColor: getAvatarColor(handleHash),
               ),
             );
           }),
-          // Show +N count if there are more
           if (extraCount > 0)
-            Builder(
-              builder: (context) {
-                final theme = Theme.of(context);
-                final colorScheme = theme.colorScheme;
-                return Transform.translate(
-                  offset: Offset(-authors.length * 8.0, 0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
+            Positioned(
+              left: authors.length * overlapStep,
+              child: Builder(
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  final colorScheme = theme.colorScheme;
+                  return Container(
+                    width: avatarSize,
+                    height: avatarSize,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(12),
+                      shape: BoxShape.circle,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '+$extraCount',
-                          style: TextStyle(
-                            color: colorScheme.onSurfaceVariant.withAlpha(179),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 2),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 14,
-                          color: colorScheme.onSurfaceVariant.withAlpha(138),
-                        ),
-                      ],
+                    child: Text(
+                      '+$extraCount',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant.withAlpha(179),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
         ],
       ),
