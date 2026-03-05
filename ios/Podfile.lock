@@ -28,11 +28,11 @@ PODS:
   - PINCache/Core (3.0.4):
     - PINOperation (~> 1.2.3)
   - PINOperation (1.2.3)
-  - PostHog (3.37.1)
+  - PostHog (3.44.0)
   - posthog_flutter (0.0.1):
     - Flutter
     - FlutterMacOS
-    - PostHog (< 4.0.0, >= 3.32.0)
+    - PostHog (< 4.0.0, >= 3.43.0)
   - pro_video_editor (0.0.1):
     - Flutter
 
@@ -79,8 +79,8 @@ SPEC CHECKSUMS:
   mdk: 59bbe9e2ac2a052455ab1b076c245680d66cf6c0
   PINCache: d9a87a0ff397acffe9e2f0db972ac14680441158
   PINOperation: fb563bcc9c32c26d6c78aaff967d405aa2ee74a7
-  PostHog: cf23456d5de1c19efe5823437069440a12198c91
-  posthog_flutter: 9535ac2d4ab65ccb9ace3886dcc0b3105198bad5
+  PostHog: ff382b483c3ee92bbad3719ffb07ead4e68c9cfa
+  posthog_flutter: 493ef261ea480ab055533fdf616d610a6a7305dc
   pro_video_editor: 44ef9a6d48dbd757ed428cf35396dd05f35c7830
 
 PODFILE CHECKSUM: e716c32704b29904c5fe233535ab45faecf8c549
