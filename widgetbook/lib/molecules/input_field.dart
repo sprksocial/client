@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/design_system/components/molecules/glass_input.dart';
+import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
@@ -17,8 +17,8 @@ final _chatMessagesProvider = StateProvider.autoDispose<List<String>>(
   (_) => const [],
 );
 
-@UseCase(name: 'comment', type: GlassInput)
-Widget buildGlassInputCommentUseCase(BuildContext context) {
+@UseCase(name: 'comment', type: InputField)
+Widget buildInputFieldCommentUseCase(BuildContext context) {
   return Center(
     child: Container(
       constraints: BoxConstraints(
@@ -30,7 +30,7 @@ Widget buildGlassInputCommentUseCase(BuildContext context) {
           divisions: 24,
         ),
       ),
-      child: GlassInput.comment(
+      child: InputField.comment(
         hintText: context.knobs.string(
           label: 'hint',
           initialValue: 'Add a comment...',
@@ -51,8 +51,8 @@ Widget buildGlassInputCommentUseCase(BuildContext context) {
   );
 }
 
-@UseCase(name: 'search', type: GlassInput)
-Widget buildGlassInputSearchUseCase(BuildContext context) {
+@UseCase(name: 'search', type: InputField)
+Widget buildInputFieldSearchUseCase(BuildContext context) {
   return Center(
     child: SizedBox(
       width: context.knobs.double.slider(
@@ -62,7 +62,7 @@ Widget buildGlassInputSearchUseCase(BuildContext context) {
         max: 400,
         divisions: 24,
       ),
-      child: GlassInput.search(
+      child: InputField.search(
         hintText: context.knobs.string(
           label: 'hint',
           initialValue: 'Search...',
@@ -82,8 +82,8 @@ Widget buildGlassInputSearchUseCase(BuildContext context) {
   );
 }
 
-@UseCase(name: 'chat_interactive', type: GlassInput)
-Widget buildGlassInputChatInteractiveUseCase(BuildContext context) {
+@UseCase(name: 'chat_interactive', type: InputField)
+Widget buildInputFieldChatInteractiveUseCase(BuildContext context) {
   return ProviderScope(
     child: Center(
       child: _ChatDemo(
@@ -155,7 +155,7 @@ class _ChatDemo extends ConsumerWidget {
         const SizedBox(height: 16),
         SizedBox(
           width: 320,
-          child: GlassInput.chat(
+          child: InputField.chat(
             controller: controller,
             hintText: placeholder,
             leadingWidgets: const [
