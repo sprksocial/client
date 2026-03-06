@@ -116,6 +116,7 @@ class StoryCircle extends StatelessWidget {
                       child: ClipOval(
                         child: imageUrl.isNotEmpty
                             ? CachedNetworkImage(
+                                fadeInDuration: Duration.zero,
                                 imageUrl: imageUrl,
                                 width: _imageSize,
                                 height: _imageSize,

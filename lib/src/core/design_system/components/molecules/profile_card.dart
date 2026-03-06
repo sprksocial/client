@@ -95,6 +95,7 @@ class ProfileCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(100),
                         child: imageUrl.isNotEmpty
                             ? CachedNetworkImage(
+                                fadeInDuration: Duration.zero,
                                 imageUrl: imageUrl,
                                 width: 36,
                                 height: 36,

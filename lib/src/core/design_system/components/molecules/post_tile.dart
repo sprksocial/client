@@ -59,9 +59,9 @@ class PostTile extends StatelessWidget {
                 ImageFiltered(
                   imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: CachedNetworkImage(
+                    fadeInDuration: Duration.zero,
                     imageUrl: thumbnailUrl,
                     fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 150),
                     placeholder: (context, url) => const ColoredBox(
                       color: AppColors.grey800,
                     ),
@@ -76,9 +76,9 @@ class PostTile extends StatelessWidget {
                 )
               else
                 CachedNetworkImage(
+                  fadeInDuration: Duration.zero,
                   imageUrl: thumbnailUrl,
                   fit: BoxFit.cover,
-                  fadeInDuration: const Duration(milliseconds: 150),
                   placeholder: (context, url) => const ColoredBox(
                     color: AppColors.grey800,
                   ),

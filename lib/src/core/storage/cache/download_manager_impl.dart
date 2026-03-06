@@ -219,7 +219,10 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               videoFormat: BetterPlayerVideoFormat.hls,
               videoExtension: 'm3u8',
               task.post.videoUrl,
-              placeholder: CachedNetworkImage(imageUrl: thumbnail.toString()),
+              placeholder: CachedNetworkImage(
+                fadeInDuration: Duration.zero,
+                imageUrl: thumbnail.toString(),
+              ),
               cacheConfiguration: BetterPlayerCacheConfiguration(
                 useCache: true,
                 preCacheSize: 10 * 1024 * 1024, // 10 MB
