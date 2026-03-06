@@ -37,7 +37,7 @@ class LongButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         // height: 40,
-        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 11),
         decoration: BoxDecoration(
           color: isPrimary
               ? AppColors.primary600

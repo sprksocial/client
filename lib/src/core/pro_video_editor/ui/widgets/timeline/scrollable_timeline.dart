@@ -427,6 +427,7 @@ class _AudioTrack extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: CachedNetworkImage(
+                        fadeInDuration: Duration.zero,
                         imageUrl: videoTimelineState.authorAvatarUrl!,
                         width: 24,
                         height: 24,

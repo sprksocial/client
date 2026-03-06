@@ -236,8 +236,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     final originalAtUri = currentPost.uri.toString();
     var postUri = originalAtUri;
     String shareUrl;
-    var embedCode = '';
-    var showEmbed = true;
 
     // Special case for Bluesky posts
     if (postUri.contains('/app.bsky.feed.post/')) {
@@ -257,13 +255,9 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
         // Format as Bluesky URL
         shareUrl = 'https://bsky.app/profile/$did/post/$postId';
-
-        // Hide embed for Bluesky
-        showEmbed = false;
       } else {
         // Fallback if parsing fails
         shareUrl = 'https://bsky.app';
-        showEmbed = false;
       }
     } else {
       // Standard Spark format
@@ -276,8 +270,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       postUri = postUri.replaceAll('so.sprk.feed.post/', '');
 
       shareUrl = 'https://watch.sprk.so/?uri=$postUri';
-      embedCode =
-          '<iframe src="embed.html?uri=$postUri" width="100%" height="400" frameborder="0" allowfullscreen></iframe>';
     }
 
     showModalBottomSheet(
@@ -287,9 +279,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       builder: (BuildContext context) {
         return SharePanel(
           shareUrl: shareUrl,
-          embedCode: embedCode,
           atUri: originalAtUri,
-          showEmbed: showEmbed,
         );
       },
     );
@@ -473,88 +463,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       soundCover: currentPost.sound?.coverArt.toString(),
       // isCurated: isCurated, // Curation disabled
       // curateDestinations: curateDestinations, // Curation disabled
-    );
-  }
-}
-
-class CopyField extends StatelessWidget {
-  const CopyField({
-    required this.text,
-    required this.context,
-    required this.bgColor,
-    required this.textColor,
-    required this.isLink,
-    required this.isCopied,
-    required this.onCopy,
-    super.key,
-  });
-  final String text;
-  final BuildContext context;
-  final Color bgColor;
-  final Color textColor;
-  final bool isLink;
-  final bool isCopied;
-  final Function(String, BuildContext, bool) onCopy;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accentColor = theme.colorScheme.primary;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.transparent),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  color: textColor.withAlpha(204),
-                  fontSize: 13,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => onCopy(text, context, isLink),
-              borderRadius: BorderRadius.circular(30),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder:
-                      (Widget child, Animation<double> animation) {
-                        return ScaleTransition(scale: animation, child: child);
-                      },
-                  child: isCopied
-                      ? const Icon(
-                          Icons.check_circle,
-                          key: ValueKey('copied'),
-                          color: Colors.green,
-                          size: 20,
-                        )
-                      : Icon(
-                          Icons.content_copy_rounded,
-                          key: const ValueKey('copy'),
-                          color: accentColor,
-                          size: 20,
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -74,6 +74,7 @@ class UserAvatar extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: CachedNetworkImage(
+        fadeInDuration: Duration.zero,
         imageUrl: imageUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => ColoredBox(

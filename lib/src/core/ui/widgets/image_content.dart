@@ -63,6 +63,7 @@ class ImageContent extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               CachedNetworkImage(
+                fadeInDuration: Duration.zero,
                 imageUrl: imageUrls.first,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(

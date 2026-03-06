@@ -3,67 +3,98 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/messages/providers/conversation_provider.dart';
 import 'package:spark/src/features/messages/providers/conversations_provider.dart';
 
 class SharePanel extends ConsumerStatefulWidget {
-  const SharePanel({
-    required this.shareUrl,
-    required this.embedCode,
-    required this.atUri,
-    super.key,
-    this.showEmbed = true,
-  });
+  const SharePanel({required this.shareUrl, required this.atUri, super.key});
+
   final String shareUrl;
-  final String embedCode;
   final String atUri;
-  final bool showEmbed;
 
   @override
   ConsumerState<SharePanel> createState() => _SharePanelState();
 }
 
 class _SharePanelState extends ConsumerState<SharePanel> {
+  static const _actionButtonHeight = 40.0;
+  static const _motionDuration = Duration(milliseconds: 300);
+  static const _motionCurve = Curves.easeOutCubic;
+
   bool _copiedLink = false;
-  bool _copiedEmbed = false;
   String? _selectedConvoId;
   bool _sending = false;
 
-  void _copyToClipboard(String text, BuildContext context, bool isLink) {
-    Clipboard.setData(ClipboardData(text: text));
-
+  void _toggleSelection(String convoId) {
     setState(() {
-      if (isLink) {
-        _copiedLink = true;
-      } else {
-        _copiedEmbed = true;
-      }
+      _selectedConvoId = _selectedConvoId == convoId ? null : convoId;
     });
+  }
+
+  void _copyLink() {
+    Clipboard.setData(ClipboardData(text: widget.shareUrl));
+    setState(() => _copiedLink = true);
 
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          if (isLink) {
-            _copiedLink = false;
-          } else {
-            _copiedEmbed = false;
-          }
-        });
-      }
+      if (!mounted) return;
+      setState(() => _copiedLink = false);
     });
+  }
+
+  Future<void> _shareNatively() async {
+    final logger = GetIt.instance<LogService>().getLogger('SharePanel');
+    try {
+      await SharePlus.instance.share(
+        ShareParams(uri: Uri.parse(widget.shareUrl)),
+      );
+    } catch (e, st) {
+      logger.e(
+        'Failed to open native share sheet',
+        error: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  Future<void> _sendToSelectedConversation() async {
+    final convoId = _selectedConvoId;
+    if (convoId == null || _sending) return;
+
+    final logger = GetIt.instance<LogService>().getLogger('SharePanel');
+    final navigator = Navigator.of(context);
+
+    setState(() => _sending = true);
+    try {
+      await ref.read(conversationProvider(convoId).future);
+      await ref
+          .read(conversationProvider(convoId).notifier)
+          .sendMessage(convoId, '', embed: widget.atUri);
+
+      navigator.maybePop();
+    } catch (e, st) {
+      logger.e(
+        'Failed to share video to conversation',
+        error: e,
+        stackTrace: st,
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _sending = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.colorScheme.onSurface;
-    final fieldBgColor = theme.colorScheme.surfaceContainerHighest;
     final dividerColor = theme.colorScheme.outline.withValues(alpha: 0.2);
-
     final convosAsync = ref.watch(conversationsProvider);
-
-    final logger = GetIt.instance<LogService>().getLogger('SharePanel');
+    final hasSelection = _selectedConvoId != null;
 
     return Container(
       decoration: BoxDecoration(
@@ -79,13 +110,11 @@ class _SharePanelState extends ConsumerState<SharePanel> {
           ),
         ],
       ),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.35,
-        maxChildSize: 0.85,
-        expand: false,
-        builder: (context, scrollController) {
-          return Column(
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 40,
@@ -99,7 +128,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Share Video',
+                  'Share',
                   style: TextStyle(
                     color: textColor,
                     fontSize: 18,
@@ -108,381 +137,326 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                 ),
               ),
               Divider(color: dividerColor, height: 30),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Conversations selector
-                    Text(
-                      'Send to',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Builder(
-                      builder: (_) {
-                        return convosAsync.when(
-                          data: (data) {
-                            final items = data.conversations;
-                            if (items.isEmpty) {
-                              return Text(
-                                'No conversations yet',
-                                style: TextStyle(
-                                  color: textColor.withAlpha(153),
-                                ),
+                    convosAsync.when(
+                      data: (data) {
+                        final items = data.conversations;
+                        if (items.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'No conversations yet',
+                              style: TextStyle(color: textColor.withAlpha(153)),
+                            ),
+                          );
+                        }
+
+                        return SizedBox(
+                          height: 112,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: items.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (_, index) {
+                              final (profile, convo) = items[index];
+                              return _ConvoProfileChip(
+                                displayName:
+                                    profile.displayName ?? profile.handle,
+                                avatarUrl: profile.avatar?.toString(),
+                                selected: _selectedConvoId == convo.id,
+                                onTap: () => _toggleSelection(convo.id),
                               );
-                            }
-                            return Column(
-                              children: [
-                                for (final (profile, convo) in items)
-                                  _ConvoListTile(
-                                    displayName:
-                                        profile.displayName ?? profile.handle,
-                                    handle: profile.handle,
-                                    avatarUrl: profile.avatar?.toString(),
-                                    selected: _selectedConvoId == convo.id,
-                                    onAvatarTap: () {
-                                      setState(
-                                        () => _selectedConvoId = convo.id,
-                                      );
-                                    },
-                                    onTileTap: () {
-                                      setState(
-                                        () => _selectedConvoId = convo.id,
-                                      );
-                                    },
-                                  ),
-                              ],
-                            );
-                          },
-                          loading: () => const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                          error: (e, st) => Text(
-                            'Failed to load conversations',
-                            style: TextStyle(color: theme.colorScheme.error),
+                            },
                           ),
                         );
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: dividerColor),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Video link',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    CopyField(
-                      text: widget.shareUrl,
-                      context: context,
-                      bgColor: fieldBgColor,
-                      textColor: textColor,
-                      isLink: true,
-                      isCopied: _copiedLink,
-                      onCopy: _copyToClipboard,
-                    ),
-                    if (widget.showEmbed) ...[
-                      const SizedBox(height: 24),
-                      Text(
-                        'Video embed',
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                      loading: () => const _ConvoProfilesSkeleton(),
+                      error: (e, st) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          'Failed to load conversations',
+                          style: TextStyle(color: theme.colorScheme.error),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      CopyField(
-                        text: widget.embedCode,
-                        context: context,
-                        bgColor: fieldBgColor,
-                        textColor: textColor,
-                        isLink: false,
-                        isCopied: _copiedEmbed,
-                        onCopy: _copyToClipboard,
-                      ),
-                    ],
+                    ),
                   ],
                 ),
               ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: (_selectedConvoId == null || _sending)
-                          ? null
-                          : () async {
-                              final navigator = Navigator.of(context);
-
-                              setState(() => _sending = true);
-                              try {
-                                final convoId = _selectedConvoId!;
-                                // Ensure conversation is loaded before sending
-                                await ref.read(
-                                  conversationProvider(convoId).future,
-                                );
-                                // Send empty message with embed set to post URI
-                                await ref
-                                    .read(
-                                      conversationProvider(convoId).notifier,
-                                    )
-                                    .sendMessage(
-                                      convoId,
-                                      '',
-                                      embed: widget.atUri,
-                                    );
-
-                                navigator.maybePop();
-                              } catch (e) {
-                                logger.d(
-                                  'Failed to share video to conversation',
-                                  error: e,
-                                );
-                              } finally {
-                                if (mounted) setState(() => _sending = false);
-                              }
-                            },
-                      icon: _sending
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(
-                                  theme.colorScheme.onPrimary,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                child: SizedBox(
+                  height: _actionButtonHeight,
+                  child: AnimatedSwitcher(
+                    duration: _motionDuration,
+                    switchInCurve: _motionCurve,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) {
+                      final fadeAnimation = CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOut,
+                      );
+                      if (!hasSelection) {
+                        return FadeTransition(
+                          opacity: fadeAnimation,
+                          child: child,
+                        );
+                      }
+                      final scaleAnimation =
+                          Tween<double>(
+                            begin: 0.7,
+                            end: 1,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOutBack,
+                            ),
+                          );
+                      return FadeTransition(
+                        opacity: fadeAnimation,
+                        child: ScaleTransition(
+                          scale: scaleAnimation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: hasSelection
+                        ? SizedBox(
+                            key: const ValueKey('selected-actions'),
+                            width: double.infinity,
+                            child: LongButton(
+                              label: _sending ? 'Sending...' : 'Send',
+                              onPressed: _sending
+                                  ? null
+                                  : _sendToSelectedConversation,
+                            ),
+                          )
+                        : Row(
+                            key: const ValueKey('default-actions'),
+                            children: [
+                              Expanded(
+                                child: LongButton(
+                                  label: _copiedLink ? 'Copied' : 'Copy link',
+                                  onPressed: _copyLink,
+                                  variant: LongButtonVariant.regular,
                                 ),
                               ),
-                            )
-                          : const Icon(Icons.send_rounded),
-                      label: const Text('Share'),
-                    ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: LongButton(
+                                  label: 'Share',
+                                  onPressed: _shareNatively,
+                                  variant: LongButtonVariant.regular,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
                 ),
               ),
             ],
-          );
-        },
+          ),
+        ),
       ),
     );
   }
 }
 
-class CopyField extends StatelessWidget {
-  const CopyField({
-    required this.text,
-    required this.context,
-    required this.bgColor,
-    required this.textColor,
-    required this.isLink,
-    required this.isCopied,
-    required this.onCopy,
-    super.key,
-  });
-  final String text;
-  final BuildContext context;
-  final Color bgColor;
-  final Color textColor;
-  final bool isLink;
-  final bool isCopied;
-  final Function(String, BuildContext, bool) onCopy;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final accentColor = theme.colorScheme.primary;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.transparent),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  color: textColor.withAlpha(204),
-                  fontSize: 13,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => onCopy(text, context, isLink),
-              borderRadius: BorderRadius.circular(30),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder:
-                      (Widget child, Animation<double> animation) {
-                        return ScaleTransition(scale: animation, child: child);
-                      },
-                  child: isCopied
-                      ? const Icon(
-                          Icons.check_circle,
-                          key: ValueKey('copied'),
-                          color: Colors.green,
-                          size: 20,
-                        )
-                      : Icon(
-                          Icons.content_copy_rounded,
-                          key: const ValueKey('copy'),
-                          color: accentColor,
-                          size: 20,
-                        ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConvoListTile extends StatelessWidget {
-  const _ConvoListTile({
+class _ConvoProfileChip extends StatelessWidget {
+  const _ConvoProfileChip({
     required this.displayName,
-    required this.handle,
     required this.avatarUrl,
     required this.selected,
-    required this.onAvatarTap,
-    required this.onTileTap,
+    required this.onTap,
   });
 
   final String displayName;
-  final String handle;
   final String? avatarUrl;
   final bool selected;
-  final VoidCallback onAvatarTap;
-  final VoidCallback onTileTap;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.colorScheme.onSurface;
+    const avatarSize = 64.0;
+    const motionDuration = Duration(milliseconds: 300);
+    const motionCurve = Curves.easeOutCubic;
 
-    return InkWell(
-      onTap: onTileTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: onAvatarTap,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  ClipOval(
-                    child: (avatarUrl != null && avatarUrl!.isNotEmpty)
-                        ? CachedNetworkImage(
-                            imageUrl: avatarUrl!,
-                            width: 44,
-                            height: 44,
-                            fit: BoxFit.cover,
-                            errorWidget: (context, url, error) => Container(
-                              width: 44,
-                              height: 44,
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              child: Center(
-                                child: Text(
-                                  displayName.isNotEmpty
-                                      ? displayName.characters.first
-                                            .toUpperCase()
-                                      : '?',
-                                  style: TextStyle(
-                                    color: theme.colorScheme.onSurface,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+    return SizedBox(
+      width: 82,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: AnimatedScale(
+            duration: motionDuration,
+            curve: motionCurve,
+            scale: selected ? 1 : 0.9,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SizedBox(
+                      width: avatarSize,
+                      height: avatarSize,
+                      child: ClipOval(
+                        child: (avatarUrl != null && avatarUrl!.isNotEmpty)
+                            ? CachedNetworkImage(
+                                fadeInDuration: Duration.zero,
+                                imageUrl: avatarUrl!,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) =>
+                                    _FallbackAvatar(
+                                      displayName: displayName,
+                                      theme: theme,
+                                    ),
+                              )
+                            : _FallbackAvatar(
+                                displayName: displayName,
+                                theme: theme,
+                              ),
+                      ),
+                    ),
+                    Positioned(
+                      right: -2,
+                      bottom: -2,
+                      child: AnimatedScale(
+                        duration: motionDuration,
+                        curve: motionCurve,
+                        scale: selected ? 1 : 0,
+                        child: AnimatedOpacity(
+                          duration: motionDuration,
+                          curve: motionCurve,
+                          opacity: selected ? 1 : 0,
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: theme.colorScheme.surface,
+                                width: 2,
                               ),
                             ),
-                          )
-                        : Container(
-                            width: 44,
-                            height: 44,
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: Center(
-                              child: Text(
-                                displayName.isNotEmpty
-                                    ? displayName.characters.first.toUpperCase()
-                                    : '?',
-                                style: TextStyle(
-                                  color: theme.colorScheme.onSurface,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                            child: Icon(
+                              Icons.check,
+                              size: 15,
+                              color: theme.colorScheme.onPrimary,
                             ),
                           ),
-                  ),
-                  if (selected)
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.colorScheme.primary,
-                          width: 2,
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+                  ],
+                ),
+                const SizedBox(height: 8),
+                AnimatedDefaultTextStyle(
+                  duration: motionDuration,
+                  curve: motionCurve,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 13,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                  child: Text(
                     displayName,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '@$handle',
-                    style: TextStyle(
-                      color: textColor.withAlpha(153),
-                      fontSize: 12,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            if (selected)
-              Icon(
-                Icons.check_circle,
-                color: theme.colorScheme.primary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ConvoProfilesSkeleton extends StatelessWidget {
+  const _ConvoProfilesSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final skeletonColor = theme.colorScheme.surfaceContainerHighest;
+
+    return SizedBox(
+      height: 112,
+      child: Skeletonizer(
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: 5,
+          separatorBuilder: (context, index) => const SizedBox(width: 12),
+          itemBuilder: (_, index) {
+            return SizedBox(
+              width: 82,
+              child: Transform.scale(
+                scale: 0.9,
+                alignment: Alignment.topCenter,
+                child: Column(
+                  children: [
+                    Skeleton.leaf(
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: skeletonColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Skeleton.leaf(
+                      child: Container(
+                        width: 58,
+                        height: 13,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: skeletonColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-          ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _FallbackAvatar extends StatelessWidget {
+  const _FallbackAvatar({required this.displayName, required this.theme});
+
+  final String displayName;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: theme.colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Text(
+          displayName.isNotEmpty
+              ? displayName.characters.first.toUpperCase()
+              : '?',
+          style: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
