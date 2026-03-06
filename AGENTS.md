@@ -7,7 +7,7 @@
 - Generated files in use: `*.g.dart`, `*.freezed.dart`, `*.gr.dart`
 
 ## Setup
-1. Use Flutter `3.38.4` (stable, CI-aligned)
+1. Use Flutter `3.41.3` (stable, CI-aligned)
 2. Ensure `.env` exists: `touch .env`
 3. Install deps: `flutter pub get --enforce-lockfile`
 
