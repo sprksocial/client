@@ -25,7 +25,7 @@ Freezed + AutoRoute.
 
 ## Prerequisites
 
-- Flutter SDK (CI uses stable `3.38.4`)
+- Flutter SDK (CI uses stable `3.41.3`)
 - Dart SDK matching Flutter toolchain
 - Xcode (for iOS builds) and/or Android SDK
 
