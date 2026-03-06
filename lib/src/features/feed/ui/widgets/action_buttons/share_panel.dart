@@ -138,53 +138,48 @@ class _SharePanelState extends ConsumerState<SharePanel> {
               ),
               Divider(color: dividerColor, height: 30),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    convosAsync.when(
-                      data: (data) {
-                        final items = data.conversations;
-                        if (items.isEmpty) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text(
-                              'No conversations yet',
-                              style: TextStyle(color: textColor.withAlpha(153)),
-                            ),
-                          );
-                        }
-
-                        return SizedBox(
-                          height: 112,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: items.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(width: 12),
-                            itemBuilder: (_, index) {
-                              final (profile, convo) = items[index];
-                              return _ConvoProfileChip(
-                                displayName:
-                                    profile.displayName ?? profile.handle,
-                                avatarUrl: profile.avatar?.toString(),
-                                selected: _selectedConvoId == convo.id,
-                                onTap: () => _toggleSelection(convo.id),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      loading: () => const _ConvoProfilesSkeleton(),
-                      error: (e, st) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.only(bottom: 10),
+                child: convosAsync.when(
+                  data: (data) {
+                    final items = data.conversations;
+                    if (items.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                         child: Text(
-                          'Failed to load conversations',
-                          style: TextStyle(color: theme.colorScheme.error),
+                          'No conversations yet',
+                          style: TextStyle(color: textColor.withAlpha(153)),
                         ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 112,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: items.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 5),
+                        itemBuilder: (_, index) {
+                          final (profile, convo) = items[index];
+                          return _ConvoProfileChip(
+                            displayName: profile.displayName ?? profile.handle,
+                            avatarUrl: profile.avatar?.toString(),
+                            selected: _selectedConvoId == convo.id,
+                            onTap: () => _toggleSelection(convo.id),
+                          );
+                        },
                       ),
+                    );
+                  },
+                  loading: () => const _ConvoProfilesSkeleton(),
+                  error: (e, st) => Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    child: Text(
+                      'Failed to load conversations',
+                      style: TextStyle(color: theme.colorScheme.error),
                     ),
-                  ],
+                  ),
                 ),
               ),
               Padding(
@@ -395,6 +390,7 @@ class _ConvoProfilesSkeleton extends StatelessWidget {
       height: 112,
       child: Skeletonizer(
         child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           scrollDirection: Axis.horizontal,
           itemCount: 5,
           separatorBuilder: (context, index) => const SizedBox(width: 12),
