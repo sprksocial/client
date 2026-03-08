@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -231,52 +232,49 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     }
   }
 
-  void _handleShare() {
-    final currentPost = _currentPost ?? widget.post;
-    final originalAtUri = currentPost.uri.toString();
-    var postUri = originalAtUri;
-    String shareUrl;
+  String _buildShareUrl(PostView post) {
+    var postUri = post.uri.toString();
 
-    // Special case for Bluesky posts
+    // Special case for Bluesky posts.
     if (postUri.contains('/app.bsky.feed.post/')) {
-      // Extract the DID and post ID for Bluesky format
-      // Format: at://did:plc:xxx/app.bsky.feed.post/yyy -> https://bsky.app/profile/did:plc:xxx/post/yyy
-
-      // Remove 'at://' prefix if present
       if (postUri.startsWith('at://')) {
         postUri = postUri.substring(5);
       }
 
-      // Split to get DID and post ID
       final parts = postUri.split('/app.bsky.feed.post/');
       if (parts.length == 2) {
         final did = parts[0];
         final postId = parts[1];
-
-        // Format as Bluesky URL
-        shareUrl = 'https://bsky.app/profile/$did/post/$postId';
-      } else {
-        // Fallback if parsing fails
-        shareUrl = 'https://bsky.app';
-      }
-    } else {
-      // Standard Spark format
-      // Remove 'at://' prefix if present
-      if (postUri.startsWith('at://')) {
-        postUri = postUri.substring(5);
+        return 'https://bsky.app/profile/$did/post/$postId';
       }
 
-      // Remove 'so.sprk.feed.post/' from the path if present
-      postUri = postUri.replaceAll('so.sprk.feed.post/', '');
-
-      shareUrl = 'https://watch.sprk.so/?uri=$postUri';
+      return 'https://bsky.app';
     }
+
+    if (postUri.startsWith('at://')) {
+      postUri = postUri.substring(5);
+    }
+    postUri = postUri.replaceAll('so.sprk.feed.post/', '');
+
+    return 'https://watch.sprk.so/?uri=$postUri';
+  }
+
+  Future<void> _handleShareLongPress() async {
+    final currentPost = _currentPost ?? widget.post;
+    final shareUrl = _buildShareUrl(currentPost);
+    await SharePlus.instance.share(ShareParams(uri: Uri.parse(shareUrl)));
+  }
+
+  void _handleShare() {
+    final currentPost = _currentPost ?? widget.post;
+    final originalAtUri = currentPost.uri.toString();
+    final shareUrl = _buildShareUrl(currentPost);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
+      builder: (context) {
         return SharePanel(
           shareUrl: shareUrl,
           atUri: originalAtUri,
@@ -443,6 +441,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       onRepost: _handleRepost,
       // onCurate: _handleCurate, // Curation disabled
       onShare: _handleShare,
+      onShareLongPress: _handleShareLongPress,
       onSoundTap: currentPost.sound != null ? _handleSoundTap : null,
       onOptions: () => OptionsPanel.show(
         context: context,

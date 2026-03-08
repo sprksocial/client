@@ -19,6 +19,7 @@ class SparkSideActionBar extends StatefulWidget {
     this.onRepost,
     this.onCurate,
     this.onShare,
+    this.onShareLongPress,
     this.onSoundTap,
     this.onOptions,
     this.likeCount,
@@ -43,6 +44,7 @@ class SparkSideActionBar extends StatefulWidget {
   final VoidCallback?
   onCurate; // called after a feed selection (or when opening?)
   final VoidCallback? onShare;
+  final VoidCallback? onShareLongPress;
   final VoidCallback? onSoundTap;
   final VoidCallback? onOptions;
 
@@ -195,6 +197,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       _ActionItem(
         icon: AppIcons.share(size: 32),
         onTap: widget.onShare,
+        onLongPress: widget.onShareLongPress,
       ),
     ]);
 
@@ -235,6 +238,7 @@ class _ActionItem extends StatefulWidget {
     required this.icon,
     this.label,
     this.onTap,
+    this.onLongPress,
     this.isActive = false,
     super.key,
   });
@@ -242,6 +246,7 @@ class _ActionItem extends StatefulWidget {
   final Widget icon;
   final String? label;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final bool isActive;
 
   @override
@@ -289,6 +294,7 @@ class _ActionItemState extends State<_ActionItem>
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       child: Column(
         children: [
           AnimatedBuilder(
