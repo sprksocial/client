@@ -21,6 +21,15 @@ class AppConfig {
   static String get messagesServiceUrl =>
       _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
 
+  /// Allowed web auth callback origin for localhost OAuth testing.
+  static String get webAuthOrigin => _getStringValue('WEB_AUTH_ORIGIN', '');
+
+  /// Optional OAuth client metadata URL override.
+  ///
+  /// Used for testing with an alternative registered OAuth client.
+  static String get oauthClientMetadataUrl =>
+      _getStringValue('OAUTH_CLIENT_METADATA_URL', '');
+
   /// Service DID for the chat service (used for service auth).
   static String get chatServiceDid =>
       _getStringValue('CHAT_SERVICE_DID', 'did:web:chat.sprk.so');

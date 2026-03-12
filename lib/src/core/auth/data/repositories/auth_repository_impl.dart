@@ -4,22 +4,26 @@ import 'dart:convert';
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart' show restoreOAuthSession;
 import 'package:atproto_core/atproto_oauth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:spark/src/core/auth/data/models/account.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/core/utils/did_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/oauth_resolver.dart';
 
-/// OAuth client metadata URL
-const String _clientMetadataUrl = 'https://sprk.so/oauth-client-metadata.json';
+/// OAuth client metadata URL used by native clients.
+const String _nativeClientMetadataUrl =
+    'https://sprk.so/oauth-client-metadata.json';
 
 /// Cached OAuth client metadata to avoid repeated network calls
 OAuthClientMetadata? _cachedClientMetadata;
+String? _cachedClientMetadataUrl;
 
 /// Implementation of the authentication repository for AT Protocol using OAuth
 class AuthRepositoryImpl implements AuthRepository {
@@ -49,12 +53,143 @@ class AuthRepositoryImpl implements AuthRepository {
 
   /// Gets cached OAuth client metadata, fetching once if needed
   Future<OAuthClientMetadata> _getCachedClientMetadata() async {
-    if (_cachedClientMetadata != null) {
+    final loopbackWebOrigin = _resolveLoopbackWebOrigin();
+    final configuredMetadataUrl = AppConfig.oauthClientMetadataUrl.trim();
+    if (loopbackWebOrigin != null && configuredMetadataUrl.isEmpty) {
+      final cacheKey = 'localhost:${_normalizeOrigin(loopbackWebOrigin)}';
+      if (_cachedClientMetadata != null &&
+          _cachedClientMetadataUrl == cacheKey) {
+        return _cachedClientMetadata!;
+      }
+
+      final metadata = _buildLoopbackVirtualClientMetadata(loopbackWebOrigin);
+      _cachedClientMetadata = metadata;
+      _cachedClientMetadataUrl = cacheKey;
+      return metadata;
+    }
+
+    final metadataUrl = _resolveClientMetadataUrl();
+    if (_cachedClientMetadata != null &&
+        _cachedClientMetadataUrl == metadataUrl) {
       return _cachedClientMetadata!;
     }
-    _cachedClientMetadata = await getClientMetadata(_clientMetadataUrl);
+
+    var metadata = await getClientMetadata(metadataUrl);
+    if (loopbackWebOrigin != null &&
+        _isLocalLoopbackClientId(metadata.clientId)) {
+      metadata = _applyLoopbackWebRedirect(metadata, loopbackWebOrigin);
+    }
+
+    _cachedClientMetadata = metadata;
+    _cachedClientMetadataUrl = metadataUrl;
     return _cachedClientMetadata!;
   }
+
+  /// Resolves the OAuth client metadata URL by platform.
+  ///
+  /// Uses configured override when set, otherwise the production metadata URL.
+  String _resolveClientMetadataUrl() {
+    final configuredMetadataUrl = AppConfig.oauthClientMetadataUrl.trim();
+    if (configuredMetadataUrl.isNotEmpty) {
+      return configuredMetadataUrl;
+    }
+    return _nativeClientMetadataUrl;
+  }
+
+  /// Returns localhost web origin when running web OAuth locally.
+  Uri? _resolveLoopbackWebOrigin() {
+    if (!kIsWeb) {
+      return null;
+    }
+
+    final baseOrigin = Uri.tryParse(Uri.base.origin);
+    if (baseOrigin != null && _isLoopbackHost(baseOrigin.host)) {
+      return baseOrigin;
+    }
+
+    final configuredOrigin = AppConfig.webAuthOrigin.trim();
+    final originSource = configuredOrigin.isNotEmpty ? configuredOrigin : '';
+    if (originSource.isEmpty) {
+      return null;
+    }
+
+    final originUri = Uri.tryParse(originSource);
+    if (originUri == null || !_isLoopbackHost(originUri.host)) {
+      return null;
+    }
+
+    return originUri;
+  }
+
+  OAuthClientMetadata _applyLoopbackWebRedirect(
+    OAuthClientMetadata metadata,
+    Uri origin,
+  ) {
+    final callbackOrigin = _toOAuthCallbackOrigin(origin);
+    final callbackUrl = '${_normalizeOrigin(callbackOrigin)}/';
+    final redirectUris = <String>[
+      callbackUrl,
+      ...metadata.redirectUris.where((uri) => uri != callbackUrl),
+    ];
+
+    return metadata.copyWith(redirectUris: redirectUris);
+  }
+
+  /// Builds virtual localhost client metadata per ATProto localhost rules.
+  OAuthClientMetadata _buildLoopbackVirtualClientMetadata(Uri origin) {
+    final callbackOrigin = _toOAuthCallbackOrigin(origin);
+    final callbackUrl = '${_normalizeOrigin(callbackOrigin)}/';
+    const scope = 'atproto transition:generic';
+
+    final virtualClientId = Uri(
+      scheme: 'http',
+      host: 'localhost',
+      path: '/',
+      queryParameters: {
+        'scope': scope,
+        'redirect_uri': 'http://127.0.0.1/',
+      },
+    ).toString();
+
+    return OAuthClientMetadata(
+      clientId: virtualClientId,
+      applicationType: 'native',
+      clientName: 'Spark (Local Dev)',
+      clientUri: 'http://localhost/',
+      grantTypes: const ['authorization_code', 'refresh_token'],
+      redirectUris: [callbackUrl],
+      responseTypes: const ['code'],
+      scope: scope,
+      tokenEndpointAuthMethod: 'none',
+    );
+  }
+
+  /// Converts disallowed loopback hostnames (localhost/::1) into 127.0.0.1.
+  Uri _toOAuthCallbackOrigin(Uri origin) {
+    if (origin.host == 'localhost' || origin.host == '::1') {
+      return origin.replace(host: '127.0.0.1');
+    }
+    return origin;
+  }
+
+  String _normalizeOrigin(Uri uri) {
+    final origin = uri.origin;
+    return origin.endsWith('/')
+        ? origin.substring(0, origin.length - 1)
+        : origin;
+  }
+
+  bool _isLocalLoopbackClientId(String clientId) {
+    final clientIdUri = Uri.tryParse(clientId);
+    if (clientIdUri == null) {
+      return false;
+    }
+
+    return _isLoopbackHost(clientIdUri.host);
+  }
+
+  bool _isLoopbackHost(String host) =>
+      host == 'localhost' || host == '127.0.0.1' || host == '::1';
 
   @override
   bool get isAuthenticated =>

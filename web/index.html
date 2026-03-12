@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="spark">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>spark</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <script>
+    (function () {
+      if (window.location.hostname === 'localhost') {
+        const redirectUrl = new URL(window.location.href);
+        redirectUrl.hostname = '127.0.0.1';
+        window.location.replace(redirectUrl.toString());
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const isOAuthCallback =
+        (params.has('code') && params.has('state')) ||
+        params.has('error');
+
+      if (isOAuthCallback) {
+        const message = {
+          'flutter-web-auth-2': window.location.href,
+        };
+
+        try {
+          if (window.opener) {
+            window.opener.postMessage(message, '*');
+            window.close();
+            return;
+          }
+
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage(message, '*');
+            return;
+          }
+
+          localStorage.setItem('flutter-web-auth-2', window.location.href);
+          window.close();
+        } catch (_) {
+          localStorage.setItem('flutter-web-auth-2', window.location.href);
+          window.close();
+        }
+
+        document.body.innerHTML =
+          '<p>Authentication is complete. You can close this window.</p>';
+        return;
+      }
+
+      // Load Flutter app for normal app navigation.
+      const bootstrapScript = document.createElement('script');
+      bootstrapScript.src = 'flutter_bootstrap.js';
+      bootstrapScript.async = true;
+      document.body.appendChild(bootstrapScript);
+    })();
+  </script>
+</body>
+</html>

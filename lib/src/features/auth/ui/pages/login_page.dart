@@ -10,6 +10,7 @@ import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
+import 'package:spark/src/features/auth/ui/oauth_web_auth_options.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
@@ -59,6 +60,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           callbackUrl = await FlutterWebAuth2.authenticate(
             url: authUrl,
             callbackUrlScheme: 'sprk',
+            options: buildOAuthWebAuthOptions(),
           );
         } on PlatformException catch (e) {
           if (e.code == 'CANCELED') {
