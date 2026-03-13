@@ -59,10 +59,7 @@ class PrimaryButton extends StatelessWidget {
                 color: AppColors.greyWhite,
               ),
             ),
-            if (trailing != null) ...[
-              const SizedBox(width: 8),
-              trailing!,
-            ],
+            if (trailing != null) ...[const SizedBox(width: 8), trailing!],
           ],
         ),
       ),

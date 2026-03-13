@@ -19,8 +19,7 @@ enum ReportCategory {
   misleading('Misleading'),
   ruleViolations('Rule Violations'),
   selfHarm('Self-Harm'),
-  other('Other')
-  ;
+  other('Other');
 
   const ReportCategory(this.displayName);
   final String displayName;
@@ -553,10 +552,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : LongButton(
-                  label: 'Submit',
-                  onPressed: _submitReport,
-                ),
+              : LongButton(label: 'Submit', onPressed: _submitReport),
       ],
     );
   }

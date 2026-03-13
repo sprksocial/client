@@ -64,9 +64,7 @@ class ActorRepositoryImpl implements ActorRepository {
             jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger.d('Profile retrieved successfully from Spark');
-      return ProfileViewDetailed.fromJson(
-        result.data as Map<String, dynamic>,
-      );
+      return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
     });
   }
 
@@ -132,10 +130,7 @@ class ActorRepositoryImpl implements ActorRepository {
       final clampedLimit = limit.clamp(1, 100);
       final result = await atproto.get(
         NSID.parse('so.sprk.actor.searchActorsTypeahead'),
-        parameters: {
-          'q': query,
-          'limit': clampedLimit.toString(),
-        },
+        parameters: {'q': query, 'limit': clampedLimit.toString()},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) =>

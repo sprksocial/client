@@ -26,11 +26,7 @@ class ActionButton extends StatelessWidget {
     const pressedScale = 0.9;
     const iconSize = 34.0;
 
-    final sizedIcon = SizedBox(
-      width: iconSize,
-      height: iconSize,
-      child: icon,
-    );
+    final sizedIcon = SizedBox(width: iconSize, height: iconSize, child: icon);
 
     return SizedBox(
       width: baseSize,

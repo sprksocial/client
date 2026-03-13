@@ -173,11 +173,7 @@ class _StandaloneRepostsFeedPageState
             ),
           ),
           // Back button overlay
-          const Positioned(
-            top: 0,
-            left: 0,
-            child: AppOverlayBackButton(),
-          ),
+          const Positioned(top: 0, left: 0, child: AppOverlayBackButton()),
         ],
       ),
       bottomNavigationBar: _CommentBar(
@@ -204,10 +200,7 @@ class _StandaloneRepostsFeedPageState
 }
 
 class _CommentBar extends StatelessWidget {
-  const _CommentBar({
-    required this.bottomPadding,
-    required this.onTap,
-  });
+  const _CommentBar({required this.bottomPadding, required this.onTap});
 
   final double bottomPadding;
   final VoidCallback onTap;
@@ -251,10 +244,7 @@ class _CommentBar extends StatelessWidget {
                 ),
                 child: const Text(
                   'Add comment...',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white54, fontSize: 14),
                 ),
               ),
             ),

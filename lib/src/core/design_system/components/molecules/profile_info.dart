@@ -112,10 +112,7 @@ class _ProfileDescriptionText extends StatelessWidget {
     final spans = _buildTextSpans(text, usernameMatches);
 
     return RichText(
-      text: TextSpan(
-        style: style,
-        children: spans,
-      ),
+      text: TextSpan(style: style, children: spans),
     );
   }
 }

@@ -119,9 +119,8 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
           }
           return const SizedBox.shrink();
         },
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(FluentIcons.error_circle_24_regular),
-        ),
+        errorBuilder: (context, error, stackTrace) =>
+            const Center(child: Icon(FluentIcons.error_circle_24_regular)),
       ),
     );
   }
@@ -244,9 +243,10 @@ class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    _scrollAnimation = Tween<double>(begin: 0, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _scrollAnimation = Tween<double>(
+      begin: 0,
+      end: 0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     _previousIndex = widget.currentIndex;
     _targetScrollOffset = _calculateScrollOffset(widget.currentIndex);
     _currentScrollOffset = _targetScrollOffset;
@@ -318,10 +318,7 @@ class _ScrollingDotIndicatorState extends State<_ScrollingDotIndicator>
       _currentScrollOffset = currentVisualPosition;
 
       _scrollAnimation =
-          Tween<double>(
-            begin: currentVisualPosition,
-            end: newOffset,
-          ).animate(
+          Tween<double>(begin: currentVisualPosition, end: newOffset).animate(
             CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
           );
       _targetScrollOffset = newOffset;

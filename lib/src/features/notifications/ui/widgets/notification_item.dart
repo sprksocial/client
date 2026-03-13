@@ -144,9 +144,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     // Navigate based on notification type
     if (notification.reason == 'follow') {
       // Navigate to profile (use first author for grouped follows)
-      context.router.push(
-        ProfileRoute(did: notification.author.did),
-      );
+      context.router.push(ProfileRoute(did: notification.author.did));
     } else if (notification.reason == 'reply') {
       // Reply notification - navigate to root post with reply highlighted
       final replyUri = notification.uri.toString();
@@ -160,9 +158,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
         );
       } else {
         // Fallback to standalone post
-        context.router.push(
-          StandalonePostRoute(postUri: replyUri),
-        );
+        context.router.push(StandalonePostRoute(postUri: replyUri));
       }
     } else if (notification.reason == 'like' && _isReplySubject()) {
       // Like on a reply - get root post URI from embedded subject or fetch it
@@ -183,31 +179,23 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
         );
       } else if (context.mounted) {
         // Fallback to standalone post showing the reply
-        context.router.push(
-          StandalonePostRoute(postUri: replyUri),
-        );
+        context.router.push(StandalonePostRoute(postUri: replyUri));
       }
     } else if (notification.reasonSubject != null) {
       // Navigate to the post/thread
       final reasonSubjectStr = notification.reasonSubject!.toString();
-      context.router.push(
-        StandalonePostRoute(postUri: reasonSubjectStr),
-      );
+      context.router.push(StandalonePostRoute(postUri: reasonSubjectStr));
     } else {
       final collectionStr = notification.uri.collection.toString();
       if (collectionStr.startsWith('so.sprk.feed.post') ||
           collectionStr.startsWith('app.bsky.feed.post')) {
         // Navigate to the post
         final uriStr = notification.uri.toString();
-        context.router.push(
-          StandalonePostRoute(postUri: uriStr),
-        );
+        context.router.push(StandalonePostRoute(postUri: uriStr));
         return;
       }
       // Fallback to author profile
-      context.router.push(
-        ProfileRoute(did: notification.author.did),
-      );
+      context.router.push(ProfileRoute(did: notification.author.did));
     }
   }
 

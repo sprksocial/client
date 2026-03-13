@@ -48,9 +48,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
         feedActionControllerProvider(widget.feed).notifier,
       );
       _actionControllerNotifier!.setController(
-        FeedActionController(
-          onAdvanceAndRemove: scrollToNextAndRemovePrevious,
-        ),
+        FeedActionController(onAdvanceAndRemove: scrollToNextAndRemovePrevious),
       );
     });
   }
@@ -201,10 +199,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
                   if (shouldBeActive) {
                     return Stack(
                       children: [
-                        FeedPostWidget(
-                          index: index,
-                          feed: widget.feed,
-                        ),
+                        FeedPostWidget(index: index, feed: widget.feed),
                         const Positioned(
                           bottom: 10,
                           left: 10,
@@ -234,10 +229,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
                         );
                 } else {
                   if (shouldBeActive) {
-                    return FeedPostWidget(
-                      index: index,
-                      feed: widget.feed,
-                    );
+                    return FeedPostWidget(index: index, feed: widget.feed);
                   } else {
                     // SizedBox to maintain scroll position but hide content
                     return const DecoratedBox(

@@ -73,24 +73,21 @@ List<Widget> buildProfileGridSlivers({
               mainAxisSpacing: 5,
               childAspectRatio: 9 / 16,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final postUri = filteredUris[index];
-                final postView = state.postViews[postUri];
-                final postSource = state.postSources[postUri];
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final postUri = filteredUris[index];
+              final postView = state.postViews[postUri];
+              final postSource = state.postSources[postUri];
 
-                if (postView == null) {
-                  return const SizedBox.shrink();
-                }
+              if (postView == null) {
+                return const SizedBox.shrink();
+              }
 
-                return ProfileGridTile(
-                  postView: postView,
-                  postSource: postSource,
-                  onTap: () => onPostTap(context, ref, postUri),
-                );
-              },
-              childCount: filteredUris.length,
-            ),
+              return ProfileGridTile(
+                postView: postView,
+                postSource: postSource,
+                onTap: () => onPostTap(context, ref, postUri),
+              );
+            }, childCount: filteredUris.length),
           ),
         ),
         // Bottom padding for tab bar

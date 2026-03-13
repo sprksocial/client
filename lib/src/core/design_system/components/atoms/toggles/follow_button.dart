@@ -46,9 +46,7 @@ class FollowButton extends StatelessWidget {
             color: isDark ? AppColors.red900 : AppColors.red50,
             borderRadius: const BorderRadius.all(Radius.circular(8)),
             border: Border.fromBorderSide(
-              BorderSide(
-                color: isDark ? AppColors.red800 : AppColors.red200,
-              ),
+              BorderSide(color: isDark ? AppColors.red800 : AppColors.red200),
             ),
           ),
           child: Align(

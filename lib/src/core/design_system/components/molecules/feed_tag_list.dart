@@ -118,10 +118,7 @@ class _FeedTagListState extends State<FeedTagList> {
 
                 return Transform.scale(
                   scale: scale,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: child,
-                  ),
+                  child: Material(color: Colors.transparent, child: child),
                 );
               },
               child: child,
@@ -220,9 +217,6 @@ class _FeedTagListState extends State<FeedTagList> {
           )
         : listView;
 
-    return SizedBox(
-      height: 30,
-      child: fadedList,
-    );
+    return SizedBox(height: 30, child: fadedList);
   }
 }

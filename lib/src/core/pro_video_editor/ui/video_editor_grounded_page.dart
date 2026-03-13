@@ -57,9 +57,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   final VideoEditorConfigs _videoConfigs = const VideoEditorConfigs(
     enableTrimBar: false,
     playTimeSmoothingDuration: Duration(milliseconds: 600),
-    widgets: VideoEditorWidgets(
-      headerToolbar: SizedBox.shrink(),
-    ),
+    widgets: VideoEditorWidgets(headerToolbar: SizedBox.shrink()),
   );
 
   /// Indicates whether a seek operation is in progress.
@@ -156,9 +154,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
     if (updateClipThumbnails) {
       _configs.clipsEditor.clips.first = _configs.clipsEditor.clips.first
-          .copyWith(
-            thumbnails: temporaryThumbnails,
-          );
+          .copyWith(thumbnails: temporaryThumbnails);
     }
 
     if (!mounted) return;
@@ -219,9 +215,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
     // Update clip duration and thumbnails after first frame
     _configs.clipsEditor.clips.first = _configs.clipsEditor.clips.first
-        .copyWith(
-          duration: _videoMetadata.duration,
-        );
+        .copyWith(duration: _videoMetadata.duration);
     if (!widget.storyMode) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _generateThumbnails();
@@ -298,12 +292,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
             title: audio.title,
             subtitle: audio.author.handle,
             duration: const Duration(seconds: 9),
-            image: EditorImage(
-              networkUrl: audio.coverArt.toString(),
-            ),
-            audio: EditorAudio(
-              networkUrl: audio.audio?.toString(),
-            ),
+            image: EditorImage(networkUrl: audio.coverArt.toString()),
+            audio: EditorAudio(networkUrl: audio.audio?.toString()),
           ),
         ),
       );

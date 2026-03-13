@@ -72,10 +72,7 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
                 // Title with music icon
                 Row(
                   children: [
-                    AppIcons.music(
-                      size: 16,
-                      color: colorScheme.primary,
-                    ),
+                    AppIcons.music(size: 16, color: colorScheme.primary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -144,10 +141,7 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
 }
 
 class _CoverArtWithPlayer extends StatefulWidget {
-  const _CoverArtWithPlayer({
-    required this.coverArtUrl,
-    this.audioUrl,
-  });
+  const _CoverArtWithPlayer({required this.coverArtUrl, this.audioUrl});
 
   final String coverArtUrl;
   final String? audioUrl;
@@ -286,10 +280,7 @@ class _CoverArtWithPlayerState extends State<_CoverArtWithPlayer> {
                   ),
                   errorWidget: (context, url, error) => ColoredBox(
                     color: AppColors.grey700,
-                    child: AppIcons.music(
-                      size: 32,
-                      color: AppColors.grey400,
-                    ),
+                    child: AppIcons.music(size: 32, color: AppColors.grey400),
                   ),
                 ),
               ),

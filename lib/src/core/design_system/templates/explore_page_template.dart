@@ -29,14 +29,9 @@ class ExplorePageTemplate extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: searchWidget,
-            ),
+            Padding(padding: const EdgeInsets.all(16), child: searchWidget),
             if (showTabs && tabsWidget != null) tabsWidget!,
-            Expanded(
-              child: showTabs ? contentWidget : emptyStateWidget,
-            ),
+            Expanded(child: showTabs ? contentWidget : emptyStateWidget),
           ],
         ),
       ),

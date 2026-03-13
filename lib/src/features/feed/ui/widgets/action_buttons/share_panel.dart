@@ -52,11 +52,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
         ShareParams(uri: Uri.parse(widget.shareUrl)),
       );
     } catch (e, st) {
-      logger.e(
-        'Failed to open native share sheet',
-        error: e,
-        stackTrace: st,
-      );
+      logger.e('Failed to open native share sheet', error: e, stackTrace: st);
     }
   }
 
@@ -201,11 +197,8 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                           child: child,
                         );
                       }
-                      final scaleAnimation =
-                          Tween<double>(
-                            begin: 0.7,
-                            end: 1,
-                          ).animate(
+                      final scaleAnimation = Tween<double>(begin: 0.7, end: 1)
+                          .animate(
                             CurvedAnimation(
                               parent: animation,
                               curve: Curves.easeOutBack,

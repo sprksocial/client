@@ -18,10 +18,7 @@ class NotificationNotifier extends _$NotificationNotifier {
   bool _isLoading = false;
 
   @override
-  NotificationState build({
-    bool? priority,
-    List<String>? reasons,
-  }) {
+  NotificationState build({bool? priority, List<String>? reasons}) {
     _notificationRepository = GetIt.instance<SprkRepository>().notification;
     _logger = GetIt.instance<LogService>().getLogger('NotificationNotifier');
 
@@ -30,10 +27,7 @@ class NotificationNotifier extends _$NotificationNotifier {
       loadNotifications(priority: priority, reasons: reasons);
     });
 
-    return const NotificationState(
-      notifications: [],
-      isLoading: true,
-    );
+    return const NotificationState(notifications: [], isLoading: true);
   }
 
   /// Load initial notifications or refresh
@@ -85,10 +79,7 @@ class NotificationNotifier extends _$NotificationNotifier {
   }
 
   /// Load more notifications (pagination)
-  Future<void> loadMore({
-    bool? priority,
-    List<String>? reasons,
-  }) async {
+  Future<void> loadMore({bool? priority, List<String>? reasons}) async {
     if (_isLoading || state.isLoadingMore || !state.hasMore) {
       return;
     }
@@ -170,10 +161,7 @@ class NotificationNotifier extends _$NotificationNotifier {
   }
 
   /// Refresh notifications
-  Future<void> refresh({
-    bool? priority,
-    List<String>? reasons,
-  }) async {
+  Future<void> refresh({bool? priority, List<String>? reasons}) async {
     await loadNotifications(
       priority: priority,
       reasons: reasons,

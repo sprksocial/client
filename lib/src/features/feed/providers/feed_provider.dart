@@ -170,43 +170,33 @@ class FeedNotifier extends _$FeedNotifier {
 
       for (final newLabel in allLabels) {
         final uri = AtUri.parse(newLabel.uri);
-        extraInfo.update(
-          uri,
-          (value) {
-            final existingLabels = value.postLabels;
+        extraInfo.update(uri, (value) {
+          final existingLabels = value.postLabels;
 
-            // if new label in existing labels,
-            //check if it should replace existing one
-            if (existingLabels.any((label) => label.val == newLabel.val)) {
-              final existingLabel = existingLabels.firstWhere(
-                (label) => label.val == newLabel.val,
-              );
+          // if new label in existing labels,
+          //check if it should replace existing one
+          if (existingLabels.any((label) => label.val == newLabel.val)) {
+            final existingLabel = existingLabels.firstWhere(
+              (label) => label.val == newLabel.val,
+            );
 
-              // if new label says that existing one is negated or expired,
-              // replace the existing one
-              if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) &&
-                      newLabel.isNeg) ||
-                  existingLabel.exp != null &&
-                      existingLabel.exp!.isBefore(DateTime.now())) {
-                existingLabels.remove(existingLabel);
-                return (
-                  postLabels: [...existingLabels, newLabel],
-                );
-              } else {
-                // if the new label is the same as the existing one, do nothing
-                return value;
-              }
+            // if new label says that existing one is negated or expired,
+            // replace the existing one
+            if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) &&
+                    newLabel.isNeg) ||
+                existingLabel.exp != null &&
+                    existingLabel.exp!.isBefore(DateTime.now())) {
+              existingLabels.remove(existingLabel);
+              return (postLabels: [...existingLabels, newLabel]);
             } else {
-              // if the new label is not in the existing labels, add it
-              return (
-                postLabels: [...existingLabels, newLabel],
-              );
+              // if the new label is the same as the existing one, do nothing
+              return value;
             }
-          },
-          ifAbsent: () => (
-            postLabels: [newLabel],
-          ),
-        );
+          } else {
+            // if the new label is not in the existing labels, add it
+            return (postLabels: [...existingLabels, newLabel]);
+          }
+        }, ifAbsent: () => (postLabels: [newLabel]));
       }
 
       final filteredPosts = await _filterHiddenPosts(

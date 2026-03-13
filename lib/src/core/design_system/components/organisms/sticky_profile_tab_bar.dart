@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 class StickyProfileTabBar extends SliverPersistentHeaderDelegate {
-  StickyProfileTabBar({
-    required this.child,
-    this.height = 50.0,
-  });
+  StickyProfileTabBar({required this.child, this.height = 50.0});
 
   final Widget child;
   final double height;
@@ -15,10 +12,7 @@ class StickyProfileTabBar extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Material(
-      elevation: shrinkOffset > 0 ? 1.0 : 0.0,
-      child: child,
-    );
+    return Material(elevation: shrinkOffset > 0 ? 1.0 : 0.0, child: child);
   }
 
   @override

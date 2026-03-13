@@ -22,10 +22,7 @@ import 'package:spark/src/core/pro_image_editor/utils/story_image_cropper.dart';
 /// - NO crop/rotate tools (to maintain aspect ratio)
 /// - Custom UI matching the app's design language
 class StoryImageEditorPage extends StatefulWidget {
-  const StoryImageEditorPage({
-    required this.imageFile,
-    super.key,
-  });
+  const StoryImageEditorPage({required this.imageFile, super.key});
 
   /// The source image file to edit.
   final File imageFile;
@@ -88,10 +85,8 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage> {
       // Initialize editor config
       _configs = StoryImageEditorConfigs.build(
         useMaterialDesign: _useMaterialDesign,
-        imagePreviewBuilder: () => Image.file(
-          _croppedImageFile!,
-          fit: BoxFit.cover,
-        ),
+        imagePreviewBuilder: () =>
+            Image.file(_croppedImageFile!, fit: BoxFit.cover),
       );
 
       if (mounted) {
@@ -117,13 +112,9 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage> {
     await file.writeAsBytes(bytes, flush: true);
 
     if (mounted) {
-      Navigator.of(context).pop(
-        XFile(
-          file.path,
-          mimeType: 'image/png',
-          name: filename,
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pop(XFile(file.path, mimeType: 'image/png', name: filename));
     }
   }
 
@@ -297,13 +288,9 @@ class _StoryBlankCanvasEditorPageState
     await file.writeAsBytes(bytes, flush: true);
 
     if (mounted) {
-      Navigator.of(context).pop(
-        XFile(
-          file.path,
-          mimeType: 'image/png',
-          name: filename,
-        ),
-      );
+      Navigator.of(
+        context,
+      ).pop(XFile(file.path, mimeType: 'image/png', name: filename));
     }
   }
 
@@ -357,10 +344,7 @@ class _StoryBlankCanvasEditorPageState
           'layers': [layer.toMap()],
         },
       ],
-      'imgSize': {
-        'width': storySize.width,
-        'height': storySize.height,
-      },
+      'imgSize': {'width': storySize.width, 'height': storySize.height},
       'lastRenderedImgSize': {
         'width': storySize.width,
         'height': storySize.height,
@@ -395,9 +379,7 @@ class _StoryBlankCanvasEditorPageState
     if (!_isInitialized) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
       );
     }
 

@@ -30,10 +30,7 @@ Map<String, dynamic> _audioRecordToJson(AudioRecord record) => record.toJson();
 @freezed
 abstract class AudioDetails with _$AudioDetails {
   @JsonSerializable(explicitToJson: true)
-  const factory AudioDetails({
-    String? artist,
-    String? title,
-  }) = _AudioDetails;
+  const factory AudioDetails({String? artist, String? title}) = _AudioDetails;
 
   factory AudioDetails.fromJson(Map<String, dynamic> json) =>
       _$AudioDetailsFromJson(json);

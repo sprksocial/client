@@ -106,9 +106,7 @@ class SoundRepositoryImpl implements SoundRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{
-        'limit': limit,
-      };
+      final parameters = <String, dynamic>{'limit': limit};
       if (cursor != null) {
         parameters['cursor'] = cursor;
       }

@@ -77,9 +77,7 @@ class ImageReviewPageTemplate extends StatelessWidget {
           color: theme.textTheme.titleLarge?.color,
           tooltip: 'Back',
         ),
-        title: Text(
-          title,
-        ),
+        title: Text(title),
         centerTitle: false,
       ),
       body: SafeArea(
@@ -341,10 +339,7 @@ class _ImagePager extends StatelessWidget {
 }
 
 class _DescriptionSection extends StatelessWidget {
-  const _DescriptionSection({
-    required this.controller,
-    required this.maxChars,
-  });
+  const _DescriptionSection({required this.controller, required this.maxChars});
 
   final TextEditingController controller;
   final int maxChars;
@@ -411,9 +406,7 @@ class _CrossPostSection extends StatelessWidget {
             ),
             title: Text(
               'Post to Bluesky',
-              style: AppTypography.textMediumBold.copyWith(
-                color: titleColor,
-              ),
+              style: AppTypography.textMediumBold.copyWith(color: titleColor),
             ),
             trailing: Switch(value: value, onChanged: onChanged),
             onTap: () => onChanged(!value),

@@ -269,10 +269,7 @@ class BskyFeedAdapter {
         final text = record['text'] as String? ?? '';
         final facets = record['facets'] as List<dynamic>? ?? [];
 
-        record['caption'] = {
-          'text': text,
-          'facets': facets,
-        };
+        record['caption'] = {'text': text, 'facets': facets};
 
         record[r'$type'] = 'so.sprk.feed.post';
 
@@ -403,10 +400,7 @@ class BskyFeedAdapter {
     switch (media) {
       case MediaImage(:final image, :final alt):
         // Convert single Spark image to Bluesky embed images
-        final bskyImage = EmbedImagesImage(
-          alt: alt ?? '',
-          image: image,
-        );
+        final bskyImage = EmbedImagesImage(alt: alt ?? '', image: image);
         return UFeedPostEmbed.embedImages(
           data: EmbedImages(images: [bskyImage]),
         );
@@ -462,10 +456,7 @@ class BskyFeedAdapter {
     return FeedPostRecord(
       text: text,
       createdAt: createdAt,
-      reply: ReplyRef(
-        root: reply.root,
-        parent: reply.parent,
-      ),
+      reply: ReplyRef(root: reply.root, parent: reply.parent),
       embed: embed,
     );
   }
@@ -642,10 +633,7 @@ class BskyFeedAdapter {
 
   /// Check if a FeedViewPost is a reply
   bool _feedViewPostIsReply(FeedViewPost feedViewPost) {
-    return feedViewPost.map(
-      post: (p) => p.reply != null,
-      reply: (r) => true,
-    );
+    return feedViewPost.map(post: (p) => p.reply != null, reply: (r) => true);
   }
 
   /// Process raw Bluesky FeedViewPost list and convert to Spark format

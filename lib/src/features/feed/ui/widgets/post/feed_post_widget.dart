@@ -18,11 +18,7 @@ import 'package:spark/src/features/home/providers/navigation_provider.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class FeedPostWidget extends ConsumerStatefulWidget {
-  const FeedPostWidget({
-    required this.index,
-    required this.feed,
-    super.key,
-  });
+  const FeedPostWidget({required this.index, required this.feed, super.key});
 
   final int index;
   final Feed feed;
@@ -311,9 +307,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                       _videoPlayerKey.currentState?.pauseVideo();
                       final isBskyPost = currentPost.uri.collection
                           .toString()
-                          .startsWith(
-                            'app.bsky',
-                          );
+                          .startsWith('app.bsky');
                       context.router.push(
                         ProfileRoute(
                           did: currentPost.author.did,

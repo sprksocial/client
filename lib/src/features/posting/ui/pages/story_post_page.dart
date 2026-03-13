@@ -15,14 +15,11 @@ import 'package:spark/src/features/posting/providers/video_upload_provider.dart'
 /// Shows a loading indicator while uploading and posting.
 @RoutePage()
 class StoryPostPage extends ConsumerStatefulWidget {
-  const StoryPostPage({
-    this.imageFile,
-    this.videoPath,
-    super.key,
-  }) : assert(
-         imageFile != null || videoPath != null,
-         'Either imageFile or videoPath must be provided',
-       );
+  const StoryPostPage({this.imageFile, this.videoPath, super.key})
+    : assert(
+        imageFile != null || videoPath != null,
+        'Either imageFile or videoPath must be provided',
+      );
 
   final XFile? imageFile;
   final String? videoPath;
@@ -216,10 +213,7 @@ class _StoryPostingProgressCard extends StatelessWidget {
           const SizedBox(height: 10),
           const Text(
             'Keep this screen open. This usually takes a few seconds.',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
             textAlign: TextAlign.center,
           ),
         ],

@@ -44,9 +44,8 @@ Map<String, dynamic> _storyRecordToJson(StoryRecord record) => record.toJson();
 @freezed
 abstract class GeneratorViewerState with _$GeneratorViewerState {
   @JsonSerializable(explicitToJson: true)
-  const factory GeneratorViewerState({
-    @AtUriConverter() AtUri? like,
-  }) = _GeneratorViewerState;
+  const factory GeneratorViewerState({@AtUriConverter() AtUri? like}) =
+      _GeneratorViewerState;
   const GeneratorViewerState._();
 
   factory GeneratorViewerState.fromJson(Map<String, dynamic> json) =>
@@ -95,9 +94,8 @@ abstract class Feed with _$Feed {
 @freezed
 abstract class SkeletonFeedPost with _$SkeletonFeedPost {
   @JsonSerializable(explicitToJson: true)
-  const factory SkeletonFeedPost({
-    @AtUriConverter() required AtUri uri,
-  }) = _SkeletonFeedPost;
+  const factory SkeletonFeedPost({@AtUriConverter() required AtUri uri}) =
+      _SkeletonFeedPost;
 
   factory SkeletonFeedPost.fromJson(Map<String, dynamic> json) =>
       _$SkeletonFeedPostFromJson(json);
@@ -124,10 +122,8 @@ sealed class FeedViewPost with _$FeedViewPost {
 
   @FreezedUnionValue('so.sprk.feed.defs#feedPostView')
   @JsonSerializable(explicitToJson: true)
-  const factory FeedViewPost.post({
-    required PostView post,
-    ReplyRef? reply,
-  }) = FeedViewPostPost;
+  const factory FeedViewPost.post({required PostView post, ReplyRef? reply}) =
+      FeedViewPostPost;
 
   @FreezedUnionValue('so.sprk.feed.defs#feedReplyView')
   @JsonSerializable(explicitToJson: true)
@@ -142,34 +138,22 @@ sealed class FeedViewPost with _$FeedViewPost {
   PostView? get asPost => mapOrNull(post: (p) => p.post);
   ReplyView? get asReply => mapOrNull(reply: (r) => r.reply);
 
-  ProfileViewBasic get author => map(
-    post: (p) => p.post.author,
-    reply: (r) => r.reply.author,
-  );
+  ProfileViewBasic get author =>
+      map(post: (p) => p.post.author, reply: (r) => r.reply.author);
 
-  AtUri get uri => map(
-    post: (p) => p.post.uri,
-    reply: (r) => r.reply.uri,
-  );
+  AtUri get uri => map(post: (p) => p.post.uri, reply: (r) => r.reply.uri);
 
-  String get cid => map(
-    post: (p) => p.post.cid,
-    reply: (r) => r.reply.cid,
-  );
+  String get cid => map(post: (p) => p.post.cid, reply: (r) => r.reply.cid);
 
-  MediaView? get media => map(
-    post: (p) => p.post.displayMedia,
-    reply: (r) => r.reply.media,
-  );
+  MediaView? get media =>
+      map(post: (p) => p.post.displayMedia, reply: (r) => r.reply.media);
 
   ViewerState? get viewerState => mapOrNull(post: (p) => p.post.viewer);
   ReplyViewerState? get replyViewerState =>
       mapOrNull(reply: (r) => r.reply.viewer);
 
-  String get displayText => map(
-    post: (p) => p.post.displayText,
-    reply: (r) => r.reply.displayText,
-  );
+  String get displayText =>
+      map(post: (p) => p.post.displayText, reply: (r) => r.reply.displayText);
 
   List<Facet> get displayFacets => map(
     post: (p) => p.post.displayFacets,
@@ -180,10 +164,8 @@ sealed class FeedViewPost with _$FeedViewPost {
 @freezed
 abstract class FeedView with _$FeedView {
   @JsonSerializable(explicitToJson: true)
-  const factory FeedView({
-    required List<FeedViewPost> feed,
-    String? cursor,
-  }) = _FeedView;
+  const factory FeedView({required List<FeedViewPost> feed, String? cursor}) =
+      _FeedView;
   const FeedView._();
 
   factory FeedView.fromJson(Map<String, dynamic> json) =>

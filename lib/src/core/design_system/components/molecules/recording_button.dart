@@ -144,10 +144,7 @@ class _RecordingButtonState extends State<RecordingButton>
               height: _outerSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: _ringWidth,
-                ),
+                border: Border.all(color: Colors.white, width: _ringWidth),
               ),
             ),
             // Animated inner shape (white circle -> red square)

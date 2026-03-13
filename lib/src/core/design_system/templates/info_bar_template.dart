@@ -116,9 +116,7 @@ class _InfoBarTemplateState extends State<InfoBarTemplate>
             if (widget.showFollowButton)
               Padding(
                 padding: const EdgeInsets.only(left: 8, top: 2),
-                child: FollowPillButton(
-                  onPressed: widget.onFollow ?? () {},
-                ),
+                child: FollowPillButton(onPressed: widget.onFollow ?? () {}),
               ),
           ],
         ),

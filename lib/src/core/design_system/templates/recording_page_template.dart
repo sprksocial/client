@@ -78,9 +78,7 @@ class RecordingPageTemplate extends StatelessWidget {
                         Positioned.fill(
                           child: Transform.scale(
                             scale: scale,
-                            child: Center(
-                              child: cameraPreview,
-                            ),
+                            child: Center(child: cameraPreview),
                           ),
                         ),
                         // Top controls aligned within rounded view
@@ -122,10 +120,7 @@ class RecordingPageTemplate extends StatelessWidget {
 }
 
 class _TopOverlay extends StatelessWidget {
-  const _TopOverlay({
-    required this.onBack,
-    required this.timer,
-  });
+  const _TopOverlay({required this.onBack, required this.timer});
 
   final VoidCallback onBack;
   final Widget timer;
@@ -206,10 +201,7 @@ class _BottomOverlay extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [
-              Colors.black.withAlpha(180),
-              Colors.transparent,
-            ],
+            colors: [Colors.black.withAlpha(180), Colors.transparent],
           ),
         ),
         padding: EdgeInsets.only(

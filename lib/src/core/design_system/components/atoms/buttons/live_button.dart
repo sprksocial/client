@@ -7,11 +7,7 @@ class LiveButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
 
-  const LiveButton({
-    required this.child,
-    super.key,
-    this.onTap,
-  });
+  const LiveButton({required this.child, super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +32,7 @@ class LiveButton extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: Center(
-                child: child,
-              ),
+              child: Center(child: child),
             ),
           ),
         ),

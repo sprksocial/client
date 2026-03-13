@@ -169,10 +169,7 @@ class _SoundPageState extends ConsumerState<SoundPage> {
 }
 
 class _SoundPostTile extends StatelessWidget {
-  const _SoundPostTile({
-    required this.post,
-    required this.onTap,
-  });
+  const _SoundPostTile({required this.post, required this.onTap});
 
   final PostView post;
   final VoidCallback onTap;

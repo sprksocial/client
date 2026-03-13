@@ -5,10 +5,7 @@ import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 
 /// Data class representing an avatar in the stack.
 class AvatarData {
-  const AvatarData({
-    required this.imageUrl,
-    required this.username,
-  });
+  const AvatarData({required this.imageUrl, required this.username});
 
   final String imageUrl;
   final String username;

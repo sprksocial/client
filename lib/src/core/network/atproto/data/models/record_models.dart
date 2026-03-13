@@ -124,17 +124,11 @@ sealed class Media with _$Media {
   // Spark media types (new schema)
   @FreezedUnionValue('so.sprk.media.video')
   @JsonSerializable(explicitToJson: true)
-  const factory Media.video({
-    required Blob video,
-    String? alt,
-  }) = MediaVideo;
+  const factory Media.video({required Blob video, String? alt}) = MediaVideo;
 
   @FreezedUnionValue('so.sprk.media.image')
   @JsonSerializable(explicitToJson: true)
-  const factory Media.image({
-    required Blob image,
-    String? alt,
-  }) = MediaImage;
+  const factory Media.image({required Blob image, String? alt}) = MediaImage;
 
   @FreezedUnionValue('so.sprk.media.images')
   @JsonSerializable(explicitToJson: true)
@@ -143,10 +137,8 @@ sealed class Media with _$Media {
   // Bluesky embed types
   @FreezedUnionValue('app.bsky.embed.video')
   @JsonSerializable(explicitToJson: true)
-  const factory Media.bskyVideo({
-    required Blob video,
-    String? alt,
-  }) = MediaBskyVideo;
+  const factory Media.bskyVideo({required Blob video, String? alt}) =
+      MediaBskyVideo;
 
   @FreezedUnionValue('app.bsky.embed.images')
   @JsonSerializable(explicitToJson: true)
@@ -167,9 +159,8 @@ sealed class Media with _$Media {
 
   @FreezedUnionValue('app.bsky.embed.external')
   @JsonSerializable(explicitToJson: true)
-  const factory Media.bskyExternal({
-    required EmbedExternal external,
-  }) = MediaBskyExternal;
+  const factory Media.bskyExternal({required EmbedExternal external}) =
+      MediaBskyExternal;
 
   factory Media.fromJson(Map<String, dynamic> json) => _$MediaFromJson(json);
 }

@@ -256,10 +256,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   onPressed: _closeComments,
-                  icon: Icon(
-                    FluentIcons.dismiss_24_regular,
-                    color: textColor,
-                  ),
+                  icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
                 ),
               ],
             ),
@@ -267,9 +264,8 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
         ),
         if (hasCrossposts)
           _CrosspostCommentsBanner(
-            onTap: () => context.router.push(
-              CrosspostCommentsRoute(postUri: _postUri),
-            ),
+            onTap: () =>
+                context.router.push(CrosspostCommentsRoute(postUri: _postUri)),
           ),
         Expanded(
           child: asyncState.when(

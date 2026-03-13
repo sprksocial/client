@@ -38,9 +38,7 @@ abstract class Message with _$Message {
 @freezed
 abstract class SenderView with _$SenderView {
   @JsonSerializable(explicitToJson: true)
-  const factory SenderView({
-    required String did,
-  }) = _SenderView;
+  const factory SenderView({required String did}) = _SenderView;
   const SenderView._();
 
   factory SenderView.fromJson(Map<String, dynamic> json) =>

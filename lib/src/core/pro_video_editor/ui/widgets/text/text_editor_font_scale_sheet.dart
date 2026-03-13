@@ -61,10 +61,7 @@ class _TextEditorFontScaleSheetState extends State<TextEditorFontScaleSheet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHeader(),
-                _buildBody(),
-              ],
+              children: [_buildHeader(), _buildBody()],
             ),
           ),
         ),

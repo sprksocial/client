@@ -45,9 +45,8 @@ abstract class ListNotificationsResponse with _$ListNotificationsResponse {
 @freezed
 abstract class UnreadCountResponse with _$UnreadCountResponse {
   @JsonSerializable(explicitToJson: true)
-  const factory UnreadCountResponse({
-    required int count,
-  }) = _UnreadCountResponse;
+  const factory UnreadCountResponse({required int count}) =
+      _UnreadCountResponse;
   const UnreadCountResponse._();
 
   factory UnreadCountResponse.fromJson(Map<String, dynamic> json) =>
@@ -57,9 +56,8 @@ abstract class UnreadCountResponse with _$UnreadCountResponse {
 @freezed
 abstract class UpdateSeenRequest with _$UpdateSeenRequest {
   @JsonSerializable(explicitToJson: true)
-  const factory UpdateSeenRequest({
-    required DateTime seenAt,
-  }) = _UpdateSeenRequest;
+  const factory UpdateSeenRequest({required DateTime seenAt}) =
+      _UpdateSeenRequest;
   const UpdateSeenRequest._();
 
   factory UpdateSeenRequest.fromJson(Map<String, dynamic> json) =>

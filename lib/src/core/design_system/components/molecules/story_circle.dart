@@ -48,10 +48,7 @@ class StoryCircle extends StatelessWidget {
   }
 
   /// Constructor variant for a "Close Friends" story with a green border.
-  factory StoryCircle.cf({
-    required String userName,
-    required String imageUrl,
-  }) {
+  factory StoryCircle.cf({required String userName, required String imageUrl}) {
     return StoryCircle._(
       type: StoryType.cf,
       userName: userName,
@@ -180,9 +177,7 @@ class StoryCircle extends StatelessWidget {
 }
 
 class _LiveBadge extends StatelessWidget {
-  const _LiveBadge({
-    required this.live,
-  });
+  const _LiveBadge({required this.live});
 
   final String live;
 

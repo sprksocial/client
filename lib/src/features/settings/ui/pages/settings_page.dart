@@ -25,9 +25,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // Call logout on the auth provider
@@ -56,9 +54,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       final authRepository = GetIt.instance<AuthRepository>();
@@ -199,9 +195,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: const AppLeadingButton(),
-        title: const Text(
-          'Settings',
-        ),
+        title: const Text('Settings'),
         centerTitle: true,
       ),
       body: ListView(

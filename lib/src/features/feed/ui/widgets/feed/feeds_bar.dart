@@ -190,9 +190,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
       selectedTagId: settings.activeFeed.config.id,
       onLeadingPressed: () => _showCreateMenu(context),
       onTagTap: (tagId) {
-        final feed = pinnedFeeds.firstWhere(
-          (f) => f.config.id == tagId,
-        );
+        final feed = pinnedFeeds.firstWhere((f) => f.config.id == tagId);
 
         if (settings.activeFeed == feed) {
           ref.read(feedRefreshTriggerProvider(feed).notifier).trigger();
@@ -205,9 +203,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
         }
       },
       onLongPress: (tagData) {
-        final feed = pinnedFeeds.firstWhere(
-          (f) => f.config.id == tagData.id,
-        );
+        final feed = pinnedFeeds.firstWhere((f) => f.config.id == tagData.id);
         _showFeedOptionsSheet(context, feed);
       },
     );

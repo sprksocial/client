@@ -77,9 +77,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
 
       for (final did in dids) {
         try {
-          final profile = profiles.firstWhere(
-            (p) => p.did == did,
-          );
+          final profile = profiles.firstWhere((p) => p.did == did);
           profileMap[did] = profile;
         } catch (_) {
           profileMap[did] = null;
@@ -306,76 +304,73 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
               )
             else
               SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final did = _labelerDids[index];
-                    final profile = _labelerProfiles[did];
-                    final isDefault = did == _defaultModServiceDid;
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final did = _labelerDids[index];
+                  final profile = _labelerProfiles[did];
+                  final isDefault = did == _defaultModServiceDid;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      child: Card(
-                        child: InkWell(
-                          onTap: () {
-                            context.router.push(
-                              LabelerLabelSettingsRoute(did: did),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: profile != null
-                                      ? _buildProfileCardWithoutBorder(
-                                          profile: profile,
-                                          colorScheme: colorScheme,
-                                          isDefault: isDefault,
-                                        )
-                                      : _buildFallbackLabelerCard(
-                                          did,
-                                          colorScheme,
-                                          isDefault: isDefault,
-                                        ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    child: Card(
+                      child: InkWell(
+                        onTap: () {
+                          context.router.push(
+                            LabelerLabelSettingsRoute(did: did),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: profile != null
+                                    ? _buildProfileCardWithoutBorder(
+                                        profile: profile,
+                                        colorScheme: colorScheme,
+                                        isDefault: isDefault,
+                                      )
+                                    : _buildFallbackLabelerCard(
+                                        did,
+                                        colorScheme,
+                                        isDefault: isDefault,
+                                      ),
+                              ),
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: AppIcons.gear(
+                                  color: colorScheme.onSurface,
                                 ),
+                                onPressed: () {
+                                  context.router.push(
+                                    LabelerLabelSettingsRoute(did: did),
+                                  );
+                                },
+                                tooltip: 'Label settings',
+                              ),
+                              if (!isDefault)
                                 IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
-                                  icon: AppIcons.gear(
-                                    color: colorScheme.onSurface,
-                                  ),
-                                  onPressed: () {
-                                    context.router.push(
-                                      LabelerLabelSettingsRoute(did: did),
-                                    );
-                                  },
-                                  tooltip: 'Label settings',
+                                  icon: const Icon(Icons.delete_outline),
+                                  color: colorScheme.error,
+                                  onPressed: () => _removeLabeler(did),
+                                  tooltip: 'Remove labeler',
                                 ),
-                                if (!isDefault)
-                                  IconButton(
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    icon: const Icon(Icons.delete_outline),
-                                    color: colorScheme.error,
-                                    onPressed: () => _removeLabeler(did),
-                                    tooltip: 'Remove labeler',
-                                  ),
-                              ],
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                    );
-                  },
-                  childCount: _labelerDids.length,
-                ),
+                    ),
+                  );
+                }, childCount: _labelerDids.length),
               ),
           ],
         ),

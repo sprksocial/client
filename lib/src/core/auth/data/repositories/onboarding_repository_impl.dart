@@ -55,9 +55,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     if (_did == null) return null;
 
     try {
-      final uri = AtUri.parse(
-        'at://$_did/app.bsky.actor.profile/self',
-      );
+      final uri = AtUri.parse('at://$_did/app.bsky.actor.profile/self');
       final response = await _repoRepository.getRecord(uri: uri);
       return ActorProfileRecord.fromJson(response.record.toJson());
     } catch (e) {

@@ -8,11 +8,7 @@ part 'stories_by_author.g.dart';
 FutureOr<
   ({Map<ProfileViewBasic, List<StoryView>> storiesByAuthor, String? cursor})
 >
-storiesByAuthor(
-  Ref ref, {
-  int limit = 30,
-  String? cursor,
-}) async {
+storiesByAuthor(Ref ref, {int limit = 30, String? cursor}) async {
   final storyRepository = GetIt.instance<StoryRepository>();
   final result = await storyRepository.getStoriesTimeline(
     limit: limit,

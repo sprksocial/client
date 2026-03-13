@@ -19,10 +19,7 @@ import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
 class LabelerLabelSettingsPage extends ConsumerStatefulWidget {
   final String did;
 
-  const LabelerLabelSettingsPage({
-    required this.did,
-    super.key,
-  });
+  const LabelerLabelSettingsPage({required this.did, super.key});
 
   @override
   ConsumerState<LabelerLabelSettingsPage> createState() =>
@@ -248,11 +245,7 @@ class _LabelerLabelSettingsPageState
   }
 
   bool _isAdultOnlyLabel(String label) {
-    const adultOnlyLabels = {
-      'porn',
-      'sexual',
-      'nsfl',
-    };
+    const adultOnlyLabels = {'porn', 'sexual', 'nsfl'};
     return adultOnlyLabels.contains(label);
   }
 

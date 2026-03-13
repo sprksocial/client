@@ -56,11 +56,7 @@ class VideoToolbar extends StatelessWidget {
                 label: 'Crop',
                 onPressed: onCrop,
               ),
-              _ToolButton(
-                icon: Icons.tune,
-                label: 'Tune',
-                onPressed: onTune,
-              ),
+              _ToolButton(icon: Icons.tune, label: 'Tune', onPressed: onTune),
               _ToolButton(
                 icon: Icons.filter,
                 label: 'Filter',
@@ -117,11 +113,7 @@ class _ToolButton extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  icon,
-                  color: AppColors.greyWhite,
-                  size: 24,
-                ),
+                Icon(icon, color: AppColors.greyWhite, size: 24),
                 const SizedBox(height: 4),
                 Text(
                   label,

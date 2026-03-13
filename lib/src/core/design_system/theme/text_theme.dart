@@ -37,8 +37,6 @@ class AppTextTheme {
 
   /// Dark theme text theme
   /// Same typography but optimized for dark backgrounds
-  static TextTheme get dark => light.apply(
-    bodyColor: Colors.white,
-    displayColor: Colors.white,
-  );
+  static TextTheme get dark =>
+      light.apply(bodyColor: Colors.white, displayColor: Colors.white);
 }

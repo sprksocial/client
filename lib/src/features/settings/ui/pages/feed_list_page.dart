@@ -55,10 +55,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
             ),
             style: TextButton.styleFrom(
               foregroundColor: colorScheme.primary,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
           ),
         ],

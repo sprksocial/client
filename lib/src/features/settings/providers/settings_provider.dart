@@ -86,9 +86,7 @@ class Settings extends _$Settings {
   Future<void> _updatePreferences(Preferences preferences) async {
     await ref
         .read(userPreferencesProvider.notifier)
-        .updatePreferences(
-          preferences,
-        );
+        .updatePreferences(preferences);
   }
 
   /// Loads the last active feed from local storage
@@ -145,9 +143,7 @@ class Settings extends _$Settings {
     }
 
     // Return temporary default state that will be replaced by loadSettings()
-    return SettingsState(
-      activeFeed: defaultFeed,
-    );
+    return SettingsState(activeFeed: defaultFeed);
   }
 
   /// Loads all settings from the preferences provider
@@ -304,10 +300,7 @@ class Settings extends _$Settings {
         likedFeeds.add(updatedFeed);
       }
 
-      state = state.copyWith(
-        feeds: updatedFeeds,
-        likedFeeds: likedFeeds,
-      );
+      state = state.copyWith(feeds: updatedFeeds, likedFeeds: likedFeeds);
 
       await _updateFeedsInPreferences(updatedFeeds);
     }
@@ -337,10 +330,7 @@ class Settings extends _$Settings {
           .where((f) => f.config.id != updatedFeed.config.id)
           .toList();
 
-      state = state.copyWith(
-        feeds: updatedFeeds,
-        likedFeeds: likedFeeds,
-      );
+      state = state.copyWith(feeds: updatedFeeds, likedFeeds: likedFeeds);
 
       await _updateFeedsInPreferences(updatedFeeds);
     }
@@ -478,10 +468,7 @@ class Settings extends _$Settings {
       return feeds.firstWhere((feed) => feed.config.id == activeSavedFeed!.id);
     } catch (e) {
       // Fallback to creating feed without view if not found
-      return Feed(
-        type: activeSavedFeed.type,
-        config: activeSavedFeed,
-      );
+      return Feed(type: activeSavedFeed.type, config: activeSavedFeed);
     }
   }
 
@@ -511,9 +498,7 @@ class Settings extends _$Settings {
             preferences.preferences
                 .where((pref) => !pref.isLabelersPref(pref))
                 .toList()
-              ..add(
-                Preference.labelersPref(labelers: updatedLabelers),
-              );
+              ..add(Preference.labelersPref(labelers: updatedLabelers));
 
         await _updatePreferences(
           Preferences(preferences: updatedPreferencesList),
@@ -571,9 +556,7 @@ class Settings extends _$Settings {
           preferences.preferences
               .where((pref) => !pref.isLabelersPref(pref))
               .toList()
-            ..add(
-              Preference.labelersPref(labelers: updatedLabelers),
-            );
+            ..add(Preference.labelersPref(labelers: updatedLabelers));
 
       await _updatePreferences(
         Preferences(preferences: updatedPreferencesList),
@@ -615,9 +598,7 @@ class Settings extends _$Settings {
           preferences.preferences
               .where((pref) => !pref.isLabelersPref(pref))
               .toList()
-            ..add(
-              Preference.labelersPref(labelers: updatedLabelers),
-            );
+            ..add(Preference.labelersPref(labelers: updatedLabelers));
 
       await _updatePreferences(
         Preferences(preferences: updatedPreferencesList),
@@ -656,9 +637,7 @@ class Settings extends _$Settings {
             preferences.preferences
                 .where((pref) => !pref.isLabelersPref(pref))
                 .toList()
-              ..add(
-                Preference.labelersPref(labelers: updatedLabelers),
-              );
+              ..add(Preference.labelersPref(labelers: updatedLabelers));
         await _updatePreferences(
           Preferences(preferences: updatedPreferencesList),
         );
@@ -911,11 +890,7 @@ class Settings extends _$Settings {
   }
 
   bool _isAdultOnlyLabel(String label) {
-    const adultOnlyLabels = {
-      'porn',
-      'sexual',
-      'nsfl',
-    };
+    const adultOnlyLabels = {'porn', 'sexual', 'nsfl'};
     return adultOnlyLabels.contains(label);
   }
 

@@ -66,13 +66,9 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _bounceAnimation =
-        Tween<double>(
-          begin: 1,
-          end: 1.3,
-        ).animate(
-          CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
-        );
+    _bounceAnimation = Tween<double>(begin: 1, end: 1.3).animate(
+      CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
+    );
     initVideoPlayer();
     GetIt.I<LogService>()
         .getLogger('PostVideoPlayer')

@@ -15,10 +15,7 @@ class VideoProgressAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        const ModalBarrier(
-          dismissible: false,
-          color: Colors.black54,
-        ),
+        const ModalBarrier(dismissible: false, color: Colors.black54),
         Center(
           child: Theme(
             data: Theme.of(context),

@@ -90,9 +90,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 
   void _onSuggestionSelected(ProfileViewBasic actor) {
-    context.router.push(
-      ProfileRoute(did: actor.did, initialProfile: actor),
-    );
+    context.router.push(ProfileRoute(did: actor.did, initialProfile: actor));
   }
 
   void _onSubmitted(String _) {
@@ -118,20 +116,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           hintText: 'Search users, posts...',
           onSubmitted: _onSubmitted,
           textInputAction: TextInputAction.search,
-          leadingWidgets: const [
-            Icon(
-              FluentIcons.search_24_regular,
-              size: 20,
-            ),
-          ],
+          leadingWidgets: const [Icon(FluentIcons.search_24_regular, size: 20)],
           actionWidgets: _searchController.text.isNotEmpty
               ? [
                   GestureDetector(
                     onTap: _searchController.clear,
-                    child: const Icon(
-                      FluentIcons.dismiss_24_regular,
-                      size: 20,
-                    ),
+                    child: const Icon(FluentIcons.dismiss_24_regular, size: 20),
                   ),
                 ]
               : null,
@@ -144,10 +134,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ],
         ),
         contentWidget: const TabBarView(
-          children: [
-            PostResults(),
-            UserResults(),
-          ],
+          children: [PostResults(), UserResults()],
         ),
         emptyStateWidget: hasQuery
             ? _ActorTypeaheadSuggestions(
@@ -166,9 +153,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     SliverToBoxAdapter(child: SuggestedFeedsList()),
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Center(
-                        child: Text('Discover new content'),
-                      ),
+                      child: Center(child: Text('Discover new content')),
                     ),
                   ],
                 ),

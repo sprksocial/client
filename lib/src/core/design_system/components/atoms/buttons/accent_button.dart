@@ -9,11 +9,7 @@ class AccentButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
 
-  const AccentButton({
-    required this.label,
-    super.key,
-    this.onPressed,
-  });
+  const AccentButton({required this.label, super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
