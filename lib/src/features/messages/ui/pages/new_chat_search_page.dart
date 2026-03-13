@@ -66,9 +66,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Search users',
-                          prefixIcon: const Icon(
-                            FluentIcons.search_24_regular,
-                          ),
+                          prefixIcon: const Icon(FluentIcons.search_24_regular),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
                                   iconSize: 20,
@@ -212,10 +210,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
       final theme = Theme.of(context);
       final colorScheme = theme.colorScheme;
       return Center(
-        child: Text(
-          state.error!,
-          style: TextStyle(color: colorScheme.error),
-        ),
+        child: Text(state.error!, style: TextStyle(color: colorScheme.error)),
       );
     }
     if (state.query.isEmpty) {

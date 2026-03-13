@@ -72,10 +72,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
   void _initializeProgressControllers() {
     _progressControllers = List.generate(
       widget.stories.length,
-      (_) => AnimationController(
-        duration: _defaultStoryDuration,
-        vsync: this,
-      ),
+      (_) => AnimationController(duration: _defaultStoryDuration, vsync: this),
     );
     _storyLoadingStates = List<bool>.filled(widget.stories.length, true);
   }

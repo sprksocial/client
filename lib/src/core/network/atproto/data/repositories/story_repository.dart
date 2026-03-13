@@ -23,10 +23,7 @@ abstract class StoryRepository {
   Future<
     ({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})
   >
-  getStoriesTimeline({
-    int limit = 30,
-    String? cursor,
-  });
+  getStoriesTimeline({int limit = 30, String? cursor});
 
   /// Gets story views for a specified list of stories (by AT-URI).
   ///

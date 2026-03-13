@@ -103,9 +103,7 @@ class CreateMediaActions {
               .openStoryImageEditor(context, pickedImage);
           if (editedImage != null && context.mounted) {
             // Post directly
-            await context.router.push(
-              StoryPostRoute(imageFile: editedImage),
-            );
+            await context.router.push(StoryPostRoute(imageFile: editedImage));
           }
         }
       } else {
@@ -113,10 +111,7 @@ class CreateMediaActions {
         final pickedImages = await ImagePicker().pickMultiImage(limit: 12);
         if (context.mounted && pickedImages.isNotEmpty) {
           await context.router.push(
-            ImageReviewRoute(
-              imageFiles: pickedImages,
-              storyMode: storyMode,
-            ),
+            ImageReviewRoute(imageFiles: pickedImages, storyMode: storyMode),
           );
         }
       }

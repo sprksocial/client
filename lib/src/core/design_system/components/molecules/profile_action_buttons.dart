@@ -28,13 +28,7 @@ class ProfileActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isCurrentUser) {
       return Row(
-        children: [
-          Expanded(
-            child: _EditButton(
-              onTap: onEditTap,
-            ),
-          ),
-        ],
+        children: [Expanded(child: _EditButton(onTap: onEditTap))],
       );
     }
 
@@ -59,9 +53,7 @@ class ProfileActionButtons extends StatelessWidget {
 
 /// Edit button that matches the FollowButton's following state style
 class _EditButton extends StatelessWidget {
-  const _EditButton({
-    this.onTap,
-  });
+  const _EditButton({this.onTap});
 
   final VoidCallback? onTap;
 

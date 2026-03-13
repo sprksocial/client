@@ -285,9 +285,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                       // Check if post is from Bluesky
                       final isBskyPost = post.uri.collection
                           .toString()
-                          .startsWith(
-                            'app.bsky',
-                          );
+                          .startsWith('app.bsky');
                       // Otherwise, navigate to the new profile
                       context.router.push(
                         ProfileRoute(

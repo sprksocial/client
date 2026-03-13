@@ -27,9 +27,9 @@ class MessagesRepositoryXrpc implements MessagesRepository {
   ) async {
     try {
       final token = await _serviceAuthHelper.getServiceToken(nsid);
-      final url = Uri.parse('$_baseUrl/xrpc/$nsid').replace(
-        queryParameters: params.isEmpty ? null : params,
-      );
+      final url = Uri.parse(
+        '$_baseUrl/xrpc/$nsid',
+      ).replace(queryParameters: params.isEmpty ? null : params);
 
       final response = await http.get(
         url,
@@ -115,10 +115,9 @@ class MessagesRepositoryXrpc implements MessagesRepository {
 
   @override
   Future<ConvoView> getConversation(String convoId) async {
-    final data = await _callQuery(
-      'so.sprk.chat.getConvo',
-      {'convoId': convoId},
-    );
+    final data = await _callQuery('so.sprk.chat.getConvo', {
+      'convoId': convoId,
+    });
 
     return ConvoView.fromJson(data['convo'] as Map<String, dynamic>);
   }
@@ -127,9 +126,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
   Future<ConvoView> getConvoForMembers(List<String> members) async {
     // Build URL with repeated members parameters
     // Need to manually construct query string for repeated params
-    final baseUri = Uri.parse(
-      '$_baseUrl/xrpc/so.sprk.chat.getConvoForMembers',
-    );
+    final baseUri = Uri.parse('$_baseUrl/xrpc/so.sprk.chat.getConvoForMembers');
     final queryParts = members
         .map((m) => 'members=${Uri.encodeComponent(m)}')
         .join('&');
@@ -141,10 +138,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
 
     final response = await http.get(
       url,
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -230,20 +224,14 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'value': value,
     };
 
-    final data = await _callProcedure(
-      'so.sprk.chat.removeReaction',
-      body,
-    );
+    final data = await _callProcedure('so.sprk.chat.removeReaction', body);
 
     return MessageView.fromJson(data);
   }
 
   @override
   Future<ConvoView> updateRead(String convoId, String messageId) async {
-    final body = <String, dynamic>{
-      'convoId': convoId,
-      'messageId': messageId,
-    };
+    final body = <String, dynamic>{'convoId': convoId, 'messageId': messageId};
 
     final data = await _callProcedure('so.sprk.chat.updateRead', body);
 

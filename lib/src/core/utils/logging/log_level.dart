@@ -6,8 +6,7 @@ enum LogLevel {
   warning(3, 'WARNING'),
   error(4, 'ERROR'),
   fatal(5, 'FATAL'),
-  nothing(6, 'NOTHING')
-  ;
+  nothing(6, 'NOTHING');
 
   final int value;
   final String name;

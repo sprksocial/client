@@ -62,15 +62,11 @@ class PostTile extends StatelessWidget {
                     fadeInDuration: Duration.zero,
                     imageUrl: thumbnailUrl,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const ColoredBox(
-                      color: AppColors.grey800,
-                    ),
+                    placeholder: (context, url) =>
+                        const ColoredBox(color: AppColors.grey800),
                     errorWidget: (context, url, error) => const ColoredBox(
                       color: AppColors.grey800,
-                      child: Icon(
-                        Icons.broken_image,
-                        color: AppColors.grey400,
-                      ),
+                      child: Icon(Icons.broken_image, color: AppColors.grey400),
                     ),
                   ),
                 )
@@ -79,21 +75,14 @@ class PostTile extends StatelessWidget {
                   fadeInDuration: Duration.zero,
                   imageUrl: thumbnailUrl,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => const ColoredBox(
-                    color: AppColors.grey800,
-                  ),
+                  placeholder: (context, url) =>
+                      const ColoredBox(color: AppColors.grey800),
                   errorWidget: (context, url, error) => const ColoredBox(
                     color: AppColors.grey800,
-                    child: Icon(
-                      Icons.broken_image,
-                      color: AppColors.grey400,
-                    ),
+                    child: Icon(Icons.broken_image, color: AppColors.grey400),
                   ),
                 ),
-              if (seen)
-                Container(
-                  color: Colors.black.withAlpha(180),
-                ),
+              if (seen) Container(color: Colors.black.withAlpha(180)),
               Positioned(
                 bottom: 0,
                 right: 0,

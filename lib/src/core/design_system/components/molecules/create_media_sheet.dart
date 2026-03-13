@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// Shows a standardized bottom sheet for creating media:
 /// Record, Upload Video, Upload Images.
 /// Only renders the actions whose callbacks are provided (non-null).
-Future showCreateMediaSheet(
+Future<dynamic> showCreateMediaSheet(
   BuildContext context, {
   VoidCallback? onRecord,
   VoidCallback? onUploadVideo,

@@ -7,10 +7,7 @@ import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 
-enum SettingsFeedCardMode {
-  display,
-  edit,
-}
+enum SettingsFeedCardMode { display, edit }
 
 class SettingsFeedCard extends StatelessWidget {
   const SettingsFeedCard({
@@ -155,9 +152,7 @@ class SettingsFeedCard extends StatelessWidget {
       child: Container(
         width: 40,
         height: 40,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
         child: _avatarUrl.isNotEmpty
             ? Image.network(
                 _avatarUrl,
@@ -244,14 +239,8 @@ class SettingsFeedCard extends StatelessWidget {
           ),
         ),
         child: _isLiked
-            ? AppIcons.likeFilled(
-                size: 16,
-                color: Colors.white,
-              )
-            : AppIcons.like(
-                size: 16,
-                color: Colors.grey,
-              ),
+            ? AppIcons.likeFilled(size: 16, color: Colors.white)
+            : AppIcons.like(size: 16, color: Colors.grey),
       ),
     );
   }
@@ -271,11 +260,7 @@ class SettingsFeedCard extends StatelessWidget {
                 color: Colors.red.shade500,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(
-                Icons.delete,
-                size: 16,
-                color: Colors.white,
-              ),
+              child: const Icon(Icons.delete, size: 16, color: Colors.white),
             ),
           ),
         ],

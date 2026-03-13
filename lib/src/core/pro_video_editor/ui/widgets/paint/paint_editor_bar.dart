@@ -173,22 +173,19 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
   }
 
   List<Widget> _buildPaintTools() {
-    return List.generate(
-      widget.editor.tools.length,
-      (index) {
-        final item = widget.editor.tools[index];
-        final isActive = widget.editor.paintMode == item.mode;
+    return List.generate(widget.editor.tools.length, (index) {
+      final item = widget.editor.tools[index];
+      final isActive = widget.editor.paintMode == item.mode;
 
-        return _buildIconTextButton(
-          icon: item.icon,
-          label: item.label,
-          onPressed: () {
-            widget.editor.setMode(item.mode);
-          },
-          isActive: isActive,
-        );
-      },
-    );
+      return _buildIconTextButton(
+        icon: item.icon,
+        label: item.label,
+        onPressed: () {
+          widget.editor.setMode(item.mode);
+        },
+        isActive: isActive,
+      );
+    });
   }
 
   Widget _buildIconTextButton({
@@ -215,13 +212,7 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
         children: <Widget>[
           Icon(icon, color: color),
           const SizedBox(height: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: labelColor,
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 10, color: labelColor)),
         ],
       ),
     );

@@ -141,10 +141,7 @@ class Auth extends _$Auth {
       return result;
     } catch (e, stackTrace) {
       _logger.e('OAuth completion error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Login failed: $e',
-      );
+      state = state.copyWith(isLoading: false, error: 'Login failed: $e');
       return LoginResult.failed('Login failed: $e');
     }
   }

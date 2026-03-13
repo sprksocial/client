@@ -67,9 +67,7 @@ class EarlySupporterSheet extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                TextSpan(
-                  text: 'Thanks to them for supporting us.',
-                ),
+                TextSpan(text: 'Thanks to them for supporting us.'),
               ],
             ),
             textAlign: TextAlign.center,

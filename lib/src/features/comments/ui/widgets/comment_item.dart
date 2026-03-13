@@ -52,11 +52,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
       'app.bsky',
     );
     context.router.push(
-      ProfileRoute(
-        did: author.did,
-        initialProfile: author,
-        bsky: isBskyPost,
-      ),
+      ProfileRoute(did: author.did, initialProfile: author, bsky: isBskyPost),
     );
   }
 

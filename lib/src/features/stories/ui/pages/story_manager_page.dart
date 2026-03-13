@@ -66,9 +66,7 @@ class StoryManagerPage extends ConsumerWidget {
     final autoDeletePref = ref.watch(storyAutoDeletePrefProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Story Manager'),
-      ),
+      appBar: AppBar(title: const Text('Story Manager')),
       body: asyncState.when(
         data: (data) {
           return RefreshIndicator(

@@ -173,10 +173,7 @@ class AuthRepositoryImpl implements AuthRepository {
           ? Uri.parse(_pdsEndpoint!).host
           : null;
 
-      _atProto = ATProto.fromOAuthSession(
-        _oauthSession!,
-        service: pdsHost,
-      );
+      _atProto = ATProto.fromOAuthSession(_oauthSession!, service: pdsHost);
     } catch (e) {
       _logger.e('Error loading saved account', error: e);
     }
@@ -382,10 +379,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Create ATProto client from OAuth session
       if (_pdsEndpoint != null) {
         final pdsHost = Uri.parse(_pdsEndpoint!).host;
-        _atProto = ATProto.fromOAuthSession(
-          _oauthSession!,
-          service: pdsHost,
-        );
+        _atProto = ATProto.fromOAuthSession(_oauthSession!, service: pdsHost);
       } else {
         _logger.e('PDS endpoint is null, cannot create ATProto client');
         return LoginResult.failed('PDS endpoint not found');
@@ -480,10 +474,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final pdsHost = _pdsEndpoint != null
           ? Uri.parse(_pdsEndpoint!).host
           : null;
-      _atProto = ATProto.fromOAuthSession(
-        _oauthSession!,
-        service: pdsHost,
-      );
+      _atProto = ATProto.fromOAuthSession(_oauthSession!, service: pdsHost);
 
       await _saveSession();
       return true;

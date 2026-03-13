@@ -69,17 +69,13 @@ class StoryImageEditorConfigs {
         ],
         widgets: MainEditorWidgets(
           removeLayerArea:
-              (
-                removeAreaKey,
-                editor,
-                rebuildStream,
-                isLayerBeingTransformed,
-              ) => VideoEditorRemoveArea(
-                removeAreaKey: removeAreaKey,
-                editor: editor,
-                rebuildStream: rebuildStream,
-                isLayerBeingTransformed: isLayerBeingTransformed,
-              ),
+              (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
+                  VideoEditorRemoveArea(
+                    removeAreaKey: removeAreaKey,
+                    editor: editor,
+                    rebuildStream: rebuildStream,
+                    isLayerBeingTransformed: isLayerBeingTransformed,
+                  ),
           appBar: (editor, rebuildStream) => null,
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
@@ -242,9 +238,7 @@ class StoryImageEditorConfigs {
       ),
       blurEditor: BlurEditorConfigs(
         maxBlur: 25,
-        style: const BlurEditorStyle(
-          background: AppColors.greyBlack,
-        ),
+        style: const BlurEditorStyle(background: AppColors.greyBlack),
         widgets: BlurEditorWidgets(
           appBar: (blurEditor, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
@@ -279,19 +273,14 @@ class StoryImageEditorConfigs {
           setLayer: setLayer,
           scrollController: scrollController,
         ),
-        style: const StickerEditorStyle(
-          showDragHandle: false,
-        ),
+        style: const StickerEditorStyle(showDragHandle: false),
       ),
       i18n: const I18n(
         paintEditor: I18nPaintEditor(
           changeOpacity: 'Opacity',
           lineWidth: 'Thickness',
         ),
-        textEditor: I18nTextEditor(
-          backgroundMode: 'Mode',
-          textAlign: 'Align',
-        ),
+        textEditor: I18nTextEditor(backgroundMode: 'Mode', textAlign: 'Align'),
       ),
     );
   }

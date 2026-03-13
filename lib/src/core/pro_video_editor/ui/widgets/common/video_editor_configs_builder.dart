@@ -72,9 +72,7 @@ class VideoEditorConfigsBuilder {
       initialMuted: true,
       enableTrimBar: false,
       playTimeSmoothingDuration: Duration(milliseconds: 300),
-      widgets: VideoEditorWidgets(
-        headerToolbar: SizedBox.shrink(),
-      ),
+      widgets: VideoEditorWidgets(headerToolbar: SizedBox.shrink()),
     ),
   }) {
     final tools = storyMode ? _storyModeTools : _fullTools;
@@ -96,17 +94,13 @@ class VideoEditorConfigsBuilder {
         tools: tools,
         widgets: MainEditorWidgets(
           removeLayerArea:
-              (
-                removeAreaKey,
-                editor,
-                rebuildStream,
-                isLayerBeingTransformed,
-              ) => VideoEditorRemoveArea(
-                removeAreaKey: removeAreaKey,
-                editor: editor,
-                rebuildStream: rebuildStream,
-                isLayerBeingTransformed: isLayerBeingTransformed,
-              ),
+              (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
+                  VideoEditorRemoveArea(
+                    removeAreaKey: removeAreaKey,
+                    editor: editor,
+                    rebuildStream: rebuildStream,
+                    isLayerBeingTransformed: isLayerBeingTransformed,
+                  ),
           appBar: (editor, rebuildStream) => null,
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
@@ -339,9 +333,7 @@ class VideoEditorConfigsBuilder {
       ),
       blurEditor: BlurEditorConfigs(
         maxBlur: 25,
-        style: const BlurEditorStyle(
-          background: AppColors.greyBlack,
-        ),
+        style: const BlurEditorStyle(background: AppColors.greyBlack),
         widgets: BlurEditorWidgets(
           appBar: (blurEditor, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
@@ -376,19 +368,14 @@ class VideoEditorConfigsBuilder {
           setLayer: setLayer,
           scrollController: scrollController,
         ),
-        style: const StickerEditorStyle(
-          showDragHandle: false,
-        ),
+        style: const StickerEditorStyle(showDragHandle: false),
       ),
       i18n: const I18n(
         paintEditor: I18nPaintEditor(
           changeOpacity: 'Opacity',
           lineWidth: 'Thickness',
         ),
-        textEditor: I18nTextEditor(
-          backgroundMode: 'Mode',
-          textAlign: 'Align',
-        ),
+        textEditor: I18nTextEditor(backgroundMode: 'Mode', textAlign: 'Align'),
       ),
       // audioEditor: const AudioEditorConfigs(
       //   // Audio selection is now handled by the custom bottom sheet
@@ -397,9 +384,7 @@ class VideoEditorConfigsBuilder {
       //   audioTracks: const [],
       // ),
       clipsEditor: ClipsEditorConfigs(
-        style: const ClipsEditorStyle(
-          reversedClipsList: true,
-        ),
+        style: const ClipsEditorStyle(reversedClipsList: true),
         widgets: ClipsEditorWidgets(
           appBar: (editorState, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {

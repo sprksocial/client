@@ -7,9 +7,7 @@ part 'pref_models.g.dart';
 @freezed
 abstract class Preferences with _$Preferences {
   @JsonSerializable(explicitToJson: true)
-  factory Preferences({
-    required List<Preference> preferences,
-  }) {
+  factory Preferences({required List<Preference> preferences}) {
     final contentLabelPrefs = <ContentLabelPref>[];
     final savedFeeds = <SavedFeed>[];
     final labelers = <LabelerPrefItem>[];
@@ -123,17 +121,15 @@ abstract class Preference with _$Preference {
 
   @FreezedUnionValue('so.sprk.actor.defs#savedFeedsPref')
   @JsonSerializable(explicitToJson: true)
-  const factory Preference.savedFeedsPref({
-    required List<SavedFeed> items,
-  }) = _SavedFeedsPref;
+  const factory Preference.savedFeedsPref({required List<SavedFeed> items}) =
+      _SavedFeedsPref;
   bool isSavedFeedsPref(Preference preference) =>
       preference.mapOrNull(savedFeedsPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#personalDetailsPref')
   @JsonSerializable(explicitToJson: true)
-  const factory Preference.personalDetailsPref({
-    required DateTime? birthDate,
-  }) = _PersonalDetailsPref;
+  const factory Preference.personalDetailsPref({required DateTime? birthDate}) =
+      _PersonalDetailsPref;
   bool isPersonalDetailsPref(Preference preference) =>
       preference.mapOrNull(personalDetailsPref: (pref) => pref) != null;
 
@@ -161,17 +157,15 @@ abstract class Preference with _$Preference {
 
   @FreezedUnionValue('so.sprk.actor.defs#interestsPref')
   @JsonSerializable(explicitToJson: true)
-  const factory Preference.interestsPref({
-    required List<String> tags,
-  }) = _InterestsPref;
+  const factory Preference.interestsPref({required List<String> tags}) =
+      _InterestsPref;
   bool isInterestsPref(Preference preference) =>
       preference.mapOrNull(interestsPref: (pref) => pref) != null;
 
   @FreezedUnionValue('so.sprk.actor.defs#mutedWordsPref')
   @JsonSerializable(explicitToJson: true)
-  const factory Preference.mutedWordsPref({
-    required List<MutedWord> words,
-  }) = _MutedWordsPref;
+  const factory Preference.mutedWordsPref({required List<MutedWord> words}) =
+      _MutedWordsPref;
   bool isMutedWordsPref(Preference preference) =>
       preference.mapOrNull(mutedWordsPref: (pref) => pref) != null;
 
@@ -253,9 +247,7 @@ abstract class MutedWord with _$MutedWord {
 @freezed
 abstract class LabelerPrefItem with _$LabelerPrefItem {
   @JsonSerializable(explicitToJson: true)
-  const factory LabelerPrefItem({
-    required String did,
-  }) = _LabelerPrefItem;
+  const factory LabelerPrefItem({required String did}) = _LabelerPrefItem;
   const LabelerPrefItem._();
 
   factory LabelerPrefItem.fromJson(Map<String, dynamic> json) =>

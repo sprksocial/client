@@ -40,9 +40,7 @@ class GlassFollowButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(51),
               borderRadius: BorderRadius.circular(100),
-              border: Border.all(
-                color: Colors.white.withAlpha(37),
-              ),
+              border: Border.all(color: Colors.white.withAlpha(37)),
             ),
             child: Center(
               child: Text(

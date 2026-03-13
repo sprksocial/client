@@ -280,9 +280,7 @@ class RepoRepositoryImpl implements RepoRepository {
           'service: $modServiceDid',
         );
 
-        final headers = {
-          'atproto-proxy': modServiceDid,
-        };
+        final headers = {'atproto-proxy': modServiceDid};
 
         try {
           final response = await atproto.post(

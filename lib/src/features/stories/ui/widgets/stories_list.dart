@@ -20,10 +20,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
 
   void _openStoryRecorder(BuildContext context) {
     context.router.push(
-      RecordingRoute(
-        storyMode: true,
-        captureMode: CaptureMode.hybrid,
-      ),
+      RecordingRoute(storyMode: true, captureMode: CaptureMode.hybrid),
     );
   }
 

@@ -51,9 +51,7 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
           leading: const AppLeadingButton(tooltip: 'Back'),
           title: const Text('Blocked Users'),
         ),
-        body: const Center(
-          child: Text('Please log in to view blocked users'),
-        ),
+        body: const Center(child: Text('Please log in to view blocked users')),
       );
     }
 

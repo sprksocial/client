@@ -200,12 +200,8 @@ class _CacheablePageViewState extends State<CacheablePageView> {
   void debugFillProperties(DiagnosticPropertiesBuilder description) {
     super.debugFillProperties(description);
     description
-      ..add(
-        EnumProperty<Axis>('scrollDirection', widget.scrollDirection),
-      )
-      ..add(
-        FlagProperty('reverse', value: widget.reverse, ifTrue: 'reversed'),
-      )
+      ..add(EnumProperty<Axis>('scrollDirection', widget.scrollDirection))
+      ..add(FlagProperty('reverse', value: widget.reverse, ifTrue: 'reversed'))
       ..add(
         DiagnosticsProperty<PageController>(
           'controller',

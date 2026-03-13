@@ -78,10 +78,7 @@ class _FilterEditorBarState extends State<FilterEditorBar> {
             duration: const Duration(milliseconds: 200),
             transitionBuilder: (child, animation) => FadeTransition(
               opacity: animation,
-              child: SizeTransition(
-                sizeFactor: animation,
-                child: child,
-              ),
+              child: SizeTransition(sizeFactor: animation, child: child),
             ),
             child: widget.editor.selectedFilter.filters.isNotEmpty
                 ? StatefulBuilder(

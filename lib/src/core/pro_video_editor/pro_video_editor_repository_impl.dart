@@ -60,11 +60,7 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
                 await file.writeAsBytes(bytes, flush: true);
                 if (ctx.mounted) {
                   Navigator.of(ctx).pop(
-                    XFile(
-                      file.path,
-                      mimeType: 'image/jpeg',
-                      name: filename,
-                    ),
+                    XFile(file.path, mimeType: 'image/jpeg', name: filename),
                   );
                 }
               },
@@ -81,9 +77,7 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
     EditorVideo video,
   ) async {
     return Navigator.of(context).push<VideoEditorResult?>(
-      MaterialPageRoute(
-        builder: (_) => VideoEditorGroundedPage(video: video),
-      ),
+      MaterialPageRoute(builder: (_) => VideoEditorGroundedPage(video: video)),
     );
   }
 

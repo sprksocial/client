@@ -120,10 +120,7 @@ class FeedCard extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: content,
-      );
+      return GestureDetector(onTap: onTap, child: content);
     }
 
     return content;
@@ -169,20 +166,14 @@ class FeedCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (isLiked)
-          AppIcons.likeFilled(
-            size: 14,
-            color: AppColors.primary600,
-          )
+          AppIcons.likeFilled(size: 14, color: AppColors.primary600)
         else
           AppIcons.like(
             size: 14,
             color: isDark ? AppColors.grey200 : AppColors.grey400,
           ),
         const SizedBox(width: 4),
-        Text(
-          _formatCount(likeCount),
-          style: AppTypography.textExtraSmallThin,
-        ),
+        Text(_formatCount(likeCount), style: AppTypography.textExtraSmallThin),
         const SizedBox(width: 8),
       ],
     );
@@ -305,11 +296,7 @@ class _FallbackAvatar extends StatelessWidget {
                 ),
               ),
             )
-          : const Icon(
-              FluentIcons.feed_24_regular,
-              color: iconColor,
-              size: 18,
-            ),
+          : const Icon(FluentIcons.feed_24_regular, color: iconColor, size: 18),
     );
   }
 }

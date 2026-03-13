@@ -14,10 +14,7 @@ import 'package:spark/src/core/ui/theme/theme.dart';
 /// Shows reposts on the left with a green repost icon, and likes on the right
 /// with a pink heart icon. Only renders if there are actual interactions.
 class KnownInteractionsBar extends StatelessWidget {
-  const KnownInteractionsBar({
-    required this.interactions,
-    super.key,
-  });
+  const KnownInteractionsBar({required this.interactions, super.key});
 
   /// List of known interactions to display.
   final List<KnownInteraction>? interactions;
@@ -75,10 +72,7 @@ class KnownInteractionsBar extends StatelessWidget {
 
 /// A single interaction pill with icon and avatar stack.
 class _InteractionPill extends StatelessWidget {
-  const _InteractionPill({
-    required this.icon,
-    required this.avatars,
-  });
+  const _InteractionPill({required this.icon, required this.avatars});
 
   final Widget icon;
   final List<AvatarData> avatars;
@@ -104,10 +98,7 @@ class _InteractionPill extends StatelessWidget {
             children: [
               icon,
               const SizedBox(width: 6),
-              AvatarStack(
-                avatars: avatars,
-                largeSize: 32,
-              ),
+              AvatarStack(avatars: avatars, largeSize: 32),
             ],
           ),
         ),

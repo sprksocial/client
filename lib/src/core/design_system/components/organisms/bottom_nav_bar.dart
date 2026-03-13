@@ -32,10 +32,7 @@ class SparkBottomNavBar extends ConsumerWidget {
       children: [
         _BarBackground(
           child: Container(
-            padding: EdgeInsets.only(
-              top: 12,
-              bottom: 12 + bottomPadding,
-            ),
+            padding: EdgeInsets.only(top: 12, bottom: 12 + bottomPadding),
             color: isDark
                 ? const Color.fromARGB(51, 0, 0, 0)
                 : const Color.fromARGB(178, 255, 255, 255),
@@ -242,9 +239,7 @@ class _ProfileAvatar extends StatelessWidget {
       height: 34,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white,
-        ),
+        border: Border.all(color: Colors.white),
         image: image is AssetImage
             ? null
             : DecorationImage(image: image, fit: BoxFit.cover),
@@ -260,9 +255,6 @@ class _ProfileAvatar extends StatelessWidget {
             )
           : null,
     );
-    return GestureDetector(
-      onTap: onTap,
-      child: avatar,
-    );
+    return GestureDetector(onTap: onTap, child: avatar);
   }
 }

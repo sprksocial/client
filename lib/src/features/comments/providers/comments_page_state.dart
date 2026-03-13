@@ -5,7 +5,6 @@ part 'comments_page_state.freezed.dart';
 
 @freezed
 abstract class CommentsPageState with _$CommentsPageState {
-  const factory CommentsPageState({
-    required ThreadViewPost thread,
-  }) = _CommentsPageState;
+  const factory CommentsPageState({required ThreadViewPost thread}) =
+      _CommentsPageState;
 }

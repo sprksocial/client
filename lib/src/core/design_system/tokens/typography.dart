@@ -9,9 +9,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -4.48,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const displayXxlMedium = TextStyle(
@@ -23,9 +21,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -4.48,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 600),
-    ],
+    fontVariations: [FontVariation('wght', 600)],
   );
 
   static const displayXxlLight = TextStyle(
@@ -37,9 +33,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -4.48,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const displayXlLight = TextStyle(
@@ -51,9 +45,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -3.84,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const displayXlMedium = TextStyle(
@@ -65,9 +57,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -3.84,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 600),
-    ],
+    fontVariations: [FontVariation('wght', 600)],
   );
 
   static const displayXlBold = TextStyle(
@@ -79,9 +69,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -3.84,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const displayLargeThin = TextStyle(
@@ -93,9 +81,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -3.52,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const displayLargeMedium = TextStyle(
@@ -107,9 +93,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -3.52,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 600),
-    ],
+    fontVariations: [FontVariation('wght', 600)],
   );
 
   static const displayLargeBold = TextStyle(
@@ -121,9 +105,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -3.52,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const displayMediumThin = TextStyle(
@@ -135,9 +117,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -2.88,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const displayMediumMedium = TextStyle(
@@ -149,9 +129,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -2.88,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 600),
-    ],
+    fontVariations: [FontVariation('wght', 600)],
   );
 
   static const displayMediumBold = TextStyle(
@@ -163,9 +141,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -2.88,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const displaySmallThin = TextStyle(
@@ -177,9 +153,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.92,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const displaySmallMedium = TextStyle(
@@ -191,9 +165,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.92,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 600),
-    ],
+    fontVariations: [FontVariation('wght', 600)],
   );
 
   static const displaySmallBold = TextStyle(
@@ -205,9 +177,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.92,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const headlineXlThin = TextStyle(
@@ -219,9 +189,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.68,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const headlineXlMedium = TextStyle(
@@ -233,9 +201,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.68,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const headlineXlBold = TextStyle(
@@ -247,9 +213,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.68,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const headlineLargeThin = TextStyle(
@@ -261,9 +225,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.44,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const headlineLargeMedium = TextStyle(
@@ -275,9 +237,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.44,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const headlineLargeBold = TextStyle(
@@ -289,9 +249,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -1.44,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const headlineMediumThin = TextStyle(
@@ -303,9 +261,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -0.64,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const headlineMediumMedium = TextStyle(
@@ -317,9 +273,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -0.64,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const headlineMediumBold = TextStyle(
@@ -331,9 +285,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -0.64,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const headlineSmallThin = TextStyle(
@@ -345,9 +297,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -0.48,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const headlineSmallMedium = TextStyle(
@@ -359,9 +309,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -0.48,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const headlineSmallBold = TextStyle(
@@ -373,9 +321,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -0.48,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const textSmallThin = TextStyle(
@@ -387,9 +333,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const textSmallMedium = TextStyle(
@@ -401,9 +345,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const textSmallBold = TextStyle(
@@ -415,9 +357,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const textExtraSmallThin = TextStyle(
@@ -429,9 +369,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const textExtraSmallMedium = TextStyle(
@@ -443,9 +381,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const textExtraSmallBold = TextStyle(
@@ -457,9 +393,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const textLargeThin = TextStyle(
@@ -471,9 +405,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const textLargeMedium = TextStyle(
@@ -485,9 +417,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const textLargeBold = TextStyle(
@@ -499,9 +429,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const textMediumThin = TextStyle(
@@ -513,9 +441,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const textMediumMedium = TextStyle(
@@ -527,9 +453,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const textMediumBold = TextStyle(
@@ -541,9 +465,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const textXlThin = TextStyle(
@@ -555,9 +477,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 300),
-    ],
+    fontVariations: [FontVariation('wght', 300)],
   );
 
   static const textXlMedium = TextStyle(
@@ -569,9 +489,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 500),
-    ],
+    fontVariations: [FontVariation('wght', 500)],
   );
 
   static const textXlBold = TextStyle(
@@ -583,9 +501,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: 0,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 700),
-    ],
+    fontVariations: [FontVariation('wght', 700)],
   );
 
   static const bannerLMedium = TextStyle(
@@ -597,9 +513,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -16,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 600),
-    ],
+    fontVariations: [FontVariation('wght', 600)],
   );
 
   static const bannerMMedium = TextStyle(
@@ -611,9 +525,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -12,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 600),
-    ],
+    fontVariations: [FontVariation('wght', 600)],
   );
 
   static const metaTitle = TextStyle(
@@ -624,9 +536,7 @@ class AppTypography {
     decoration: TextDecoration.none,
     letterSpacing: -4.48,
     leadingDistribution: TextLeadingDistribution.even,
-    fontVariations: [
-      FontVariation('wght', 590),
-    ],
+    fontVariations: [FontVariation('wght', 590)],
   );
 
   AppTypography._();

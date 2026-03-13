@@ -60,10 +60,7 @@ class EmojiPicker extends StatelessWidget {
 }
 
 class _EmojiItem extends StatelessWidget {
-  const _EmojiItem({
-    required this.emoji,
-    required this.onEmojiSelected,
-  });
+  const _EmojiItem({required this.emoji, required this.onEmojiSelected});
 
   final String emoji;
   final Function(String) onEmojiSelected;

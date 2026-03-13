@@ -139,51 +139,48 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
   }
 
   List<Widget> _buildAspectRatioButtons() {
-    return List.generate(
-      cropRotateEditorConfigs.aspectRatios.length,
-      (index) {
-        final item = cropRotateEditorConfigs.aspectRatios[index];
-        final isSelected = widget.editor.activeAspectRatio == item.value;
+    return List.generate(cropRotateEditorConfigs.aspectRatios.length, (index) {
+      final item = cropRotateEditorConfigs.aspectRatios[index];
+      final isSelected = widget.editor.activeAspectRatio == item.value;
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: TextButton(
-            onPressed: () => widget.editor.updateAspectRatio(item.value ?? -1),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-              maximumSize: const Size(
-                double.infinity,
-                kBottomNavigationBarHeight,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                SizedBox(
-                  height: 28,
-                  child: FittedBox(
-                    child: AspectRatioButton(
-                      aspectRatio: item.value,
-                      isSelected: isSelected,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  item.text,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: isSelected
-                        ? widget.selectedRatioColor
-                        : _foreGroundColorAccent,
-                  ),
-                ),
-              ],
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: TextButton(
+          onPressed: () => widget.editor.updateAspectRatio(item.value ?? -1),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            maximumSize: const Size(
+              double.infinity,
+              kBottomNavigationBarHeight,
             ),
           ),
-        );
-      },
-    );
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              SizedBox(
+                height: 28,
+                child: FittedBox(
+                  child: AspectRatioButton(
+                    aspectRatio: item.value,
+                    isSelected: isSelected,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                item.text,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: isSelected
+                      ? widget.selectedRatioColor
+                      : _foreGroundColorAccent,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildIconTextButton({
@@ -204,10 +201,7 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
           const SizedBox(height: 5),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 10,
-              color: _foreGroundColorAccent,
-            ),
+            style: TextStyle(fontSize: 10, color: _foreGroundColorAccent),
           ),
         ],
       ),

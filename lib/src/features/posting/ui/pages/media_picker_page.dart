@@ -442,10 +442,7 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(
-            _errorMessage!,
-            textAlign: TextAlign.center,
-          ),
+          child: Text(_errorMessage!, textAlign: TextAlign.center),
         ),
       );
     }
@@ -533,11 +530,7 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
                 Container(
                   color: Colors.black.withAlpha(140),
                   alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.block,
-                    color: Colors.white,
-                    size: 22,
-                  ),
+                  child: const Icon(Icons.block, color: Colors.white, size: 22),
                 ),
             ],
           ),
@@ -593,11 +586,7 @@ class _AssetThumbnailState extends State<_AssetThumbnail> {
           );
         }
 
-        return Image.memory(
-          bytes,
-          fit: BoxFit.cover,
-          gaplessPlayback: true,
-        );
+        return Image.memory(bytes, fit: BoxFit.cover, gaplessPlayback: true);
       },
     );
   }

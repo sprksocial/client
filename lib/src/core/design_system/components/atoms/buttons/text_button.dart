@@ -7,11 +7,7 @@ class TextButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
 
-  const TextButton({
-    required this.label,
-    super.key,
-    this.onTap,
-  });
+  const TextButton({required this.label, super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +23,7 @@ class TextButton extends StatelessWidget {
           color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
           border: const Border.fromBorderSide(
-            BorderSide(
-              color: AppColors.greyBorder,
-              width: 1.14667,
-            ),
+            BorderSide(color: AppColors.greyBorder, width: 1.14667),
           ),
         ),
         child: Align(

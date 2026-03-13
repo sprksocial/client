@@ -80,7 +80,6 @@ dev_dependencies:
     sdk: flutter
   json_serializable: ^6.11.2
   riverpod_generator: ^4.0.3
-  very_good_analysis: ^10.2.0
 
 flutter_launcher_icons:
   android: true

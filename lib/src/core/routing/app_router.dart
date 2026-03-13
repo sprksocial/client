@@ -65,10 +65,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: SearchRoute.page, path: 'search'),
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
         AutoRoute(page: NotificationsRoute.page, path: 'notifications'),
-        AutoRoute(
-          page: UserProfileRoute.page,
-          path: 'profile',
-        ),
+        AutoRoute(page: UserProfileRoute.page, path: 'profile'),
       ],
     ),
 
@@ -107,10 +104,7 @@ class AppRouter extends RootStackRouter {
 
     // Deep linking routes or routes that will be pushed on top of everything
     AutoRoute(page: StandalonePostRoute.page, path: '/post/:postUri'),
-    AutoRoute(
-      page: ProfileRoute.page,
-      path: '/profile/:did',
-    ),
+    AutoRoute(page: ProfileRoute.page, path: '/profile/:did'),
     AutoRoute(
       page: StandaloneProfileFeedRoute.page,
       path: '/profile/:did/feed',
@@ -119,10 +113,7 @@ class AppRouter extends RootStackRouter {
       page: StandaloneRepostsFeedRoute.page,
       path: '/profile/:did/reposts',
     ),
-    AutoRoute(
-      page: StandaloneLikesFeedRoute.page,
-      path: '/profile/:did/likes',
-    ),
+    AutoRoute(page: StandaloneLikesFeedRoute.page, path: '/profile/:did/likes'),
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),
     AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),
     AutoRoute(page: ImageReviewRoute.page, path: '/image-review'),
@@ -181,10 +172,8 @@ class AppRouter extends RootStackRouter {
   ) {
     return ModalBottomSheetRoute(
       settings: page,
-      builder: (context) => Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: child,
-      ),
+      builder: (context) =>
+          Padding(padding: const EdgeInsets.only(top: 12), child: child),
       isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(

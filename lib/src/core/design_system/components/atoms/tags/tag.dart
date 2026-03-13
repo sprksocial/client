@@ -28,9 +28,7 @@ class Tag extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
           borderRadius: BorderRadius.circular(13),
-          border: Border.all(
-            color: AppColors.greyBorder,
-          ),
+          border: Border.all(color: AppColors.greyBorder),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

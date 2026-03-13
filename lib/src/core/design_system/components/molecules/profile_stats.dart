@@ -40,10 +40,7 @@ class ProfileStats extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.count,
-    required this.label,
-  });
+  const _StatItem({required this.count, required this.label});
 
   final String count;
   final String label;

@@ -72,11 +72,7 @@ class LabelUtils {
   }
 
   static bool _isAdultOnlyLabel(String label) {
-    const adultOnlyLabels = {
-      'porn',
-      'sexual',
-      'nsfl',
-    };
+    const adultOnlyLabels = {'porn', 'sexual', 'nsfl'};
     return adultOnlyLabels.contains(label);
   }
 

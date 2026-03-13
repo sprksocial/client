@@ -8,9 +8,7 @@ import 'package:video_player/video_player.dart';
 class AudioHelperService {
   /// Creates an instance of [AudioHelperService] for the
   /// given [videoController].
-  AudioHelperService({
-    required this.videoController,
-  });
+  AudioHelperService({required this.videoController});
 
   /// The internal audio player used to handle audio playback.
   final _audioPlayer = AudioPlayer();
@@ -32,9 +30,7 @@ class AudioHelperService {
   Future<void> initialize() {
     return _audioPlayer.setAudioContext(
       AudioContext(
-        android: const AudioContextAndroid(
-          audioFocus: AndroidAudioFocus.none,
-        ),
+        android: const AudioContextAndroid(audioFocus: AndroidAudioFocus.none),
         iOS: AudioContextIOS(
           options: const {
             AVAudioSessionOptions.mixWithOthers,
@@ -125,10 +121,7 @@ class AudioHelperService {
 
   /// Mutes all audio (both original and custom).
   Future<void> muteAll() async {
-    await Future.wait([
-      setVolume(0),
-      videoController.setVolume(0),
-    ]);
+    await Future.wait([setVolume(0), videoController.setVolume(0)]);
   }
 
   /// Restores audio based on current balance.

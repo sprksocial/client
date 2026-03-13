@@ -175,37 +175,34 @@ class _PostResultsState extends ConsumerState<PostResults>
               mainAxisSpacing: 12,
               childAspectRatio: 0.45, // Adjust this to control card height
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index >= state.searchResults.length) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            delegate: SliverChildBuilderDelegate((context, index) {
+              if (index >= state.searchResults.length) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                final post = state.searchResults[index];
-                final preferences = ref
-                    .read(userPreferencesProvider)
-                    .asData
-                    ?.value;
-                final labels = post.labels ?? [];
-                final shouldBlur =
-                    preferences != null &&
-                    labels.isNotEmpty &&
-                    LabelUtils.shouldBlurContent(preferences, labels);
+              final post = state.searchResults[index];
+              final preferences = ref
+                  .read(userPreferencesProvider)
+                  .asData
+                  ?.value;
+              final labels = post.labels ?? [];
+              final shouldBlur =
+                  preferences != null &&
+                  labels.isNotEmpty &&
+                  LabelUtils.shouldBlurContent(preferences, labels);
 
-                return PostTile(
-                  thumbnailUrl: post.thumbnailUrl,
-                  likes: post.likeCount ?? 0,
-                  seen: false,
-                  nsfwBlur: shouldBlur,
-                  onTap: () {
-                    context.router.push(
-                      StandalonePostRoute(postUri: post.uri.toString()),
-                    );
-                  },
-                );
-              },
-              childCount: state.searchResults.length,
-            ),
+              return PostTile(
+                thumbnailUrl: post.thumbnailUrl,
+                likes: post.likeCount ?? 0,
+                seen: false,
+                nsfwBlur: shouldBlur,
+                onTap: () {
+                  context.router.push(
+                    StandalonePostRoute(postUri: post.uri.toString()),
+                  );
+                },
+              );
+            }, childCount: state.searchResults.length),
           ),
         ),
 
@@ -219,9 +216,7 @@ class _PostResultsState extends ConsumerState<PostResults>
           ),
 
         // Bottom padding
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 24),
-        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
       ],
     );
   }

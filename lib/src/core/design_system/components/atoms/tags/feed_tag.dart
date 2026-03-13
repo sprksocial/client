@@ -43,9 +43,7 @@ class FeedTag extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(50),
               borderRadius: BorderRadius.circular(9),
-              border: Border.all(
-                color: Colors.white.withAlpha(37),
-              ),
+              border: Border.all(color: Colors.white.withAlpha(37)),
             ),
             child: Center(
               child: Text(

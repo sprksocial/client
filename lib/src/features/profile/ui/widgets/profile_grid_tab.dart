@@ -39,9 +39,7 @@ class ProfileGridTab extends ProfileTabBase {
             ),
           );
         } else {
-          context.router.push(
-            StandalonePostRoute(postUri: postUri.toString()),
-          );
+          context.router.push(StandalonePostRoute(postUri: postUri.toString()));
         }
       });
     }

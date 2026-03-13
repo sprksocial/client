@@ -147,10 +147,7 @@ class _DragHandle extends StatelessWidget {
 }
 
 class _SheetHeader extends StatelessWidget {
-  const _SheetHeader({
-    required this.title,
-    required this.onClose,
-  });
+  const _SheetHeader({required this.title, required this.onClose});
 
   final String title;
   final VoidCallback onClose;
@@ -281,10 +278,7 @@ class _StickerGrid extends StatelessWidget {
         itemCount: _itemCount(categoryIndex),
         itemBuilder: (context, index) {
           final url = _stickerUrl(categoryIndex: categoryIndex, index: index);
-          return _StickerTile(
-            url: url,
-            onTap: () => onPickSticker(url),
-          );
+          return _StickerTile(url: url, onTap: () => onPickSticker(url));
         },
       ),
     );
@@ -295,10 +289,7 @@ class _StickerGrid extends StatelessWidget {
     return max(12, 12 + offset % 12);
   }
 
-  String _stickerUrl({
-    required int categoryIndex,
-    required int index,
-  }) {
+  String _stickerUrl({required int categoryIndex, required int index}) {
     final offset = categoryIndex * 20;
     final id = offset + (index + 3) * 3;
     return 'https://picsum.photos/id/$id/800';
@@ -306,10 +297,7 @@ class _StickerGrid extends StatelessWidget {
 }
 
 class _StickerTile extends StatelessWidget {
-  const _StickerTile({
-    required this.url,
-    required this.onTap,
-  });
+  const _StickerTile({required this.url, required this.onTap});
 
   final String url;
   final VoidCallback onTap;
@@ -347,9 +335,7 @@ class _StickerTile extends StatelessWidget {
 }
 
 class _StickerContent extends StatelessWidget {
-  const _StickerContent({
-    required this.url,
-  });
+  const _StickerContent({required this.url});
 
   final String url;
 

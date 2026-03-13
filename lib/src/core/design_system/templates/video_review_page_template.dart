@@ -192,10 +192,7 @@ class _VideoPreview extends StatelessWidget {
 }
 
 class _DescriptionSection extends StatelessWidget {
-  const _DescriptionSection({
-    required this.controller,
-    required this.maxChars,
-  });
+  const _DescriptionSection({required this.controller, required this.maxChars});
 
   final TextEditingController controller;
   final int maxChars;
@@ -226,10 +223,7 @@ class _DescriptionSection extends StatelessWidget {
 }
 
 class _CrossPostSection extends StatelessWidget {
-  const _CrossPostSection({
-    required this.value,
-    required this.onChanged,
-  });
+  const _CrossPostSection({required this.value, required this.onChanged});
 
   final bool value;
   final ValueChanged<bool> onChanged;

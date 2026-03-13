@@ -163,11 +163,7 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
         color: color.withAlpha(80),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
-        _configs.icons.audioTrackDefaultIcon,
-        color: color,
-        size: 24,
-      ),
+      child: Icon(_configs.icons.audioTrackDefaultIcon, color: color, size: 24),
     );
   }
 

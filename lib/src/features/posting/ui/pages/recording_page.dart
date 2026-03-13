@@ -170,10 +170,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
     try {
       await context.router.push(
-        ImageReviewRoute(
-          imageFiles: photos,
-          storyMode: widget.storyMode,
-        ),
+        ImageReviewRoute(imageFiles: photos, storyMode: widget.storyMode),
       );
 
       if (!mounted) return;
@@ -192,9 +189,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -264,9 +261,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -367,9 +364,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             stackTrace: stackTrace,
           );
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to post story: $e')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed to post story: $e')));
           }
         }
         // If posting failed or was cancelled, reset state
@@ -399,9 +396,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -467,9 +464,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         if (!cameraState.isInitialized || cameraState.controller == null) {
           return const Scaffold(
             backgroundColor: Colors.black,
-            body: Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
+            body: Center(child: CircularProgressIndicator(color: Colors.white)),
           );
         }
 
@@ -477,9 +472,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         if (_isExiting) {
           return const Scaffold(
             backgroundColor: Colors.black,
-            body: Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
+            body: Center(child: CircularProgressIndicator(color: Colors.white)),
           );
         }
 
@@ -533,9 +526,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       },
       loading: () => const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
       ),
       error: (error, stack) => Scaffold(
         backgroundColor: Colors.black,

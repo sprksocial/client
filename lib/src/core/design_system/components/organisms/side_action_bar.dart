@@ -219,17 +219,11 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
             soundCover.startsWith('https://'))) {
       children.addAll([
         const SizedBox(height: 13),
-        _SoundItem(
-          cover: soundCover,
-          onTap: widget.onSoundTap,
-        ),
+        _SoundItem(cover: soundCover, onTap: widget.onSoundTap),
       ]);
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: children,
-    );
+    return Column(mainAxisSize: MainAxisSize.min, children: children);
   }
 }
 
@@ -330,10 +324,7 @@ class _ActionItemState extends State<_ActionItem>
 }
 
 class _SoundItem extends StatelessWidget {
-  const _SoundItem({
-    required this.cover,
-    this.onTap,
-  });
+  const _SoundItem({required this.cover, this.onTap});
 
   final String cover;
   final VoidCallback? onTap;
@@ -357,10 +348,7 @@ class _SoundItem extends StatelessWidget {
           shape: BoxShape.circle,
           color: hasValidCover ? null : Colors.grey[800],
           image: hasValidCover
-              ? DecorationImage(
-                  image: NetworkImage(cover),
-                  fit: BoxFit.cover,
-                )
+              ? DecorationImage(image: NetworkImage(cover), fit: BoxFit.cover)
               : null,
         ),
       ),
@@ -405,10 +393,7 @@ class _CuratePopover extends StatelessWidget {
               ),
             ),
             if (i < destinations.length - 1)
-              Container(
-                height: 1,
-                color: Colors.white.withValues(alpha: 0.25),
-              ),
+              Container(height: 1, color: Colors.white.withValues(alpha: 0.25)),
           ],
         ],
       ),

@@ -25,10 +25,7 @@ class ProfileLikes extends _$ProfileLikes {
   Future<ProfileFeedState> build(String actor, bool bsky) async {
     _actor = actor;
     try {
-      final result = await _loadLikes(
-        actor: actor,
-        cursor: null,
-      );
+      final result = await _loadLikes(actor: actor, cursor: null);
       return result;
     } catch (e, stackTrace) {
       _logger.e(
@@ -156,10 +153,7 @@ class ProfileLikes extends _$ProfileLikes {
 
   Future<void> refresh() async {
     try {
-      final result = await _loadLikes(
-        actor: _actor,
-        cursor: null,
-      );
+      final result = await _loadLikes(actor: _actor, cursor: null);
       state = AsyncValue.data(result);
     } catch (e) {
       _logger.e('Error refreshing likes: $e');

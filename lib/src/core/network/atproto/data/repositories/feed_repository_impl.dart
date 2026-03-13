@@ -327,10 +327,9 @@ class FeedRepositoryImpl implements FeedRepository {
         if (oauthSession == null) {
           throw Exception('No OAuth session available');
         }
-        final resultBsky =
-            await bsky.Bluesky.fromOAuthSession(
-              oauthSession,
-            ).feed.getAuthorFeed(
+        final resultBsky = await bsky.Bluesky.fromOAuthSession(oauthSession)
+            .feed
+            .getAuthorFeed(
               actor: actorUri.hostname,
               limit: limit,
               cursor: cursor,
@@ -1122,9 +1121,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) {
-        _logger.w(
-          'Failed to encode image $imageName with dart:ui codec',
-        );
+        _logger.w('Failed to encode image $imageName with dart:ui codec');
         return null;
       }
       return byteData.buffer.asUint8List();
@@ -1228,9 +1225,7 @@ class FeedRepositoryImpl implements FeedRepository {
             Uri.parse(
               '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus',
             ).replace(
-              queryParameters: {
-                'jobId': responseData['jobStatus']?['jobId'],
-              },
+              queryParameters: {'jobId': responseData['jobStatus']?['jobId']},
             ),
             headers: {
               'Authorization': 'Bearer $serviceToken',
@@ -1328,10 +1323,7 @@ class FeedRepositoryImpl implements FeedRepository {
     if (linkUrl != null) {
       final linkStart = text.isEmpty ? 0 : text.length;
       facets = [
-        bskyFeedAdapter.createLinkFacet(
-          linkUrl: linkUrl,
-          byteStart: linkStart,
-        ),
+        bskyFeedAdapter.createLinkFacet(linkUrl: linkUrl, byteStart: linkStart),
       ];
     }
 
@@ -1353,10 +1345,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   /// Prepare text for Bluesky post, handling link addition and truncation
-  String _prepareTextWithLink({
-    required String text,
-    String? linkUrl,
-  }) {
+  String _prepareTextWithLink({required String text, String? linkUrl}) {
     if (linkUrl == null) {
       return text;
     }
@@ -1688,10 +1677,7 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{
-        'actor': actor,
-        'limit': limit,
-      };
+      final parameters = <String, dynamic>{'actor': actor, 'limit': limit};
 
       if (cursor != null) {
         parameters['cursor'] = cursor;
@@ -1766,10 +1752,7 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{
-        'actor': actor,
-        'limit': limit,
-      };
+      final parameters = <String, dynamic>{'actor': actor, 'limit': limit};
 
       if (cursor != null) {
         parameters['cursor'] = cursor;

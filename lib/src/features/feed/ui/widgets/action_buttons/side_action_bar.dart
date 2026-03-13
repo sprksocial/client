@@ -275,10 +275,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return SharePanel(
-          shareUrl: shareUrl,
-          atUri: originalAtUri,
-        );
+        return SharePanel(shareUrl: shareUrl, atUri: originalAtUri);
       },
     );
   }
@@ -347,9 +344,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       }
 
       if (widget.feed != null) {
-        final controller = ref.read(
-          feedActionControllerProvider(widget.feed!),
-        );
+        final controller = ref.read(feedActionControllerProvider(widget.feed!));
         controller?.onAdvanceAndRemove();
       } else {
         final profileUri = AtUri.parse('at://${currentPost.author.did}');
@@ -396,16 +391,11 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
     try {
       final graphRepository = GetIt.instance<SprkRepository>().graph;
-      await graphRepository.toggleBlock(
-        author.did,
-        author.viewer?.blocking,
-      );
+      await graphRepository.toggleBlock(author.did, author.viewer?.blocking);
 
       // If blocking and we have a feed, use the action controller to advance
       if (!wasBlocked && widget.feed != null) {
-        final controller = ref.read(
-          feedActionControllerProvider(widget.feed!),
-        );
+        final controller = ref.read(feedActionControllerProvider(widget.feed!));
         controller?.onAdvanceAndRemove();
       }
     } catch (_) {}

@@ -215,9 +215,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                     _videoPlayerKey.currentState?.pauseVideo();
                     final isBskyPost = postData.uri.collection
                         .toString()
-                        .startsWith(
-                          'app.bsky',
-                        );
+                        .startsWith('app.bsky');
                     context.router.push(
                       ProfileRoute(
                         did: postData.author.did,
@@ -250,11 +248,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.error,
-                  color: Colors.white,
-                  size: 48,
-                ),
+                const Icon(Icons.error, color: Colors.white, size: 48),
                 const SizedBox(height: 16),
                 Text(
                   'Error loading post: ${snapshot.error}',
@@ -273,11 +267,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
           body: Stack(
             children: [
               content,
-              const Positioned(
-                top: 0,
-                left: 0,
-                child: AppOverlayBackButton(),
-              ),
+              const Positioned(top: 0, left: 0, child: AppOverlayBackButton()),
             ],
           ),
           bottomNavigationBar: postData == null
@@ -301,10 +291,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 }
 
 class _CommentBar extends StatelessWidget {
-  const _CommentBar({
-    required this.bottomPadding,
-    required this.onTap,
-  });
+  const _CommentBar({required this.bottomPadding, required this.onTap});
 
   final double bottomPadding;
   final VoidCallback onTap;
@@ -348,10 +335,7 @@ class _CommentBar extends StatelessWidget {
                 ),
                 child: const Text(
                   'Add comment...',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white54, fontSize: 14),
                 ),
               ),
             ),

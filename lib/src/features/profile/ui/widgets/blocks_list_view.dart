@@ -23,9 +23,7 @@ class BlocksListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (users.isEmpty) {
-      return const Center(
-        child: Text('No blocked users.'),
-      );
+      return const Center(child: Text('No blocked users.'));
     }
 
     return ListView.builder(

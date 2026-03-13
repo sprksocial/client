@@ -46,10 +46,7 @@ class StoryRepositoryImpl implements StoryRepository {
   Future<
     ({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})
   >
-  getStoriesTimeline({
-    int limit = 30,
-    String? cursor,
-  }) {
+  getStoriesTimeline({int limit = 30, String? cursor}) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         throw Exception('Not authenticated');

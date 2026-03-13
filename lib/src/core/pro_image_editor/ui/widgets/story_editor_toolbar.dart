@@ -87,11 +87,7 @@ class _ToolbarItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: AppColors.greyWhite,
-              size: 26,
-            ),
+            Icon(icon, color: AppColors.greyWhite, size: 26),
             const SizedBox(height: 4),
             Text(
               label,

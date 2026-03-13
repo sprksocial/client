@@ -60,10 +60,7 @@ class FeedsBarTemplate extends StatelessWidget implements PreferredSizeWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Color.fromARGB(110, 0, 0, 0),
-                  Colors.transparent,
-                ],
+                colors: [Color.fromARGB(110, 0, 0, 0), Colors.transparent],
               ),
             ),
           ),
@@ -87,9 +84,7 @@ class FeedsBarTemplate extends StatelessWidget implements PreferredSizeWidget {
                       message: 'Create post',
                       child: GestureDetector(
                         onTap: onLeadingPressed,
-                        child: Center(
-                          child: AppIcons.addPostFilled(size: 28),
-                        ),
+                        child: Center(child: AppIcons.addPostFilled(size: 28)),
                       ),
                     ),
                   ),

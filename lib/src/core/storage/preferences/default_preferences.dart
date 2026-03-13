@@ -10,11 +10,7 @@ class DefaultPreferences {
     final labelerDid = modServiceDid;
     // Default feeds: timeline, forYou, latest
     final defaultFeeds = [
-      SavedFeed(
-        type: 'timeline',
-        value: 'following',
-        pinned: true,
-      ),
+      SavedFeed(type: 'timeline', value: 'following', pinned: true),
       SavedFeed(
         type: 'feed',
         value:
@@ -74,9 +70,7 @@ class DefaultPreferences {
     ];
 
     // Default labelers
-    final defaultLabelers = [
-      LabelerPrefItem(did: labelerDid),
-    ];
+    final defaultLabelers = [LabelerPrefItem(did: labelerDid)];
 
     return Preferences(
       preferences: [

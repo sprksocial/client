@@ -46,11 +46,7 @@ class CircleIconButton extends StatelessWidget {
     );
 
     if (semanticLabel != null) {
-      return Semantics(
-        label: semanticLabel,
-        button: true,
-        child: content,
-      );
+      return Semantics(label: semanticLabel, button: true, child: content);
     }
 
     return content;

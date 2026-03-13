@@ -122,10 +122,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         );
       case 2:
         // Third tab - likes (only shown for current user)
-        tabWidget = ProfileLikesTab(
-          profileUri: profileUri,
-          bsky: widget.bsky,
-        );
+        tabWidget = ProfileLikesTab(profileUri: profileUri, bsky: widget.bsky);
       default:
         // Fallback to first tab
         tabWidget = ProfileGridTab(profileUri: profileUri, bsky: widget.bsky);
@@ -169,10 +166,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   Future<void> _handleAddStory(BuildContext context) async {
     context.router.push(
-      RecordingRoute(
-        storyMode: true,
-        captureMode: CaptureMode.hybrid,
-      ),
+      RecordingRoute(storyMode: true, captureMode: CaptureMode.hybrid),
     );
   }
 
@@ -340,9 +334,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onPressed: () => _showCreateMenu(context),
-                    icon: AppIcons.addPostFilled(
-                      size: 28,
-                    ),
+                    icon: AppIcons.addPostFilled(size: 28),
                   ),
                 )
               : null,
@@ -387,9 +379,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     final confirmed = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: Text(
-                          wasBlocked ? 'Unblock User' : 'Block User',
-                        ),
+                        title: Text(wasBlocked ? 'Unblock User' : 'Block User'),
                         content: Text(
                           wasBlocked
                               ? 'Are you sure you want to unblock this user?'
@@ -417,10 +407,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     try {
                       await notifier.toggleBlock();
                     } catch (e) {
-                      _logger.e(
-                        'Error blocking/unblocking profile',
-                        error: e,
-                      );
+                      _logger.e('Error blocking/unblocking profile', error: e);
                     }
                   },
                   isBlocked: isBlocking(profile.viewer),
@@ -483,10 +470,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               constraints: const BoxConstraints(),
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
-              icon: AppIcons.moreHoriz(
-                color: colorScheme.onSurface,
-                size: 28,
-              ),
+              icon: AppIcons.moreHoriz(color: colorScheme.onSurface, size: 28),
             ),
           ],
           tabsWidget: ProfileTabBar(

@@ -6,11 +6,7 @@ class TappableText extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
 
-  const TappableText({
-    required this.text,
-    required this.onTap,
-    super.key,
-  });
+  const TappableText({required this.text, required this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {

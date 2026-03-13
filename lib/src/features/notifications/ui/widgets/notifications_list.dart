@@ -4,11 +4,7 @@ import 'package:spark/src/features/notifications/providers/notification_provider
 import 'package:spark/src/features/notifications/ui/widgets/notification_item.dart';
 
 class NotificationsList extends ConsumerStatefulWidget {
-  const NotificationsList({
-    this.priority,
-    this.reasons,
-    super.key,
-  });
+  const NotificationsList({this.priority, this.reasons, super.key});
 
   final bool? priority;
   final List<String>? reasons;
@@ -45,20 +41,14 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
               reasons: widget.reasons,
             ).notifier,
           )
-          .loadMore(
-            priority: widget.priority,
-            reasons: widget.reasons,
-          );
+          .loadMore(priority: widget.priority, reasons: widget.reasons);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final notificationState = ref.watch(
-      notificationProvider(
-        priority: widget.priority,
-        reasons: widget.reasons,
-      ),
+      notificationProvider(priority: widget.priority, reasons: widget.reasons),
     );
 
     final isLoading = notificationState.isLoading;
@@ -66,9 +56,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
     final hasError = notificationState.hasError;
 
     if (isLoading && isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (hasError && isEmpty) {
@@ -84,10 +72,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                   reasons: widget.reasons,
                 ).notifier,
               )
-              .refresh(
-                priority: widget.priority,
-                reasons: widget.reasons,
-              );
+              .refresh(priority: widget.priority, reasons: widget.reasons);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -158,10 +143,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                   reasons: widget.reasons,
                 ).notifier,
               )
-              .refresh(
-                priority: widget.priority,
-                reasons: widget.reasons,
-              );
+              .refresh(priority: widget.priority, reasons: widget.reasons);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -212,10 +194,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                 reasons: widget.reasons,
               ).notifier,
             )
-            .refresh(
-              priority: widget.priority,
-              reasons: widget.reasons,
-            );
+            .refresh(priority: widget.priority, reasons: widget.reasons);
       },
       child: ListView.builder(
         controller: _scrollController,
@@ -228,9 +207,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
             // Loading more indicator
             return const Padding(
               padding: EdgeInsets.all(16),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: Center(child: CircularProgressIndicator()),
             );
           }
 

@@ -42,9 +42,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{
-        'limit': limit.toString(),
-      };
+      final parameters = <String, dynamic>{'limit': limit.toString()};
       if (cursor != null && cursor.isNotEmpty) {
         parameters['cursor'] = cursor;
       }

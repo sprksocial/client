@@ -30,9 +30,7 @@ class Blocks extends _$Blocks {
   /// Fetch missing profile data using ActorRepository (Spark-first with
   /// Bluesky fallback)
   /// Only fetches profiles that are actually incomplete (missing key fields)
-  Future<void> _fetchAndMergeProfiles(
-    List<ProfileView> profiles,
-  ) async {
+  Future<void> _fetchAndMergeProfiles(List<ProfileView> profiles) async {
     // Check if profile is incomplete - need to check multiple fields
     // Profile is incomplete if it's missing displayName, description, or avatar
     // AND has a valid handle (if handle missing, it's likely deleted account)

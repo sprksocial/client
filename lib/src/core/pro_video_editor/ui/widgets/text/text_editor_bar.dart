@@ -145,31 +145,28 @@ class _TextEditorBarState extends State<TextEditorBar> {
       return [];
     }
 
-    return List.generate(
-      textEditorConfigs.customTextStyles!.length,
-      (index) {
-        final item = textEditorConfigs.customTextStyles![index];
-        final selected = widget.editor.selectedTextStyle;
-        final isSelected = selected.hashCode == item.hashCode;
+    return List.generate(textEditorConfigs.customTextStyles!.length, (index) {
+      final item = textEditorConfigs.customTextStyles![index];
+      final selected = widget.editor.selectedTextStyle;
+      final isSelected = selected.hashCode == item.hashCode;
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: IconButton(
-            onPressed: () => widget.editor.setTextStyle(item),
-            icon: Text(
-              'Aa',
-              style: item.copyWith(
-                color: isSelected ? Colors.black : Colors.white,
-              ),
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: isSelected ? Colors.white : Colors.black38,
-              foregroundColor: isSelected ? Colors.black : Colors.white,
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: IconButton(
+          onPressed: () => widget.editor.setTextStyle(item),
+          icon: Text(
+            'Aa',
+            style: item.copyWith(
+              color: isSelected ? Colors.black : Colors.white,
             ),
           ),
-        );
-      },
-    );
+          style: IconButton.styleFrom(
+            backgroundColor: isSelected ? Colors.white : Colors.black38,
+            foregroundColor: isSelected ? Colors.black : Colors.white,
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildIconTextButton({
@@ -190,10 +187,7 @@ class _TextEditorBarState extends State<TextEditorBar> {
           const SizedBox(height: 5),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 10,
-              color: _foreGroundColorAccent,
-            ),
+            style: TextStyle(fontSize: 10, color: _foreGroundColorAccent),
           ),
         ],
       ),

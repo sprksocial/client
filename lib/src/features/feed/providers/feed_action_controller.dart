@@ -7,9 +7,7 @@ import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 /// like advancing to the next post without needing to pass callbacks through
 /// the widget tree.
 class FeedActionController {
-  FeedActionController({
-    required this.onAdvanceAndRemove,
-  });
+  FeedActionController({required this.onAdvanceAndRemove});
 
   /// Called after an action that should remove the current post and advance
   /// to the next one (e.g., blocking a user, deleting a post).
@@ -43,6 +41,4 @@ feedActionControllerProvider =
       FeedActionControllerNotifier,
       FeedActionController?,
       Feed
-    >(
-      (ref, feed) => FeedActionControllerNotifier(),
-    );
+    >((ref, feed) => FeedActionControllerNotifier());
