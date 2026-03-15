@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/settings_feed_card.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_state.dart';
@@ -27,10 +28,11 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
     final settingsState = ref.watch(settingsProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -39,7 +41,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: const AppLeadingButton(),
-        title: const Text('Your Feeds'),
+        title: Text(l10n.pageTitleYourFeeds),
         centerTitle: true,
         actions: [
           TextButton.icon(

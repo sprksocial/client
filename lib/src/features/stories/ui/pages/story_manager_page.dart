@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
@@ -30,6 +31,7 @@ class StoryManagerPage extends ConsumerWidget {
     WidgetRef ref,
     int index,
   ) async {
+    final l10n = AppLocalizations.of(context);
     final notifier = ref.read(storyManagerProvider.notifier);
     final stories = ref.read(storyManagerProvider).value?.stories ?? [];
     if (index >= stories.length) return;
@@ -38,17 +40,17 @@ class StoryManagerPage extends ConsumerWidget {
         await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Delete Story'),
-            content: const Text('Are you sure you want to delete this story?'),
+            title: Text(l10n.dialogDeleteStory),
+            content: Text(l10n.dialogDeleteStoryConfirm),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).maybePop(false),
-                child: const Text('Cancel'),
+                child: Text(l10n.buttonCancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).maybePop(true),
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Delete'),
+                child: Text(l10n.buttonDelete),
               ),
             ],
           ),
@@ -62,11 +64,12 @@ class StoryManagerPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncState = ref.watch(storyManagerProvider);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     final autoDeletePref = ref.watch(storyAutoDeletePrefProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Story Manager')),
+      appBar: AppBar(title: Text(l10n.pageTitleStoryManager)),
       body: asyncState.when(
         data: (data) {
           return RefreshIndicator(
@@ -74,7 +77,7 @@ class StoryManagerPage extends ConsumerWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemCount: 1 + data.stories.length, // header + stories
+              itemCount: 1 + data.stories.length,
               itemBuilder: (ctx, i) {
                 if (i == 0) {
                   return _AutoDeleteHeader(
@@ -132,12 +135,14 @@ class StoryManagerPage extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Story ${data.stories.length - storyIndex}',
+                                  l10n.messageStoryNumber(
+                                    data.stories.length - storyIndex,
+                                  ),
                                   style: theme.textTheme.titleMedium,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Posted $ageStr ago',
+                                  l10n.messagePostedAgo(ageStr),
                                   style: theme.textTheme.bodySmall,
                                 ),
                               ],
@@ -148,7 +153,7 @@ class StoryManagerPage extends ConsumerWidget {
                               Icons.delete_outline,
                               color: Colors.red,
                             ),
-                            tooltip: 'Delete',
+                            tooltip: l10n.tooltipDelete,
                             onPressed: () =>
                                 _deleteStory(context, ref, storyIndex),
                           ),
@@ -166,12 +171,12 @@ class StoryManagerPage extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Error: $err'),
+              Text('${l10n.errorGeneric}: $err'),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () =>
                     ref.read(storyManagerProvider.notifier).refresh(),
-                child: const Text('Retry'),
+                child: Text(l10n.buttonRetry),
               ),
             ],
           ),
@@ -189,6 +194,7 @@ class _AutoDeleteHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final cardColor = theme.colorScheme.surfaceContainerHighest;
     return Container(
       decoration: BoxDecoration(
@@ -206,7 +212,7 @@ class _AutoDeleteHeader extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Auto-delete stories',
+                  l10n.messageAutoDeleteStories,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -235,7 +241,7 @@ class _AutoDeleteHeader extends StatelessWidget {
                 ),
                 error: (_, _) => IconButton(
                   icon: const Icon(Icons.refresh),
-                  tooltip: 'Retry',
+                  tooltip: l10n.tooltipRetry,
                   onPressed: () => ref.refresh(storyAutoDeletePrefProvider),
                 ),
               ),
@@ -243,10 +249,7 @@ class _AutoDeleteHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Stories are public and stored on your PDS indefinitely. Enable '
-            'this so the app auto deletes them forever after 24h. Enabling '
-            'this will also execute an initial cleanup of any stories older '
-            'than 24h.',
+            l10n.messageAutoDeleteStoriesDescription,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

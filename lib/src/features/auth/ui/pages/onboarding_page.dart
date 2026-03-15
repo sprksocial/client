@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/auth/data/models/onboarding_screen_state.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/custom_text_field.dart';
 import 'package:spark/src/features/auth/providers/onboarding_notifier.dart';
@@ -109,10 +110,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final onboardingStateAsync = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
 
-    // Initialize controllers from state if not already set
     ref.listen<AsyncValue<OnboardingScreenState>>(onboardingProvider, (
       previous,
       next,
@@ -139,8 +140,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         centerTitle: true,
-        title: const Text('Complete your profile'),
-        leading: const AutoLeadingButton(), // Adds back button if applicable
+        title: Text(l10n.pageTitleCompleteProfile),
+        leading: const AutoLeadingButton(),
       ),
       body: onboardingStateAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -148,11 +149,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Error: $err'),
+              Text('${l10n.errorGeneric}: $err'),
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: notifier.reloadProfile,
-                child: const Text('Retry'),
+                child: Text(l10n.buttonRetry),
               ),
             ],
           ),
@@ -188,9 +189,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             child: CircleAvatar(
                               radius: 50,
                               backgroundImage: avatarImageProvider,
-                              backgroundColor: theme
-                                  .colorScheme
-                                  .surfaceContainerHighest, // Placeholder color
+                              backgroundColor:
+                                  theme.colorScheme.surfaceContainerHighest,
                               child: avatarImageProvider == null
                                   ? Icon(
                                       Icons.person,
@@ -201,13 +201,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             ),
                           ),
                           Positioned(
-                            // Positioned to avoid overlap if both are shown
                             right: 0,
                             bottom: 0,
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (hasLocalAvatar) // If true, show undo button
+                                if (hasLocalAvatar)
                                   Padding(
                                     padding: const EdgeInsets.all(4),
                                     child: GestureDetector(
@@ -226,7 +225,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                       ),
                                     ),
                                   ),
-                                if (isAvatarActive) // If true, show close
+                                if (isAvatarActive)
                                   Padding(
                                     padding: const EdgeInsets.all(4),
                                     child: GestureDetector(
@@ -259,7 +258,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                         children: [
                           CustomTextField(
                             controller: _displayNameController,
-                            hintText: 'Display Name',
+                            hintText: l10n.hintDisplayName,
                             fillColor:
                                 theme.inputDecorationTheme.fillColor ??
                                 theme.colorScheme.surface,
@@ -272,7 +271,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                 : null,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Display Name is required';
+                                return l10n.inputErrorRequired;
                               }
                               if (value.trim().length > 64) {
                                 return 'Display Name cannot exceed '
@@ -284,7 +283,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           const SizedBox(height: 12),
                           CustomTextField(
                             controller: _descriptionController,
-                            hintText: 'Bio',
+                            hintText: l10n.hintBio,
                             fillColor:
                                 theme.inputDecorationTheme.fillColor ??
                                 theme.colorScheme.surface,
@@ -300,7 +299,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                               if (value != null && value.trim().length > 256) {
                                 return 'Bio cannot exceed 256 characters';
                               }
-                              return null; // Bio is optional
+                              return null;
                             },
                           ),
                           const SizedBox(height: 24),
@@ -329,12 +328,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : const Row(
+                                  : Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text('Complete'),
-                                        SizedBox(width: 8),
-                                        Icon(Icons.check),
+                                        Text(l10n.buttonConfirm),
+                                        const SizedBox(width: 8),
+                                        const Icon(Icons.check),
                                       ],
                                     ),
                             ),

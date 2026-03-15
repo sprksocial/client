@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
@@ -25,15 +26,16 @@ class UserListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     if (users.isEmpty) {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         controller: scrollController,
-        children: const [
+        children: [
           Center(
             child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('No users to display.'),
+              padding: const EdgeInsets.all(16),
+              child: Text(l10n.emptyNoUsers),
             ),
           ),
         ],

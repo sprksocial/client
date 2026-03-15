@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/profile/providers/blocks_provider.dart';
 import 'package:spark/src/features/profile/ui/widgets/blocks_list_view.dart';
@@ -44,14 +45,15 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
   @override
   Widget build(BuildContext context) {
     final currentDid = ref.watch(currentDidProvider);
+    final l10n = AppLocalizations.of(context);
 
     if (currentDid == null) {
       return Scaffold(
         appBar: AppBar(
-          leading: const AppLeadingButton(tooltip: 'Back'),
-          title: const Text('Blocked Users'),
+          leading: AppLeadingButton(tooltip: l10n.buttonCancel),
+          title: Text(l10n.pageTitleBlockedUsers),
         ),
-        body: const Center(child: Text('Please log in to view blocked users')),
+        body: Center(child: Text(l10n.messagePleaseLoginBlocked)),
       );
     }
 
@@ -59,8 +61,8 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
 
     return Scaffold(
       appBar: AppBar(
-        leading: const AppLeadingButton(tooltip: 'Back'),
-        title: const Text('Blocked Users'),
+        leading: AppLeadingButton(tooltip: l10n.buttonCancel),
+        title: Text(l10n.pageTitleBlockedUsers),
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -81,7 +83,7 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('An error occurred: $error'),
+                  child: Text('${l10n.errorGeneric}: $error'),
                 ),
               ),
             ],

@@ -47,6 +47,46 @@
     "description": "Close option in options panel"
   },
 
+  "buttonAdd": "Add",
+  "@buttonAdd": {
+    "description": "Add button text"
+  },
+
+  "buttonRemove": "Remove",
+  "@buttonRemove": {
+    "description": "Remove button text"
+  },
+
+  "buttonRetry": "Retry",
+  "@buttonRetry": {
+    "description": "Retry button text"
+  },
+
+  "buttonTryAgain": "Try again",
+  "@buttonTryAgain": {
+    "description": "Try again button text"
+  },
+
+  "buttonGoBack": "Go Back",
+  "@buttonGoBack": {
+    "description": "Go back button text"
+  },
+
+  "buttonAllowAccess": "Allow Access",
+  "@buttonAllowAccess": {
+    "description": "Allow access button for permissions"
+  },
+
+  "buttonOpenSettings": "Open Settings",
+  "@buttonOpenSettings": {
+    "description": "Open settings button"
+  },
+
+  "buttonSubmit": "Submit",
+  "@buttonSubmit": {
+    "description": "Submit button text"
+  },
+
   "inputErrorRequired": "This field is required",
   "@inputErrorRequired": {
     "description": "Error message for required fields"
@@ -65,5 +105,385 @@
   "searchPlaceholder": "Search...",
   "@searchPlaceholder": {
     "description": "Placeholder text for search inputs"
+  },
+
+  "pageTitleSettings": "Settings",
+  "@pageTitleSettings": {
+    "description": "Settings page title"
+  },
+
+  "pageTitleStoryManager": "Story Manager",
+  "@pageTitleStoryManager": {
+    "description": "Story manager page title"
+  },
+
+  "pageTitleSound": "Sound",
+  "@pageTitleSound": {
+    "description": "Sound page title"
+  },
+
+  "pageTitleYourFeeds": "Your Feeds",
+  "@pageTitleYourFeeds": {
+    "description": "Your feeds page title"
+  },
+
+  "pageTitleBlockedUsers": "Blocked Users",
+  "@pageTitleBlockedUsers": {
+    "description": "Blocked users page title"
+  },
+
+  "pageTitleEditProfile": "Edit Profile",
+  "@pageTitleEditProfile": {
+    "description": "Edit profile page title"
+  },
+
+  "pageTitleCompleteProfile": "Complete your profile",
+  "@pageTitleCompleteProfile": {
+    "description": "Complete profile page title"
+  },
+
+  "pageTitleLabelerSettings": "Labeler Settings",
+  "@pageTitleLabelerSettings": {
+    "description": "Labeler settings page title"
+  },
+
+  "pageTitleLabelers": "Labelers",
+  "@pageTitleLabelers": {
+    "description": "Labelers page title"
+  },
+
+  "pageTitleResult": "Result",
+  "@pageTitleResult": {
+    "description": "Result page title"
+  },
+
+  "dialogDeleteStory": "Delete Story",
+  "@dialogDeleteStory": {
+    "description": "Delete story dialog title"
+  },
+
+  "dialogDeleteStoryConfirm": "Are you sure you want to delete this story?",
+  "@dialogDeleteStoryConfirm": {
+    "description": "Delete story confirmation message"
+  },
+
+  "dialogRemoveLabeler": "Remove Labeler",
+  "@dialogRemoveLabeler": {
+    "description": "Remove labeler dialog title"
+  },
+
+  "dialogRemoveLabelerConfirm": "Are you sure you want to remove this labeler?",
+  "@dialogRemoveLabelerConfirm": {
+    "description": "Remove labeler confirmation message"
+  },
+
+  "dialogRemoveFeed": "Remove Feed",
+  "@dialogRemoveFeed": {
+    "description": "Remove feed dialog title"
+  },
+
+  "dialogDeletePost": "Delete Post",
+  "@dialogDeletePost": {
+    "description": "Delete post dialog title"
+  },
+
+  "dialogDeleteComment": "Delete Comment",
+  "@dialogDeleteComment": {
+    "description": "Delete comment dialog title"
+  },
+
+  "emptyNoUsers": "No users to display.",
+  "@emptyNoUsers": {
+    "description": "Empty state for no users"
+  },
+
+  "emptyNoBlockedUsers": "No blocked users.",
+  "@emptyNoBlockedUsers": {
+    "description": "Empty state for no blocked users"
+  },
+
+  "emptyNoStories": "No stories",
+  "@emptyNoStories": {
+    "description": "Empty state for no stories"
+  },
+
+  "emptyNoComments": "No comments yet.",
+  "@emptyNoComments": {
+    "description": "Empty state for no comments"
+  },
+
+  "emptyNoCrosspostComments": "No crosspost comments yet.",
+  "@emptyNoCrosspostComments": {
+    "description": "Empty state for no crosspost comments"
+  },
+
+  "emptyNoLabelers": "No Labelers",
+  "@emptyNoLabelers": {
+    "description": "Empty state for no labelers"
+  },
+
+  "emptyNoLabelersDescription": "Add labelers to customize content moderation",
+  "@emptyNoLabelersDescription": {
+    "description": "Description for empty labelers state"
+  },
+
+  "emptyDiscoverContent": "Discover new content",
+  "@emptyDiscoverContent": {
+    "description": "Empty state for discover content"
+  },
+
+  "emptyNoMedia": "No photos or videos found...",
+  "@emptyNoMedia": {
+    "description": "Empty state for no media"
+  },
+
+  "errorGeneric": "An error occurred",
+  "@errorGeneric": {
+    "description": "Generic error message"
+  },
+
+  "errorLoadingFeed": "Error loading feed",
+  "@errorLoadingFeed": {
+    "description": "Error loading feed message"
+  },
+
+  "errorLoadingSound": "Error loading sound",
+  "@errorLoadingSound": {
+    "description": "Error loading sound message"
+  },
+
+  "errorLoadingReposts": "Error loading reposts",
+  "@errorLoadingReposts": {
+    "description": "Error loading reposts message"
+  },
+
+  "errorLoadingLikes": "Error loading likes",
+  "@errorLoadingLikes": {
+    "description": "Error loading likes message"
+  },
+
+  "errorLoadingPosts": "Error loading posts",
+  "@errorLoadingPosts": {
+    "description": "Error loading posts message"
+  },
+
+  "hintSearchUsersPosts": "Search users, posts...",
+  "@hintSearchUsersPosts": {
+    "description": "Search placeholder for users and posts"
+  },
+
+  "hintSearchUsers": "Search users",
+  "@hintSearchUsers": {
+    "description": "Search placeholder for users"
+  },
+
+  "hintMessage": "Message...",
+  "@hintMessage": {
+    "description": "Message input placeholder"
+  },
+
+  "hintTypeMessage": "Type a message...",
+  "@hintTypeMessage": {
+    "description": "Type message input placeholder"
+  },
+
+  "hintAddDescription": "Add a description... (optional)",
+  "@hintAddDescription": {
+    "description": "Add description placeholder"
+  },
+
+  "hintAddAltText": "Add alt text",
+  "@hintAddAltText": {
+    "description": "Add alt text placeholder"
+  },
+
+  "hintDisplayName": "Display Name",
+  "@hintDisplayName": {
+    "description": "Display name input label"
+  },
+
+  "hintBio": "Bio",
+  "@hintBio": {
+    "description": "Bio input label"
+  },
+
+  "hintDidOrHandle": "DID or Handle",
+  "@hintDidOrHandle": {
+    "description": "DID or handle input label"
+  },
+
+  "hintDidOrHandleExample": "did:plc:... or @handle.bsky.social",
+  "@hintDidOrHandleExample": {
+    "description": "DID or handle input hint"
+  },
+
+  "hintAdditionalDetails": "Additional details (optional)",
+  "@hintAdditionalDetails": {
+    "description": "Additional details input placeholder"
+  },
+
+  "hintImageDescription": "Image Description",
+  "@hintImageDescription": {
+    "description": "Image description input label"
+  },
+
+  "messagePleaseLogin": "Please log in to view your profile",
+  "@messagePleaseLogin": {
+    "description": "Message to log in"
+  },
+
+  "messagePleaseLoginBlocked": "Please log in to view blocked users",
+  "@messagePleaseLoginBlocked": {
+    "description": "Message to log in for blocked users"
+  },
+
+  "messagePostedAgo": "Posted {time} ago",
+  "@messagePostedAgo": {
+    "description": "Posted time ago message",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+
+  "messageShowReplies": "Show {count} replies",
+  "@messageShowReplies": {
+    "description": "Show replies message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "messageAutoDeleteStories": "Stories auto-delete after 24 hours",
+  "@messageAutoDeleteStories": {
+    "description": "Auto delete stories message"
+  },
+
+  "messageAutoDeleteStoriesDescription": "Stories are public and stored on your PDS indefinitely. Enable this so the app auto deletes them forever after 24h. Enabling this will also execute an initial cleanup of any stories older than 24h.",
+  "@messageAutoDeleteStoriesDescription": {
+    "description": "Detailed description for the auto delete stories setting, including the initial cleanup warning"
+  },
+
+  "messageExportingVideo": "Exporting video…",
+  "@messageExportingVideo": {
+    "description": "Exporting video progress message"
+  },
+
+  "messageStoryNumber": "Story {number}",
+  "@messageStoryNumber": {
+    "description": "Story number label",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+
+  "tooltipManage": "Manage",
+  "@tooltipManage": {
+    "description": "Manage tooltip"
+  },
+
+  "tooltipDelete": "Delete",
+  "@tooltipDelete": {
+    "description": "Delete tooltip"
+  },
+
+  "tooltipRetry": "Retry",
+  "@tooltipRetry": {
+    "description": "Retry tooltip"
+  },
+
+  "tooltipLabelSettings": "Label settings",
+  "@tooltipLabelSettings": {
+    "description": "Label settings tooltip"
+  },
+
+  "tooltipRemoveLabeler": "Remove labeler",
+  "@tooltipRemoveLabeler": {
+    "description": "Remove labeler tooltip"
+  },
+
+  "tooltipRevert": "Revert",
+  "@tooltipRevert": {
+    "description": "Revert tooltip"
+  },
+
+  "labelGenerationTime": "Generation time:",
+  "@labelGenerationTime": {
+    "description": "Generation time label"
+  },
+
+  "labelDuration": "Duration:",
+  "@labelDuration": {
+    "description": "Duration label"
+  },
+
+  "labelSize": "Size:",
+  "@labelSize": {
+    "description": "Size label"
+  },
+
+  "labelResolution": "Resolution:",
+  "@labelResolution": {
+    "description": "Resolution label"
+  },
+
+  "labelAddLabeler": "Add Labeler",
+  "@labelAddLabeler": {
+    "description": "Add labeler label"
+  },
+
+  "labelCharacters": "{count}/1000",
+  "@labelCharacters": {
+    "description": "Character count label",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "categoryViolence": "Violence",
+  "@categoryViolence": {
+    "description": "Report category: Violence"
+  },
+
+  "categorySexualContent": "Sexual Content",
+  "@categorySexualContent": {
+    "description": "Report category: Sexual Content"
+  },
+
+  "categoryChildSafety": "Child Safety",
+  "@categoryChildSafety": {
+    "description": "Report category: Child Safety"
+  },
+
+  "categoryHarassment": "Harassment",
+  "@categoryHarassment": {
+    "description": "Report category: Harassment"
+  },
+
+  "categoryMisleading": "Misleading",
+  "@categoryMisleading": {
+    "description": "Report category: Misleading"
+  },
+
+  "categoryRuleViolations": "Rule Violations",
+  "@categoryRuleViolations": {
+    "description": "Report category: Rule Violations"
+  },
+
+  "categorySelfHarm": "Self-Harm",
+  "@categorySelfHarm": {
+    "description": "Report category: Self-Harm"
+  },
+
+  "categoryOther": "Other",
+  "@categoryOther": {
+    "description": "Report category: Other"
   }
 }

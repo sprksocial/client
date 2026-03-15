@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/templates/explore_page_template.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
@@ -99,6 +100,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final userSearchState = ref.watch(searchProvider);
     final postSearchState = ref.watch(postSearchProvider);
     final typeaheadState = ref.watch(actorTypeaheadProvider);
@@ -113,7 +115,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       child: ExplorePageTemplate(
         searchWidget: InputField.search(
           controller: _searchController,
-          hintText: 'Search users, posts...',
+          hintText: l10n.hintSearchUsersPosts,
           onSubmitted: _onSubmitted,
           textInputAction: TextInputAction.search,
           leadingWidgets: const [Icon(FluentIcons.search_24_regular, size: 20)],
@@ -147,13 +149,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     ..invalidate(storiesByAuthorProvider())
                     ..invalidate(suggestedFeedsProvider);
                 },
-                child: const CustomScrollView(
+                child: CustomScrollView(
                   slivers: [
-                    SliverToBoxAdapter(child: StoriesList()),
-                    SliverToBoxAdapter(child: SuggestedFeedsList()),
+                    const SliverToBoxAdapter(child: StoriesList()),
+                    const SliverToBoxAdapter(child: SuggestedFeedsList()),
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Center(child: Text('Discover new content')),
+                      child: Center(child: Text(l10n.emptyDiscoverContent)),
                     ),
                   ],
                 ),

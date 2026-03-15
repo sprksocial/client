@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
@@ -216,6 +217,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final asyncState = ref.watch(commentsPageProvider(postUri: _postAtUri));
     final threadPost = asyncState.value?.thread.post;
     final displayPost =
@@ -271,10 +273,9 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
           child: asyncState.when(
             data: (data) {
               if (data.thread.replies == null || data.thread.replies!.isEmpty) {
-                return const Center(child: Text('No comments yet.'));
+                return Center(child: Text(l10n.emptyNoComments));
               }
 
-              // Find the index of the highlighted reply and scroll to it
               if (_highlightedReplyUri != null && !_hasScrolledToHighlighted) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _scrollToHighlightedReply(data.thread.replies!);
@@ -300,7 +301,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
               );
             },
             error: (error, stackTrace) {
-              return Center(child: Text('Error: $error'));
+              return Center(child: Text('${l10n.errorGeneric}: $error'));
             },
             loading: () {
               return const Center(child: CircularProgressIndicator());

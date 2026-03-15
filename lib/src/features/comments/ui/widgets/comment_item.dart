@@ -81,19 +81,19 @@ class _CommentItemState extends ConsumerState<CommentItem> {
   }
 
   void _handleDeleteComment() {
-    // Confirm deletion
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Comment'),
-        content: const Text(
+        title: Text(l10n.dialogDeleteComment),
+        content: Text(
           'Are you sure you want to delete this comment? This action '
           'cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => context.router.maybePop(),
-            child: Text(AppLocalizations.of(context).buttonCancel),
+            child: Text(l10n.buttonCancel),
           ),
           TextButton(
             onPressed: () async {
@@ -106,13 +106,13 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                     )
                     .deleteComment(commentState.thread.post.uri.toString());
                 if (context.mounted) {
-                  await context.router.maybePop(); // to close the menu below
+                  await context.router.maybePop();
                 }
               } catch (e) {
                 _logger.e('Error deleting comment', error: e);
               }
             },
-            child: Text(AppLocalizations.of(context).buttonDelete),
+            child: Text(l10n.buttonDelete),
           ),
         ],
       ),
@@ -294,6 +294,7 @@ class _RepliesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () => context.router.push(
         RepliesRoute(postUri: commentState.thread.post.uri.toString()),
@@ -306,7 +307,9 @@ class _RepliesSection extends StatelessWidget {
             left: BorderSide(color: Theme.of(context).colorScheme.surface),
           ),
         ),
-        child: Text('Show ${commentState.thread.post.replyCount} replies'),
+        child: Text(
+          l10n.messageShowReplies(commentState.thread.post.replyCount ?? 0),
+        ),
       ),
     );
   }
