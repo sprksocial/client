@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/ui/widgets/custom_text_field.dart';
 import 'package:spark/src/features/profile/providers/edit_profile_provider.dart';
@@ -92,6 +93,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final editProfileState = ref.watch(editProfileProvider(widget.profile));
     final editProfileNotifier = ref.read(
       editProfileProvider(widget.profile).notifier,
@@ -100,7 +102,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Update controllers if state changes externally
     ref.listen(editProfileProvider(widget.profile), (_, next) {
       if (_displayNameController.text != next.displayName) {
         _displayNameController.text = next.displayName;
@@ -110,7 +111,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       }
     });
 
-    // Determine which avatar to display
     ImageProvider<Object>? avatarImageProvider;
 
     if (editProfileState.localAvatar != null) {
@@ -124,7 +124,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           editProfileState.localAvatar as String,
         );
       } else {
-        // Handle AtUri case for localAvatar
         if (editProfileState.localAvatar.toString().isNotEmpty) {
           final avatarUrl = editProfileState.localAvatar.toString();
           avatarImageProvider = NetworkImage(avatarUrl);
@@ -144,7 +143,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: Text(l10n.pageTitleEditProfile),
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         centerTitle: true,
@@ -218,7 +217,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       children: [
                         CustomTextField(
                           controller: _displayNameController,
-                          hintText: 'Display Name',
+                          hintText: l10n.hintDisplayName,
                           fillColor:
                               theme.inputDecorationTheme.fillColor ??
                               theme.colorScheme.surface,
@@ -236,7 +235,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                               : null,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Display Name is required';
+                              return l10n.inputErrorRequired;
                             }
                             if (value.trim().length > 64) {
                               return 'Display Name cannot exceed 64 characters';
@@ -247,7 +246,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                         const SizedBox(height: 12),
                         CustomTextField(
                           controller: _descriptionController,
-                          hintText: 'Bio',
+                          hintText: l10n.hintBio,
                           fillColor:
                               theme.inputDecorationTheme.fillColor ??
                               theme.colorScheme.surface,
@@ -295,12 +294,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Row(
+                                : Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('Save'),
-                                      SizedBox(width: 8),
-                                      Icon(Icons.save),
+                                      Text(l10n.buttonSave),
+                                      const SizedBox(width: 8),
+                                      const Icon(Icons.save),
                                     ],
                                   ),
                           ),

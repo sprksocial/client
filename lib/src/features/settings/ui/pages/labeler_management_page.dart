@@ -102,19 +102,20 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
 
   Future<void> _addLabeler() async {
     final didController = TextEditingController();
+    final l10n = AppLocalizations.of(context);
     try {
       final result = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Add Labeler'),
+          title: Text(l10n.labelAddLabeler),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: didController,
-                decoration: const InputDecoration(
-                  labelText: 'DID or Handle',
-                  hintText: 'did:plc:... or @handle.bsky.social',
+                decoration: InputDecoration(
+                  labelText: l10n.hintDidOrHandle,
+                  hintText: l10n.hintDidOrHandleExample,
                 ),
                 autofocus: true,
               ),
@@ -123,7 +124,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(AppLocalizations.of(context).buttonCancel),
+              child: Text(l10n.buttonCancel),
             ),
             TextButton(
               onPressed: () {
@@ -132,7 +133,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                   Navigator.of(context).pop(input);
                 }
               },
-              child: const Text('Add'),
+              child: Text(l10n.buttonAdd),
             ),
           ],
         ),
@@ -171,19 +172,20 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
       return;
     }
 
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Labeler'),
-        content: const Text('Are you sure you want to remove this labeler?'),
+        title: Text(l10n.dialogRemoveLabeler),
+        content: Text(l10n.dialogRemoveLabelerConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context).buttonCancel),
+            child: Text(l10n.buttonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Remove'),
+            child: Text(l10n.buttonRemove),
           ),
         ],
       ),
@@ -204,9 +206,10 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     if (_isLoading) {
       return Scaffold(
@@ -215,7 +218,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
           backgroundColor: colorScheme.surface,
           elevation: 0,
           leading: const AppLeadingButton(),
-          title: const Text('Labelers'),
+          title: Text(l10n.pageTitleLabelers),
           centerTitle: true,
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -228,20 +231,18 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
         backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: const AppLeadingButton(),
-        title: const Text('Labelers'),
+        title: Text(l10n.pageTitleLabelers),
         centerTitle: true,
       ),
       body: RefreshIndicator(
         onRefresh: _loadLabelers,
         child: CustomScrollView(
           slivers: [
-            // Description section
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'Manage the labelers that provide content moderation '
-                  'labels for your feeds.',
+                  l10n.emptyNoLabelersDescription,
                   style: TextStyle(
                     color: colorScheme.onSurface.withAlpha(178),
                     fontSize: 14,
@@ -250,7 +251,6 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
               ),
             ),
 
-            // Action buttons
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -260,7 +260,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                 child: ElevatedButton.icon(
                   onPressed: _addLabeler,
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add Labeler'),
+                  label: Text(l10n.labelAddLabeler),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
@@ -269,7 +269,6 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
               ),
             ),
 
-            // Labelers list
             if (_labelerDids.isEmpty)
               SliverFillRemaining(
                 hasScrollBody: false,
@@ -284,7 +283,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No Labelers',
+                        l10n.emptyNoLabelers,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -293,7 +292,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Add labelers to customize content moderation',
+                        l10n.emptyNoLabelersDescription,
                         style: TextStyle(
                           color: colorScheme.onSurface.withAlpha(178),
                         ),
@@ -353,7 +352,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                                     LabelerLabelSettingsRoute(did: did),
                                   );
                                 },
-                                tooltip: 'Label settings',
+                                tooltip: l10n.tooltipLabelSettings,
                               ),
                               if (!isDefault)
                                 IconButton(
@@ -362,7 +361,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                                   icon: const Icon(Icons.delete_outline),
                                   color: colorScheme.error,
                                   onPressed: () => _removeLabeler(did),
-                                  tooltip: 'Remove labeler',
+                                  tooltip: l10n.tooltipRemoveLabeler,
                                 ),
                             ],
                           ),

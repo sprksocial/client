@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/auth/auth.dart';
@@ -189,13 +190,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: const AppLeadingButton(),
-        title: const Text('Settings'),
+        title: Text(l10n.pageTitleSettings),
         centerTitle: true,
       ),
       body: ListView(
@@ -211,9 +213,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
-                title: const Text(
-                  'Feeds',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                title: Text(
+                  l10n.pageTitleYourFeeds,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 trailing: const Icon(FluentIcons.list_24_regular),
                 onTap: () => context.router.push(const FeedListRoute()),
@@ -234,9 +239,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
-                title: const Text(
-                  'Labelers',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                title: Text(
+                  l10n.pageTitleLabelers,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 trailing: const Icon(FluentIcons.tag_24_regular),
                 onTap: () =>
@@ -281,9 +289,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
-                title: const Text(
-                  'Blocked Users',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                title: Text(
+                  l10n.pageTitleBlockedUsers,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 trailing: const Icon(FluentIcons.prohibited_24_regular),
                 onTap: () => context.router.push(const BlocksRoute()),
