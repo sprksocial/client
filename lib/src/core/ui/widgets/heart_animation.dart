@@ -84,7 +84,10 @@ class _HeartAnimationState extends State<HeartAnimation>
                     scale: _scaleAnimation.value,
                     child: Opacity(
                       opacity: _opacityAnimation.value,
-                      child: AppIcons.likeFilled(size: 100),
+                      child: AppIcons.likeFilled(
+                        size: 100,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   );
                 },

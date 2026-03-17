@@ -10,6 +10,9 @@ cd $CI_PRIMARY_REPOSITORY_PATH # change working directory to the root of your cl
 git clone https://github.com/flutter/flutter.git --depth 1 -b stable $HOME/flutter
 export PATH="$PATH:$HOME/flutter/bin"
 
+# Enable Swift Package Manager support.
+flutter config --enable-swift-package-manager
+
 # Install Flutter artifacts for iOS (--ios), or macOS (--macos) platforms.
 flutter precache --ios
 

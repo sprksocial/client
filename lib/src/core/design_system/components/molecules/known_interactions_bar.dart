@@ -1,10 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:spark/src/core/design_system/components/atoms/avatar_stack.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/design_system/tokens/gradients.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/ui/theme/theme.dart';
 
@@ -88,9 +86,8 @@ class _InteractionPill extends StatelessWidget {
           decoration: const BoxDecoration(
             color: Color(0x33FFFFFF),
             borderRadius: BorderRadius.all(Radius.circular(500)),
-            border: GradientBoxBorder(
-              gradient: AppGradients.glassStroke,
-              width: 2,
+            border: Border.fromBorderSide(
+              BorderSide(color: Color(0x25FFFFFF), width: 1),
             ),
           ),
           child: Row(

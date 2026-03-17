@@ -537,7 +537,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final tabs = [
       ProfileTabItem(
         icon: AppIcons.grid(color: inactiveColor),
-        filledIcon: AppIcons.gridFilled(),
+        filledIcon: AppIcons.gridFilled(
+          color: Theme.of(context).colorScheme.primary,
+        ),
         isSelected: activeIndex == 0,
         onTap: () {
           setState(() {
@@ -547,8 +549,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       ),
       ProfileTabItem(
         icon: AppIcons.repost(color: inactiveColor),
-        filledIcon:
-            AppIcons.repost(), // No filled variant exists, use same icon
+        filledIcon: AppIcons.repost(
+          color: Theme.of(context).colorScheme.primary,
+        ), // No filled variant exists, use same icon
         isSelected: activeIndex == 1,
         onTap: () {
           setState(() {
@@ -563,7 +566,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       tabs.add(
         ProfileTabItem(
           icon: AppIcons.profileLiked(color: inactiveColor),
-          filledIcon: AppIcons.likeFilled(),
+          filledIcon: AppIcons.likeFilled(
+            color: Theme.of(context).colorScheme.primary,
+          ),
           isSelected: activeIndex == 2,
           onTap: () {
             setState(() {
