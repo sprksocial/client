@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/gradients.dart';
@@ -26,9 +25,8 @@ class AccentButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: AppGradients.accent,
           borderRadius: BorderRadius.circular(500), // pill shape
-          border: const GradientBoxBorder(
-            gradient: AppGradients.glassStroke,
-            width: 2,
+          border: const Border.fromBorderSide(
+            BorderSide(color: Color(0x25FFFFFF), width: 2),
           ),
         ),
         child: Align(

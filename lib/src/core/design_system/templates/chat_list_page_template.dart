@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/design_system/components/molecules/glass_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 
 class ChatListItemData {
   const ChatListItemData({
@@ -98,9 +98,10 @@ class _ChatTile extends StatelessWidget {
       onTap: onTap,
       horizontalTitleGap: 12,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: GlassAvatar(
+      leading: UserAvatar(
         imageUrl: data.avatarUrl ?? '',
         username: data.handle,
+        size: 50.45,
       ),
       title: Row(
         children: [

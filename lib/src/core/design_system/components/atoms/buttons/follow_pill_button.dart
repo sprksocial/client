@@ -1,10 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/design_system/tokens/gradients.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class FollowPillButton extends StatelessWidget {
@@ -34,9 +32,8 @@ class FollowPillButton extends StatelessWidget {
             decoration: const BoxDecoration(
               color: Color(0x33FFFFFF),
               borderRadius: BorderRadius.all(Radius.circular(500)),
-              border: GradientBoxBorder(
-                gradient: AppGradients.glassStroke,
-                width: 2,
+              border: Border.fromBorderSide(
+                BorderSide(color: Color(0x25FFFFFF), width: 1),
               ),
             ),
             child: Text(

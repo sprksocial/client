@@ -118,31 +118,6 @@ class AppGradients {
     ],
   );
 
-  static const glassStroke = LinearGradient(
-    begin: Alignment(-0.8200000000000001, -0.8),
-    end: Alignment(0.72, 0.8200000000000001),
-    transform: GradientRotation(45 * (math.pi / 180)),
-    stops: [0, 0.3702, 0.7212, 1],
-    colors: [
-      Color(0x3FFFFFFF), // was 6 * 5, now 9 * 7
-      Color(0x1CFFFFFF), // was 3 * 5, now 4 * 7
-      Color(0x15FFFFFF), // was 2 * 5, now 3 * 7
-      Color(0x31FFFFFF), // was 6 * 5, now 7 * 7
-    ],
-  );
-
-  static const glassStrokeLight = LinearGradient(
-    begin: Alignment(-0.8200000000000001, -0.8),
-    end: Alignment(0.72, 0.8200000000000001),
-    stops: [0, 0.3702, 0.7212, 1],
-    colors: [
-      Color(0x4d000000),
-      Color(0x26000000),
-      Color(0x1a000000),
-      Color(0x4d000000),
-    ],
-  );
-
   static const darkStroke = LinearGradient(
     begin: Alignment(-0.8200000000000001, -0.8),
     end: Alignment(0.72, 0.8200000000000001),

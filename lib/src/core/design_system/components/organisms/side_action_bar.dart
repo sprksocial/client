@@ -157,7 +157,10 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
         isActive: widget.isLiked,
         label: widget.likeCount,
         icon: widget.isLiked
-            ? AppIcons.likeFilled(size: 32)
+            ? AppIcons.likeFilled(
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              )
             : AppIcons.like(size: 32),
         onTap: widget.onLike,
       ),
