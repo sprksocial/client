@@ -2,7 +2,6 @@ import 'package:atproto/core.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
@@ -76,7 +75,6 @@ List<Widget> buildProfileGridSlivers({
             delegate: SliverChildBuilderDelegate((context, index) {
               final postUri = filteredUris[index];
               final postView = state.postViews[postUri];
-              final postSource = state.postSources[postUri];
 
               if (postView == null) {
                 return const SizedBox.shrink();
@@ -84,7 +82,6 @@ List<Widget> buildProfileGridSlivers({
 
               return ProfileGridTile(
                 postView: postView,
-                postSource: postSource,
                 onTap: () => onPostTap(context, ref, postUri),
               );
             }, childCount: filteredUris.length),
@@ -153,10 +150,8 @@ class ProfileGridTile extends StatelessWidget {
     required this.postView,
     required this.onTap,
     super.key,
-    this.postSource,
   });
   final PostView postView;
-  final String? postSource;
   final VoidCallback onTap;
 
   /// Check for adult content labels synchronously without network calls
@@ -189,37 +184,12 @@ class ProfileGridTile extends StatelessWidget {
       );
     }
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        PostTile(
-          thumbnailUrl: thumbnailUrl,
-          likes: likeCount,
-          seen: false,
-          nsfwBlur: shouldBlur,
-          onTap: onTap,
-        ),
-        if (postSource != null)
-          Positioned(
-            top: 8,
-            right: 8,
-            child: Container(
-              height: 20,
-              width: 20,
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(150),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: SvgPicture.asset(
-                postSource == 'bsky' ? 'images/bsky.svg' : 'images/sprk.svg',
-                width: 12,
-                height: 12,
-                package: 'assets',
-              ),
-            ),
-          ),
-      ],
+    return PostTile(
+      thumbnailUrl: thumbnailUrl,
+      likes: likeCount,
+      seen: false,
+      nsfwBlur: shouldBlur,
+      onTap: onTap,
     );
   }
 }

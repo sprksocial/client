@@ -116,7 +116,6 @@ class ProfileLikesTab extends ProfileTabBase {
               delegate: SliverChildBuilderDelegate((context, index) {
                 final postUri = filteredUris[index];
                 final postView = state.postViews[postUri];
-                final postSource = state.postSources[postUri];
 
                 if (postView == null) {
                   return const SizedBox.shrink();
@@ -124,7 +123,6 @@ class ProfileLikesTab extends ProfileTabBase {
 
                 return ProfileGridTile(
                   postView: postView,
-                  postSource: postSource,
                   onTap: () => onPostTap(context, ref, postUri),
                 );
               }, childCount: filteredUris.length),
