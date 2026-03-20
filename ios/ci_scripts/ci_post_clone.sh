@@ -19,6 +19,10 @@ flutter precache --ios
 # Install Flutter dependencies.
 flutter pub get
 
+# Regenerate the generated Swift package manifest so its iOS deployment target
+# matches the Runner project before Xcode resolves packages.
+flutter build ios --config-only --release
+
 # Create .env file with required environment variables
 cat > .env << EOL
 VIDEO_SERVICE_URL=https://video.sprk.so
