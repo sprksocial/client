@@ -171,8 +171,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Share videos, connect with friends,\n'
-                              'and take back your timeline.',
+                              'Spark is currently in public beta.\n'
+                              'We value your feedback and are still \n'
+                              'rapidly improving.',
                               style: AppTypography.textMediumMedium.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                                 height: 1.5,
