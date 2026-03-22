@@ -67,6 +67,9 @@ class AuthRepositoryImpl implements AuthRepository {
   String? get handle => _handle;
 
   @override
+  String? get pdsEndpoint => _pdsEndpoint;
+
+  @override
   ATProto? get atproto => _atProto;
 
   Future<void> _initialize() async {

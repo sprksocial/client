@@ -10,6 +10,7 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/auth/auth.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
 class SettingsPage extends ConsumerStatefulWidget {
@@ -20,6 +21,10 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
+  static final Uri _manageAccountUri = Uri.parse(
+    'https://bsky.app/settings/account',
+  );
+
   Future<void> _handleLogout() async {
     try {
       // Show loading indicator
@@ -43,6 +48,63 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       // Close loading dialog if it's open
       if (mounted) {
         context.router.maybePop();
+      }
+    }
+  }
+
+  Future<void> _handleManageAccount() async {
+    final authRepository = GetIt.instance<AuthRepository>();
+    final pdsUrl = authRepository.pdsEndpoint ?? 'your PDS URL';
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Open Bluesky account management?'),
+        content: Text(
+          'This opens the Bluesky account management screen. '
+          'You may have to log in again.\n\n'
+          'If prompted for an account provider, use:\n$pdsUrl',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Open'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpen != true || !mounted) {
+      return;
+    }
+
+    final logger = GetIt.instance<LogService>().getLogger('Settings');
+
+    try {
+      final didLaunch = await launchUrl(
+        _manageAccountUri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!didLaunch && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to open link right now.')),
+        );
+      }
+    } catch (error, stackTrace) {
+      logger.e(
+        'Failed to launch manage account URL: $_manageAccountUri',
+        error: error,
+        stackTrace: stackTrace,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to open link right now.')),
+        );
       }
     }
   }
@@ -298,6 +360,29 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
                 trailing: const Icon(FluentIcons.prohibited_24_regular),
                 onTap: () => context.router.push(const BlocksRoute()),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: const Text(
+                  'Manage Account',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                trailing: const Icon(FluentIcons.open_24_regular),
+                onTap: _handleManageAccount,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,
