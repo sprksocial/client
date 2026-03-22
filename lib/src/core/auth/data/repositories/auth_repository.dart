@@ -15,6 +15,9 @@ abstract class AuthRepository {
   /// Gets the current user's handle
   String? get handle;
 
+  /// Gets the current user's PDS endpoint
+  String? get pdsEndpoint;
+
   /// Gets the AT Protocol client
   ATProto? get atproto;
 
