@@ -1,89 +1,32 @@
-# Spark Client
+# Spark Social App
 
-Flutter client for Spark social. This repository contains the production mobile app,
-plus workspace packages used by the app (assets, fonts, and widgetbook).
+Welcome to the codebase for the Spark Social mobile app.
 
-## What This Repo Contains
+Get the Spark Social app:
 
-- `spark` app package at repo root (`pubspec.yaml`)
-- Flutter workspace members:
-  - `widgetbook` (component/dev preview package)
-  - `fonts` (shared font package)
-  - `assets` (shared assets package)
+- iOS
+- Android
+
+## Overview
+
+This repo contains the mobile client for Spark Social. This is a Flutter app,
+written in Dart, using MaterialApp as its base.
+
+Spark is an open source shortform social app for photos and videos built on AT
+Protocol. It's an open alternative to closed platforms like Instagram and
+Tiktok.
+
+We support stories, reusable sounds, DMs, and we have a built-in photo and video
+editor powered by [pro_image_editor](https://github.com/hm21/pro_image_editor).
+
+## Structure
 
 The app is organized with a feature-first structure and uses Riverpod + GetIt +
-Freezed + AutoRoute.
+Freezed + AutoRoute. We also utilize the open source
+[atproto.dart](https://github.com/myConsciousness/atproto.dart) client
+libraries.
 
-## Tech Stack
-
-- Flutter / Dart
-- Riverpod (with code generation)
-- GetIt for dependency injection
-- Freezed + json_serializable for immutable models
-- AutoRoute for navigation
-- AT Protocol client libraries (`atproto`, `bluesky`)
-
-## Prerequisites
-
-- Flutter SDK (CI uses stable `3.41.3`)
-- Dart SDK matching Flutter toolchain
-- Xcode (for iOS builds) and/or Android SDK
-
-## Quick Start
-
-From repository root:
-
-```bash
-touch .env
-flutter pub get --enforce-lockfile
-dart run build_runner build --delete-conflicting-outputs
-flutter run
-```
-
-## Common Commands
-
-### Dependencies and codegen
-
-```bash
-flutter pub get --enforce-lockfile
-dart run build_runner build --delete-conflicting-outputs
-dart run build_runner watch --delete-conflicting-outputs
-```
-
-### Lint and format
-
-```bash
-flutter analyze lib
-flutter analyze .
-dart format .
-dart format --set-exit-if-changed .
-```
-
-### Tests
-
-No tests are currently committed, but these are the standard commands:
-
-```bash
-flutter test
-flutter test test/path/to/some_test.dart
-flutter test test/path/to/some_test.dart --plain-name "does something specific"
-```
-
-For `widgetbook` (run inside `widgetbook/`):
-
-```bash
-flutter test
-```
-
-### Builds
-
-```bash
-flutter build appbundle
-flutter build apk
-flutter build ios --no-codesign
-```
-
-## Project Layout
+### Project Layout
 
 ```text
 lib/
@@ -100,29 +43,24 @@ fonts/           # local font package
 assets/          # local assets package
 ```
 
-## Architecture Notes
+## Resources
 
-- Prefer package imports (`package:spark/...`) for app code.
-- Typical flow is: external/API/storage -> repository -> provider -> widget.
-- Providers are generated with `@riverpod`; immutable state is typically Freezed.
-- Generated files (`*.g.dart`, `*.freezed.dart`, `*.gr.dart`) should not be edited manually.
+Spark Social is built on [AT Protocol](https://atproto.com/), a protocol for
+decentralized social networks. This allows for unprecidented amounts of
+user-autonomy and data ownership, and ensures no one entity is in charge of the
+network.
 
-## CI Overview
+The lexicon schemas for the records published and APIs used by this app are
+under the `so.sprk.*` namespace.
 
-- Lint workflow runs codegen, then `flutter analyze`.
-- Android internal release workflow runs codegen, config setup, then `flutter build appbundle`.
-
-See:
-
-- `.github/workflows/flutter_lint.yml`
-- `.github/workflows/android-internal-release.yml`
+The API server or "AppView" this app uses can be found in the
+[server repo](https://github.com/sprksocial/server), and contains the
+`sprk.so.*` lexicon schemas used in this client.
 
 ## Contributing
 
-1. Keep changes scoped to the feature you are editing.
-2. Run format, codegen (if needed), and analyze before opening a PR.
-3. Do not commit secrets (`.env`, signing keys, service credentials).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-MIT. See `LICENSE`.
+MIT Licensed. See [LICENSE](LICENSE).
