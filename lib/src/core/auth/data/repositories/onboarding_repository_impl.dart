@@ -30,7 +30,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
   @override
   Future<bool> hasSparkProfile() async {
-    if (_did == null) return false;
+    await _authRepository.initializationComplete;
+
+    if (_did == null || _did!.isEmpty) {
+      return false;
+    }
 
     final uri = AtUri.parse('at://$_did/so.sprk.actor.profile/self');
     try {
@@ -38,11 +42,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       _logger.i('Spark profile found: ${response.record.toJson()}');
       return response.record.toJson().isNotEmpty;
     } catch (e) {
-      // Treat 404 and 'Could not locate record' 400 errors as no profile
+      // Treat explicit "record not found" failures as no profile.
       final msg = e.toString().toLowerCase();
       if (msg.contains('404') ||
           msg.contains('could not locate record') ||
-          msg.contains('400')) {
+          msg.contains('record not found')) {
         return false;
       }
       _logger.e('Error checking Spark profile', error: e);
