@@ -9,11 +9,17 @@ import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/pages.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
 
 part 'app_router.gr.dart';
 
 class AuthGuard extends AutoRouteGuard {
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'AuthGuard',
+  );
+
   @override
   Future<void> onNavigation(
     NavigationResolver resolver,
@@ -23,22 +29,39 @@ class AuthGuard extends AutoRouteGuard {
     final onboardingRepository = GetIt.instance<OnboardingRepository>();
 
     try {
-      final hasSpark = await onboardingRepository.hasSparkProfile();
+      await authRepository.initializationComplete;
+      final isSessionValid = await authRepository.validateSession();
 
-      if (!hasSpark) {
+      if (!isSessionValid) {
+        _logger.i('Redirecting to register because the user is not signed in');
         resolver.redirectUntil(const RegisterRoute());
         return;
       }
 
-      final isSessionValid = await authRepository.validateSession();
+      final hasSpark = await onboardingRepository.hasSparkProfile();
 
-      if (!isSessionValid) {
-        resolver.redirectUntil(const LoginRoute());
+      if (!hasSpark) {
+        _logger.i(
+          'Redirecting authenticated user to onboarding because '
+          'their Spark profile is missing',
+        );
+        resolver.redirectUntil(const OnboardingRoute());
         return;
       }
 
       resolver.next();
-    } catch (e) {
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Auth guard failed while resolving navigation',
+        error: e,
+        stackTrace: stackTrace,
+      );
+
+      if (authRepository.isAuthenticated) {
+        resolver.next();
+        return;
+      }
+
       resolver.redirectUntil(const RegisterRoute());
     }
   }

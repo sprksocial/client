@@ -83,7 +83,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
           if (!mounted) return;
 
-          context.router.replaceAll([const FeedsRoute()]);
+          context.router.replaceAll([const MainRoute()]);
         } else {
           context.router.replaceAll([const OnboardingRoute()]);
         }
@@ -171,9 +171,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Spark is currently in public beta.\n'
-                              'We value your feedback and are still \n'
-                              'rapidly improving.',
+                              'Share videos, connect with friends,\n'
+                              'and take back your timeline.',
                               style: AppTypography.textMediumMedium.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                                 height: 1.5,

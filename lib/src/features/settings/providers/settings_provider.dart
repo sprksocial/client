@@ -429,13 +429,6 @@ class Settings extends _$Settings {
     await _saveActiveFeedToStorage(feed);
   }
 
-  /// Debug method to reload settings and verify persistence
-  Future<void> reloadSettingsForTesting() async {
-    logger.d('Manually reloading settings for testing...');
-    _hasLoadedSettings = false;
-    await loadSettings();
-  }
-
   // Helper methods for working with Preferences
 
   List<SavedFeed> _getSavedFeedsFromPreferences(Preferences preferences) {

@@ -103,7 +103,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
             if (!mounted) return;
 
-            context.router.replaceAll([const FeedsRoute()]);
+            context.router.replaceAll([const MainRoute()]);
           } else {
             context.router.replaceAll([const OnboardingRoute()]);
           }
