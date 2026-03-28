@@ -108,18 +108,20 @@ packages:
   atproto_core:
     dependency: "direct main"
     description:
-      name: atproto_core
-      sha256: "76b8c6237cf0c446c2f056cd76723eb5d7993ecaf7f7cc417b1b6bf26d8f24ce"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/atproto_core"
+      ref: oauth-client-id
+      resolved-ref: ae0e15b559ef6dec220ee87eedeaa29618fc543f
+      url: "https://github.com/knotbin/atproto.dart.git"
+    source: git
     version: "1.2.0"
   atproto_oauth:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: atproto_oauth
-      sha256: "42a3a98dae11eb8c2a8a83051ebda9d0a711aec998c280c4f94a1a7127ba0aed"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/atproto_oauth"
+      ref: oauth-client-id
+      resolved-ref: ae0e15b559ef6dec220ee87eedeaa29618fc543f
+      url: "https://github.com/knotbin/atproto.dart.git"
+    source: git
     version: "0.2.0"
   audio_waveforms:
     dependency: "direct main"

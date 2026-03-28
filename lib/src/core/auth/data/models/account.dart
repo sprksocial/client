@@ -7,6 +7,7 @@ class Account {
     required this.refreshToken,
     required this.publicKey,
     required this.privateKey,
+    this.clientId,
     this.dpopNonce,
     this.expiresAt,
     this.did,
@@ -21,6 +22,7 @@ class Account {
       refreshToken: json['refreshToken'] as String,
       publicKey: json['publicKey'] as String,
       privateKey: json['privateKey'] as String,
+      clientId: json['clientId'] as String?,
       dpopNonce: json['dpopNonce'] as String?,
       expiresAt: json['expiresAt'] as String?,
       did: json['did'] as String?,
@@ -38,6 +40,7 @@ class Account {
   final String refreshToken;
   final String publicKey;
   final String privateKey;
+  final String? clientId;
   final String? dpopNonce;
   final String? expiresAt;
   final String? did;
@@ -51,6 +54,7 @@ class Account {
       'refreshToken': refreshToken,
       'publicKey': publicKey,
       'privateKey': privateKey,
+      'clientId': clientId,
       'dpopNonce': dpopNonce,
       'expiresAt': expiresAt,
       'did': did,
@@ -67,6 +71,7 @@ class Account {
     String? refreshToken,
     String? publicKey,
     String? privateKey,
+    String? clientId,
     String? dpopNonce,
     String? expiresAt,
     String? did,
@@ -79,6 +84,7 @@ class Account {
       refreshToken: refreshToken ?? this.refreshToken,
       publicKey: publicKey ?? this.publicKey,
       privateKey: privateKey ?? this.privateKey,
+      clientId: clientId ?? this.clientId,
       dpopNonce: dpopNonce ?? this.dpopNonce,
       expiresAt: expiresAt ?? this.expiresAt,
       did: did ?? this.did,
