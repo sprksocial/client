@@ -132,6 +132,7 @@ class AuthRepositoryImpl implements AuthRepository {
       _oauthSession = restoreOAuthSession(
         accessToken: account.accessToken,
         refreshToken: account.refreshToken,
+        clientId: account.clientId ?? _clientMetadataUrl,
         dPoPNonce: account.dpopNonce,
         publicKey: account.publicKey,
         privateKey: account.privateKey,
@@ -191,6 +192,7 @@ class AuthRepositoryImpl implements AuthRepository {
         refreshToken: _oauthSession!.refreshToken,
         publicKey: _oauthSession!.$publicKey,
         privateKey: _oauthSession!.$privateKey,
+        clientId: _oauthSession!.$clientId ?? _clientMetadataUrl,
         dpopNonce: _oauthSession!.$dPoPNonce,
         expiresAt: _oauthSession!.expiresAt.toIso8601String(),
         did: _did,
