@@ -46,7 +46,10 @@ class GlassmorphicTag extends StatelessWidget {
               InteractivePressable(
                 onTap: onDeleted,
                 borderRadius: BorderRadius.circular(22),
-                child: AppIcons.cancel(size: 22),
+                child: Padding(
+                  padding: EdgeInsets.all(3),
+                  child: AppIcons.cancel(size: 16),
+                ),
               ),
           ],
         ),

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/core/ui/widgets/mentioned_text.dart';
 
@@ -84,7 +87,6 @@ class TextFormatter {
     return urls;
   }
 
-  /// Builds text with clickable @mentions using the MentionedText widget
   static Widget buildTextWithMentions(
     BuildContext context,
     String text,
@@ -105,5 +107,46 @@ class TextFormatter {
         fontWeight: FontWeight.bold,
       ),
     );
+  }
+
+  /// Converts a character index to a UTF-8 byte index
+  static int charIndexToByteIndex(String text, int charIndex) {
+    if (charIndex < 0) return 0;
+    if (charIndex >= text.length) return utf8.encode(text).length;
+    return utf8.encode(text.substring(0, charIndex)).length;
+  }
+
+  /// Converts a UTF-8 byte index to a character index
+  static int byteIndexToCharIndex(String text, int byteIndex) {
+    if (byteIndex <= 0) return 0;
+    final bytes = utf8.encode(text);
+    if (byteIndex >= bytes.length) return text.length;
+
+    var charIndex = 0;
+    var byteCount = 0;
+    for (final rune in text.runes) {
+      final character = String.fromCharCode(rune);
+      final charBytes = utf8.encode(character);
+      if (byteCount + charBytes.length > byteIndex) break;
+      byteCount += charBytes.length;
+      charIndex += character.length;
+    }
+    return charIndex;
+  }
+
+  /// Gets the UTF-8 byte length of a string
+  static int byteLength(String text) => utf8.encode(text).length;
+
+  /// Creates Spark Facet objects from a list of Mention objects
+  static List<Facet> buildMentionFacets(List<dynamic> mentions) {
+    return mentions.map((mention) {
+      return Facet(
+        index: FacetIndex(
+          byteStart: mention.byteStart as int,
+          byteEnd: mention.byteEnd as int,
+        ),
+        features: [FacetFeature.mention(did: mention.did as String)],
+      );
+    }).toList();
   }
 }

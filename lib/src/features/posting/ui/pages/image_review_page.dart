@@ -11,6 +11,7 @@ import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
@@ -29,7 +30,7 @@ class ImageReviewPage extends ConsumerStatefulWidget {
 }
 
 class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
-  final TextEditingController _descriptionController = TextEditingController();
+  final MentionController _descriptionController = MentionController();
   bool _isPosting = false;
   int _currentPage = 0;
   List<XFile> _imageFiles = [];
@@ -63,7 +64,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     super.initState();
     _imageFiles = List<XFile>.from(widget.imageFiles);
     _feedRepository = GetIt.I<SprkRepository>().feed;
-    _descriptionController.addListener(() {
+    _descriptionController.textController.addListener(() {
       if (mounted) setState(() {});
     });
   }
@@ -115,6 +116,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     try {
       final crosspostEnabled = !widget.storyMode && _crosspostToBsky;
       final description = _descriptionController.text;
+      final facets = _descriptionController.buildFacets();
       RepoStrongRef result;
       if (widget.storyMode) {
         final uploadedImage = await _feedRepository.uploadImages(
@@ -140,6 +142,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
           _imageFiles,
           _altTexts,
           crosspostToBsky: crosspostEnabled,
+          facets: facets,
         );
       }
       return result;
@@ -179,7 +182,10 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       imagesCount: _imageFiles.length,
       maxImages: _maxImages,
       onAddMore: _pickMoreImages,
-      descriptionController: _descriptionController,
+      mentionController: _descriptionController,
+      onMentionsChanged: (mentions) {
+        // Mentions are automatically tracked in the controller
+      },
       descriptionMaxChars: 300,
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),

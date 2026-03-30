@@ -140,11 +140,13 @@ abstract class FeedRepository {
   /// [imageFiles] List of image files to attach
   /// [altTexts] Map of file paths to alt texts
   /// [crosspostToBsky] Whether to also post to Bluesky
+  /// [facets] Optional list of facets for text formatting (mentions, links, etc.)
   Future<RepoStrongRef> postImages(
     String text,
     List<XFile> imageFiles,
     Map<String, String> altTexts, {
     bool crosspostToBsky = false,
+    List<Facet> facets = const [],
   });
 
   /// Upload images to the server
@@ -171,6 +173,7 @@ abstract class FeedRepository {
   /// [tags] The tags of the video
   /// [langs] The languages of the video
   /// [selfLabels] The self labels of the video
+  /// [facets] Optional list of facets for text formatting (mentions, links, etc.)
   Future<RepoStrongRef> postVideo(
     Blob blob, {
     String text = '',
@@ -178,6 +181,7 @@ abstract class FeedRepository {
     List<String>? tags,
     List<String>? langs,
     List<SelfLabel>? selfLabels,
+    List<Facet> facets = const [],
   });
 
   /// Get the thread for a post
