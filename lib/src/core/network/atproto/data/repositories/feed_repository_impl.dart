@@ -21,6 +21,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/feed_repository
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/utils/share_urls.dart';
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
@@ -955,6 +956,7 @@ class FeedRepositoryImpl implements FeedRepository {
     List<XFile> imageFiles,
     Map<String, String> altTexts, {
     bool crosspostToBsky = false,
+    List<Facet> facets = const [],
   }) async {
     if (imageFiles.isEmpty) {
       _logger.e('No images provided for image post');
@@ -978,7 +980,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
     // Create Sprk post
     final record = PostRecord(
-      caption: CaptionRef(text: text, facets: []),
+      caption: CaptionRef(text: text, facets: facets),
       media: Media.images(images: uploadedImageMaps),
       createdAt: DateTime.now().toUtc(),
     );
@@ -1000,6 +1002,7 @@ class FeedRepositoryImpl implements FeedRepository {
           uploadedImageMaps,
           result,
           altTexts,
+          facets,
         );
         finalResult = await _client.repo.editRecord(
           uri: result.uri,
@@ -1298,6 +1301,7 @@ class FeedRepositoryImpl implements FeedRepository {
     List<Image> sparkImages,
     RepoStrongRef sparkPostData,
     Map<String, String> altTexts,
+    List<Facet> sparkFacets,
   ) async {
     _logger.d('Crossposting to Bluesky with ${sparkImages.length} images');
 
@@ -1309,12 +1313,34 @@ class FeedRepositoryImpl implements FeedRepository {
 
     // Determine if we need to add a link to the Spark post
     String? linkUrl;
-    List<RichtextFacet>? facets;
+    final bskyFacets = <RichtextFacet>[];
+
+    // Convert Spark mention facets to Bluesky mention facets
+    for (final facet in sparkFacets) {
+      for (final feature in facet.features) {
+        feature.map(
+          mention: (m) {
+            bskyFacets.add(
+              bskyFeedAdapter.createMentionFacet(
+                did: m.did,
+                byteStart: facet.index.byteStart,
+                byteEnd: facet.index.byteEnd,
+              ),
+            );
+          },
+          link: (_) {},
+          tag: (_) {},
+          bskyMention: (_) {},
+          bskyLink: (_) {},
+          bskyTag: (_) {},
+        );
+      }
+    }
 
     if (sparkImages.length > maxBskyImages) {
       final sparkRkey = sparkPostData.uri.rkey;
       final uriDid = sparkPostData.uri.hostname;
-      linkUrl = 'https://watch.sprk.so/?uri=$uriDid/$sparkRkey';
+      linkUrl = buildSparkShareUrl('$uriDid/$sparkRkey');
     }
 
     // Prepare text and facets for Bluesky post
@@ -1322,16 +1348,16 @@ class FeedRepositoryImpl implements FeedRepository {
 
     if (linkUrl != null) {
       final linkStart = text.isEmpty ? 0 : text.length;
-      facets = [
+      bskyFacets.add(
         bskyFeedAdapter.createLinkFacet(linkUrl: linkUrl, byteStart: linkStart),
-      ];
+      );
     }
 
     final bskyPost = bskyFeedAdapter.createPostRecord(
       text: finalText,
       createdAt: DateTime.now().toUtc(),
       images: bskyImages,
-      facets: facets,
+      facets: bskyFacets.isNotEmpty ? bskyFacets : null,
     );
 
     final bskyResult = await _client.repo.createRecord(
@@ -1390,11 +1416,12 @@ class FeedRepositoryImpl implements FeedRepository {
     List<String>? tags,
     List<String>? langs,
     List<SelfLabel>? selfLabels,
+    List<Facet> facets = const [],
   }) async {
     _logger.d('Posting video with description: $text');
 
     final record = PostRecord(
-      caption: CaptionRef(text: text, facets: []),
+      caption: CaptionRef(text: text, facets: facets),
       media: Media.video(video: blob, alt: alt),
       createdAt: DateTime.now().toUtc(),
       langs: langs,

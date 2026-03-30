@@ -12,6 +12,7 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/utils/blocking_utils.dart';
+import 'package:spark/src/core/utils/share_urls.dart';
 import 'package:spark/src/features/feed/providers/feed_action_controller.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
@@ -254,9 +255,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     if (postUri.startsWith('at://')) {
       postUri = postUri.substring(5);
     }
-    postUri = postUri.replaceAll('so.sprk.feed.post/', '');
 
-    return 'https://watch.sprk.so/?uri=$postUri';
+    return buildSparkShareUrl(postUri);
   }
 
   Future<void> _handleShareLongPress() async {

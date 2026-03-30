@@ -10,6 +10,7 @@ import 'package:spark/src/core/design_system/templates/video_review_page_templat
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -37,7 +38,7 @@ class VideoReviewPage extends ConsumerStatefulWidget {
 }
 
 class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
-  final TextEditingController _descriptionController = TextEditingController();
+  final MentionController _descriptionController = MentionController();
   bool _isPosting = false;
   String _videoAltText = '';
   bool _crosspostToBsky = false;
@@ -89,6 +90,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
     try {
       final description = _descriptionController.text;
+      final facets = _descriptionController.buildFacets();
 
       // Process and post the video with the video upload provider
       final postRef = await ref.read(
@@ -99,6 +101,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           storyMode: widget.storyMode,
           soundRef: widget.soundRef,
           crosspostToBsky: !widget.storyMode && _crosspostToBsky,
+          facets: facets,
         ).future,
       );
 
@@ -153,7 +156,10 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           ? const Center(child: CircularProgressIndicator())
           : VideoPlayer(_player!),
       onAltEdit: _editAltText,
-      descriptionController: _descriptionController,
+      mentionController: _descriptionController,
+      onMentionsChanged: (mentions) {
+        // Mentions are automatically tracked in the controller
+      },
       descriptionMaxChars: 300,
       showCrossPost: !widget.storyMode,
       crossPostValue: _crosspostToBsky,

@@ -8,6 +8,8 @@ import 'package:spark/src/core/design_system/components/molecules/input_field.da
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/features/posting/models/mention_controller.dart';
+import 'package:spark/src/features/posting/ui/widgets/mention_input_field.dart';
 
 /// Design-only template for the Image Review flow.
 ///
@@ -28,7 +30,6 @@ class ImageReviewPageTemplate extends StatelessWidget {
     required this.imagesCount,
     required this.maxImages,
     required this.onAddMore,
-    required this.descriptionController,
     required this.descriptionMaxChars,
     required this.postLabel,
     required this.onPost,
@@ -36,6 +37,9 @@ class ImageReviewPageTemplate extends StatelessWidget {
     required this.crossPostValue,
     required this.onCrossPostChanged,
     super.key,
+    this.descriptionController,
+    this.mentionController,
+    this.onMentionsChanged,
     this.showCrossPostWarning = false,
     this.backgroundColor,
   });
@@ -53,7 +57,9 @@ class ImageReviewPageTemplate extends StatelessWidget {
   final int imagesCount;
   final int maxImages;
   final VoidCallback onAddMore;
-  final TextEditingController descriptionController;
+  final TextEditingController? descriptionController;
+  final MentionController? mentionController;
+  final ValueChanged<List<dynamic>>? onMentionsChanged;
   final int descriptionMaxChars;
   final bool crossPostValue;
   final ValueChanged<bool> onCrossPostChanged;
@@ -113,6 +119,8 @@ class ImageReviewPageTemplate extends StatelessWidget {
                       const SizedBox(height: 20),
                       _DescriptionSection(
                         controller: descriptionController,
+                        mentionController: mentionController,
+                        onMentionsChanged: onMentionsChanged,
                         maxChars: descriptionMaxChars,
                       ),
                       const SizedBox(height: 20),
@@ -287,7 +295,7 @@ class _ImagePager extends StatelessWidget {
                               GestureDetector(
                                 onTap: () => onRemoveImage(index),
                                 child: Container(
-                                  padding: const EdgeInsets.all(6),
+                                  padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Colors.black.withAlpha(100),
@@ -296,7 +304,7 @@ class _ImagePager extends StatelessWidget {
                                     ),
                                   ),
                                   child: AppIcons.cancel(
-                                    size: 18,
+                                    size: 14,
                                     color: AppColors.greyWhite,
                                   ),
                                 ),
@@ -339,21 +347,35 @@ class _ImagePager extends StatelessWidget {
 }
 
 class _DescriptionSection extends StatelessWidget {
-  const _DescriptionSection({required this.controller, required this.maxChars});
+  const _DescriptionSection({
+    this.controller,
+    this.mentionController,
+    this.onMentionsChanged,
+    required this.maxChars,
+  });
 
-  final TextEditingController controller;
+  final TextEditingController? controller;
+  final MentionController? mentionController;
+  final ValueChanged<List<dynamic>>? onMentionsChanged;
   final int maxChars;
 
   @override
   Widget build(BuildContext context) {
-    final count = controller.text.runes.length;
+    final textController = mentionController?.textController ?? controller;
+    final count = textController?.text.runes.length ?? 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        InputField.search(
-          controller: controller,
-          hintText: 'Add a description... (optional)',
-        ),
+        if (mentionController != null)
+          MentionInputField(
+            controller: mentionController!,
+            onMentionsChanged: onMentionsChanged ?? (_) {},
+          )
+        else if (controller != null)
+          InputField.search(
+            controller: controller!,
+            hintText: 'Add a description... (optional)',
+          ),
         const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,

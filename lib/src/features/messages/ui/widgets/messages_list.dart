@@ -15,6 +15,7 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/image_content.dart';
 import 'package:spark/src/core/ui/widgets/video_content.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/share_urls.dart';
 import 'package:spark/src/features/messages/ui/widgets/message_bubble.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -100,16 +101,7 @@ class MessagesList extends StatelessWidget {
 
   /// Checks if a URL is a sprk.so watch URL and extracts the post URI
   String? extractSprkPostUri(String url) {
-    try {
-      final uri = Uri.parse(url);
-      if (uri.host == 'watch.sprk.so' &&
-          uri.queryParameters.containsKey('uri')) {
-        return uri.queryParameters['uri'];
-      }
-    } catch (e) {
-      // Invalid URL
-    }
-    return null;
+    return extractSparkPostUri(url);
   }
 
   Future<List<Widget>?> validateAndCreateEmbedsFromText(String text) async {

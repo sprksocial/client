@@ -479,6 +479,22 @@ class BskyFeedAdapter {
     );
   }
 
+  /// Create a mention facet for Bluesky posts
+  RichtextFacet createMentionFacet({
+    required String did,
+    required int byteStart,
+    required int byteEnd,
+  }) {
+    return RichtextFacet(
+      index: RichtextFacetByteSlice(byteStart: byteStart, byteEnd: byteEnd),
+      features: [
+        URichtextFacetFeatures.richtextFacetMention(
+          data: RichtextFacetMention(did: did),
+        ),
+      ],
+    );
+  }
+
   // ===========================================================================
   // Bluesky Thread Conversion
   // ===========================================================================

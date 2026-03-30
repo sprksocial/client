@@ -1,11 +1,15 @@
 import 'package:atproto/core.dart';
+import 'package:bluesky/app_bsky_richtext_facet.dart';
 import 'package:bluesky/com_atproto_repo_strongref.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 
 part 'video_upload_provider.g.dart';
+
+const _bskyFeedAdapter = BskyFeedAdapter();
 
 /// Process a video file and upload it to the video service
 @riverpod
@@ -41,6 +45,7 @@ Future<RepoStrongRef?> postVideo(
   String? videoPath,
   bool crosspostToBsky = false,
   RepoStrongRef? soundRef,
+  List<Facet> facets = const [],
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
@@ -52,7 +57,7 @@ Future<RepoStrongRef?> postVideo(
     final postRecord = PostRecord(
       caption: CaptionRef(
         text: description.isNotEmpty ? description : '',
-        facets: [],
+        facets: facets,
       ),
       media: Media.video(video: blob, alt: altText),
       createdAt: DateTime.now().toUtc(),
@@ -74,6 +79,7 @@ Future<RepoStrongRef?> postVideo(
           blob,
           altText,
           result.uri.rkey,
+          facets,
         );
         finalResult = await GetIt.I<SprkRepository>().repo.editRecord(
           uri: result.uri,
@@ -101,6 +107,7 @@ Future<RepoStrongRef?> processAndPostVideo(
   bool crosspostToBsky = false,
   bool storyMode = false,
   RepoStrongRef? soundRef,
+  List<Facet> facets = const [],
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video')
     ..d(
@@ -157,6 +164,7 @@ Future<RepoStrongRef?> processAndPostVideo(
       videoPath: videoPath,
       crosspostToBsky: crosspostToBsky,
       soundRef: effectiveSoundRef,
+      facets: facets,
     );
     logger.i('Video flow complete (storyMode=false) success=${res != null}');
     return res;
@@ -171,13 +179,46 @@ Future<RepoStrongRef> _crosspostVideoToBlueSky(
   Blob blob,
   String altText,
   String rkey,
+  List<Facet> sparkFacets,
 ) async {
   final logger = GetIt.I<LogService>().getLogger('Crosspost Video')
     ..d('Crossposting video to Bluesky');
 
+  final bskyFacets = <RichtextFacet>[];
+  for (final facet in sparkFacets) {
+    for (final feature in facet.features) {
+      feature.map(
+        mention: (m) {
+          bskyFacets.add(
+            _bskyFeedAdapter.createMentionFacet(
+              did: m.did,
+              byteStart: facet.index.byteStart,
+              byteEnd: facet.index.byteEnd,
+            ),
+          );
+        },
+        link: (_) {},
+        tag: (_) {},
+        bskyMention: (m) {
+          bskyFacets.add(
+            _bskyFeedAdapter.createMentionFacet(
+              did: m.did,
+              byteStart: facet.index.byteStart,
+              byteEnd: facet.index.byteEnd,
+            ),
+          );
+        },
+        bskyLink: (_) {},
+        bskyTag: (_) {},
+      );
+    }
+  }
+
   final bskyPostRecord = <String, dynamic>{
     r'$type': 'app.bsky.feed.post',
     'text': text,
+    if (bskyFacets.isNotEmpty)
+      'facets': bskyFacets.map((facet) => facet.toJson()).toList(),
     'embed': {
       r'$type': 'app.bsky.embed.video',
       'video': blob.toJson(),

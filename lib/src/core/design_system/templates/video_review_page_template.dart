@@ -5,6 +5,8 @@ import 'package:spark/src/core/design_system/components/molecules/input_field.da
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/features/posting/models/mention_controller.dart';
+import 'package:spark/src/features/posting/ui/widgets/mention_input_field.dart';
 
 /// Design-only template for the Video Review flow.
 ///
@@ -16,13 +18,15 @@ class VideoReviewPageTemplate extends StatelessWidget {
     required this.onBack,
     required this.videoPreview,
     required this.onAltEdit,
-    required this.descriptionController,
     required this.descriptionMaxChars,
     required this.postLabel,
     required this.onPost,
     required this.isPosting,
     required this.crossPostValue,
     required this.onCrossPostChanged,
+    this.descriptionController,
+    this.mentionController,
+    this.onMentionsChanged,
     this.showCrossPost = true,
     this.aspectRatio = 1.0,
     this.backgroundColor,
@@ -34,7 +38,9 @@ class VideoReviewPageTemplate extends StatelessWidget {
   onBack; // Kept for API symmetry; AppLeadingButton handles back internally.
   final Widget videoPreview;
   final VoidCallback onAltEdit;
-  final TextEditingController descriptionController;
+  final TextEditingController? descriptionController;
+  final MentionController? mentionController;
+  final ValueChanged<List<dynamic>>? onMentionsChanged;
   final int descriptionMaxChars;
   final bool crossPostValue;
   final ValueChanged<bool> onCrossPostChanged;
@@ -80,6 +86,8 @@ class VideoReviewPageTemplate extends StatelessWidget {
                       const SizedBox(height: 20),
                       _DescriptionSection(
                         controller: descriptionController,
+                        mentionController: mentionController,
+                        onMentionsChanged: onMentionsChanged,
                         maxChars: descriptionMaxChars,
                       ),
                       if (showCrossPost) ...[
@@ -192,21 +200,35 @@ class _VideoPreview extends StatelessWidget {
 }
 
 class _DescriptionSection extends StatelessWidget {
-  const _DescriptionSection({required this.controller, required this.maxChars});
+  const _DescriptionSection({
+    this.controller,
+    this.mentionController,
+    this.onMentionsChanged,
+    required this.maxChars,
+  });
 
-  final TextEditingController controller;
+  final TextEditingController? controller;
+  final MentionController? mentionController;
+  final ValueChanged<List<dynamic>>? onMentionsChanged;
   final int maxChars;
 
   @override
   Widget build(BuildContext context) {
-    final count = controller.text.runes.length;
+    final textController = mentionController?.textController ?? controller;
+    final count = textController?.text.runes.length ?? 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        InputField.search(
-          controller: controller,
-          hintText: 'Add a description... (optional)',
-        ),
+        if (mentionController != null)
+          MentionInputField(
+            controller: mentionController!,
+            onMentionsChanged: onMentionsChanged ?? (_) {},
+          )
+        else if (controller != null)
+          InputField.search(
+            controller: controller!,
+            hintText: 'Add a description... (optional)',
+          ),
         const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,
