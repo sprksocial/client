@@ -18,7 +18,7 @@ dependencies:
     path: ../fonts
   assets:
     path: ../assets
-  flutter_riverpod: ^3.0.3
+  flutter_riverpod: ^3.3.1
   fluentui_system_icons: ^1.1.273
 
 dev_dependencies:
@@ -26,7 +26,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   widgetbook_generator: ^3.22.0
-  build_runner: ^2.5.4
+  build_runner: ^2.13.1
 
 flutter:
   uses-material-design: true
