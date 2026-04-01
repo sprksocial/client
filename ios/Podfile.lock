@@ -28,6 +28,8 @@ PODS:
   - PINCache/Core (3.0.4):
     - PINOperation (~> 1.2.3)
   - PINOperation (1.2.3)
+  - pro_image_editor (12.0.8):
+    - Flutter
   - pro_video_editor (0.0.1):
     - Flutter
 
@@ -36,6 +38,7 @@ DEPENDENCIES:
   - better_player_plus (from `.symlinks/plugins/better_player_plus/ios`)
   - Flutter (from `Flutter`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
+  - pro_image_editor (from `.symlinks/plugins/pro_image_editor/ios`)
   - pro_video_editor (from `.symlinks/plugins/pro_video_editor/ios`)
 
 SPEC REPOS:
@@ -56,6 +59,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   fvp:
     :path: ".symlinks/plugins/fvp/darwin"
+  pro_image_editor:
+    :path: ".symlinks/plugins/pro_image_editor/ios"
   pro_video_editor:
     :path: ".symlinks/plugins/pro_video_editor/ios"
 
@@ -70,6 +75,7 @@ SPEC CHECKSUMS:
   mdk: 59bbe9e2ac2a052455ab1b076c245680d66cf6c0
   PINCache: d9a87a0ff397acffe9e2f0db972ac14680441158
   PINOperation: fb563bcc9c32c26d6c78aaff967d405aa2ee74a7
+  pro_image_editor: 3dedac450f82a389877286fa9eb08852cefb04ea
   pro_video_editor: 44ef9a6d48dbd757ed428cf35396dd05f35c7830
 
 PODFILE CHECKSUM: e716c32704b29904c5fe233535ab45faecf8c549
