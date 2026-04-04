@@ -441,18 +441,61 @@ class AuthRepositoryImpl implements AuthRepository {
     // Wait for initialization to complete first
     await initializationComplete;
 
-    if (_atProto == null || _oauthSession == null) {
+    if (_atProto == null ||
+        _oauthSession == null ||
+        _did == null ||
+        _did!.isEmpty) {
       return false;
     }
 
     try {
-      await _atProto!.identity.resolveHandle(handle: _handle ?? '');
+      final sessionResponse = await _atProto!.server.getSession();
+
+      if (sessionResponse.data.did != _did) {
+        _logger.w(
+          'Session DID mismatch. '
+          'Expected $_did but got ${sessionResponse.data.did}',
+        );
+        await logout();
+        return false;
+      }
+
+      final latestHandle = sessionResponse.data.handle;
+      if (latestHandle.isNotEmpty && latestHandle != _handle) {
+        _handle = latestHandle;
+        await _saveSession();
+      }
+
       return true;
     } catch (e) {
       // Try to refresh the token before giving up
       final refreshed = await refreshToken();
       if (refreshed) {
-        return true;
+        try {
+          final sessionResponse = await _atProto!.server.getSession();
+
+          if (sessionResponse.data.did != _did) {
+            _logger.w(
+              'Session DID mismatch after refresh. '
+              'Expected $_did but got ${sessionResponse.data.did}',
+            );
+            await logout();
+            return false;
+          }
+
+          final latestHandle = sessionResponse.data.handle;
+          if (latestHandle.isNotEmpty && latestHandle != _handle) {
+            _handle = latestHandle;
+            await _saveSession();
+          }
+
+          return true;
+        } catch (refreshError) {
+          _logger.e(
+            'Session validation failed after token refresh',
+            error: refreshError,
+          );
+        }
       }
 
       await logout();
