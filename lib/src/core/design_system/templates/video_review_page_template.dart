@@ -30,6 +30,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
     this.showCrossPost = true,
     this.aspectRatio = 1.0,
     this.backgroundColor,
+    this.isOverLimit = false,
     super.key,
   });
 
@@ -50,6 +51,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
   final bool isPosting;
   final double aspectRatio;
   final Color? backgroundColor;
+  final bool isOverLimit;
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +125,10 @@ class VideoReviewPageTemplate extends StatelessWidget {
                           ),
                         ),
                       )
-                    : LongButton(label: postLabel, onPressed: onPost),
+                    : LongButton(
+                        label: postLabel,
+                        onPressed: isOverLimit ? null : onPost,
+                      ),
               ),
             ),
           ],
@@ -216,6 +221,10 @@ class _DescriptionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final textController = mentionController?.textController ?? controller;
     final count = textController?.text.runes.length ?? 0;
+    final showCounter = count >= (maxChars * 0.8);
+    final isNearLimit = count >= maxChars * 0.9;
+    final isOverLimit = count > maxChars;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -228,17 +237,25 @@ class _DescriptionSection extends StatelessWidget {
           InputField.search(
             controller: controller!,
             hintText: 'Add a description... (optional)',
+            maxLines: 5,
+            minLines: 1,
           ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            '$count/$maxChars',
-            style: AppTypography.textSmallMedium.copyWith(
-              color: Colors.white.withAlpha(160),
+        if (showCounter) ...[
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '$count/$maxChars',
+              style: AppTypography.textSmallMedium.copyWith(
+                color: isOverLimit
+                    ? AppColors.red300
+                    : isNearLimit
+                    ? AppColors.rajah500
+                    : Colors.white.withAlpha(160),
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

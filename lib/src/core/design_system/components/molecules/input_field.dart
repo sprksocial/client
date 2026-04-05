@@ -9,6 +9,8 @@ class InputField extends StatelessWidget {
   final VoidCallback? onSendMessage;
   final ValueChanged<String>? onSubmitted;
   final TextInputAction? textInputAction;
+  final int? maxLines;
+  final int? minLines;
 
   const InputField._({
     required this.controller,
@@ -18,6 +20,8 @@ class InputField extends StatelessWidget {
     required this.onSendMessage,
     required this.onSubmitted,
     required this.textInputAction,
+    required this.maxLines,
+    required this.minLines,
     super.key,
   });
 
@@ -36,6 +40,8 @@ class InputField extends StatelessWidget {
          onSendMessage: null,
          onSubmitted: null,
          textInputAction: null,
+         maxLines: null,
+         minLines: null,
        );
 
   const InputField.chat({
@@ -53,6 +59,8 @@ class InputField extends StatelessWidget {
          actionWidgets: null,
          onSubmitted: null,
          textInputAction: null,
+         maxLines: null,
+         minLines: null,
        );
 
   const InputField.search({
@@ -63,6 +71,8 @@ class InputField extends StatelessWidget {
     List<Widget>? actionWidgets,
     ValueChanged<String>? onSubmitted,
     TextInputAction? textInputAction,
+    int? maxLines,
+    int? minLines,
   }) : this._(
          key: key,
          controller: controller,
@@ -72,6 +82,8 @@ class InputField extends StatelessWidget {
          onSendMessage: null,
          onSubmitted: onSubmitted,
          textInputAction: textInputAction,
+         maxLines: maxLines,
+         minLines: minLines,
        );
 
   @override
@@ -108,6 +120,8 @@ class InputField extends StatelessWidget {
       controller: controller,
       onSubmitted: onSubmitted,
       textInputAction: textInputAction,
+      maxLines: maxLines,
+      minLines: minLines,
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: leading,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
+import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/posting/models/mention.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
@@ -11,7 +12,9 @@ class MentionInputField extends ConsumerStatefulWidget {
     required this.controller,
     required this.onMentionsChanged,
     this.hintText = 'Add a description... (optional)',
-    this.maxChars = 300,
+    this.maxChars = AppConstants.postDescriptionMaxChars,
+    this.maxLines = 5,
+    this.minLines = 1,
     super.key,
   });
 
@@ -19,6 +22,8 @@ class MentionInputField extends ConsumerStatefulWidget {
   final ValueChanged<List<Mention>> onMentionsChanged;
   final String hintText;
   final int maxChars;
+  final int maxLines;
+  final int minLines;
 
   @override
   ConsumerState<MentionInputField> createState() => _MentionInputFieldState();
@@ -296,6 +301,8 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
         InputField.search(
           controller: widget.controller.textController,
           hintText: widget.hintText,
+          maxLines: widget.maxLines,
+          minLines: widget.minLines,
         ),
         if (_showSuggestions && typeaheadState.results.isNotEmpty)
           Container(
