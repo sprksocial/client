@@ -7,6 +7,7 @@ import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
+import 'package:spark/src/features/stories/utils/story_navigation.dart';
 
 class UserListView extends ConsumerWidget {
   final List<ProfileView> users;
@@ -56,6 +57,7 @@ class UserListView extends ConsumerWidget {
           );
         }
         final user = users[index];
+        final hasStories = user.stories?.isNotEmpty ?? false;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: ProfileCard(
@@ -77,6 +79,11 @@ class UserListView extends ConsumerWidget {
             showFollowButton: !ref
                 .read(userListProvider(did: did, type: type).notifier)
                 .isCurrentUser(user.did),
+            hasStories: hasStories,
+            onAvatarTap: hasStories
+                ? () =>
+                      openStoriesForProfile(context, user, source: 'user list')
+                : null,
             onTap: () => context.router.push(
               ProfileRoute(
                 did: user.did,

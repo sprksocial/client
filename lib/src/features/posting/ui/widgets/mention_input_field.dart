@@ -265,14 +265,15 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
       byteEnd: byteEnd,
     );
 
-    final dedupedMentions = widget.controller.mentions
-        .where(
-          (existing) =>
-              existing.byteStart != mention.byteStart ||
-              existing.byteEnd != mention.byteEnd,
-        )
-        .toList()
-      ..add(mention);
+    final dedupedMentions =
+        widget.controller.mentions
+            .where(
+              (existing) =>
+                  existing.byteStart != mention.byteStart ||
+                  existing.byteEnd != mention.byteEnd,
+            )
+            .toList()
+          ..add(mention);
     widget.controller.replaceMentions(dedupedMentions);
     widget.onMentionsChanged(widget.controller.mentions);
 

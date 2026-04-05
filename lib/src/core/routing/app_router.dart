@@ -30,11 +30,18 @@ class AuthGuard extends AutoRouteGuard {
 
     try {
       await authRepository.initializationComplete;
+      final hadSavedSession = authRepository.did?.isNotEmpty ?? false;
       final isSessionValid = await authRepository.validateSession();
 
       if (!isSessionValid) {
-        _logger.i('Redirecting to register because the user is not signed in');
-        resolver.redirectUntil(const RegisterRoute());
+        _logger.i(
+          hadSavedSession
+              ? 'Redirecting to login because the saved session is no longer valid'
+              : 'Redirecting to register because the user is not signed in',
+        );
+        resolver.redirectUntil(
+          hadSavedSession ? const LoginRoute() : const RegisterRoute(),
+        );
         return;
       }
 

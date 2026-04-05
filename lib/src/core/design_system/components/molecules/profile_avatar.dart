@@ -28,24 +28,17 @@ class ProfileAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
+    final ringWidth = (size * 0.03).clamp(1.0, 2.0).toDouble();
+    final ringGap = (size * 0.04).clamp(1.5, 3.0).toDouble();
+    final avatarSize = hasStories
+        ? (size - (2 * (ringWidth + ringGap))).clamp(0.0, size).toDouble()
+        : size;
 
-    final Widget avatarWidget;
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
-      avatarWidget = ClipOval(
-        child: CachedNetworkImage(
-          fadeInDuration: Duration.zero,
-          imageUrl: avatarUrl!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => _buildPlaceholder(context, isDarkMode),
-          errorWidget: (context, url, error) =>
-              _buildPlaceholder(context, isDarkMode),
-        ),
-      );
-    } else {
-      avatarWidget = _buildPlaceholder(context, isDarkMode);
-    }
+    final avatarWidget = _buildAvatarImage(
+      context,
+      isDarkMode: isDarkMode,
+      avatarSize: avatarSize,
+    );
 
     return Stack(
       children: [
@@ -66,13 +59,18 @@ class ProfileAvatar extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
             child: hasStories
-                ? Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.black,
+                ? Padding(
+                    padding: EdgeInsets.all(ringWidth),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: theme.scaffoldBackgroundColor,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(ringGap),
+                        child: avatarWidget,
+                      ),
                     ),
-                    child: Center(child: avatarWidget),
                   )
                 : Center(child: avatarWidget),
           ),
@@ -108,10 +106,38 @@ class ProfileAvatar extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder(BuildContext context, bool isDarkMode) {
+  Widget _buildAvatarImage(
+    BuildContext context, {
+    required bool isDarkMode,
+    required double avatarSize,
+  }) {
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+      return ClipOval(
+        child: CachedNetworkImage(
+          fadeInDuration: Duration.zero,
+          imageUrl: avatarUrl!,
+          width: avatarSize,
+          height: avatarSize,
+          fit: BoxFit.cover,
+          placeholder: (context, url) =>
+              _buildPlaceholder(context, isDarkMode, avatarSize),
+          errorWidget: (context, url, error) =>
+              _buildPlaceholder(context, isDarkMode, avatarSize),
+        ),
+      );
+    }
+
+    return _buildPlaceholder(context, isDarkMode, avatarSize);
+  }
+
+  Widget _buildPlaceholder(
+    BuildContext context,
+    bool isDarkMode,
+    double avatarSize,
+  ) {
     return Container(
-      width: size,
-      height: size,
+      width: avatarSize,
+      height: avatarSize,
       decoration: BoxDecoration(
         color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
         shape: BoxShape.circle,
@@ -119,7 +145,7 @@ class ProfileAvatar extends StatelessWidget {
       child: Center(
         child: Icon(
           FluentIcons.person_24_regular,
-          size: size * 0.44,
+          size: avatarSize * 0.44,
           color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
         ),
       ),

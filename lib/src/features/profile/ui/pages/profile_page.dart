@@ -608,7 +608,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         displayName: profile.displayName,
         avatar: profile.avatar,
         viewer: profile.viewer,
-        stories: profile.stories,
       );
 
       if (mounted) {
