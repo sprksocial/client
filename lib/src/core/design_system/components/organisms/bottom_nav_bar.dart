@@ -239,7 +239,7 @@ class _ProfileAvatar extends StatelessWidget {
       height: 34,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white),
+        border: isSelected ? Border.all(color: Colors.white) : null,
         image: image is AssetImage
             ? null
             : DecorationImage(image: image, fit: BoxFit.cover),

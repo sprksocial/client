@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -18,6 +18,8 @@ class ProfileCard extends StatelessWidget {
     this.showFollowButton = true,
     this.description,
     this.onTap,
+    this.hasStories = false,
+    this.onAvatarTap,
     super.key,
   });
 
@@ -34,6 +36,8 @@ class ProfileCard extends StatelessWidget {
     VoidCallback? onUnblock,
     bool showFollowButton = true,
     VoidCallback? onTap,
+    bool hasStories = false,
+    VoidCallback? onAvatarTap,
     Key? key,
   }) : this(
          imageUrl: imageUrl,
@@ -47,6 +51,8 @@ class ProfileCard extends StatelessWidget {
          showFollowButton: showFollowButton,
          description: description,
          onTap: onTap,
+         hasStories: hasStories,
+         onAvatarTap: onAvatarTap,
          key: key,
        );
 
@@ -61,6 +67,8 @@ class ProfileCard extends StatelessWidget {
   final bool showFollowButton;
   final String? description;
   final VoidCallback? onTap;
+  final bool hasStories;
+  final VoidCallback? onAvatarTap;
 
   @override
   Widget build(BuildContext context) {
@@ -91,44 +99,12 @@ class ProfileCard extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(100),
-                        child: imageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                fadeInDuration: Duration.zero,
-                                imageUrl: imageUrl,
-                                width: 36,
-                                height: 36,
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) => Container(
-                                  width: 36,
-                                  height: 36,
-                                  color: isDark
-                                      ? AppColors.grey600
-                                      : AppColors.grey300,
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 20,
-                                    color: isDark
-                                        ? AppColors.grey400
-                                        : AppColors.grey600,
-                                  ),
-                                ),
-                              )
-                            : Container(
-                                width: 36,
-                                height: 36,
-                                color: isDark
-                                    ? AppColors.grey600
-                                    : AppColors.grey300,
-                                child: Icon(
-                                  Icons.person,
-                                  size: 20,
-                                  color: isDark
-                                      ? AppColors.grey400
-                                      : AppColors.grey600,
-                                ),
-                              ),
+                      ProfileAvatar(
+                        avatarUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                        displayName: userName,
+                        size: 36,
+                        hasStories: hasStories,
+                        onTap: onAvatarTap ?? onTap,
                       ),
                       const SizedBox(width: 10),
                       Expanded(

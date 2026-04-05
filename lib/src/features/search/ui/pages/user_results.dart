@@ -6,6 +6,7 @@ import 'package:spark/src/core/design_system/components/molecules/profile_card.d
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/search/providers/search_provider.dart';
+import 'package:spark/src/features/stories/utils/story_navigation.dart';
 
 class UserResults extends ConsumerStatefulWidget {
   const UserResults({super.key});
@@ -184,6 +185,7 @@ class _UserResultsState extends ConsumerState<UserResults>
 
         // Check if the user is being followed
         final isFollowing = actor.viewer?.following != null;
+        final hasStories = actor.stories?.isNotEmpty ?? false;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -204,6 +206,14 @@ class _UserResultsState extends ConsumerState<UserResults>
             showFollowButton: !ref
                 .read(searchProvider.notifier)
                 .isCurrentUser(actor.did),
+            hasStories: hasStories,
+            onAvatarTap: hasStories
+                ? () => openStoriesForProfile(
+                    context,
+                    actor,
+                    source: 'user search',
+                  )
+                : null,
             onTap: () {
               if (actor.did.isNotEmpty) {
                 context.router.push(

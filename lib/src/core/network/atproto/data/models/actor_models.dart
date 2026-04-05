@@ -77,7 +77,7 @@ abstract class ProfileView with _$ProfileView {
     // indexedAt, createdAt
     ActorViewer? viewer,
     List<Label>? labels,
-    // no stories here, for some reason
+    List<RepoStrongRef>? stories,
   }) = _ProfileView;
   const ProfileView._();
 
