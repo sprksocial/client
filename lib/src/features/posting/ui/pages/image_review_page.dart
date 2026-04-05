@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spark/src/core/design_system/templates/image_review_page_template.dart';
+import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -159,6 +160,8 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   Widget build(BuildContext context) {
     final canPickMore = _imageFiles.length < _maxImages;
     final showCrossPostWarning = _crosspostToBsky && _imageFiles.length > 4;
+    final textLength = _descriptionController.text.runes.length;
+    final isOverLimit = textLength > AppConstants.postDescriptionMaxChars;
 
     return ImageReviewPageTemplate(
       title: 'Review Image Post',
@@ -186,12 +189,13 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       onMentionsChanged: (mentions) {
         // Mentions are automatically tracked in the controller
       },
-      descriptionMaxChars: 300,
+      descriptionMaxChars: AppConstants.postDescriptionMaxChars,
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
       showCrossPostWarning: showCrossPostWarning,
       postLabel: 'Post',
       isPosting: _isPosting,
+      isOverLimit: isOverLimit,
       onPost: _isPosting
           ? null
           : () async {

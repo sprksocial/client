@@ -1,10 +1,13 @@
-import 'dart:io'; // Import for File
+import 'dart:io';
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart'; // Import image_picker
+import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
@@ -41,9 +44,20 @@ class CommentInputWidget extends ConsumerStatefulWidget {
 class _CommentInputState extends ConsumerState<CommentInputWidget> {
   final textController = TextEditingController();
   final imagePicker = ImagePicker();
+  static const int _maxChars = AppConstants.replyMaxChars;
+
   @override
   void initState() {
     super.initState();
+    textController.addListener(() {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
   }
 
   @override
@@ -111,6 +125,7 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                     placeholderColor: Theme.of(
                       context,
                     ).colorScheme.onSurface.withValues(alpha: 128),
+                    isOverLimit: textController.text.runes.length > _maxChars,
                   ),
                 ),
               ],
@@ -123,7 +138,44 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
               padding: const EdgeInsets.only(top: 8),
               child: _SelectedImagesPreview(state: state, notifier: notifier),
             ),
+
+          // Character counter (show when approaching limit)
+          _CharacterCounter(controller: textController, maxChars: _maxChars),
         ],
+      ),
+    );
+  }
+}
+
+class _CharacterCounter extends StatelessWidget {
+  const _CharacterCounter({required this.controller, required this.maxChars});
+
+  final TextEditingController controller;
+  final int maxChars;
+
+  @override
+  Widget build(BuildContext context) {
+    final count = controller.text.runes.length;
+    final showCounter = count >= (maxChars * 0.8);
+    final isNearLimit = count >= maxChars * 0.9;
+    final isOverLimit = count > maxChars;
+
+    if (!showCounter) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Text(
+          '$count/$maxChars',
+          style: AppTypography.textExtraSmallMedium.copyWith(
+            color: isOverLimit
+                ? AppColors.red300
+                : isNearLimit
+                ? AppColors.rajah500
+                : Theme.of(context).colorScheme.onSurface.withAlpha(160),
+          ),
+        ),
       ),
     );
   }
@@ -137,6 +189,7 @@ class _TextField extends StatelessWidget {
     required this.notifier,
     required this.textColor,
     required this.placeholderColor,
+    required this.isOverLimit,
   });
 
   final CommentInputWidget widget;
@@ -145,6 +198,7 @@ class _TextField extends StatelessWidget {
   final CommentInput notifier;
   final Color textColor;
   final Color placeholderColor;
+  final bool isOverLimit;
 
   @override
   Widget build(BuildContext context) {
@@ -178,12 +232,12 @@ class _TextField extends StatelessWidget {
                 icon: Icon(
                   FluentIcons.send_24_filled,
                   size: 20,
-                  color: state.canSubmit
+                  color: state.canSubmit && !isOverLimit
                       ? Theme.of(context).colorScheme.primary
                       : placeholderColor,
                 ),
                 onPressed: () {
-                  if (state.canSubmit) {
+                  if (state.canSubmit && !isOverLimit) {
                     HapticFeedback.mediumImpact();
                     // Use reply info if available, otherwise use main post info
                     final parentCid = widget.postCid;

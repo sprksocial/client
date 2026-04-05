@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spark/src/core/design_system/templates/video_review_page_template.dart';
+import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
@@ -147,6 +148,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     final ar = rawAspectRatio != null && rawAspectRatio > 0
         ? rawAspectRatio
         : 1.0;
+    final textLength = _descriptionController.text.runes.length;
+    final isOverLimit = textLength > AppConstants.postDescriptionMaxChars;
 
     return VideoReviewPageTemplate(
       title: 'Review Video',
@@ -160,12 +163,13 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       onMentionsChanged: (mentions) {
         // Mentions are automatically tracked in the controller
       },
-      descriptionMaxChars: 300,
+      descriptionMaxChars: AppConstants.postDescriptionMaxChars,
       showCrossPost: !widget.storyMode,
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
       postLabel: 'Post',
       isPosting: _isPosting,
+      isOverLimit: isOverLimit,
       onPost: _isPosting
           ? null
           : () async {
