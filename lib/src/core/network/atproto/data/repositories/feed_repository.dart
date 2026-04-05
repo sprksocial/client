@@ -132,6 +132,7 @@ abstract class FeedRepository {
     AtUri? rootUri,
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
+    List<Facet> facets = const [],
   });
 
   /// Post a new feed item with images

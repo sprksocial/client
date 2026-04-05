@@ -3,6 +3,7 @@ import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 
 class InputField extends StatelessWidget {
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final String hintText;
   final List<Widget>? leadingWidgets;
   final List<Widget>? actionWidgets;
@@ -11,9 +12,11 @@ class InputField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final int? maxLines;
   final int? minLines;
+  final bool enabled;
 
   const InputField._({
     required this.controller,
+    required this.focusNode,
     required this.hintText,
     required this.leadingWidgets,
     required this.actionWidgets,
@@ -22,18 +25,21 @@ class InputField extends StatelessWidget {
     required this.textInputAction,
     required this.maxLines,
     required this.minLines,
+    required this.enabled,
     super.key,
   });
 
   const InputField.comment({
     Key? key,
     TextEditingController? controller,
+    FocusNode? focusNode,
     String hintText = '',
     List<Widget>? leadingWidgets,
     List<Widget>? actionWidgets,
   }) : this._(
          key: key,
          controller: controller,
+         focusNode: focusNode,
          hintText: hintText,
          leadingWidgets: leadingWidgets,
          actionWidgets: actionWidgets,
@@ -42,17 +48,20 @@ class InputField extends StatelessWidget {
          textInputAction: null,
          maxLines: null,
          minLines: null,
+         enabled: true,
        );
 
   const InputField.chat({
     Key? key,
     TextEditingController? controller,
+    FocusNode? focusNode,
     String hintText = '',
     List<Widget>? leadingWidgets,
     VoidCallback? onSendMessage,
   }) : this._(
          key: key,
          controller: controller,
+         focusNode: focusNode,
          hintText: hintText,
          leadingWidgets: leadingWidgets,
          onSendMessage: onSendMessage,
@@ -61,11 +70,13 @@ class InputField extends StatelessWidget {
          textInputAction: null,
          maxLines: null,
          minLines: null,
+         enabled: true,
        );
 
   const InputField.search({
     Key? key,
     TextEditingController? controller,
+    FocusNode? focusNode,
     String hintText = '',
     List<Widget>? leadingWidgets,
     List<Widget>? actionWidgets,
@@ -73,9 +84,11 @@ class InputField extends StatelessWidget {
     TextInputAction? textInputAction,
     int? maxLines,
     int? minLines,
+    bool enabled = true,
   }) : this._(
          key: key,
          controller: controller,
+         focusNode: focusNode,
          hintText: hintText,
          leadingWidgets: leadingWidgets,
          actionWidgets: actionWidgets,
@@ -84,6 +97,7 @@ class InputField extends StatelessWidget {
          textInputAction: textInputAction,
          maxLines: maxLines,
          minLines: minLines,
+         enabled: enabled,
        );
 
   @override
@@ -118,10 +132,12 @@ class InputField extends StatelessWidget {
 
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       onSubmitted: onSubmitted,
       textInputAction: textInputAction,
       maxLines: maxLines,
       minLines: minLines,
+      enabled: enabled,
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: leading,

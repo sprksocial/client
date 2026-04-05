@@ -47,6 +47,7 @@ class CommentsPage extends _$CommentsPage {
     String? rootUri,
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
+    List<Facet> facets = const [],
   }) async {
     // We need the current state to determine if the post is a sprk or bsky post
     final currentState = state.value;
@@ -62,6 +63,7 @@ class CommentsPage extends _$CommentsPage {
       rootUri: rootUri != null ? AtUri.parse(rootUri) : null,
       imageFiles: imageFiles,
       altTexts: altTexts,
+      facets: facets,
     );
 
     // Short delay to account for server-side replication lag.

@@ -852,6 +852,7 @@ class FeedRepositoryImpl implements FeedRepository {
     AtUri? rootUri,
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
+    List<Facet> facets = const [],
   }) async {
     _logger.d('Posting comment to parent: $parentUri');
 
@@ -902,7 +903,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       final sprkRecord = ReplyRecord(
-        caption: CaptionRef(text: text, facets: []),
+        caption: CaptionRef(text: text, facets: facets),
         reply: RecordReplyRef(
           root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
           parent: RepoStrongRef(uri: parentUri, cid: parentCid),
@@ -927,6 +928,29 @@ class FeedRepositoryImpl implements FeedRepository {
           ? bskyFeedAdapter.convertJsonToBskyEmbed(mediaJson)
           : null;
 
+      // Convert Spark mention facets to Bluesky mention facets
+      final bskyFacets = <RichtextFacet>[];
+      for (final facet in facets) {
+        for (final feature in facet.features) {
+          feature.map(
+            mention: (m) {
+              bskyFacets.add(
+                bskyFeedAdapter.createMentionFacet(
+                  did: m.did,
+                  byteStart: facet.index.byteStart,
+                  byteEnd: facet.index.byteEnd,
+                ),
+              );
+            },
+            link: (_) {},
+            tag: (_) {},
+            bskyMention: (_) {},
+            bskyLink: (_) {},
+            bskyTag: (_) {},
+          );
+        }
+      }
+
       final bskyRecord = bskyFeedAdapter.createCommentRecord(
         text: text,
         createdAt: DateTime.now().toUtc(),
@@ -935,6 +959,7 @@ class FeedRepositoryImpl implements FeedRepository {
           parent: RepoStrongRef(uri: parentUri, cid: parentCid),
         ),
         embed: bskyMedia,
+        facets: bskyFacets.isNotEmpty ? bskyFacets : null,
       );
       recordJson = bskyRecord.toJson();
       collection = NSID.parse('app.bsky.feed.post');
