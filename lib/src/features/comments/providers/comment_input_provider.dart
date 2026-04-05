@@ -3,26 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/comments/providers/comment_input_state.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
+import 'package:spark/src/features/posting/models/mention.dart';
+import 'package:spark/src/features/posting/models/mention_controller.dart';
 
 part 'comment_input_provider.g.dart';
 
 @riverpod
 class CommentInput extends _$CommentInput {
   @override
-  CommentInputState build(
-    TextEditingController textController,
-    ImagePicker imagePicker,
-  ) {
+  CommentInputState build(ImagePicker imagePicker, {String initialText = ''}) {
+    final mentionController = MentionController(text: initialText);
+    final mentionTextController = mentionController.textController;
+    mentionTextController.addListener(updateCanSubmit);
+
     ref.onDispose(() {
-      textController.dispose();
+      mentionTextController.removeListener(updateCanSubmit);
+      mentionController.dispose();
     });
-    textController.addListener(updateCanSubmit);
+
     return CommentInputState(
-      textController: textController,
+      textController: mentionTextController,
       imagePicker: imagePicker,
+      mentionController: mentionController,
+      canSubmit: mentionTextController.text.trim().isNotEmpty,
     );
   }
 
@@ -45,32 +53,16 @@ class CommentInput extends _$CommentInput {
   void insertEmoji(String emoji) {
     if (state.isPosting) return;
 
-    final currentText = state.textController.text;
-    final selection = state.textController.selection;
-
-    if (selection.baseOffset < 0) {
-      state.textController.text = currentText + emoji;
-      state.textController.selection = TextSelection.collapsed(
-        offset: currentText.length + emoji.length,
-      );
-    } else {
-      state.textController.text = currentText.replaceRange(
-        selection.start,
-        selection.end,
-        emoji,
-      );
-    }
-
-    final newText = currentText.replaceRange(
-      selection.start,
-      selection.end,
-      emoji,
-    );
-    state.textController.value = TextEditingValue(
+    final controller = state.textController;
+    final currentText = controller.text;
+    final selection = controller.selection;
+    final hasSelection = selection.start >= 0 && selection.end >= 0;
+    final start = hasSelection ? selection.start : currentText.length;
+    final end = hasSelection ? selection.end : currentText.length;
+    final newText = currentText.replaceRange(start, end, emoji);
+    controller.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(
-        offset: selection.baseOffset + emoji.length,
-      ),
+      selection: TextSelection.collapsed(offset: start + emoji.length),
     );
   }
 
@@ -99,8 +91,11 @@ class CommentInput extends _$CommentInput {
 
   void removeImage(int index) {
     if (state.isPosting) return;
-    final removed = state.selectedImages.removeAt(index);
-    state.altTexts.remove(removed.path);
+    final selectedImages = List<XFile>.from(state.selectedImages);
+    final removed = selectedImages.removeAt(index);
+    final altTexts = Map<String, String>.from(state.altTexts)
+      ..remove(removed.path);
+    state = state.copyWith(selectedImages: selectedImages, altTexts: altTexts);
     updateCanSubmit();
   }
 
@@ -111,16 +106,24 @@ class CommentInput extends _$CommentInput {
     required String? rootCid,
     required String? rootUri,
   }) async {
-    if (!state.canSubmit || state.isPosting) return;
+    final hasContent =
+        state.textController.text.trim().isNotEmpty ||
+        state.selectedImages.isNotEmpty;
+    if (!hasContent || state.isPosting) return;
     final trayNotifier = ref.read(
       commentsPageProvider(postUri: AtUri.parse(parentUri)).notifier,
     );
-    final text = state.textController.text.trim();
+    final rawText = state.textController.text;
+    final text = rawText.trim();
     final imagesToUpload = List<XFile>.from(state.selectedImages);
 
     state = state.copyWith(isPosting: true);
 
     try {
+      final facets = _buildTrimmedMentionFacets(
+        rawText: rawText,
+        trimmedText: text,
+      );
       await trayNotifier.postComment(
         text,
         parentCid,
@@ -129,11 +132,12 @@ class CommentInput extends _$CommentInput {
         rootUri: rootUri,
         imageFiles: imagesToUpload,
         altTexts: state.altTexts,
+        facets: facets,
       );
 
-      state.textController.clear();
-      updateCanSubmit();
+      state.mentionController.clear();
       state = state.copyWith(
+        canSubmit: false,
         isPosting: false,
         selectedImages: [],
         altTexts: {},
@@ -151,5 +155,45 @@ class CommentInput extends _$CommentInput {
 
   void updateAltText(String imagePath, String altText) {
     state = state.copyWith(altTexts: {...state.altTexts, imagePath: altText});
+  }
+
+  List<Facet> _buildTrimmedMentionFacets({
+    required String rawText,
+    required String trimmedText,
+  }) {
+    if (trimmedText.isEmpty || state.mentionController.mentions.isEmpty) {
+      return const [];
+    }
+
+    if (rawText == trimmedText) {
+      return state.mentionController.buildFacets();
+    }
+
+    final leadingTrimmedText = rawText.trimLeft();
+    final leadingTrimmedChars = rawText.length - leadingTrimmedText.length;
+    final leadingTrimmedBytes = TextFormatter.charIndexToByteIndex(
+      rawText,
+      leadingTrimmedChars,
+    );
+    final trimmedByteLength = TextFormatter.byteLength(trimmedText);
+    final trimmedEndByte = leadingTrimmedBytes + trimmedByteLength;
+
+    final adjustedMentions = state.mentionController.mentions
+        .where(
+          (mention) =>
+              mention.byteStart >= leadingTrimmedBytes &&
+              mention.byteEnd <= trimmedEndByte,
+        )
+        .map(
+          (mention) => Mention(
+            handle: mention.handle,
+            did: mention.did,
+            byteStart: mention.byteStart - leadingTrimmedBytes,
+            byteEnd: mention.byteEnd - leadingTrimmedBytes,
+          ),
+        )
+        .toList(growable: false);
+
+    return TextFormatter.buildMentionFacets(adjustedMentions);
   }
 }

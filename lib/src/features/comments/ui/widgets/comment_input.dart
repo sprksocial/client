@@ -14,6 +14,7 @@ import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/comments/providers/comment_input_provider.dart';
 import 'package:spark/src/features/comments/providers/comment_input_state.dart';
 import 'package:spark/src/features/comments/ui/widgets/emoji_picker.dart';
+import 'package:spark/src/features/posting/ui/widgets/mention_input_field.dart';
 import 'package:spark/src/features/profile/providers/profile_provider.dart';
 
 class CommentInputWidget extends ConsumerStatefulWidget {
@@ -42,33 +43,17 @@ class CommentInputWidget extends ConsumerStatefulWidget {
 }
 
 class _CommentInputState extends ConsumerState<CommentInputWidget> {
-  final textController = TextEditingController();
   final imagePicker = ImagePicker();
   static const int _maxChars = AppConstants.replyMaxChars;
 
   @override
-  void initState() {
-    super.initState();
-    textController.addListener(() {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    textController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final state = ref.watch(commentInputProvider(textController, imagePicker));
-    final notifier = ref.read(
-      commentInputProvider(textController, imagePicker).notifier,
-    );
+    final state = ref.watch(commentInputProvider(imagePicker));
+    final notifier = ref.read(commentInputProvider(imagePicker).notifier);
     final authState = ref.watch(authProvider);
     final userDid = authState.did ?? '';
     final userHandle = authState.handle ?? '';
+    final inputController = state.mentionController.textController;
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
 
@@ -107,26 +92,38 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                   size: 28,
                 ),
                 const SizedBox(width: 8),
-                _AttachmentButton(
-                  state: state,
-                  notifier: notifier,
-                  context: context,
-                  borderColor: Theme.of(context).colorScheme.outline,
-                  textColor: Theme.of(context).colorScheme.onSurface,
+                Expanded(
+                  child: MentionInputField(
+                    controller: state.mentionController,
+                    onMentionsChanged: (_) {},
+                    hintText: 'Add a comment...',
+                    maxChars: _maxChars,
+                    maxLines: 5,
+                    minLines: 1,
+                    focusNode: widget.focusNode,
+                    enabled: !state.isPosting,
+                  ),
                 ),
                 const SizedBox(width: 5),
-                Expanded(
-                  child: _TextField(
-                    widget: widget,
-                    state: state,
-                    context: context,
-                    notifier: notifier,
-                    textColor: Theme.of(context).colorScheme.onSurface,
-                    placeholderColor: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 128),
-                    isOverLimit: textController.text.runes.length > _maxChars,
-                  ),
+                _AttachmentButton(state: state, notifier: notifier),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: inputController,
+                  builder: (context, value, child) {
+                    final showSendButton = state.canSubmit || state.isPosting;
+                    if (!showSendButton) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: _SendButton(
+                        state: state,
+                        widget: widget,
+                        notifier: notifier,
+                        isOverLimit: value.text.runes.length > _maxChars,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -140,7 +137,13 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
             ),
 
           // Character counter (show when approaching limit)
-          _CharacterCounter(controller: textController, maxChars: _maxChars),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: inputController,
+            builder: (context, _, child) => _CharacterCounter(
+              controller: inputController,
+              maxChars: _maxChars,
+            ),
+          ),
         ],
       ),
     );
@@ -181,105 +184,72 @@ class _CharacterCounter extends StatelessWidget {
   }
 }
 
-class _TextField extends StatelessWidget {
-  const _TextField({
-    required this.widget,
+class _SendButton extends StatelessWidget {
+  const _SendButton({
     required this.state,
-    required this.context,
+    required this.widget,
     required this.notifier,
-    required this.textColor,
-    required this.placeholderColor,
     required this.isOverLimit,
   });
 
-  final CommentInputWidget widget;
   final CommentInputState state;
-  final BuildContext context;
+  final CommentInputWidget widget;
   final CommentInput notifier;
-  final Color textColor;
-  final Color placeholderColor;
   final bool isOverLimit;
 
   @override
   Widget build(BuildContext context) {
-    const hint = 'Add a comment...';
+    final canSend = state.canSubmit && !isOverLimit && !state.isPosting;
+    final placeholderColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: 128);
 
-    return TextField(
-      controller: state.textController,
-      focusNode: widget.focusNode,
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: placeholderColor, fontSize: 14),
-        filled: false,
-        isDense: true,
-        contentPadding: EdgeInsets.zero,
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        suffixIcon: state.isPosting
-            ? Container(
-                margin: const EdgeInsets.all(8),
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              )
-            : IconButton(
-                icon: Icon(
-                  FluentIcons.send_24_filled,
-                  size: 20,
-                  color: state.canSubmit && !isOverLimit
-                      ? Theme.of(context).colorScheme.primary
-                      : placeholderColor,
-                ),
-                onPressed: () {
-                  if (state.canSubmit && !isOverLimit) {
-                    HapticFeedback.mediumImpact();
-                    // Use reply info if available, otherwise use main post info
-                    final parentCid = widget.postCid;
-                    final parentUri = widget.postUri;
-                    final rootCid = widget.rootCid;
-                    final rootUri = widget.rootUri;
+    if (state.isPosting) {
+      return const Padding(
+        padding: EdgeInsets.all(8),
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
 
-                    notifier.submitComment(
-                      parentCid: parentCid,
-                      parentUri: parentUri,
-                      isSprk: widget.isSprk,
-                      rootCid: rootCid,
-                      rootUri: rootUri,
-                    );
-                  }
-                },
-              ),
+    return IconButton(
+      icon: Icon(
+        FluentIcons.send_24_filled,
+        size: 20,
+        color: canSend
+            ? Theme.of(context).colorScheme.primary
+            : placeholderColor,
       ),
-      style: TextStyle(color: textColor, fontSize: 14),
-      maxLines: 5,
-      minLines: 1,
-      textAlignVertical: TextAlignVertical.center,
-      cursorColor: Theme.of(context).colorScheme.primary,
-      enabled: !state.isPosting,
+      onPressed: canSend
+          ? () {
+              HapticFeedback.mediumImpact();
+              // Use reply info if available, otherwise use main post info
+              final parentCid = widget.postCid;
+              final parentUri = widget.postUri;
+              final rootCid = widget.rootCid;
+              final rootUri = widget.rootUri;
+
+              notifier.submitComment(
+                parentCid: parentCid,
+                parentUri: parentUri,
+                isSprk: widget.isSprk,
+                rootCid: rootCid,
+                rootUri: rootUri,
+              );
+            }
+          : null,
     );
   }
 }
 
 class _AttachmentButton extends StatelessWidget {
-  const _AttachmentButton({
-    required this.state,
-    required this.notifier,
-    required this.context,
-    required this.borderColor,
-    required this.textColor,
-  });
+  const _AttachmentButton({required this.state, required this.notifier});
 
   final CommentInputState state;
   final CommentInput notifier;
-  final BuildContext context;
-  final Color borderColor;
-  final Color textColor;
 
   @override
   Widget build(BuildContext context) {

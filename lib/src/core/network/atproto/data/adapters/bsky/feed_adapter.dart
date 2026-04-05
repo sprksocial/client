@@ -452,12 +452,14 @@ class BskyFeedAdapter {
     required DateTime createdAt,
     required RecordReplyRef reply,
     UFeedPostEmbed? embed,
+    List<RichtextFacet>? facets,
   }) {
     return FeedPostRecord(
       text: text,
       createdAt: createdAt,
       reply: ReplyRef(root: reply.root, parent: reply.parent),
       embed: embed,
+      facets: facets,
     );
   }
 

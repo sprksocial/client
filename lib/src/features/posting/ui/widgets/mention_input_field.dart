@@ -15,6 +15,8 @@ class MentionInputField extends ConsumerStatefulWidget {
     this.maxChars = AppConstants.postDescriptionMaxChars,
     this.maxLines = 5,
     this.minLines = 1,
+    this.focusNode,
+    this.enabled = true,
     super.key,
   });
 
@@ -24,6 +26,8 @@ class MentionInputField extends ConsumerStatefulWidget {
   final int maxChars;
   final int maxLines;
   final int minLines;
+  final FocusNode? focusNode;
+  final bool enabled;
 
   @override
   ConsumerState<MentionInputField> createState() => _MentionInputFieldState();
@@ -43,6 +47,21 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
   }
 
   @override
+  void didUpdateWidget(covariant MentionInputField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.textController.removeListener(_onTextChanged);
+      _previousText = widget.controller.text;
+      widget.controller.textController.addListener(_onTextChanged);
+    }
+
+    if (!widget.enabled && oldWidget.enabled != widget.enabled) {
+      _hideSuggestions(clearTypeahead: true);
+    }
+  }
+
+  @override
   void dispose() {
     widget.controller.textController.removeListener(_onTextChanged);
     _focusNode.dispose();
@@ -56,10 +75,38 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
       _previousText = text;
     }
 
+    if (!widget.enabled) {
+      _hideSuggestions(clearTypeahead: true);
+      return;
+    }
+
     final cursorPosition = widget.controller.textController.selection.start;
     if (cursorPosition >= 0) {
       _detectMentionQuery(text, cursorPosition);
     }
+  }
+
+  void _hideSuggestions({required bool clearTypeahead}) {
+    final hadSuggestions = _showSuggestions || _queryStartIndex != null;
+
+    if (clearTypeahead) {
+      ref.read(actorTypeaheadProvider.notifier).clear();
+    }
+
+    if (!hadSuggestions) {
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _showSuggestions = false;
+        _queryStartIndex = null;
+      });
+      return;
+    }
+
+    _showSuggestions = false;
+    _queryStartIndex = null;
   }
 
   void _syncMentions({
@@ -183,11 +230,7 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
 
   void _detectMentionQuery(String text, int cursorPosition) {
     if (cursorPosition <= 0 || cursorPosition > text.length) {
-      setState(() {
-        _showSuggestions = false;
-        _queryStartIndex = null;
-      });
-      ref.read(actorTypeaheadProvider.notifier).clear();
+      _hideSuggestions(clearTypeahead: true);
       return;
     }
 
@@ -202,22 +245,14 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
     }
 
     if (atIndex == -1) {
-      setState(() {
-        _showSuggestions = false;
-        _queryStartIndex = null;
-      });
-      ref.read(actorTypeaheadProvider.notifier).clear();
+      _hideSuggestions(clearTypeahead: true);
       return;
     }
 
     if (atIndex > 0) {
       final prevChar = text[atIndex - 1];
       if (prevChar != ' ' && prevChar != '\n') {
-        setState(() {
-          _showSuggestions = false;
-          _queryStartIndex = null;
-        });
-        ref.read(actorTypeaheadProvider.notifier).clear();
+        _hideSuggestions(clearTypeahead: true);
         return;
       }
     }
@@ -300,11 +335,15 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
       children: [
         InputField.search(
           controller: widget.controller.textController,
+          focusNode: widget.focusNode ?? _focusNode,
           hintText: widget.hintText,
           maxLines: widget.maxLines,
           minLines: widget.minLines,
+          enabled: widget.enabled,
         ),
-        if (_showSuggestions && typeaheadState.results.isNotEmpty)
+        if (widget.enabled &&
+            _showSuggestions &&
+            typeaheadState.results.isNotEmpty)
           Container(
             constraints: const BoxConstraints(maxHeight: 200),
             decoration: BoxDecoration(
@@ -347,7 +386,7 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
               },
             ),
           ),
-        if (_showSuggestions && typeaheadState.isLoading)
+        if (widget.enabled && _showSuggestions && typeaheadState.isLoading)
           const Padding(
             padding: EdgeInsets.all(16),
             child: SizedBox(
