@@ -19,9 +19,9 @@ String? canonicalizeSparkPostUri(String postUri) {
     return null;
   }
 
-  final canonicalMatch = _parseCanonicalSparkUri(trimmedPostUri);
+  final canonicalMatch = parseCanonicalSparkPostUri(trimmedPostUri);
   if (canonicalMatch != null) {
-    return trimmedPostUri;
+    return 'at://${canonicalMatch.did}/so.sprk.feed.post/${canonicalMatch.rkey}';
   }
 
   final shortUriMatch = RegExp(
@@ -31,23 +31,29 @@ String? canonicalizeSparkPostUri(String postUri) {
     return null;
   }
 
-  final did = shortUriMatch.group(1)!;
-  final rkey = shortUriMatch.group(2)!;
+  final did = Uri.decodeComponent(shortUriMatch.group(1)!);
+  final rkey = Uri.decodeComponent(shortUriMatch.group(2)!);
   return 'at://$did/so.sprk.feed.post/$rkey';
 }
 
-({String did, String rkey})? _parseCanonicalSparkUri(String uri) {
+({String did, String rkey})? parseCanonicalSparkPostUri(String uri) {
   final match = RegExp(
     r'^at://([^/]+)/so\.sprk\.feed\.post/([^/?#]+)$',
   ).firstMatch(uri);
   if (match == null) return null;
-  return (did: match.group(1)!, rkey: match.group(2)!);
+  return (
+    did: Uri.decodeComponent(match.group(1)!),
+    rkey: Uri.decodeComponent(match.group(2)!),
+  );
 }
 
 String buildSparkShareUrl(String postUri) {
-  final normalizedPostUri = normalizeSparkPostUri(postUri);
-  final parts = _parseCanonicalSparkUri(normalizedPostUri);
+  final canonicalPostUri = canonicalizeSparkPostUri(postUri);
+  final parts = canonicalPostUri == null
+      ? null
+      : parseCanonicalSparkPostUri(canonicalPostUri);
   if (parts == null) {
+    final normalizedPostUri = normalizeSparkPostUri(postUri);
     return Uri.https(_sparkShareHost, '/watch', {
       'uri': normalizedPostUri,
     }).toString();
@@ -79,8 +85,8 @@ String? extractCanonicalSparkPostUri(String url) {
         r'^/post/([^/]+)/([^/?#]+)$',
       ).firstMatch(uri.path);
       if (postPathMatch != null) {
-        final identifier = postPathMatch.group(1)!;
-        final rkey = postPathMatch.group(2)!;
+        final identifier = Uri.decodeComponent(postPathMatch.group(1)!);
+        final rkey = Uri.decodeComponent(postPathMatch.group(2)!);
         final did = identifier.startsWith('did:')
             ? identifier
             : 'did:plc:$identifier';

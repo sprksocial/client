@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +6,6 @@ import 'package:spark/src/core/design_system/theme/app_theme.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/theme/providers/theme_provider.dart';
-import 'package:spark/src/core/utils/share_urls.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
@@ -91,23 +89,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
         }
         return supportedLocales.first;
       },
-      routerConfig: _appRouter.config(deepLinkBuilder: _buildIncomingDeepLink),
+      routerConfig: _appRouter.config(),
     );
-  }
-
-  Future<DeepLink> _buildIncomingDeepLink(PlatformDeepLink deepLink) async {
-    final canonicalPostUri = extractCanonicalSparkPostUri(
-      deepLink.uri.toString(),
-    );
-    if (canonicalPostUri == null) {
-      return deepLink;
-    }
-
-    _logger.i(
-      'Resolved incoming post deep link ${deepLink.uri} '
-      'to canonical URI $canonicalPostUri',
-    );
-
-    return DeepLink.single(StandalonePostRoute(postUri: canonicalPostUri));
   }
 }
