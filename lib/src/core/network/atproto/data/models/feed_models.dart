@@ -1408,6 +1408,8 @@ abstract class StoryView with _$StoryView {
     required StoryRecord record,
     required DateTime indexedAt,
     MediaView? media,
+    @JsonKey(fromJson: storyEmbedViewsFromJson, toJson: storyEmbedViewsToJson)
+    List<StoryEmbedView>? embeds,
     // viewer eventually i think
   }) = _StoryView;
   const StoryView._();

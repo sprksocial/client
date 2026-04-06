@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
 import 'package:spark/src/core/pro_image_editor/ui/story_image_editor_page.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
@@ -82,7 +83,10 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   }
 
   @override
-  Future<XFile?> openStoryImageEditor(BuildContext context, XFile source) {
+  Future<StoryImageEditorResult?> openStoryImageEditor(
+    BuildContext context,
+    XFile source,
+  ) {
     return StoryBlankCanvasEditorPage.open(
       context,
       backgroundImage: File(source.path),
@@ -90,7 +94,7 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   }
 
   @override
-  Future<XFile?> openStoryBlankCanvasEditor(
+  Future<StoryImageEditorResult?> openStoryBlankCanvasEditor(
     BuildContext context, {
     XFile? backgroundImage,
     Color backgroundColor = const Color(0xFF000000),

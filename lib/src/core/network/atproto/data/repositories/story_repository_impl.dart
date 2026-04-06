@@ -181,17 +181,22 @@ class StoryRepositoryImpl implements StoryRepository {
     Media media, {
     List<SelfLabel>? selfLabels,
     List<String>? tags,
+    RepoStrongRef? soundRef,
+    List<StoryEmbed>? embeds,
   }) async {
     final normalizedLabels = selfLabels == null || selfLabels.isEmpty
         ? null
         : selfLabels;
     final normalizedTags = tags == null || tags.isEmpty ? null : tags;
+    final normalizedEmbeds = embeds == null || embeds.isEmpty ? null : embeds;
 
     final record = StoryRecord(
       createdAt: DateTime.now().toUtc(),
       media: media,
       tags: normalizedTags,
       labels: normalizedLabels,
+      sound: soundRef,
+      embeds: normalizedEmbeds,
     );
 
     return _client.repo.createRecord(

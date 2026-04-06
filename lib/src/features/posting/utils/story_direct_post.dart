@@ -20,8 +20,9 @@ class StoryDirectPost {
   static Future<RepoStrongRef?> postPhotoStory(
     BuildContext context,
     WidgetRef ref,
-    XFile imageFile,
-  ) async {
+    XFile imageFile, {
+    List<StoryEmbed> embeds = const [],
+  }) async {
     // Show loading overlay
     final navigator = Navigator.of(context);
 
@@ -50,6 +51,7 @@ class StoryDirectPost {
       final result = await ref.read(
         postStoryProvider(
           Media.image(image: uploadedImage.image, alt: uploadedImage.alt),
+          embeds: embeds,
         ).future,
       );
 
@@ -81,6 +83,7 @@ class StoryDirectPost {
     WidgetRef ref,
     String videoPath, {
     RepoStrongRef? soundRef,
+    List<StoryEmbed> embeds = const [],
   }) async {
     // Show loading overlay
     final navigator = Navigator.of(context);
@@ -98,6 +101,7 @@ class StoryDirectPost {
           videoPath: videoPath,
           storyMode: true,
           soundRef: soundRef,
+          storyEmbeds: embeds,
         ).future,
       );
 
