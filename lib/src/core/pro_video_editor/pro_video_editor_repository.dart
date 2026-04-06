@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 
 /// Abstraction over the pro_video_editor plugin.
@@ -52,7 +53,10 @@ abstract class ProVideoEditorRepository {
   /// tools (text, paint, stickers, emoji, filter, blur - NO crop/rotate).
   ///
   /// Returns `null` if the user cancels without completing the edit.
-  Future<XFile?> openStoryImageEditor(BuildContext context, XFile source);
+  Future<StoryImageEditorResult?> openStoryImageEditor(
+    BuildContext context,
+    XFile source,
+  );
 
   /// Opens a blank canvas Story Image Editor (1080x1920).
   ///
@@ -60,7 +64,7 @@ abstract class ProVideoEditorRepository {
   /// This gives more flexibility for positioning the image.
   ///
   /// Returns `null` if the user cancels without completing the edit.
-  Future<XFile?> openStoryBlankCanvasEditor(
+  Future<StoryImageEditorResult?> openStoryBlankCanvasEditor(
     BuildContext context, {
     XFile? backgroundImage,
     Color backgroundColor = const Color(0xFF000000),

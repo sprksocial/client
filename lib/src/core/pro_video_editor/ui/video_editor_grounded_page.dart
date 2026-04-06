@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/pro_image_editor/story_mention_editing.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:spark/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
@@ -43,7 +44,8 @@ class VideoEditorGroundedPage extends StatefulWidget {
       _VideoEditorGroundedPageState();
 }
 
-class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
+class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
+    with StoryMentionEditing<VideoEditorGroundedPage> {
   static const _storyCanvasSize = Size(1440, 2560);
 
   final _editorKey = GlobalKey<ProImageEditorState>();
@@ -104,6 +106,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   late ProImageEditorConfigs _configs;
   late VideoTimelineState _videoTimelineState;
   List<AudioTrack> _audioTracks = [];
+
+  @override
+  GlobalKey<ProImageEditorState> get storyEditorKey => _editorKey;
+
+  @override
+  Size get storyCanvasFallbackSize => _storyCanvasSize;
 
   @override
   void initState() {
@@ -211,6 +219,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       onToggleMute: _onToggleMute,
       onAddSound: _showAudioSelectionBottomSheet,
       onToggleFullscreen: _openFullscreenPreview,
+      onMention: widget.storyMode ? addStoryMention : null,
+      onDone: widget.storyMode ? finishStoryEditing : null,
     );
 
     // Update clip duration and thumbnails after first frame
@@ -618,11 +628,14 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
         VideoEditorResult(
           video: XFile(_outputPath!, mimeType: 'video/mp4'),
           soundRef: _selectedSoundRef,
+          embeds: pendingStoryEmbeds,
         ),
       );
       _outputPath = null;
       _selectedSoundRef = null;
+      clearPendingStoryEmbeds();
     } else {
+      clearPendingStoryEmbeds();
       Navigator.pop(context);
     }
   }
@@ -696,7 +709,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
                 await _audioService.pause();
               },
             ),
-            mainEditorCallbacks: const MainEditorCallbacks(),
             stickerEditorCallbacks: StickerEditorCallbacks(
               onSearchChanged: (_) {},
             ),

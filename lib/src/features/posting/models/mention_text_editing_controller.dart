@@ -29,7 +29,9 @@ class MentionTextEditingController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
-    assert(!value.composing.isValid || !withComposing || value.isComposingRangeValid);
+    assert(
+      !value.composing.isValid || !withComposing || value.isComposingRangeValid,
+    );
 
     final theme = Theme.of(context);
     final effectiveStyle =
@@ -54,7 +56,9 @@ class MentionTextEditingController extends TextEditingController {
 
     final composingRegionOutOfRange =
         !value.isComposingRangeValid || !withComposing;
-    final composingStart = composingRegionOutOfRange ? -1 : value.composing.start;
+    final composingStart = composingRegionOutOfRange
+        ? -1
+        : value.composing.start;
     final composingEnd = composingRegionOutOfRange ? -1 : value.composing.end;
 
     final boundaries = <int>{0, text.length};
@@ -73,9 +77,7 @@ class MentionTextEditingController extends TextEditingController {
       final charEnd = TextFormatter.byteIndexToCharIndex(text, mention.byteEnd);
 
       // Skip invalid mentions.
-      if (charStart < 0 ||
-          charEnd > text.length ||
-          charStart >= charEnd) {
+      if (charStart < 0 || charEnd > text.length || charStart >= charEnd) {
         continue;
       }
 
@@ -113,7 +115,9 @@ class MentionTextEditingController extends TextEditingController {
         segmentStyle = segmentStyle.merge(composingStyle);
       }
 
-      spans.add(TextSpan(text: text.substring(start, end), style: segmentStyle));
+      spans.add(
+        TextSpan(text: text.substring(start, end), style: segmentStyle),
+      );
     }
 
     return TextSpan(children: spans, style: effectiveStyle);

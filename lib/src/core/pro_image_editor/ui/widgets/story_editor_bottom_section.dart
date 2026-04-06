@@ -7,9 +7,14 @@ import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_toolbar.
 ///
 /// Contains the toolbar with editing tools.
 class StoryEditorBottomSection extends StatelessWidget {
-  const StoryEditorBottomSection({required this.editor, super.key});
+  const StoryEditorBottomSection({
+    required this.editor,
+    this.onMention,
+    super.key,
+  });
 
   final ProImageEditorState editor;
+  final Future<void> Function()? onMention;
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +23,7 @@ class StoryEditorBottomSection extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: StoryEditorToolbar(
+          onMention: onMention,
           onPaint: editor.openPaintEditor,
           onText: editor.openTextEditor,
           onFilter: editor.openFilterEditor,

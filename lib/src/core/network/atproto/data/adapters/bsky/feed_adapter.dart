@@ -842,12 +842,13 @@ extension BskyRecordAdapter on Record {
         labels: labels,
         media: media,
       ),
-      story: (media, createdAt, sound, labels, tags) => StoryRecord(
+      story: (media, createdAt, sound, labels, tags, embeds) => StoryRecord(
         media: media,
         createdAt: createdAt,
         sound: sound,
         labels: labels,
         tags: tags,
+        embeds: embeds,
       ),
       profile:
           (

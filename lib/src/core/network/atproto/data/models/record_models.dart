@@ -44,6 +44,8 @@ abstract class Record with _$Record {
     RepoStrongRef? sound,
     List<SelfLabel>? labels,
     List<String>? tags,
+    @JsonKey(fromJson: storyEmbedsFromJson, toJson: storyEmbedsToJson)
+    List<StoryEmbed>? embeds,
   }) = StoryRecord;
 
   @JsonSerializable(explicitToJson: true)

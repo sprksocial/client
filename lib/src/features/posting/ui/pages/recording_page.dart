@@ -59,13 +59,20 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     });
   }
 
+  bool _hasCameras() {
+    final cameraAsync = ref.read(cameraProvider);
+    final cameraState = cameraAsync.value;
+    return cameraState != null && cameraState.cameras.isNotEmpty;
+  }
+
   bool _isCameraReady() {
     final cameraAsync = ref.read(cameraProvider);
     if (cameraAsync.hasError) return false;
     final cameraState = cameraAsync.value;
     return cameraState != null &&
         cameraState.isInitialized &&
-        cameraState.controller != null;
+        cameraState.controller != null &&
+        cameraState.cameras.isNotEmpty;
   }
 
   /// Handle tap on record button.
@@ -218,7 +225,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             final result = await StoryDirectPost.postPhotoStory(
               context,
               ref,
-              editedImage,
+              editedImage.image,
+              embeds: editedImage.embeds,
             );
             if (result != null && mounted) {
               // Exit the recording flow completely
@@ -240,7 +248,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           // For posts, go to review page
           await context.router.push(
             ImageReviewRoute(
-              imageFiles: [editedImage],
+              imageFiles: [editedImage.image],
               storyMode: widget.storyMode,
             ),
           );
@@ -351,6 +359,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             ref,
             result.video.path,
             soundRef: result.soundRef,
+            embeds: result.embeds,
           );
           if (postResult != null && mounted) {
             // Exit the recording flow completely
@@ -421,6 +430,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       });
     }
 
+    final hasCameras = _hasCameras();
+
     return cameraAsync.when(
       data: (cameraState) {
         if (cameraState.error != null) {
@@ -461,7 +472,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           );
         }
 
-        if (!cameraState.isInitialized || cameraState.controller == null) {
+        if (!cameraState.isInitialized) {
           return const Scaffold(
             backgroundColor: Colors.black,
             body: Center(child: CircularProgressIndicator(color: Colors.white)),
@@ -473,6 +484,44 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           return const Scaffold(
             backgroundColor: Colors.black,
             body: Center(child: CircularProgressIndicator(color: Colors.white)),
+          );
+        }
+
+        // No cameras available - show placeholder with library picker
+        if (!hasCameras || cameraState.controller == null) {
+          return RecordingPageTemplate(
+            cameraPreview: Container(
+              color: Colors.black,
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.videocam_off_outlined,
+                      color: Colors.white54,
+                      size: 64,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'No cameras available',
+                      style: TextStyle(color: Colors.white54, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            aspectRatio: 9 / 16,
+            isRecording: false,
+            elapsedDuration: Duration.zero,
+            maxDuration: recordingState.maxDuration,
+            onBack: () => context.router.pop(),
+            onFlipCamera: null,
+            canFlipCamera: false,
+            captureMode: widget.captureMode,
+            onTap: null,
+            onRecordStart: null,
+            onRecordStop: null,
+            onOpenLibrary: _isProcessing ? null : _openMediaLibraryPicker,
           );
         }
 

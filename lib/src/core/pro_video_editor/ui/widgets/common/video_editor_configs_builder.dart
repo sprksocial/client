@@ -66,6 +66,8 @@ class VideoEditorConfigsBuilder {
     required VoidCallback onToggleMute,
     required VoidCallback onAddSound,
     required VoidCallback onToggleFullscreen,
+    Future<void> Function()? onMention,
+    void Function(ProImageEditorState editor)? onDone,
     bool storyMode = false,
     List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
@@ -104,9 +106,12 @@ class VideoEditorConfigsBuilder {
           appBar: (editor, rebuildStream) => null,
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
-            builder: (context) {
+            builder: (_) {
               if (storyMode) {
-                return StoryEditorBottomSection(editor: editor);
+                return StoryEditorBottomSection(
+                  editor: editor,
+                  onMention: onMention,
+                );
               }
 
               return VideoEditorBottomSection(
@@ -148,7 +153,9 @@ class VideoEditorConfigsBuilder {
                   child: storyMode
                       ? StoryEditorHeader(
                           onBack: editor.closeEditor,
-                          onDone: editor.doneEditing,
+                          onDone: onDone != null
+                              ? () => onDone(editor)
+                              : editor.doneEditing,
                           canUndo: editor.canUndo,
                           canRedo: editor.canRedo,
                           onUndo: editor.undoAction,

@@ -39,6 +39,8 @@ class StoryImageEditorConfigs {
   static ProImageEditorConfigs build({
     required bool useMaterialDesign,
     required Widget Function() imagePreviewBuilder,
+    Future<void> Function()? onMention,
+    void Function(ProImageEditorState editor)? onDone,
   }) {
     return ProImageEditorConfigs(
       designMode: platformDesignMode,
@@ -79,9 +81,8 @@ class StoryImageEditorConfigs {
           appBar: (editor, rebuildStream) => null,
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
-            builder: (context) {
-              return StoryEditorBottomSection(editor: editor);
-            },
+            builder: (_) =>
+                StoryEditorBottomSection(editor: editor, onMention: onMention),
             stream: rebuildStream,
           ),
           wrapBody: (editor, rebuildStream, content) {
@@ -106,7 +107,9 @@ class StoryImageEditorConfigs {
                   bottom: false,
                   child: StoryEditorHeader(
                     onBack: editor.closeEditor,
-                    onDone: editor.doneEditing,
+                    onDone: onDone != null
+                        ? () => onDone(editor)
+                        : editor.doneEditing,
                     canUndo: editor.canUndo,
                     canRedo: editor.canRedo,
                     onUndo: editor.undoAction,

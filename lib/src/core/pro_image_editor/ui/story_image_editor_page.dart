@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
+import 'package:spark/src/core/pro_image_editor/story_mention_editing.dart';
 import 'package:spark/src/core/pro_image_editor/story_image_editor_configs.dart';
 import 'package:spark/src/core/pro_image_editor/utils/story_image_cropper.dart';
 
@@ -30,8 +32,11 @@ class StoryImageEditorPage extends StatefulWidget {
   /// Opens the story image editor and returns the edited image.
   ///
   /// Returns `null` if the user cancels without completing the edit.
-  static Future<XFile?> open(BuildContext context, File imageFile) async {
-    return Navigator.of(context).push<XFile?>(
+  static Future<StoryImageEditorResult?> open(
+    BuildContext context,
+    File imageFile,
+  ) async {
+    return Navigator.of(context).push<StoryImageEditorResult?>(
       MaterialPageRoute(
         builder: (_) => StoryImageEditorPage(imageFile: imageFile),
       ),
@@ -42,7 +47,8 @@ class StoryImageEditorPage extends StatefulWidget {
   State<StoryImageEditorPage> createState() => _StoryImageEditorPageState();
 }
 
-class _StoryImageEditorPageState extends State<StoryImageEditorPage> {
+class _StoryImageEditorPageState extends State<StoryImageEditorPage>
+    with StoryMentionEditing<StoryImageEditorPage> {
   final _editorKey = GlobalKey<ProImageEditorState>();
   final bool _useMaterialDesign =
       platformDesignMode == ImageEditorDesignMode.material;
@@ -51,6 +57,12 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage> {
   File? _croppedImageFile;
   bool _isLoading = true;
   String? _error;
+
+  @override
+  GlobalKey<ProImageEditorState> get storyEditorKey => _editorKey;
+
+  @override
+  Size get storyCanvasFallbackSize => StoryImageEditorConfigs.storySize;
 
   @override
   void initState() {
@@ -87,6 +99,8 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage> {
         useMaterialDesign: _useMaterialDesign,
         imagePreviewBuilder: () =>
             Image.file(_croppedImageFile!, fit: BoxFit.cover),
+        onMention: addStoryMention,
+        onDone: finishStoryEditing,
       );
 
       if (mounted) {
@@ -112,9 +126,12 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage> {
     await file.writeAsBytes(bytes, flush: true);
 
     if (mounted) {
-      Navigator.of(
-        context,
-      ).pop(XFile(file.path, mimeType: 'image/png', name: filename));
+      Navigator.of(context).pop(
+        StoryImageEditorResult(
+          image: XFile(file.path, mimeType: 'image/png', name: filename),
+          embeds: pendingStoryEmbeds,
+        ),
+      );
     }
   }
 
@@ -205,12 +222,12 @@ class StoryBlankCanvasEditorPage extends StatefulWidget {
   final Color backgroundColor;
 
   /// Opens the blank canvas story editor and returns the edited image.
-  static Future<XFile?> open(
+  static Future<StoryImageEditorResult?> open(
     BuildContext context, {
     File? backgroundImage,
     Color backgroundColor = Colors.black,
   }) async {
-    return Navigator.of(context).push<XFile?>(
+    return Navigator.of(context).push<StoryImageEditorResult?>(
       MaterialPageRoute(
         builder: (_) => StoryBlankCanvasEditorPage(
           backgroundImage: backgroundImage,
@@ -225,8 +242,8 @@ class StoryBlankCanvasEditorPage extends StatefulWidget {
       _StoryBlankCanvasEditorPageState();
 }
 
-class _StoryBlankCanvasEditorPageState
-    extends State<StoryBlankCanvasEditorPage> {
+class _StoryBlankCanvasEditorPageState extends State<StoryBlankCanvasEditorPage>
+    with StoryMentionEditing<StoryBlankCanvasEditorPage> {
   final _editorKey = GlobalKey<ProImageEditorState>();
   final bool _useMaterialDesign =
       platformDesignMode == ImageEditorDesignMode.material;
@@ -237,6 +254,12 @@ class _StoryBlankCanvasEditorPageState
   bool _isInitialized = false;
   Size? _imageSize;
   ImportStateHistory? _initialStateHistory;
+
+  @override
+  GlobalKey<ProImageEditorState> get storyEditorKey => _editorKey;
+
+  @override
+  Size get storyCanvasFallbackSize => StoryImageEditorConfigs.storySize;
 
   @override
   void initState() {
@@ -269,6 +292,8 @@ class _StoryBlankCanvasEditorPageState
       imagePreviewBuilder: () => widget.backgroundImage != null
           ? Image.file(widget.backgroundImage!, fit: BoxFit.cover)
           : const SizedBox.shrink(),
+      onMention: addStoryMention,
+      onDone: finishStoryEditing,
     );
 
     if (!mounted) return;
@@ -288,9 +313,12 @@ class _StoryBlankCanvasEditorPageState
     await file.writeAsBytes(bytes, flush: true);
 
     if (mounted) {
-      Navigator.of(
-        context,
-      ).pop(XFile(file.path, mimeType: 'image/png', name: filename));
+      Navigator.of(context).pop(
+        StoryImageEditorResult(
+          image: XFile(file.path, mimeType: 'image/png', name: filename),
+          embeds: pendingStoryEmbeds,
+        ),
+      );
     }
   }
 

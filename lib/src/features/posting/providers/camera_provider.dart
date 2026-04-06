@@ -44,7 +44,7 @@ class Camera extends _$Camera {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
         _logger.w('No cameras found on device');
-        throw Exception('No cameras found');
+        return const CameraState(cameras: [], isInitialized: true);
       }
 
       _logger.i('Found ${cameras.length} cameras');

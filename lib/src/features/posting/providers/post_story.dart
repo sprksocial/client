@@ -12,11 +12,15 @@ FutureOr<RepoStrongRef?> postStory(
   Media media, {
   List<SelfLabel>? selfLabels,
   List<String>? tags,
+  RepoStrongRef? soundRef,
+  List<StoryEmbed>? embeds,
 }) async {
   final storyRepository = GetIt.I<StoryRepository>();
   return await storyRepository.postStory(
     media,
     selfLabels: selfLabels,
     tags: tags,
+    soundRef: soundRef,
+    embeds: embeds,
   );
 }

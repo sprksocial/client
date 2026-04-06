@@ -108,6 +108,7 @@ Future<RepoStrongRef?> processAndPostVideo(
   bool storyMode = false,
   RepoStrongRef? soundRef,
   List<Facet> facets = const [],
+  List<StoryEmbed> storyEmbeds = const [],
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video')
     ..d(
@@ -148,6 +149,8 @@ Future<RepoStrongRef?> processAndPostVideo(
       final storyRepository = GetIt.I<StoryRepository>();
       final res = await storyRepository.postStory(
         Media.video(video: videoBlob),
+        soundRef: effectiveSoundRef,
+        embeds: storyEmbeds,
       );
       logger.i('Story posted: ${res.uri}');
       return res;

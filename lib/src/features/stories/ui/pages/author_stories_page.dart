@@ -292,6 +292,10 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                             _onStoryLoadingStateChanged(index, isLoading),
                         onStoryDurationChanged: (duration) =>
                             _onStoryDurationChanged(index, duration),
+                        onPauseRequested: _pause,
+                        onResumeRequested: _resume,
+                        onPrevious: _previousStory,
+                        onNext: _nextStory,
                       );
                     },
                   ),
@@ -394,26 +398,6 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  Positioned(
-                    top: 80,
-                    bottom: 0,
-                    left: 0,
-                    width: MediaQuery.of(context).size.width * 0.3,
-                    child: GestureDetector(
-                      onTap: _previousStory,
-                      child: Container(color: Colors.transparent),
-                    ),
-                  ),
-                  Positioned(
-                    top: 80,
-                    bottom: 0,
-                    right: 0,
-                    width: MediaQuery.of(context).size.width * 0.3,
-                    child: GestureDetector(
-                      onTap: _nextStory,
-                      child: Container(color: Colors.transparent),
                     ),
                   ),
                 ],

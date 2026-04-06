@@ -14,6 +14,8 @@ abstract class StoryRepository {
     Media media, {
     List<SelfLabel>? selfLabels,
     List<String>? tags,
+    RepoStrongRef? soundRef,
+    List<StoryEmbed>? embeds,
   });
 
   /// Get stories timeline

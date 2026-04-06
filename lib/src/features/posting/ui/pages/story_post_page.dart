@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -15,14 +16,21 @@ import 'package:spark/src/features/posting/providers/video_upload_provider.dart'
 /// Shows a loading indicator while uploading and posting.
 @RoutePage()
 class StoryPostPage extends ConsumerStatefulWidget {
-  const StoryPostPage({this.imageFile, this.videoPath, super.key})
-    : assert(
-        imageFile != null || videoPath != null,
-        'Either imageFile or videoPath must be provided',
-      );
+  const StoryPostPage({
+    this.imageFile,
+    this.videoPath,
+    this.soundRef,
+    this.embeds = const [],
+    super.key,
+  }) : assert(
+         imageFile != null || videoPath != null,
+         'Either imageFile or videoPath must be provided',
+       );
 
   final XFile? imageFile;
   final String? videoPath;
+  final RepoStrongRef? soundRef;
+  final List<StoryEmbed> embeds;
 
   @override
   ConsumerState<StoryPostPage> createState() => _StoryPostPageState();
@@ -93,6 +101,7 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
     final result = await ref.read(
       postStoryProvider(
         Media.image(image: uploadedImage.image, alt: uploadedImage.alt),
+        embeds: widget.embeds,
       ).future,
     );
 
@@ -110,6 +119,8 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
       processAndPostVideoProvider(
         videoPath: widget.videoPath!,
         storyMode: true,
+        soundRef: widget.soundRef,
+        storyEmbeds: widget.embeds,
       ).future,
     );
 

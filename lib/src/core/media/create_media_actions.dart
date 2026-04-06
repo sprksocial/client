@@ -67,7 +67,11 @@ class CreateMediaActions {
         if (storyMode) {
           // For stories, post directly
           await context.router.push(
-            StoryPostRoute(videoPath: result.video.path),
+            StoryPostRoute(
+              videoPath: result.video.path,
+              soundRef: result.soundRef,
+              embeds: result.embeds,
+            ),
           );
         } else {
           // For posts, go to review
@@ -103,7 +107,12 @@ class CreateMediaActions {
               .openStoryImageEditor(context, pickedImage);
           if (editedImage != null && context.mounted) {
             // Post directly
-            await context.router.push(StoryPostRoute(imageFile: editedImage));
+            await context.router.push(
+              StoryPostRoute(
+                imageFile: editedImage.image,
+                embeds: editedImage.embeds,
+              ),
+            );
           }
         }
       } else {
