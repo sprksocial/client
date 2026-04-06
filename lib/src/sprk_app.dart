@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,22 +91,23 @@ class _SprkAppState extends ConsumerState<SprkApp> {
         }
         return supportedLocales.first;
       },
-      routerConfig: _appRouter.config(
-        deepLinkTransformer: _transformIncomingDeepLink,
-      ),
+      routerConfig: _appRouter.config(deepLinkBuilder: _buildIncomingDeepLink),
     );
   }
 
-  Future<Uri> _transformIncomingDeepLink(Uri uri) async {
-    final canonicalPostUri = extractCanonicalSparkPostUri(uri.toString());
+  Future<DeepLink> _buildIncomingDeepLink(PlatformDeepLink deepLink) async {
+    final canonicalPostUri = extractCanonicalSparkPostUri(
+      deepLink.uri.toString(),
+    );
     if (canonicalPostUri == null) {
-      return uri;
+      return deepLink;
     }
 
-    final transformedUri = Uri(
-      path: '/post/${Uri.encodeComponent(canonicalPostUri)}',
+    _logger.i(
+      'Resolved incoming post deep link ${deepLink.uri} '
+      'to canonical URI $canonicalPostUri',
     );
-    _logger.i('Transformed incoming deep link from $uri to $transformedUri');
-    return transformedUri;
+
+    return DeepLink.single(StandalonePostRoute(postUri: canonicalPostUri));
   }
 }
