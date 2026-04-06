@@ -8,6 +8,7 @@ export 'package:spark/src/features/comments/ui/pages/crosspost_comments_page.dar
 export 'package:spark/src/features/comments/ui/pages/replies_page.dart';
 export 'package:spark/src/features/feed/ui/pages/feed_page.dart';
 export 'package:spark/src/features/feed/ui/pages/feeds_page.dart';
+export 'package:spark/src/features/feed/ui/pages/shared_post_page.dart';
 export 'package:spark/src/features/feed/ui/pages/standalone_post_page.dart';
 export 'package:spark/src/features/home/ui/pages/empty_page.dart';
 export 'package:spark/src/features/home/ui/pages/main_page.dart';

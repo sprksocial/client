@@ -134,6 +134,7 @@ class AppRouter extends RootStackRouter {
     ),
 
     // Deep linking routes or routes that will be pushed on top of everything
+    AutoRoute(page: SharedPostRoute.page, path: '/post/:did/:rkey'),
     AutoRoute(page: StandalonePostRoute.page, path: '/post/:postUri'),
     AutoRoute(page: ProfileRoute.page, path: '/profile/:did'),
     AutoRoute(
