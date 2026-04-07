@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/app_bsky_embed_images.dart';
 import 'package:bluesky/app_bsky_feed_defs.dart' as bsky_defs;
@@ -471,7 +473,7 @@ class BskyFeedAdapter {
     return RichtextFacet(
       index: RichtextFacetByteSlice(
         byteStart: byteStart,
-        byteEnd: byteStart + linkUrl.length,
+        byteEnd: byteStart + utf8.encode(linkUrl).length,
       ),
       features: [
         URichtextFacetFeatures.richtextFacetLink(

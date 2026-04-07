@@ -19,6 +19,7 @@ import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.d
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/bluesky_crosspost_text.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/share_urls.dart';
@@ -1332,16 +1333,23 @@ class FeedRepositoryImpl implements FeedRepository {
 
     const maxBskyImages = 4;
 
-    // Use adapter to convert Spark images to Bluesky images
-    final allBskyImages = bskyFeedAdapter.convertImages(sparkImages);
-    final bskyImages = allBskyImages.take(maxBskyImages).toList();
+    final bskyImages = bskyFeedAdapter.convertImages(
+      sparkImages.take(maxBskyImages).toList(),
+    );
 
-    // Determine if we need to add a link to the Spark post
-    String? linkUrl;
     final bskyFacets = <RichtextFacet>[];
+    final linkUrl = buildSparkShareUrl(sparkPostData.uri.toString());
+    final crosspostText = buildBlueskyCrosspostText(
+      text: text,
+      linkUrl: linkUrl,
+    );
 
     // Convert Spark mention facets to Bluesky mention facets
     for (final facet in sparkFacets) {
+      if (facet.index.byteEnd > crosspostText.facetTextByteEnd) {
+        continue;
+      }
+
       for (final feature in facet.features) {
         feature.map(
           mention: (m) {
@@ -1362,24 +1370,15 @@ class FeedRepositoryImpl implements FeedRepository {
       }
     }
 
-    if (sparkImages.length > maxBskyImages) {
-      final sparkRkey = sparkPostData.uri.rkey;
-      final uriDid = sparkPostData.uri.hostname;
-      linkUrl = buildSparkShareUrl('$uriDid/$sparkRkey');
-    }
-
-    // Prepare text and facets for Bluesky post
-    final finalText = _prepareTextWithLink(text: text, linkUrl: linkUrl);
-
-    if (linkUrl != null) {
-      final linkStart = text.isEmpty ? 0 : text.length;
-      bskyFacets.add(
-        bskyFeedAdapter.createLinkFacet(linkUrl: linkUrl, byteStart: linkStart),
-      );
-    }
+    bskyFacets.add(
+      bskyFeedAdapter.createLinkFacet(
+        linkUrl: linkUrl,
+        byteStart: crosspostText.linkByteStart,
+      ),
+    );
 
     final bskyPost = bskyFeedAdapter.createPostRecord(
-      text: finalText,
+      text: crosspostText.text,
       createdAt: DateTime.now().toUtc(),
       images: bskyImages,
       facets: bskyFacets.isNotEmpty ? bskyFacets : null,
@@ -1393,30 +1392,6 @@ class FeedRepositoryImpl implements FeedRepository {
 
     _logger.i('Successfully crossposted to Bluesky: ${bskyResult.uri}');
     return bskyResult;
-  }
-
-  /// Prepare text for Bluesky post, handling link addition and truncation
-  String _prepareTextWithLink({required String text, String? linkUrl}) {
-    if (linkUrl == null) {
-      return text;
-    }
-
-    if (text.isEmpty) {
-      return linkUrl;
-    }
-
-    final linkWithNewlines = '\n\n$linkUrl';
-    const maxTextLength = 300;
-    final availableTextLength = maxTextLength - linkWithNewlines.length;
-
-    if (text.length <= availableTextLength) {
-      return '$text$linkWithNewlines';
-    } else {
-      const ellipsis = '...';
-      final croppedTextLength = availableTextLength - ellipsis.length;
-      final croppedText = text.substring(0, croppedTextLength);
-      return '$croppedText$ellipsis$linkWithNewlines';
-    }
   }
 
   @override
