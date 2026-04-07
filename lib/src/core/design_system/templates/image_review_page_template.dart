@@ -473,7 +473,8 @@ class _CrossPostSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Bluesky supports a maximum of 4 images. '
-                    'Your Bluesky post will link to the Spark post instead.',
+                    'Your crosspost will include the first 4 and link to the '
+                    'full Spark post.',
                     style: AppTypography.textSmallMedium.copyWith(
                       color: AppColors.rajah500,
                     ),

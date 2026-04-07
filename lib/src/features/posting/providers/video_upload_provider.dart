@@ -5,7 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
+import 'package:spark/src/core/utils/bluesky_crosspost_text.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/share_urls.dart';
 
 part 'video_upload_provider.g.dart';
 
@@ -187,8 +189,20 @@ Future<RepoStrongRef> _crosspostVideoToBlueSky(
   final logger = GetIt.I<LogService>().getLogger('Crosspost Video')
     ..d('Crossposting video to Bluesky');
 
+  final sprkRepository = GetIt.I<SprkRepository>();
+  final sparkDid = sprkRepository.authRepository.did;
+  if (sparkDid == null) {
+    throw Exception('User session DID not available');
+  }
+  final linkUrl = buildSparkShareUrl('$sparkDid/$rkey');
+  final crosspostText = buildBlueskyCrosspostText(text: text, linkUrl: linkUrl);
+
   final bskyFacets = <RichtextFacet>[];
   for (final facet in sparkFacets) {
+    if (facet.index.byteEnd > crosspostText.facetTextByteEnd) {
+      continue;
+    }
+
     for (final feature in facet.features) {
       feature.map(
         mention: (m) {
@@ -217,9 +231,16 @@ Future<RepoStrongRef> _crosspostVideoToBlueSky(
     }
   }
 
+  bskyFacets.add(
+    _bskyFeedAdapter.createLinkFacet(
+      linkUrl: linkUrl,
+      byteStart: crosspostText.linkByteStart,
+    ),
+  );
+
   final bskyPostRecord = <String, dynamic>{
     r'$type': 'app.bsky.feed.post',
-    'text': text,
+    'text': crosspostText.text,
     if (bskyFacets.isNotEmpty)
       'facets': bskyFacets.map((facet) => facet.toJson()).toList(),
     'embed': {
@@ -230,7 +251,7 @@ Future<RepoStrongRef> _crosspostVideoToBlueSky(
     'createdAt': DateTime.now().toUtc().toIso8601String(),
   };
 
-  final result = await GetIt.I<SprkRepository>().repo.createRecord(
+  final result = await sprkRepository.repo.createRecord(
     collection: 'app.bsky.feed.post',
     record: bskyPostRecord,
     rkey: rkey,
