@@ -47,6 +47,7 @@ class VideoEditorGroundedPage extends StatefulWidget {
 class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     with StoryMentionEditing<VideoEditorGroundedPage> {
   static const _storyCanvasSize = Size(1440, 2560);
+  static const _trimTolerance = Duration(milliseconds: 100);
 
   final _editorKey = GlobalKey<ProImageEditorState>();
   final bool _useMaterialDesign =
@@ -500,10 +501,16 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   Future<void> generateVideo(CompleteParameters parameters) async {
     unawaited(_videoController.pause());
     unawaited(_audioService.pause());
-    final directory = await getTemporaryDirectory();
 
     final customAudioTrack = parameters.customAudioTrack;
     _selectedSoundRef = _decodeStrongRef(customAudioTrack?.id);
+
+    if (_canUseOriginalVideo(parameters)) {
+      _outputPath = await _video.safeFilePath();
+      return;
+    }
+
+    final directory = await getTemporaryDirectory();
 
     double overlayVolume = 0;
     double originalVolume = 1;
@@ -522,6 +529,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       customAudioTrack,
     );
 
+    final transform = _buildExportTransform(parameters);
     final exportModel = VideoRenderData(
       id: _taskId,
       videoSegments: [VideoSegment(video: _video, volume: originalVolume)],
@@ -536,8 +544,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
           .toList(),
       startTime: parameters.startTime,
       endTime: parameters.endTime,
-      transform: _buildExportTransform(parameters),
-      bitrate: _videoMetadata.bitrate,
+      transform: transform,
+      bitrate: _targetExportBitrate(transform),
       audioTracks: customAudioPath != null
           ? [
               VideoAudioTrack(
@@ -553,6 +561,86 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _outputPath = await ProVideoEditor.instance.renderVideoToFile(
       '${directory.path}/spark_edited_$now.mp4',
       exportModel,
+    );
+  }
+
+  bool _canUseOriginalVideo(CompleteParameters parameters) {
+    if (parameters.layers.isNotEmpty ||
+        parameters.colorFilters.isNotEmpty ||
+        parameters.customAudioTrack != null ||
+        (parameters.blur).abs() > 0.001 ||
+        _hasTrim(parameters) ||
+        _hasRotation(parameters) ||
+        parameters.flipX ||
+        parameters.flipY ||
+        (_proVideoController?.isAudioEnabled == false)) {
+      return false;
+    }
+
+    if (!widget.storyMode) {
+      return !parameters.isTransformed;
+    }
+
+    return _isStoryExportTransformIdentity();
+  }
+
+  bool _hasTrim(CompleteParameters parameters) {
+    final startTime = parameters.startTime ?? Duration.zero;
+    final endTime = parameters.endTime ?? _videoMetadata.duration;
+
+    return startTime > _trimTolerance ||
+        _videoMetadata.duration - endTime > _trimTolerance;
+  }
+
+  bool _hasRotation(CompleteParameters parameters) {
+    final normalizedTurns = parameters.rotateTurns % 4;
+    return normalizedTurns != 0;
+  }
+
+  bool _isStoryExportTransformIdentity() {
+    final coverCrop = _computeStoryCoverCrop(_videoMetadata.resolution);
+    final sourceWidth = _videoMetadata.resolution.width.round();
+    final sourceHeight = _videoMetadata.resolution.height.round();
+
+    return coverCrop.x == 0 &&
+        coverCrop.y == 0 &&
+        coverCrop.width == sourceWidth &&
+        coverCrop.height == sourceHeight &&
+        _storyTargetWidth(coverCrop) == coverCrop.width &&
+        _storyTargetHeight(coverCrop) == coverCrop.height;
+  }
+
+  int? _targetExportBitrate(ExportTransform? transform) {
+    final sourceBitrate = _videoMetadata.bitrate;
+    if (sourceBitrate <= 0) {
+      return null;
+    }
+
+    final resolution = _targetExportResolution(transform);
+    final longEdge = math.max(resolution.width, resolution.height);
+    final bitrateCeiling = switch (longEdge) {
+      <= 960 => 3000000,
+      <= 1280 => 5000000,
+      <= 2560 => 8000000,
+      _ => 35000000,
+    };
+
+    return math.min(sourceBitrate, bitrateCeiling);
+  }
+
+  Size _targetExportResolution(ExportTransform? transform) {
+    if (transform == null) {
+      return _videoMetadata.resolution;
+    }
+
+    final width = (transform.width ?? _videoMetadata.resolution.width)
+        .toDouble();
+    final height = (transform.height ?? _videoMetadata.resolution.height)
+        .toDouble();
+
+    return Size(
+      width * (transform.scaleX ?? 1),
+      height * (transform.scaleY ?? 1),
     );
   }
 
@@ -574,8 +662,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     }
 
     final coverCrop = _computeStoryCoverCrop(_videoMetadata.resolution);
-    final targetWidth = _storyCanvasSize.width.round();
-    final targetHeight = _storyCanvasSize.height.round();
+    final targetWidth = _storyTargetWidth(coverCrop);
+    final targetHeight = _storyTargetHeight(coverCrop);
 
     return ExportTransform(
       width: coverCrop.width,
@@ -588,6 +676,25 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       scaleX: targetWidth / coverCrop.width,
       scaleY: targetHeight / coverCrop.height,
     );
+  }
+
+  int _storyTargetWidth(_StoryCoverCrop coverCrop) {
+    return _evenDimension(
+      math.min(_storyCanvasSize.width.round(), coverCrop.width),
+    );
+  }
+
+  int _storyTargetHeight(_StoryCoverCrop coverCrop) {
+    return _evenDimension(
+      math.min(_storyCanvasSize.height.round(), coverCrop.height),
+    );
+  }
+
+  int _evenDimension(int value) {
+    if (value <= 2) {
+      return 2;
+    }
+    return value.isEven ? value : value - 1;
   }
 
   _StoryCoverCrop _computeStoryCoverCrop(Size sourceSize) {
@@ -638,7 +745,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       Navigator.pop(
         context,
         VideoEditorResult(
-          video: XFile(_outputPath!, mimeType: 'video/mp4'),
+          video: XFile(_outputPath!, mimeType: _videoMimeType(_outputPath!)),
           soundRef: _selectedSoundRef,
           embeds: pendingStoryEmbeds,
         ),
@@ -650,6 +757,20 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       clearPendingStoryEmbeds();
       Navigator.pop(context);
     }
+  }
+
+  String _videoMimeType(String videoPath) {
+    final lowerPath = videoPath.toLowerCase();
+    if (lowerPath.endsWith('.mov')) {
+      return 'video/quicktime';
+    }
+    if (lowerPath.endsWith('.avi')) {
+      return 'video/x-msvideo';
+    }
+    if (lowerPath.endsWith('.webm')) {
+      return 'video/webm';
+    }
+    return 'video/mp4';
   }
 
   @override
