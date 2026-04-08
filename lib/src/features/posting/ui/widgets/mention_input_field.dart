@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
@@ -91,7 +92,7 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
     final hadSuggestions = _showSuggestions || _queryStartIndex != null;
 
     if (clearTypeahead) {
-      ref.read(actorTypeaheadProvider.notifier).clear();
+      _clearTypeahead();
     }
 
     if (!hadSuggestions) {
@@ -108,6 +109,30 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
 
     _showSuggestions = false;
     _queryStartIndex = null;
+  }
+
+  void _clearTypeahead() {
+    void clearTypeahead() {
+      if (!mounted) {
+        return;
+      }
+
+      ref.read(actorTypeaheadProvider.notifier).clear();
+    }
+
+    final schedulerPhase = SchedulerBinding.instance.schedulerPhase;
+    final isBuildPhase =
+        schedulerPhase == SchedulerPhase.persistentCallbacks ||
+        schedulerPhase == SchedulerPhase.midFrameMicrotasks;
+
+    if (isBuildPhase) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        clearTypeahead();
+      });
+      return;
+    }
+
+    clearTypeahead();
   }
 
   void _syncMentions({
