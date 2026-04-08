@@ -33,13 +33,15 @@ class _InteractivePressableState extends State<InteractivePressable> {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = widget.onTap != null;
+
     return GestureDetector(
       onTap: widget.onTap,
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
+      onTapDown: isEnabled ? _onTapDown : null,
+      onTapUp: isEnabled ? _onTapUp : null,
+      onTapCancel: isEnabled ? _onTapCancel : null,
       child: AnimatedScale(
-        scale: _isPressed ? widget.pressedScale : 1.0,
+        scale: isEnabled && _isPressed ? widget.pressedScale : 1.0,
         duration: widget.duration,
         curve: Curves.easeOut,
         child: Stack(
@@ -51,7 +53,9 @@ class _InteractivePressableState extends State<InteractivePressable> {
                 duration: widget.duration,
                 curve: Curves.easeOut,
                 decoration: BoxDecoration(
-                  color: _isPressed ? widget.overlayColor : Colors.transparent,
+                  color: isEnabled && _isPressed
+                      ? widget.overlayColor
+                      : Colors.transparent,
                   borderRadius: widget.borderRadius,
                 ),
               ),

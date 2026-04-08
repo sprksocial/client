@@ -93,6 +93,8 @@ class ImageReviewPageTemplate extends StatelessWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

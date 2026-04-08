@@ -30,33 +30,47 @@ class LongButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPrimary = variant == LongButtonVariant.primary;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final isEnabled = onPressed != null;
+    final backgroundColor = !isEnabled
+        ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.55)
+        : isPrimary
+        ? AppColors.primary600
+        : (isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton);
+    final border = !isEnabled
+        ? Border.all(color: colorScheme.outline.withValues(alpha: 0.45))
+        : isPrimary
+        ? null
+        : Border.all(
+            color: isDark ? AppColors.greyBorder : AppColors.grey200,
+            width: 1.14667,
+          );
+    final textColor = !isEnabled
+        ? colorScheme.onSurface.withValues(alpha: 0.55)
+        : isPrimary
+        ? AppColors.greyWhite
+        : (isDark ? AppColors.greyWhite : AppColors.grey900);
 
-    return InteractivePressable(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        // height: 40,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 11),
-        decoration: BoxDecoration(
-          color: isPrimary
-              ? AppColors.primary600
-              : (isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton),
-          borderRadius: BorderRadius.circular(8),
-          border: isPrimary
-              ? null
-              : Border.all(
-                  color: isDark ? AppColors.greyBorder : AppColors.grey200,
-                  width: 1.14667,
-                ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: AppTypography.textMediumBold.copyWith(
-              color: isPrimary
-                  ? AppColors.greyWhite
-                  : (isDark ? AppColors.greyWhite : AppColors.grey900),
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      child: InteractivePressable(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          // height: 40,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 11),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+            border: border,
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: AppTypography.textMediumBold.copyWith(color: textColor),
             ),
           ),
         ),

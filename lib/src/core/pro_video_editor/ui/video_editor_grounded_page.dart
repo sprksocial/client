@@ -48,6 +48,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     with StoryMentionEditing<VideoEditorGroundedPage> {
   static const _storyCanvasSize = Size(1440, 2560);
   static const _trimTolerance = Duration(milliseconds: 100);
+  static const _uploadCompressionMinFileSizeBytes = 25 * 1024 * 1024;
+  static const _uploadCompressionBitrate = 3000000;
+  static const _uploadCompressionMaxLongEdge = 1920.0;
 
   final _editorKey = GlobalKey<ProImageEditorState>();
   final bool _useMaterialDesign =
@@ -504,9 +507,13 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
     final customAudioTrack = parameters.customAudioTrack;
     _selectedSoundRef = _decodeStrongRef(customAudioTrack?.id);
+    final sourceVideoPath = await _video.safeFilePath();
+    final shouldCompressForUpload = await _shouldCompressForUpload(
+      sourceVideoPath,
+    );
 
-    if (_canUseOriginalVideo(parameters)) {
-      _outputPath = await _video.safeFilePath();
+    if (_canUseOriginalVideo(parameters) && !shouldCompressForUpload) {
+      _outputPath = sourceVideoPath;
       return;
     }
 
@@ -530,6 +537,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     );
 
     final transform = _buildExportTransform(parameters);
+    final exportTransform = shouldCompressForUpload
+        ? _uploadCompressionTransform(transform)
+        : transform;
     final exportModel = VideoRenderData(
       id: _taskId,
       videoSegments: [VideoSegment(video: _video, volume: originalVolume)],
@@ -544,8 +554,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
           .toList(),
       startTime: parameters.startTime,
       endTime: parameters.endTime,
-      transform: transform,
-      bitrate: _targetExportBitrate(transform),
+      transform: exportTransform,
+      bitrate: shouldCompressForUpload
+          ? _uploadCompressionBitrate
+          : _targetExportBitrate(exportTransform),
+      shouldOptimizeForNetworkUse: shouldCompressForUpload,
       audioTracks: customAudioPath != null
           ? [
               VideoAudioTrack(
@@ -561,6 +574,40 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _outputPath = await ProVideoEditor.instance.renderVideoToFile(
       '${directory.path}/spark_edited_$now.mp4',
       exportModel,
+    );
+  }
+
+  Future<bool> _shouldCompressForUpload(String videoPath) async {
+    try {
+      return await XFile(videoPath).length() >=
+          _uploadCompressionMinFileSizeBytes;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  ExportTransform? _uploadCompressionTransform(ExportTransform? transform) {
+    final resolution = _targetExportResolution(transform);
+    final longEdge = math.max(resolution.width, resolution.height);
+    if (longEdge <= _uploadCompressionMaxLongEdge) {
+      return transform;
+    }
+
+    final scale = _uploadCompressionMaxLongEdge / longEdge;
+    if (transform == null) {
+      return ExportTransform(scaleX: scale, scaleY: scale);
+    }
+
+    return ExportTransform(
+      width: transform.width,
+      height: transform.height,
+      rotateTurns: transform.rotateTurns,
+      x: transform.x,
+      y: transform.y,
+      flipX: transform.flipX,
+      flipY: transform.flipY,
+      scaleX: (transform.scaleX ?? 1) * scale,
+      scaleY: (transform.scaleY ?? 1) * scale,
     );
   }
 

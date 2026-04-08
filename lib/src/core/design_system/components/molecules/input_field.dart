@@ -133,6 +133,7 @@ class InputField extends StatelessWidget {
     return TextField(
       controller: controller,
       focusNode: focusNode,
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       onSubmitted: onSubmitted,
       textInputAction: textInputAction,
       maxLines: maxLines,

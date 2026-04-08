@@ -7,6 +7,7 @@ import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:spark/src/core/utils/bluesky_crosspost_text.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/share_urls.dart';
 
 part 'video_upload_provider.g.dart';
@@ -51,50 +52,93 @@ Future<RepoStrongRef?> postVideo(
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
-    logger.d(
-      'Posting video (size=${blob.size}, crosspost=$crosspostToBsky, '
+    return await _postVideoRecord(
+      logger: logger,
+      blob: blob,
+      description: description,
+      altText: altText,
+      crosspostToBsky: crosspostToBsky,
+      soundRef: soundRef,
+      facets: facets,
+    );
+  } catch (error, stackTrace) {
+    logger.e('Error posting video', error: error, stackTrace: stackTrace);
+    rethrow;
+  }
+}
+
+Future<RepoStrongRef?> postProcessedVideo({
+  required VideoUploadResult uploadResult,
+  String description = '',
+  String altText = '',
+  bool crosspostToBsky = false,
+  bool storyMode = false,
+  RepoStrongRef? soundRef,
+  List<Facet> facets = const [],
+  List<StoryEmbed> storyEmbeds = const [],
+}) async {
+  final logger = GetIt.I<LogService>().getLogger('Post Processed Video')
+    ..d(
+      'Posting already processed video (storyMode=$storyMode, '
       'sound=${soundRef?.uri})',
     );
 
-    final postRecord = PostRecord(
-      caption: CaptionRef(
-        text: description.isNotEmpty ? description : '',
-        facets: facets,
-      ),
-      media: Media.video(video: blob, alt: altText),
-      createdAt: DateTime.now().toUtc(),
-      sound: soundRef,
-    );
+  try {
+    final videoBlob = uploadResult.videoBlob;
 
-    final result = await GetIt.I<SprkRepository>().repo.createRecord(
-      collection: 'so.sprk.feed.post',
-      record: postRecord.toJson(),
-    );
-
-    var finalResult = result;
-
-    if (crosspostToBsky) {
+    var effectiveSoundRef = soundRef;
+    if (soundRef == null && uploadResult.audioBlob != null) {
+      logger.d('Creating new sound record from extracted audio');
       try {
-        final bskyResult = await _crosspostVideoToBlueSky(
-          ref,
-          description,
-          blob,
-          altText,
-          result.uri.rkey,
-          facets,
+        final soundRepository = GetIt.I<SprkRepository>().sound;
+        effectiveSoundRef = await soundRepository.createSound(
+          sound: uploadResult.audioBlob!,
+          title: 'Original Sound',
+          details: uploadResult.audioDetails,
         );
-        finalResult = await GetIt.I<SprkRepository>().repo.editRecord(
-          uri: result.uri,
-          record: postRecord.copyWith(crossposts: [bskyResult]),
-        );
+        logger.i('Sound record created: ${effectiveSoundRef.uri}');
       } catch (e, s) {
-        logger.w('Crosspost to Bluesky failed: $e', error: e, stackTrace: s);
+        logger.w(
+          'Failed to create sound record, proceeding without sound',
+          error: e,
+          stackTrace: s,
+        );
       }
     }
-    logger.i('Video posted successfully: ${finalResult.uri}');
-    return finalResult;
+
+    if (storyMode) {
+      try {
+        final storyRepository = GetIt.I<StoryRepository>();
+        final res = await storyRepository.postStory(
+          Media.video(video: videoBlob),
+          soundRef: effectiveSoundRef,
+          embeds: storyEmbeds,
+        );
+        logger.i('Story posted: ${res.uri}');
+        return res;
+      } catch (e, s) {
+        logger.e('Failed to post story', error: e, stackTrace: s);
+        rethrow;
+      }
+    }
+
+    final res = await _postVideoRecord(
+      logger: logger,
+      blob: videoBlob,
+      description: description,
+      altText: altText,
+      crosspostToBsky: crosspostToBsky,
+      soundRef: effectiveSoundRef,
+      facets: facets,
+    );
+    logger.i('Video flow complete (storyMode=false) success=${res != null}');
+    return res;
   } catch (error, stackTrace) {
-    logger.e('Error posting video', error: error, stackTrace: stackTrace);
+    logger.e(
+      'Error posting processed video',
+      error: error,
+      stackTrace: stackTrace,
+    );
     rethrow;
   }
 }
@@ -123,63 +167,84 @@ Future<RepoStrongRef?> processAndPostVideo(
     throw Exception('Failed to process video');
   }
 
-  final videoBlob = uploadResult.videoBlob;
+  return postProcessedVideo(
+    uploadResult: uploadResult,
+    description: description,
+    altText: altText,
+    crosspostToBsky: crosspostToBsky,
+    storyMode: storyMode,
+    soundRef: soundRef,
+    facets: facets,
+    storyEmbeds: storyEmbeds,
+  );
+}
 
-  // If no sound selected & video has extracted audio, create new sound record
-  var effectiveSoundRef = soundRef;
-  if (soundRef == null && uploadResult.audioBlob != null) {
-    logger.d('Creating new sound record from extracted audio');
-    try {
-      final soundRepository = GetIt.I<SprkRepository>().sound;
-      effectiveSoundRef = await soundRepository.createSound(
-        sound: uploadResult.audioBlob!,
-        title: 'Original Sound',
-        details: uploadResult.audioDetails,
-      );
-      logger.i('Sound record created: ${effectiveSoundRef.uri}');
-    } catch (e, s) {
-      logger.w(
-        'Failed to create sound record, proceeding without sound',
-        error: e,
-        stackTrace: s,
-      );
-    }
-  }
+Future<RepoStrongRef?> _postVideoRecord({
+  required SparkLogger logger,
+  required Blob blob,
+  required String description,
+  required String altText,
+  required bool crosspostToBsky,
+  required RepoStrongRef? soundRef,
+  required List<Facet> facets,
+}) async {
+  logger.d(
+    'Posting video (size=${blob.size}, crosspost=$crosspostToBsky, '
+    'sound=${soundRef?.uri})',
+  );
 
-  if (storyMode) {
-    try {
-      final storyRepository = GetIt.I<StoryRepository>();
-      final res = await storyRepository.postStory(
-        Media.video(video: videoBlob),
-        soundRef: effectiveSoundRef,
-        embeds: storyEmbeds,
-      );
-      logger.i('Story posted: ${res.uri}');
-      return res;
-    } catch (e, s) {
-      logger.e('Failed to post story', error: e, stackTrace: s);
-      rethrow;
-    }
-  } else {
-    final res = await postVideo(
-      ref,
-      blob: videoBlob,
-      description: description,
-      altText: altText,
-      videoPath: videoPath,
-      crosspostToBsky: crosspostToBsky,
-      soundRef: effectiveSoundRef,
+  final postRecord = PostRecord(
+    caption: CaptionRef(
+      text: description.isNotEmpty ? description : '',
       facets: facets,
-    );
-    logger.i('Video flow complete (storyMode=false) success=${res != null}');
-    return res;
+    ),
+    media: Media.video(video: blob, alt: altText),
+    createdAt: DateTime.now().toUtc(),
+    sound: soundRef,
+  );
+
+  final result = await GetIt.I<SprkRepository>().repo.createRecord(
+    collection: 'so.sprk.feed.post',
+    record: postRecord.toJson(),
+  );
+
+  var finalResult = result;
+
+  if (crosspostToBsky) {
+    try {
+      final bskyResult = await _crosspostVideoToBlueSkyRecord(
+        description,
+        blob,
+        altText,
+        result.uri.rkey,
+        facets,
+      );
+      finalResult = await GetIt.I<SprkRepository>().repo.editRecord(
+        uri: result.uri,
+        record: postRecord.copyWith(crossposts: [bskyResult]),
+      );
+    } catch (e, s) {
+      logger.w('Crosspost to Bluesky failed: $e', error: e, stackTrace: s);
+    }
   }
+  logger.i('Video posted successfully: ${finalResult.uri}');
+  return finalResult;
 }
 
 /// Crosspost video to Bluesky using same blob but Bluesky models
 @riverpod
 Future<RepoStrongRef> _crosspostVideoToBlueSky(
-  Ref ref,
+  Ref _,
+  String text,
+  Blob blob,
+  String altText,
+  String rkey,
+  List<Facet> sparkFacets,
+) async {
+  return _crosspostVideoToBlueSkyRecord(text, blob, altText, rkey, sparkFacets);
+}
+
+Future<RepoStrongRef> _crosspostVideoToBlueSkyRecord(
   String text,
   Blob blob,
   String altText,
