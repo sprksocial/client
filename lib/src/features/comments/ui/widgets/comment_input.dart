@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
@@ -48,6 +49,7 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(commentInputProvider(imagePicker));
     final notifier = ref.read(commentInputProvider(imagePicker).notifier);
     final authState = ref.watch(authProvider);
@@ -96,7 +98,7 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                   child: MentionInputField(
                     controller: state.mentionController,
                     onMentionsChanged: (_) {},
-                    hintText: 'Add a comment...',
+                    hintText: l10n.hintAddComment,
                     maxChars: _maxChars,
                     maxLines: 5,
                     minLines: 1,
@@ -253,6 +255,7 @@ class _AttachmentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final canAddMoreImages = state.selectedImages.isEmpty;
     final enabled = !state.isPosting && canAddMoreImages;
 
@@ -262,8 +265,10 @@ class _AttachmentButton extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       onPressed: enabled ? () => notifier.pickImages(context) : null,
       tooltip: enabled
-          ? 'Add image (1 max)'
-          : (state.isPosting ? 'Posting...' : 'Maximum images reached'),
+          ? l10n.hintAddImage
+          : (state.isPosting
+                ? l10n.messagePostingStory
+                : l10n.messageMaximumImagesReached),
       icon: Icon(
         FluentIcons.image_24_regular,
         size: 24,

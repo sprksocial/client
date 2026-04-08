@@ -52,7 +52,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
             },
             icon: Icon(_isEditMode ? Icons.check : Icons.edit, size: 18),
             label: Text(
-              _isEditMode ? 'Done' : 'Edit',
+              _isEditMode ? l10n.buttonDone : l10n.buttonEdit,
               style: const TextStyle(fontSize: 14),
             ),
             style: TextButton.styleFrom(

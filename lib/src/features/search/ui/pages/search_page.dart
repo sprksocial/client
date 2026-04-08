@@ -129,10 +129,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               : null,
         ),
         showTabs: showSubmittedResults,
-        tabsWidget: const TabBar(
+        tabsWidget: TabBar(
           tabs: [
-            Tab(text: 'Posts'),
-            Tab(text: 'Users'),
+            Tab(text: l10n.tabPosts),
+            Tab(text: l10n.tabUsers),
           ],
         ),
         contentWidget: const TabBarView(

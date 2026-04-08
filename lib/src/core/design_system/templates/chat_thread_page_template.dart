@@ -3,6 +3,7 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/app_leadin
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class ChatThreadPageTemplate extends StatelessWidget {
   const ChatThreadPageTemplate({
@@ -25,6 +26,7 @@ class ChatThreadPageTemplate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -77,7 +79,7 @@ class ChatThreadPageTemplate extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
               child: InputField.chat(
                 controller: textController,
-                hintText: 'Message...',
+                hintText: l10n.hintMessage,
                 onSendMessage: onSend,
               ),
             ),

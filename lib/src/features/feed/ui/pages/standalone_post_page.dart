@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -140,6 +141,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Watch for post updates to trigger reload
     final updateCount = ref.watch(postUpdateProvider(widget.postUri));
 
@@ -251,7 +253,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                 const Icon(Icons.error, color: Colors.white, size: 48),
                 const SizedBox(height: 16),
                 Text(
-                  'Error loading post: ${snapshot.error}',
+                  l10n.errorWithDetail(snapshot.error.toString()),
                   style: const TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),

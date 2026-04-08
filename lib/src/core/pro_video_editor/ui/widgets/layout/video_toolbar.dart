@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class VideoToolbar extends StatelessWidget {
   const VideoToolbar({
@@ -27,6 +28,7 @@ class VideoToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ColoredBox(
       color: AppColors.greyBlack,
       child: SafeArea(
@@ -38,43 +40,47 @@ class VideoToolbar extends StatelessWidget {
             children: [
               _ToolButton(
                 icon: Icons.music_note,
-                label: 'Sound',
+                label: l10n.labelSound,
                 onPressed: onSound,
               ),
               _ToolButton(
                 icon: Icons.brush,
-                label: 'Paint',
+                label: l10n.labelPaint,
                 onPressed: onPaint,
               ),
               _ToolButton(
                 icon: Icons.text_fields,
-                label: 'Text',
+                label: l10n.labelText,
                 onPressed: onText,
               ),
               _ToolButton(
                 icon: Icons.crop_rotate,
-                label: 'Crop',
+                label: l10n.labelCrop,
                 onPressed: onCrop,
               ),
-              _ToolButton(icon: Icons.tune, label: 'Tune', onPressed: onTune),
+              _ToolButton(
+                icon: Icons.tune,
+                label: l10n.labelTune,
+                onPressed: onTune,
+              ),
               _ToolButton(
                 icon: Icons.filter,
-                label: 'Filter',
+                label: l10n.labelFilter,
                 onPressed: onFilter,
               ),
               _ToolButton(
                 icon: Icons.blur_on,
-                label: 'Blur',
+                label: l10n.labelBlur,
                 onPressed: onBlur,
               ),
               _ToolButton(
                 icon: Icons.emoji_emotions,
-                label: 'Emoji',
+                label: l10n.labelEmoji,
                 onPressed: onEmoji,
               ),
               _ToolButton(
                 icon: Icons.star,
-                label: 'Stickers',
+                label: l10n.labelStickers,
                 onPressed: onStickers,
               ),
             ],

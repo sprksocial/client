@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 /// A dialog that displays real-time export progress for video generation.
 ///
@@ -68,7 +69,7 @@ class VideoProgressAlert extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Exporting video…'),
+                    Text(AppLocalizations.of(context).messageExportingVideo),
                     const SizedBox(height: 6),
                     Text(
                       '$percent%',

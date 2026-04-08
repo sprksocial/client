@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
 import 'package:spark/src/features/profile/ui/widgets/user_list_view.dart';
 
@@ -49,13 +50,14 @@ class _UserListPageState extends ConsumerState<UserListPage> {
     final userListAsync = ref.watch(
       userListProvider(did: widget.did, type: widget.type),
     );
+    final l10n = AppLocalizations.of(context);
     final title = widget.type == UserListType.followers
-        ? 'Followers'
-        : 'Following';
+        ? l10n.pageTitleFollowers
+        : l10n.pageTitleFollowing;
 
     return Scaffold(
       appBar: AppBar(
-        leading: const AppLeadingButton(tooltip: 'Back'),
+        leading: AppLeadingButton(tooltip: l10n.tooltipBack),
         title: Text(title),
       ),
       body: RefreshIndicator(
@@ -80,7 +82,11 @@ class _UserListPageState extends ConsumerState<UserListPage> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('An error occurred: $error'),
+                  child: Text(
+                    AppLocalizations.of(
+                      context,
+                    ).errorWithDetail(error.toString()),
+                  ),
                 ),
               ),
             ],

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
 import 'package:spark/src/core/pro_image_editor/story_mention_editing.dart';
 import 'package:spark/src/core/pro_image_editor/story_image_editor_configs.dart';
@@ -171,14 +172,14 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage>
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 16),
-              const Text(
-                'Failed to load image',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+              Text(
+                AppLocalizations.of(context).errorFailedToLoadImage,
+                style: const TextStyle(color: Colors.white, fontSize: 18),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Go Back'),
+                child: Text(AppLocalizations.of(context).buttonGoBack),
               ),
             ],
           ),

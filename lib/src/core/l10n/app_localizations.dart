@@ -439,7 +439,7 @@ abstract class AppLocalizations {
   /// Add description placeholder
   ///
   /// In en, this message translates to:
-  /// **'Add a description... (optional)'**
+  /// **'Add a caption... (optional)'**
   String get hintAddDescription;
 
   /// Add alt text placeholder
@@ -651,6 +651,660 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get categoryOther;
+
+  /// Continue button text
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get buttonContinue;
+
+  /// Get started button text
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get buttonGetStarted;
+
+  /// Already have an account button text
+  ///
+  /// In en, this message translates to:
+  /// **'I already have an account'**
+  String get buttonHaveAccount;
+
+  /// Open button text
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get buttonOpen;
+
+  /// Post button text
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get buttonPost;
+
+  /// Done button text
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get buttonDone;
+
+  /// Edit button text
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get buttonEdit;
+
+  /// Back button text
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get buttonBack;
+
+  /// Share button text
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get buttonShare;
+
+  /// Copied state text for copy link
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get buttonCopied;
+
+  /// Copy link button text
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link'**
+  String get buttonCopyLink;
+
+  /// Error message for invalid handle
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid handle'**
+  String get errorInvalidHandle;
+
+  /// Error message for handle not found
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find this handle'**
+  String get errorHandleNotFound;
+
+  /// Loading message when completing sign in
+  ///
+  /// In en, this message translates to:
+  /// **'Completing sign in...'**
+  String get errorCompletingSignIn;
+
+  /// Error message for profile not found
+  ///
+  /// In en, this message translates to:
+  /// **'Profile not found'**
+  String get errorProfileNotFound;
+
+  /// Error loading post message
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading post'**
+  String get errorLoadingPost;
+
+  /// Error loading messages message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load messages'**
+  String get errorLoadingMessages;
+
+  /// Error loading conversations message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load conversations'**
+  String get errorLoadingConversations;
+
+  /// Error message when unable to open a link
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open link right now.'**
+  String get errorUnableToOpenLink;
+
+  /// Error loading labeler settings message
+  ///
+  /// In en, this message translates to:
+  /// **'Error Loading Labeler Settings'**
+  String get errorLoadingLabelerSettings;
+
+  /// Error message with detail
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorWithDetail(String error);
+
+  /// Add a comment input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment...'**
+  String get hintAddComment;
+
+  /// Search users placeholder in messages
+  ///
+  /// In en, this message translates to:
+  /// **'Search users'**
+  String get hintSearchUsersMessages;
+
+  /// Delete comment confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this comment? This action cannot be undone.'**
+  String get dialogDeleteCommentConfirm;
+
+  /// Delete post confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this post? This action cannot be undone.'**
+  String get dialogDeletePostConfirm;
+
+  /// Block user dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Block User'**
+  String get dialogBlockUser;
+
+  /// Block user confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to block this user? You will no longer see their posts.'**
+  String get dialogBlockUserConfirm;
+
+  /// Unblock user dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock User'**
+  String get dialogUnblockUser;
+
+  /// Unblock user confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to unblock this user?'**
+  String get dialogUnblockUserConfirm;
+
+  /// Remove feed confirmation message with name
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove \"{name}\"?'**
+  String dialogRemoveFeedConfirm(String name);
+
+  /// Dialog title for opening Bluesky account management
+  ///
+  /// In en, this message translates to:
+  /// **'Open Bluesky account management?'**
+  String get dialogOpenBlueskyAccount;
+
+  /// Description for opening Bluesky account management dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This opens the Bluesky account management screen. You may have to log in again.\n\nIf prompted for an account provider, use:\n{pdsUrl}'**
+  String dialogOpenBlueskyAccountDescription(String pdsUrl);
+
+  /// Replies page title
+  ///
+  /// In en, this message translates to:
+  /// **'Replies'**
+  String get pageTitleReplies;
+
+  /// Review video page title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Video'**
+  String get pageTitleReviewVideo;
+
+  /// Review image post page title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Image Post'**
+  String get pageTitleReviewImagePost;
+
+  /// Legal page title
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get pageTitleLegal;
+
+  /// Followers page title
+  ///
+  /// In en, this message translates to:
+  /// **'Followers'**
+  String get pageTitleFollowers;
+
+  /// Following page title
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get pageTitleFollowing;
+
+  /// Empty state for no videos using a sound
+  ///
+  /// In en, this message translates to:
+  /// **'No videos using this sound yet'**
+  String get emptyNoVideosUsingSound;
+
+  /// Empty state for no photos in library
+  ///
+  /// In en, this message translates to:
+  /// **'No photos or videos found in your library.'**
+  String get emptyNoPhotoLibrary;
+
+  /// Permission message for photo library access
+  ///
+  /// In en, this message translates to:
+  /// **'Allow photo library access to pick photos and videos.'**
+  String get messagePermissionPhotoLibrary;
+
+  /// Posting story progress message
+  ///
+  /// In en, this message translates to:
+  /// **'Posting story...'**
+  String get messagePostingStory;
+
+  /// Processing video progress message
+  ///
+  /// In en, this message translates to:
+  /// **'Processing video...'**
+  String get messageProcessingVideo;
+
+  /// Uploading video status message
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading video'**
+  String get messageUploadingVideo;
+
+  /// Ready to post status message
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to post'**
+  String get messageReadyToPost;
+
+  /// Upload failed status message
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get messageUploadFailed;
+
+  /// Uploading percentage status message
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading {percent}%'**
+  String messageUploadingPercent(int percent);
+
+  /// Original sound label
+  ///
+  /// In en, this message translates to:
+  /// **'Original Sound'**
+  String get labelOriginalSound;
+
+  /// Share label
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get labelShare;
+
+  /// Following label
+  ///
+  /// In en, this message translates to:
+  /// **'Following'**
+  String get labelFollowing;
+
+  /// Posts label
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get labelPosts;
+
+  /// Privacy policy link label
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get labelPrivacyPolicy;
+
+  /// Terms of service link label
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get labelTermsOfService;
+
+  /// Support link label
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get labelSupport;
+
+  /// Back tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get tooltipBack;
+
+  /// Error message for failed image load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load image'**
+  String get errorFailedToLoadImage;
+
+  /// Sign in page title
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get pageTitleSignIn;
+
+  /// Message to enter handle for OAuth
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your handle to continue with OAuth'**
+  String get messageEnterHandle;
+
+  /// Loading message when completing sign up
+  ///
+  /// In en, this message translates to:
+  /// **'Completing sign up...'**
+  String get messageCompletingSignUp;
+
+  /// Welcome message on register page
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome!'**
+  String get messageWelcome;
+
+  /// Welcome description on register page
+  ///
+  /// In en, this message translates to:
+  /// **'Share videos, connect with friends,\nand take back your timeline.'**
+  String get messageWelcomeDescription;
+
+  /// Reply button label
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get labelReply;
+
+  /// Add image tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Add image (1 max)'**
+  String get hintAddImage;
+
+  /// Posting image progress message
+  ///
+  /// In en, this message translates to:
+  /// **'Posting...'**
+  String get messagePostingImage;
+
+  /// Maximum images reached tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum images reached'**
+  String get messageMaximumImagesReached;
+
+  /// Sound label for video editor toolbar
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get labelSound;
+
+  /// Stickers label
+  ///
+  /// In en, this message translates to:
+  /// **'Stickers'**
+  String get labelStickers;
+
+  /// Paint editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Paint'**
+  String get labelPaint;
+
+  /// Text editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get labelText;
+
+  /// Crop editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Crop'**
+  String get labelCrop;
+
+  /// Tune editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Tune'**
+  String get labelTune;
+
+  /// Filter editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get labelFilter;
+
+  /// Blur editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Blur'**
+  String get labelBlur;
+
+  /// Emoji editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Emoji'**
+  String get labelEmoji;
+
+  /// Mention editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Mention'**
+  String get labelMention;
+
+  /// Draw editor label
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get labelDraw;
+
+  /// Default video clip title
+  ///
+  /// In en, this message translates to:
+  /// **'My awesome video'**
+  String get labelMyAwesomeVideo;
+
+  /// Video upload status when uploading
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading video'**
+  String get errorUploadingVideo;
+
+  /// Video processing status
+  ///
+  /// In en, this message translates to:
+  /// **'Processing video'**
+  String get errorProcessingVideoStatus;
+
+  /// Ready to post status
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to post'**
+  String get errorReadyToPost;
+
+  /// Upload failed status
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed'**
+  String get errorUploadFailed;
+
+  /// Error message in snackbar
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorSnackBar(String error);
+
+  /// Like feed button text
+  ///
+  /// In en, this message translates to:
+  /// **'Like Feed'**
+  String get buttonLikeFeed;
+
+  /// Unlike feed button text
+  ///
+  /// In en, this message translates to:
+  /// **'Unlike Feed'**
+  String get buttonUnlikeFeed;
+
+  /// Empty state for no notifications
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications'**
+  String get emptyNoNotifications;
+
+  /// Message when all notifications are read
+  ///
+  /// In en, this message translates to:
+  /// **'You\'\'re all caught up!'**
+  String get messageAllCaughtUp;
+
+  /// Description for labeler configuration
+  ///
+  /// In en, this message translates to:
+  /// **'Configure how this labeler\'\'s content labels are handled in your feeds.'**
+  String get messageLabelerConfigDescription;
+
+  /// Error loading notifications message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notifications'**
+  String get errorLoadingNotifications;
+
+  /// Content label settings title
+  ///
+  /// In en, this message translates to:
+  /// **'Content Label Settings'**
+  String get labelContentLabelSettings;
+
+  /// Error when trying to select photos in single-select mode
+  ///
+  /// In en, this message translates to:
+  /// **'You can only select photos in multi-select mode.'**
+  String get errorPhotoSelectLimit;
+
+  /// Error when exceeding max photo selection
+  ///
+  /// In en, this message translates to:
+  /// **'You can select up to {max}.'**
+  String errorPhotoSelectMax(int max);
+
+  /// Error when unable to access selected photos
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to access the selected photos.'**
+  String get errorUnableToAccessPhotos;
+
+  /// Error when unable to access a media item
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to access this media item.'**
+  String get errorUnableToAccessMedia;
+
+  /// Single select mode label
+  ///
+  /// In en, this message translates to:
+  /// **'Single Select'**
+  String get labelSingleSelect;
+
+  /// Select multiple mode label
+  ///
+  /// In en, this message translates to:
+  /// **'Select multiple'**
+  String get labelSelectMultiple;
+
+  /// Library header label
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get labelLibrary;
+
+  /// Done button with selection count
+  ///
+  /// In en, this message translates to:
+  /// **'Done ({current}/{max})'**
+  String labelDoneCount(int current, int max);
+
+  /// Permission info about limited library access
+  ///
+  /// In en, this message translates to:
+  /// **'Limited library access is enabled. You can change this in settings.'**
+  String get messageLimitedLibraryAccess;
+
+  /// Posts search tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get tabPosts;
+
+  /// Users search tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get tabUsers;
+
+  /// Search by handle or display name placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search by handle or display name'**
+  String get hintSearchByHandle;
+
+  /// Feed creator attribution label
+  ///
+  /// In en, this message translates to:
+  /// **'by @{handle}'**
+  String labelFeedByCreator(String handle);
+
+  /// Subtitle for following/timeline feed
+  ///
+  /// In en, this message translates to:
+  /// **'Posts from people you follow'**
+  String get messagePostsFromFollowing;
+
+  /// Add feed button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add feed'**
+  String get buttonAddFeed;
+
+  /// Unpin feed button text
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin feed'**
+  String get buttonUnpinFeed;
+
+  /// Pin feed button text
+  ///
+  /// In en, this message translates to:
+  /// **'Pin feed'**
+  String get buttonPinFeed;
+
+  /// Empty state for no conversations in share panel
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get emptyNoConversations;
+
+  /// Sending message progress indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Sending...'**
+  String get messageSending;
+
+  /// Send button text
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get buttonSend;
 }
 
 class _AppLocalizationsDelegate

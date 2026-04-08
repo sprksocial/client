@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/profile/providers/profile_provider.dart';
 
@@ -26,6 +27,7 @@ class MessageInput extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authProvider);
     final userDid = authState.did ?? '';
     final userHandle = authState.handle ?? '';
@@ -70,7 +72,7 @@ class MessageInput extends ConsumerWidget {
                   child: TextField(
                     controller: controller,
                     decoration: InputDecoration(
-                      hintText: 'Type a message...',
+                      hintText: l10n.hintTypeMessage,
                       hintStyle: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface,
                       ),

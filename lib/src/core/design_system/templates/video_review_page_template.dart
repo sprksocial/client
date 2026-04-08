@@ -5,6 +5,7 @@ import 'package:spark/src/core/design_system/components/molecules/input_field.da
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/ui/widgets/mention_input_field.dart';
 
@@ -65,6 +66,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -75,7 +77,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
         elevation: 0,
         leading: AppLeadingButton(
           color: theme.textTheme.titleLarge?.color,
-          tooltip: 'Back',
+          tooltip: l10n.buttonBack,
         ),
         title: Text(title),
         centerTitle: false,
@@ -226,7 +228,7 @@ class _UploadStatusSection extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: onRetry,
-                child: const Text('Try again'),
+                child: Text(AppLocalizations.of(context).buttonTryAgain),
               ),
             ),
           ],
@@ -317,6 +319,7 @@ class _DescriptionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final textController = mentionController?.textController ?? controller;
     final count = textController?.text.runes.length ?? 0;
     final showCounter = count >= (maxChars * 0.8);
@@ -330,11 +333,12 @@ class _DescriptionSection extends StatelessWidget {
           MentionInputField(
             controller: mentionController!,
             onMentionsChanged: onMentionsChanged ?? (_) {},
+            hintText: l10n.hintAddDescription,
           )
         else if (controller != null)
           InputField.search(
             controller: controller!,
-            hintText: 'Add a description... (optional)',
+            hintText: l10n.hintAddDescription,
             maxLines: 5,
             minLines: 1,
           ),

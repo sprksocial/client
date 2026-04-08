@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class DemoBuildStickers extends StatefulWidget {
   const DemoBuildStickers({
@@ -47,7 +48,7 @@ class _DemoBuildStickersState extends State<DemoBuildStickers> {
         children: [
           const _DragHandle(),
           _SheetHeader(
-            title: 'Stickers',
+            title: AppLocalizations.of(context).labelStickers,
             onClose: () => Navigator.of(context).pop(),
           ),
           Padding(

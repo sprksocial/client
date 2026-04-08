@@ -8,6 +8,7 @@ import 'package:spark/src/core/design_system/components/molecules/profile_card.d
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/search/providers/search_provider.dart';
 
 @RoutePage()
@@ -43,6 +44,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final searchState = ref.watch(searchProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -59,13 +61,13 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    const AppLeadingButton(tooltip: 'Back'),
+                    AppLeadingButton(tooltip: l10n.tooltipBack),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          hintText: 'Search users',
+                          hintText: l10n.hintSearchUsers,
                           prefixIcon: const Icon(FluentIcons.search_24_regular),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
@@ -131,7 +133,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                     ),
                   ),
                   child: TabBar(
-                    tabs: const [Tab(text: 'Users')],
+                    tabs: [Tab(text: l10n.tabUsers)],
                     indicatorColor: colorScheme.primary,
                     labelColor: theme.textTheme.bodyLarge?.color,
                     unselectedLabelColor: theme.textTheme.bodyMedium?.color,

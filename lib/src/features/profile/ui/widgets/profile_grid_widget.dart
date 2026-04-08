@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
@@ -123,7 +124,9 @@ List<Widget> buildProfileGridSlivers({
             children: [
               const Icon(FluentIcons.error_circle_24_regular, size: 48),
               const SizedBox(height: 16),
-              Text('Error loading posts: $error'),
+              Text(
+                AppLocalizations.of(context).errorWithDetail(error.toString()),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref
@@ -135,7 +138,7 @@ List<Widget> buildProfileGridSlivers({
                       ).notifier,
                     )
                     .refresh(),
-                child: const Text('Retry'),
+                child: Text(AppLocalizations.of(context).buttonRetry),
               ),
             ],
           ),

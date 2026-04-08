@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_tag_list.dart';
 import 'package:spark/src/core/design_system/templates/feeds_bar_template.dart';
 import 'package:spark/src/core/media/create_media_actions.dart';
@@ -53,6 +54,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
+        final l10n = AppLocalizations.of(context);
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -78,7 +80,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                     vertical: 8,
                   ),
                   child: Text(
-                    feed.view?.displayName ?? 'Following',
+                    feed.view?.displayName ?? l10n.labelFollowing,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -92,7 +94,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                       isLiked ? Icons.favorite : Icons.favorite_border,
                       color: isLiked ? Colors.red : null,
                     ),
-                    title: Text(isLiked ? 'Unlike Feed' : 'Like Feed'),
+                    title: Text(
+                      isLiked ? l10n.buttonUnlikeFeed : l10n.buttonLikeFeed,
+                    ),
                     onTap: () async {
                       Navigator.pop(context);
                       if (isLiked) {
@@ -113,9 +117,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                       Icons.delete_outline,
                       color: Colors.red,
                     ),
-                    title: const Text(
-                      'Remove Feed',
-                      style: TextStyle(color: Colors.red),
+                    title: Text(
+                      l10n.dialogRemoveFeed,
+                      style: const TextStyle(color: Colors.red),
                     ),
                     onTap: () async {
                       Navigator.pop(context);
@@ -123,22 +127,23 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Remove Feed'),
+                          title: Text(l10n.dialogRemoveFeed),
                           content: Text(
-                            'Are you sure you want to remove '
-                            '"${feed.view?.displayName ?? 'this feed'}"?',
+                            l10n.dialogRemoveFeedConfirm(
+                              feed.view?.displayName ?? l10n.labelFollowing,
+                            ),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Cancel'),
+                              child: Text(l10n.buttonCancel),
                             ),
                             TextButton(
                               onPressed: () => Navigator.pop(context, true),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.red,
                               ),
-                              child: const Text('Remove'),
+                              child: Text(l10n.buttonRemove),
                             ),
                           ],
                         ),
@@ -153,7 +158,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                 // Cancel option
                 ListTile(
                   leading: const Icon(Icons.close),
-                  title: const Text('Cancel'),
+                  title: Text(l10n.buttonCancel),
                   onTap: () => Navigator.pop(context),
                 ),
               ],
@@ -166,6 +171,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final settings = ref.watch(settingsProvider);
 
     // Only show pinned feeds in the home view
@@ -178,7 +184,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
           feed.type == 'timeline' && feed.config.value == 'following';
       return FeedTagData(
         id: feed.config.id,
-        text: feed.view != null ? feed.view!.displayName : 'Following',
+        text: feed.view != null ? feed.view!.displayName : l10n.labelFollowing,
         isTimeline: isTimeline,
         isLiked: feed.view?.viewer?.like != null,
         canDelete: !isTimeline,

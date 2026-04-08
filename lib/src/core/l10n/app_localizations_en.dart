@@ -183,7 +183,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintTypeMessage => 'Type a message...';
 
   @override
-  String get hintAddDescription => 'Add a description... (optional)';
+  String get hintAddDescription => 'Add a caption... (optional)';
 
   @override
   String get hintAddAltText => 'Add alt text';
@@ -298,4 +298,358 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryOther => 'Other';
+
+  @override
+  String get buttonContinue => 'Continue';
+
+  @override
+  String get buttonGetStarted => 'Get Started';
+
+  @override
+  String get buttonHaveAccount => 'I already have an account';
+
+  @override
+  String get buttonOpen => 'Open';
+
+  @override
+  String get buttonPost => 'Post';
+
+  @override
+  String get buttonDone => 'Done';
+
+  @override
+  String get buttonEdit => 'Edit';
+
+  @override
+  String get buttonBack => 'Back';
+
+  @override
+  String get buttonShare => 'Share';
+
+  @override
+  String get buttonCopied => 'Copied';
+
+  @override
+  String get buttonCopyLink => 'Copy link';
+
+  @override
+  String get errorInvalidHandle => 'Invalid handle';
+
+  @override
+  String get errorHandleNotFound => 'Could not find this handle';
+
+  @override
+  String get errorCompletingSignIn => 'Completing sign in...';
+
+  @override
+  String get errorProfileNotFound => 'Profile not found';
+
+  @override
+  String get errorLoadingPost => 'Error loading post';
+
+  @override
+  String get errorLoadingMessages => 'Failed to load messages';
+
+  @override
+  String get errorLoadingConversations => 'Failed to load conversations';
+
+  @override
+  String get errorUnableToOpenLink => 'Unable to open link right now.';
+
+  @override
+  String get errorLoadingLabelerSettings => 'Error Loading Labeler Settings';
+
+  @override
+  String errorWithDetail(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get hintAddComment => 'Add a comment...';
+
+  @override
+  String get hintSearchUsersMessages => 'Search users';
+
+  @override
+  String get dialogDeleteCommentConfirm =>
+      'Are you sure you want to delete this comment? This action cannot be undone.';
+
+  @override
+  String get dialogDeletePostConfirm =>
+      'Are you sure you want to delete this post? This action cannot be undone.';
+
+  @override
+  String get dialogBlockUser => 'Block User';
+
+  @override
+  String get dialogBlockUserConfirm =>
+      'Are you sure you want to block this user? You will no longer see their posts.';
+
+  @override
+  String get dialogUnblockUser => 'Unblock User';
+
+  @override
+  String get dialogUnblockUserConfirm =>
+      'Are you sure you want to unblock this user?';
+
+  @override
+  String dialogRemoveFeedConfirm(String name) {
+    return 'Are you sure you want to remove \"$name\"?';
+  }
+
+  @override
+  String get dialogOpenBlueskyAccount => 'Open Bluesky account management?';
+
+  @override
+  String dialogOpenBlueskyAccountDescription(String pdsUrl) {
+    return 'This opens the Bluesky account management screen. You may have to log in again.\n\nIf prompted for an account provider, use:\n$pdsUrl';
+  }
+
+  @override
+  String get pageTitleReplies => 'Replies';
+
+  @override
+  String get pageTitleReviewVideo => 'Review Video';
+
+  @override
+  String get pageTitleReviewImagePost => 'Review Image Post';
+
+  @override
+  String get pageTitleLegal => 'Legal';
+
+  @override
+  String get pageTitleFollowers => 'Followers';
+
+  @override
+  String get pageTitleFollowing => 'Following';
+
+  @override
+  String get emptyNoVideosUsingSound => 'No videos using this sound yet';
+
+  @override
+  String get emptyNoPhotoLibrary =>
+      'No photos or videos found in your library.';
+
+  @override
+  String get messagePermissionPhotoLibrary =>
+      'Allow photo library access to pick photos and videos.';
+
+  @override
+  String get messagePostingStory => 'Posting story...';
+
+  @override
+  String get messageProcessingVideo => 'Processing video...';
+
+  @override
+  String get messageUploadingVideo => 'Uploading video';
+
+  @override
+  String get messageReadyToPost => 'Ready to post';
+
+  @override
+  String get messageUploadFailed => 'Upload failed';
+
+  @override
+  String messageUploadingPercent(int percent) {
+    return 'Uploading $percent%';
+  }
+
+  @override
+  String get labelOriginalSound => 'Original Sound';
+
+  @override
+  String get labelShare => 'Share';
+
+  @override
+  String get labelFollowing => 'Following';
+
+  @override
+  String get labelPosts => 'Posts';
+
+  @override
+  String get labelPrivacyPolicy => 'Privacy Policy';
+
+  @override
+  String get labelTermsOfService => 'Terms of Service';
+
+  @override
+  String get labelSupport => 'Support';
+
+  @override
+  String get tooltipBack => 'Back';
+
+  @override
+  String get errorFailedToLoadImage => 'Failed to load image';
+
+  @override
+  String get pageTitleSignIn => 'Sign In';
+
+  @override
+  String get messageEnterHandle => 'Enter your handle to continue with OAuth';
+
+  @override
+  String get messageCompletingSignUp => 'Completing sign up...';
+
+  @override
+  String get messageWelcome => 'Welcome!';
+
+  @override
+  String get messageWelcomeDescription =>
+      'Share videos, connect with friends,\nand take back your timeline.';
+
+  @override
+  String get labelReply => 'Reply';
+
+  @override
+  String get hintAddImage => 'Add image (1 max)';
+
+  @override
+  String get messagePostingImage => 'Posting...';
+
+  @override
+  String get messageMaximumImagesReached => 'Maximum images reached';
+
+  @override
+  String get labelSound => 'Sound';
+
+  @override
+  String get labelStickers => 'Stickers';
+
+  @override
+  String get labelPaint => 'Paint';
+
+  @override
+  String get labelText => 'Text';
+
+  @override
+  String get labelCrop => 'Crop';
+
+  @override
+  String get labelTune => 'Tune';
+
+  @override
+  String get labelFilter => 'Filter';
+
+  @override
+  String get labelBlur => 'Blur';
+
+  @override
+  String get labelEmoji => 'Emoji';
+
+  @override
+  String get labelMention => 'Mention';
+
+  @override
+  String get labelDraw => 'Draw';
+
+  @override
+  String get labelMyAwesomeVideo => 'My awesome video';
+
+  @override
+  String get errorUploadingVideo => 'Uploading video';
+
+  @override
+  String get errorProcessingVideoStatus => 'Processing video';
+
+  @override
+  String get errorReadyToPost => 'Ready to post';
+
+  @override
+  String get errorUploadFailed => 'Upload failed';
+
+  @override
+  String errorSnackBar(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get buttonLikeFeed => 'Like Feed';
+
+  @override
+  String get buttonUnlikeFeed => 'Unlike Feed';
+
+  @override
+  String get emptyNoNotifications => 'No notifications';
+
+  @override
+  String get messageAllCaughtUp => 'You\'re all caught up!';
+
+  @override
+  String get messageLabelerConfigDescription =>
+      'Configure how this labeler\'s content labels are handled in your feeds.';
+
+  @override
+  String get errorLoadingNotifications => 'Failed to load notifications';
+
+  @override
+  String get labelContentLabelSettings => 'Content Label Settings';
+
+  @override
+  String get errorPhotoSelectLimit =>
+      'You can only select photos in multi-select mode.';
+
+  @override
+  String errorPhotoSelectMax(int max) {
+    return 'You can select up to $max.';
+  }
+
+  @override
+  String get errorUnableToAccessPhotos =>
+      'Unable to access the selected photos.';
+
+  @override
+  String get errorUnableToAccessMedia => 'Unable to access this media item.';
+
+  @override
+  String get labelSingleSelect => 'Single Select';
+
+  @override
+  String get labelSelectMultiple => 'Select multiple';
+
+  @override
+  String get labelLibrary => 'Library';
+
+  @override
+  String labelDoneCount(int current, int max) {
+    return 'Done ($current/$max)';
+  }
+
+  @override
+  String get messageLimitedLibraryAccess =>
+      'Limited library access is enabled. You can change this in settings.';
+
+  @override
+  String get tabPosts => 'Posts';
+
+  @override
+  String get tabUsers => 'Users';
+
+  @override
+  String get hintSearchByHandle => 'Search by handle or display name';
+
+  @override
+  String labelFeedByCreator(String handle) {
+    return 'by @$handle';
+  }
+
+  @override
+  String get messagePostsFromFollowing => 'Posts from people you follow';
+
+  @override
+  String get buttonAddFeed => 'Add feed';
+
+  @override
+  String get buttonUnpinFeed => 'Unpin feed';
+
+  @override
+  String get buttonPinFeed => 'Pin feed';
+
+  @override
+  String get emptyNoConversations => 'No conversations yet';
+
+  @override
+  String get messageSending => 'Sending...';
+
+  @override
+  String get buttonSend => 'Send';
 }

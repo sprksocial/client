@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -10,15 +11,25 @@ import 'package:url_launcher/url_launcher.dart';
 class LegalPage extends StatelessWidget {
   const LegalPage({super.key});
 
-  static const List<({String title, String path})> _legalLinks = [
-    (title: 'Privacy Policy', path: '/privacy'),
-    (title: 'Terms of Service', path: '/terms'),
-    (title: 'Support', path: '/support'),
-  ];
+  static const List<String> _legalPaths = ['/privacy', '/terms', '/support'];
 
   static final Uri _baseUri = Uri.parse('https://sprk.so');
 
+  String _titleForPath(String path, AppLocalizations l10n) {
+    switch (path) {
+      case '/privacy':
+        return l10n.labelPrivacyPolicy;
+      case '/terms':
+        return l10n.labelTermsOfService;
+      case '/support':
+        return l10n.labelSupport;
+      default:
+        return path;
+    }
+  }
+
   Future<void> _openLink(BuildContext context, String path) async {
+    final l10n = AppLocalizations.of(context);
     final logger = GetIt.instance<LogService>().getLogger('LegalPage');
     final uri = _baseUri.replace(path: path);
 
@@ -29,9 +40,9 @@ class LegalPage extends StatelessWidget {
       );
 
       if (!didLaunch && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open link right now.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     } catch (error, stackTrace) {
       logger.e(
@@ -41,9 +52,9 @@ class LegalPage extends StatelessWidget {
       );
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open link right now.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     }
   }
@@ -51,6 +62,7 @@ class LegalPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -59,15 +71,15 @@ class LegalPage extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: const AppLeadingButton(),
-        title: const Text('Legal'),
+        title: Text(l10n.pageTitleLegal),
         centerTitle: true,
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: _legalLinks.length,
+        itemCount: _legalPaths.length,
         separatorBuilder: (_, _) => const SizedBox(height: 16),
         itemBuilder: (context, index) {
-          final link = _legalLinks[index];
+          final path = _legalPaths[index];
 
           return Container(
             decoration: BoxDecoration(
@@ -76,19 +88,19 @@ class LegalPage extends StatelessWidget {
             ),
             child: ListTile(
               title: Text(
-                link.title,
+                _titleForPath(path, l10n),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              subtitle: Text('sprk.so${link.path}'),
+              subtitle: Text('sprk.so$path'),
               trailing: const Icon(FluentIcons.open_24_regular),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 4,
               ),
-              onTap: () => _openLink(context, link.path),
+              onTap: () => _openLink(context, path),
             ),
           );
         },

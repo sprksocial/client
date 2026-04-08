@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 /// Toolbar widget for the Story Image Editor.
 ///
@@ -26,33 +27,42 @@ class StoryEditorToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final items = <Widget>[
       if (onMention != null)
         _ToolbarItem(
           icon: Icons.alternate_email_rounded,
-          label: 'Mention',
+          label: l10n.labelMention,
           onTap: () => onMention!.call(),
         ),
-      _ToolbarItem(icon: Icons.brush_rounded, label: 'Draw', onTap: onPaint),
+      _ToolbarItem(
+        icon: Icons.brush_rounded,
+        label: l10n.labelDraw,
+        onTap: onPaint,
+      ),
       _ToolbarItem(
         icon: Icons.text_fields_rounded,
-        label: 'Text',
+        label: l10n.labelText,
         onTap: onText,
       ),
       _ToolbarItem(
         icon: Icons.auto_awesome_rounded,
-        label: 'Filter',
+        label: l10n.labelFilter,
         onTap: onFilter,
       ),
-      _ToolbarItem(icon: Icons.blur_on_rounded, label: 'Blur', onTap: onBlur),
+      _ToolbarItem(
+        icon: Icons.blur_on_rounded,
+        label: l10n.labelBlur,
+        onTap: onBlur,
+      ),
       _ToolbarItem(
         icon: Icons.emoji_emotions_rounded,
-        label: 'Emoji',
+        label: l10n.labelEmoji,
         onTap: onEmoji,
       ),
       _ToolbarItem(
         icon: Icons.sticky_note_2_rounded,
-        label: 'Stickers',
+        label: l10n.labelStickers,
         onTap: onStickers,
       ),
     ];

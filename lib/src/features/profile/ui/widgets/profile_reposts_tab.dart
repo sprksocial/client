@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_grid_widget.dart';
@@ -166,13 +167,17 @@ class ProfileRepostsTab extends ProfileTabBase {
               children: [
                 const Icon(Icons.error_outline, size: 48),
                 const SizedBox(height: 16),
-                Text('Error loading reposts: $error'),
+                Text(
+                  AppLocalizations.of(
+                    context,
+                  ).errorWithDetail(error.toString()),
+                ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => ref
                       .read(profileRepostsProvider(actor, bsky).notifier)
                       .refresh(),
-                  child: const Text('Retry'),
+                  child: Text(AppLocalizations.of(context).buttonRetry),
                 ),
               ],
             ),
