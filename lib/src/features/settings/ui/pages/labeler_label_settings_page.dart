@@ -12,6 +12,7 @@ import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
@@ -570,7 +571,7 @@ class _LabelerLabelSettingsPageState
                     borderRadius: BorderRadius.circular(100),
                     child: profile.avatar != null
                         ? CachedNetworkImage(
-                            imageUrl: profile.avatar!.toString(),
+                            imageUrl: resolveImageUrlOrEmpty(profile.avatar),
                             width: 36,
                             height: 36,
                             fit: BoxFit.cover,

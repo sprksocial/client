@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/core/utils/uri_converter.dart';
 
 part 'feed_models.freezed.dart';
@@ -386,38 +387,7 @@ abstract class PostView with _$PostView {
 
   /// Resolves AT Protocol blob URLs to HTTP URLs for display
   String _resolveAtUriToHttpUrl(Uri uri, {bool isFullsize = false}) {
-    final uriString = uri.toString();
-
-    // If it's already an HTTP URL, return as is
-    if (uriString.startsWith('http://') || uriString.startsWith('https://')) {
-      return uriString;
-    }
-
-    // If it's an AT Protocol blob URL, convert to Bluesky CDN URL
-    if (uriString.startsWith('at://')) {
-      // Parse AT URI format: at://did/collection/rkey
-      final match = RegExp(
-        r'^at://([^/]+)/([^/]+)/(.+)$',
-      ).firstMatch(uriString);
-      if (match != null) {
-        final did = match.group(1)!;
-        final collection = match.group(2)!;
-        final rkey = match.group(3)!;
-
-        // For blob collections, use Bluesky's CDN
-        if (collection == 'blob') {
-          if (isFullsize) {
-            return 'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$rkey@jpeg';
-          } else {
-            return 'https://cdn.bsky.app/img/feed_thumbnail/plain/$did/$rkey@jpeg';
-          }
-        }
-      }
-    }
-
-    // Return empty string for unrecognized URI schemes (e.g., file://)
-    // to prevent invalid URLs from being passed to image loaders
-    return '';
+    return resolveImageUrlOrEmpty(uri, isFullsize: isFullsize);
   }
 
   String get videoUrl {
@@ -446,12 +416,14 @@ abstract class PostView with _$PostView {
 
   List<String> get imageUrls {
     final mediaToCheck = displayMedia;
-    final List<String> urls;
+    final List<String?> urls;
     switch (mediaToCheck) {
       case MediaViewImage(:final image):
-        urls = [image.fullsize.toString()];
+        urls = [resolveImageUrlObject(image.fullsize, isFullsize: true)];
       case MediaViewImages(:final images):
-        urls = images.map((img) => img.fullsize.toString()).toList();
+        urls = images
+            .map((img) => resolveImageUrlObject(img.fullsize, isFullsize: true))
+            .toList();
       case MediaViewBskyImages(:final images):
         urls = images
             .map(
@@ -462,9 +434,14 @@ abstract class PostView with _$PostView {
         // Handle nested media in record with media
         switch (media) {
           case MediaViewImage(:final image):
-            urls = [image.fullsize.toString()];
+            urls = [resolveImageUrlObject(image.fullsize, isFullsize: true)];
           case MediaViewImages(:final images):
-            urls = images.map((img) => img.fullsize.toString()).toList();
+            urls = images
+                .map(
+                  (img) =>
+                      resolveImageUrlObject(img.fullsize, isFullsize: true),
+                )
+                .toList();
           case MediaViewBskyImages(:final images):
             urls = images
                 .map(
@@ -478,36 +455,33 @@ abstract class PostView with _$PostView {
       case _:
         urls = [];
     }
-    // Filter out invalid URLs (must be http/https)
-    return urls
-        .where((url) => url.startsWith('http://') || url.startsWith('https://'))
-        .toList();
+    return urls.whereType<String>().toList();
   }
 
   String get thumbnailUrl {
     final mediaToCheck = displayMedia;
     switch (mediaToCheck) {
       case MediaViewVideo(:final thumbnail):
-        return thumbnail.toString();
+        return resolveImageUrlOrEmpty(thumbnail);
       case MediaViewBskyVideo(:final thumbnail):
         return _resolveAtUriToHttpUrl(thumbnail);
       case MediaViewImage(:final image):
-        return image.thumb.toString();
+        return resolveImageUrlOrEmpty(image.thumb);
       case MediaViewImages(:final images):
-        return images.first.thumb.toString();
+        return resolveImageUrlOrEmpty(images.first.thumb);
       case MediaViewBskyImages(:final images):
         return _resolveAtUriToHttpUrl(images.first.thumb);
       case MediaViewBskyRecordWithMedia(:final media):
         // Handle nested media in record with media
         switch (media) {
           case MediaViewVideo(:final thumbnail):
-            return thumbnail.toString();
+            return resolveImageUrlOrEmpty(thumbnail);
           case MediaViewBskyVideo(:final thumbnail):
             return _resolveAtUriToHttpUrl(thumbnail);
           case MediaViewImage(:final image):
-            return image.thumb.toString();
+            return resolveImageUrlOrEmpty(image.thumb);
           case MediaViewImages(:final images):
-            return images.first.thumb.toString();
+            return resolveImageUrlOrEmpty(images.first.thumb);
           case MediaViewBskyImages(:final images):
             return _resolveAtUriToHttpUrl(images.first.thumb);
           case _:
@@ -848,11 +822,23 @@ sealed class ThreadPost with _$ThreadPost {
     ThreadPostView(:final post) => post.imageUrls,
     ThreadReplyView(:final reply) => switch (reply.hydratedMedia) {
       // Replies/comments only support a single image (EmbedViewMediaImage)
-      MediaViewImage(:final image) => [image.fullsize.toString()],
+      MediaViewImage(:final image) => [
+        resolveImageUrlObject(image.fullsize, isFullsize: true),
+      ].whereType<String>().toList(),
       MediaViewImages(:final images) =>
-        images.map((img) => img.fullsize.toString()).toList(),
+        images
+            .map(
+              (img) => resolveImageUrlOrEmpty(img.fullsize, isFullsize: true),
+            )
+            .where((url) => url.isNotEmpty)
+            .toList(),
       MediaViewBskyImages(:final images) =>
-        images.map((img) => img.fullsize.toString()).toList(),
+        images
+            .map(
+              (img) => resolveImageUrlOrEmpty(img.fullsize, isFullsize: true),
+            )
+            .where((url) => url.isNotEmpty)
+            .toList(),
       _ => <String>[],
     },
   };

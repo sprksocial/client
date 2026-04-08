@@ -7,6 +7,7 @@ import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 
 class PostTile extends StatelessWidget {
   final String thumbnailUrl;
@@ -31,6 +32,7 @@ class PostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedThumbnailUrl = resolveImageUrlString(thumbnailUrl);
     // Squircle shape from design tokens
     final BorderRadiusGeometry radius = BorderRadius.circular(
       AppShapes.squircleRadius,
@@ -55,12 +57,17 @@ class PostTile extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (nsfwBlur)
+              if (resolvedThumbnailUrl == null)
+                const ColoredBox(
+                  color: AppColors.grey800,
+                  child: Icon(Icons.broken_image, color: AppColors.grey400),
+                )
+              else if (nsfwBlur)
                 ImageFiltered(
                   imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: CachedNetworkImage(
                     fadeInDuration: Duration.zero,
-                    imageUrl: thumbnailUrl,
+                    imageUrl: resolvedThumbnailUrl,
                     fit: BoxFit.cover,
                     placeholder: (context, url) =>
                         const ColoredBox(color: AppColors.grey800),
@@ -73,7 +80,7 @@ class PostTile extends StatelessWidget {
               else
                 CachedNetworkImage(
                   fadeInDuration: Duration.zero,
-                  imageUrl: thumbnailUrl,
+                  imageUrl: resolvedThumbnailUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>
                       const ColoredBox(color: AppColors.grey800),
