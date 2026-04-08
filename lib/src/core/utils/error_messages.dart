@@ -1,3 +1,5 @@
+import 'package:spark/src/core/utils/video_upload_exception.dart';
+
 /// Utility for converting exceptions into user-friendly error messages.
 /// This prevents exposing internal implementation details to users while still
 /// providing helpful feedback.
@@ -8,7 +10,28 @@ class ErrorMessages {
       return 'An unexpected error occurred';
     }
 
+    if (error is VideoUploadException) {
+      if (error.isPayloadTooLarge) {
+        final uploadSize = error.uploadSizeBytes;
+        final limit = error.limitBytes;
+        if (uploadSize != null && limit != null) {
+          return 'This video is too large to upload '
+              '(${_formatBytes(uploadSize)}). Please trim or compress it under '
+              '${_formatBytes(limit)} and try again.';
+        }
+        return 'This video is too large to upload. Please trim or compress it and try again.';
+      }
+      return 'Unable to upload video. Please try again';
+    }
+
     final errorStr = error.toString().toLowerCase();
+
+    // Upload size errors
+    if (errorStr.contains('413') ||
+        errorStr.contains('payload too large') ||
+        errorStr.contains('too large')) {
+      return 'This file is too large to upload. Please trim or compress it and try again.';
+    }
 
     // Network errors
     if (errorStr.contains('socketexception') ||
@@ -111,5 +134,21 @@ class ErrorMessages {
     }
 
     return baseMessage;
+  }
+
+  static String _formatBytes(int bytes) {
+    const mb = 1024 * 1024;
+    if (bytes >= mb) {
+      final value = bytes / mb;
+      final formatted = value >= 10
+          ? value.toStringAsFixed(0)
+          : value.toStringAsFixed(1);
+      return '$formatted MB';
+    }
+    const kb = 1024;
+    if (bytes >= kb) {
+      return '${(bytes / kb).toStringAsFixed(0)} KB';
+    }
+    return '$bytes B';
   }
 }

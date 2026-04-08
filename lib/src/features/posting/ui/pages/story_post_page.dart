@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
 
@@ -72,7 +73,7 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
       if (mounted) {
         setState(() {
           _isPosting = false;
-          _error = e.toString();
+          _error = ErrorMessages.getOperationErrorMessage('post', e);
         });
       }
     }

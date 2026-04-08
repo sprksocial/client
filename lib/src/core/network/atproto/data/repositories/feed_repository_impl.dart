@@ -23,6 +23,7 @@ import 'package:spark/src/core/utils/bluesky_crosspost_text.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/share_urls.dart';
+import 'package:spark/src/core/utils/video_upload_exception.dart';
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
@@ -1194,12 +1195,27 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       // Check if the video is in a compatible format
-      final videoBytes = await file.readAsBytes();
-      if (videoBytes.isEmpty) {
+      final videoSizeBytes = await file.length();
+      if (videoSizeBytes == 0) {
         throw Exception('Video file is empty');
       }
 
-      _logger.i('Video file size: ${videoBytes.length} bytes');
+      _logger.i('Video file size: $videoSizeBytes bytes');
+      final maxUploadSizeBytes = (AppConfig.maxUploadSizeMB * 1024 * 1024)
+          .round();
+      if (maxUploadSizeBytes > 0 && videoSizeBytes > maxUploadSizeBytes) {
+        _logger.w(
+          'Video file exceeds upload limit: $videoSizeBytes bytes '
+          '(limit: $maxUploadSizeBytes bytes)',
+        );
+        throw VideoUploadException(
+          'Video is too large to upload.',
+          statusCode: 413,
+          uploadSizeBytes: videoSizeBytes,
+          limitBytes: maxUploadSizeBytes,
+        );
+      }
+      final videoBytes = await file.readAsBytes();
 
       final pdsService = authAtProto.service;
       final serviceTokenRes = await authAtProto.server.getServiceAuth(
@@ -1226,8 +1242,17 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       if (response.statusCode != 200) {
-        throw Exception(
-          'Failed to upload video: ${response.statusCode} ${response.body}',
+        _logger.e(
+          'Video upload failed: ${response.statusCode} ${response.body}',
+        );
+        throw VideoUploadException(
+          response.statusCode == 413
+              ? 'Video is too large to upload.'
+              : 'Failed to upload video.',
+          statusCode: response.statusCode,
+          uploadSizeBytes: videoSizeBytes,
+          limitBytes: maxUploadSizeBytes > 0 ? maxUploadSizeBytes : null,
+          responseBody: response.body,
         );
       }
 
