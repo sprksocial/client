@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/tokens/gradients.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 
 enum StoryType { story, live, cf, create }
 
@@ -84,6 +85,7 @@ class StoryCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasStoryRing = type != StoryType.create;
     final ringColor = _getRingColor();
+    final resolvedImageUrl = resolveImageUrlString(imageUrl);
 
     return SizedBox(
       width: _widgetWidth,
@@ -111,10 +113,10 @@ class StoryCircle extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(_ringGap),
                       child: ClipOval(
-                        child: imageUrl.isNotEmpty
+                        child: resolvedImageUrl != null
                             ? CachedNetworkImage(
                                 fadeInDuration: Duration.zero,
-                                imageUrl: imageUrl,
+                                imageUrl: resolvedImageUrl,
                                 width: _imageSize,
                                 height: _imageSize,
                                 fit: BoxFit.cover,

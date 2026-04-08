@@ -7,6 +7,7 @@ import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 
 enum SettingsFeedCardMode { display, edit }
 
@@ -60,10 +61,7 @@ class SettingsFeedCard extends StatelessWidget {
   }
 
   String get _avatarUrl {
-    if (generator?.avatar != null) {
-      return generator!.avatar.toString();
-    }
-    return '';
+    return resolveImageUrlObject(generator?.avatar) ?? '';
   }
 
   @override

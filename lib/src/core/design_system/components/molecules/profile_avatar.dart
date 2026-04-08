@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/tokens/gradients.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
@@ -111,11 +112,12 @@ class ProfileAvatar extends StatelessWidget {
     required bool isDarkMode,
     required double avatarSize,
   }) {
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+    final resolvedAvatarUrl = resolveImageUrlString(avatarUrl);
+    if (resolvedAvatarUrl != null) {
       return ClipOval(
         child: CachedNetworkImage(
           fadeInDuration: Duration.zero,
-          imageUrl: avatarUrl!,
+          imageUrl: resolvedAvatarUrl,
           width: avatarSize,
           height: avatarSize,
           fit: BoxFit.cover,

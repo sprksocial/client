@@ -8,6 +8,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/stories/ui/pages/story_page.dart';
 
 @RoutePage()
@@ -253,6 +254,8 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
       return Scaffold(body: Center(child: Text(l10n.emptyNoStories)));
     }
 
+    final avatarUrl = resolveImageUrlObject(widget.author.avatar);
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -361,15 +364,20 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                               shape: BoxShape.circle,
                             ),
                             child: ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: widget.author.avatar.toString(),
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) =>
-                                    const Icon(
+                              child: avatarUrl != null
+                                  ? CachedNetworkImage(
+                                      imageUrl: avatarUrl,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(
+                                            Icons.person,
+                                            color: Colors.white,
+                                          ),
+                                    )
+                                  : const Icon(
                                       Icons.person,
                                       color: Colors.white,
                                     ),
-                              ),
                             ),
                           ),
                         ),

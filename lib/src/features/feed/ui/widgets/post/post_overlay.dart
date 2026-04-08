@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
@@ -124,7 +125,8 @@ class PostOverlay extends ConsumerWidget {
                       commentCount: '${post.replyCount ?? 0}',
                       shareCount: '${post.repostCount ?? 0}',
                       isLiked: isLiked,
-                      profileImageUrl: post.author.avatar.toString(),
+                      profileImageUrl:
+                          resolveImageUrlObject(post.author.avatar) ?? '',
                       isImage:
                           post.media is MediaViewImages ||
                           post.media is MediaViewBskyImages,

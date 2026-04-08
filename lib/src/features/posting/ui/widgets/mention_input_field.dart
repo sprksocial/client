@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/posting/models/mention.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
@@ -360,14 +361,15 @@ class _MentionInputFieldState extends ConsumerState<MentionInputField> {
               itemCount: typeaheadState.results.length,
               itemBuilder: (context, index) {
                 final actor = typeaheadState.results[index];
+                final avatarUrl = resolveImageUrlObject(actor.avatar);
                 return ListTile(
                   dense: true,
                   leading: CircleAvatar(
                     radius: 16,
-                    backgroundImage: actor.avatar != null
-                        ? NetworkImage(actor.avatar.toString())
+                    backgroundImage: avatarUrl != null
+                        ? NetworkImage(avatarUrl)
                         : null,
-                    child: actor.avatar == null
+                    child: avatarUrl == null
                         ? const Icon(Icons.person, size: 16)
                         : null,
                   ),

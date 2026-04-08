@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
 
@@ -163,14 +164,13 @@ class _ResultsList extends StatelessWidget {
       separatorBuilder: (_, _) => const Divider(color: Color(0x1FFFFFFF)),
       itemBuilder: (context, index) {
         final actor = typeaheadState.results[index];
+        final avatarUrl = resolveImageUrlObject(actor.avatar);
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
             backgroundColor: const Color(0x1AFFFFFF),
-            backgroundImage: actor.avatar != null
-                ? NetworkImage(actor.avatar.toString())
-                : null,
-            child: actor.avatar == null
+            backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+            child: avatarUrl == null
                 ? const Icon(Icons.person_outline, color: Colors.white)
                 : null,
           ),

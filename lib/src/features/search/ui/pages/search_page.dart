@@ -9,6 +9,7 @@ import 'package:spark/src/core/design_system/templates/explore_page_template.dar
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
 import 'package:spark/src/features/search/providers/post_search_provider.dart';
@@ -222,16 +223,15 @@ class _ActorTypeaheadSuggestions extends StatelessWidget {
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final actor = state.results[index];
+        final avatarUrl = resolveImageUrlObject(actor.avatar);
 
         return ListTile(
           onTap: () => onSuggestionSelected(actor),
           contentPadding: const EdgeInsets.symmetric(vertical: 4),
           leading: CircleAvatar(
             radius: 18,
-            backgroundImage: actor.avatar != null
-                ? NetworkImage(actor.avatar.toString())
-                : null,
-            child: actor.avatar == null ? const Icon(Icons.person) : null,
+            backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+            child: avatarUrl == null ? const Icon(Icons.person) : null,
           ),
           title: Text(actor.displayName ?? actor.handle),
           subtitle: Text('@${actor.handle}'),

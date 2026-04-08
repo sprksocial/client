@@ -8,6 +8,7 @@ import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 
 class FeedCard extends StatelessWidget {
   const FeedCard({
@@ -55,10 +56,7 @@ class FeedCard extends StatelessWidget {
   String? get _description => generator?.description;
 
   String get _avatarUrl {
-    if (generator?.avatar != null) {
-      return generator!.avatar.toString();
-    }
-    return '';
+    return resolveImageUrlObject(generator?.avatar) ?? '';
   }
 
   bool get _isPrimaryAction => !isAdded || !isPinned;
@@ -248,8 +246,9 @@ class _FeedAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final resolvedImageUrl = resolveImageUrlString(imageUrl);
 
-    if (imageUrl.isEmpty) {
+    if (resolvedImageUrl == null) {
       return _FallbackAvatar(isDark: isDark);
     }
 
@@ -257,7 +256,7 @@ class _FeedAvatar extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: CachedNetworkImage(
         fadeInDuration: Duration.zero,
-        imageUrl: imageUrl,
+        imageUrl: resolvedImageUrl,
         width: 36,
         height: 36,
         fit: BoxFit.cover,

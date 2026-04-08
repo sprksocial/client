@@ -12,6 +12,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/messages/ui/pages/chat_page.dart';
 import 'package:spark/src/features/notifications/models/grouped_notification.dart';
 
@@ -332,11 +333,11 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
         case 'so.sprk.media.image#view':
           final thumb = media['thumb'];
           if (thumb != null) {
-            return thumb is String ? thumb : thumb.toString();
+            return resolveImageUrlObject(thumb);
           }
           final fullsize = media['fullsize'];
           if (fullsize != null) {
-            return fullsize is String ? fullsize : fullsize.toString();
+            return resolveImageUrlObject(fullsize, isFullsize: true);
           }
 
         // Multiple images - get first one
@@ -347,11 +348,11 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
             if (firstImage != null) {
               final thumb = firstImage['thumb'];
               if (thumb != null) {
-                return thumb is String ? thumb : thumb.toString();
+                return resolveImageUrlObject(thumb);
               }
               final fullsize = firstImage['fullsize'];
               if (fullsize != null) {
-                return fullsize is String ? fullsize : fullsize.toString();
+                return resolveImageUrlObject(fullsize, isFullsize: true);
               }
             }
           }
@@ -361,7 +362,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
         case 'app.bsky.embed.video#view':
           final thumbnail = media['thumbnail'];
           if (thumbnail != null) {
-            return thumbnail is String ? thumbnail : thumbnail.toString();
+            return resolveImageUrlObject(thumbnail);
           }
 
         // Bluesky images
@@ -372,11 +373,11 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
             if (firstImage != null) {
               final thumb = firstImage['thumb'];
               if (thumb != null) {
-                return thumb is String ? thumb : thumb.toString();
+                return resolveImageUrlObject(thumb);
               }
               final fullsize = firstImage['fullsize'];
               if (fullsize != null) {
-                return fullsize is String ? fullsize : fullsize.toString();
+                return resolveImageUrlObject(fullsize, isFullsize: true);
               }
             }
           }
@@ -393,14 +394,14 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
                 if (firstImage != null) {
                   final thumb = firstImage['thumb'];
                   if (thumb != null) {
-                    return thumb is String ? thumb : thumb.toString();
+                    return resolveImageUrlObject(thumb);
                   }
                 }
               }
             } else if (nestedType == 'app.bsky.embed.video#view') {
               final thumbnail = nestedMedia['thumbnail'];
               if (thumbnail != null) {
-                return thumbnail is String ? thumbnail : thumbnail.toString();
+                return resolveImageUrlObject(thumbnail);
               }
             }
           }
@@ -437,7 +438,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     if (authors.length == 1) {
       // Single avatar
       final author = authors[0].author;
-      final avatarUrl = author.avatar?.toString() ?? '';
+      final avatarUrl = resolveImageUrlObject(author.avatar) ?? '';
       final username = author.displayName ?? author.handle;
       final handleHash = author.handle.hashCode;
 
@@ -467,7 +468,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
           ...authors.asMap().entries.map((entry) {
             final index = entry.key;
             final author = entry.value.author;
-            final avatarUrl = author.avatar?.toString() ?? '';
+            final avatarUrl = resolveImageUrlObject(author.avatar) ?? '';
             final username = author.displayName ?? author.handle;
             final handleHash = author.handle.hashCode;
 
