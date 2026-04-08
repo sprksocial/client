@@ -10,6 +10,7 @@ import 'package:spark/src/core/design_system/templates/recording_page_template.d
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/posting/providers/camera_provider.dart';
 import 'package:spark/src/features/posting/providers/recording_provider.dart';
@@ -240,7 +241,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
                 _isExiting = false;
               });
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to post story: $e')),
+                SnackBar(
+                  content: Text(
+                    ErrorMessages.getOperationErrorMessage('post', e),
+                  ),
+                ),
               );
             }
           }
@@ -373,9 +378,13 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             stackTrace: stackTrace,
           );
           if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Failed to post story: $e')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  ErrorMessages.getOperationErrorMessage('post', e),
+                ),
+              ),
+            );
           }
         }
         // If posting failed or was cancelled, reset state

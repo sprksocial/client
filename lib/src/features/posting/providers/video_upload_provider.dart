@@ -33,7 +33,7 @@ Future<VideoUploadResult?> processVideo(Ref ref, String videoPath) async {
       error: error,
       stackTrace: stackTrace,
     );
-    return null;
+    rethrow;
   }
 }
 
@@ -95,8 +95,8 @@ Future<RepoStrongRef?> postVideo(
     return finalResult;
   } catch (error, stackTrace) {
     logger.e('Error posting video', error: error, stackTrace: stackTrace);
+    rethrow;
   }
-  return null;
 }
 
 /// Process video and post it in one step

@@ -10,6 +10,7 @@ import 'package:spark/src/core/design_system/templates/video_review_page_templat
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
+import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
@@ -106,40 +107,46 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         ).future,
       );
 
+      if (!mounted) return;
       setState(() {
         _isPosting = false;
       });
 
-      if (mounted) {
-        context.router.popUntilRoot();
-        final did = ref.read(currentDidProvider);
-        if (did != null) {
-          ref
-            ..invalidate(
-              profileFeedProvider(AtUri.parse('at://$did'), false, false),
-            )
-            ..invalidate(
-              profileFeedProvider(AtUri.parse('at://$did'), true, false),
-            );
-        }
-        if (postRef == null) {
-          return;
-        } else {
-          if (!widget.storyMode) {
-            context.router.push(
-              StandalonePostRoute(postUri: postRef.uri.toString()),
-            );
-          }
-        }
+      if (postRef == null) {
+        _showPostError('Unable to create post. Please try again');
+        return;
+      }
+
+      final did = ref.read(currentDidProvider);
+      if (did != null) {
+        ref
+          ..invalidate(
+            profileFeedProvider(AtUri.parse('at://$did'), false, false),
+          )
+          ..invalidate(
+            profileFeedProvider(AtUri.parse('at://$did'), true, false),
+          );
+      }
+
+      final router = context.router;
+      router.popUntilRoot();
+      if (!widget.storyMode) {
+        router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isPosting = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _isPosting = false;
+      });
+      _showPostError(ErrorMessages.getOperationErrorMessage('post', e));
     }
     return;
+  }
+
+  void _showPostError(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
