@@ -9,6 +9,7 @@ import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/messages/providers/conversation_provider.dart';
 import 'package:spark/src/features/messages/providers/polling_timer.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/messages/ui/widgets/messages_list.dart';
 
 @RoutePage()
@@ -67,6 +68,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(conversationProvider(widget.conversationId));
     ref
       ..listen(
@@ -109,14 +111,14 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to load messages',
+              l10n.errorLoadingMessages,
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed: () =>
                   ref.invalidate(conversationProvider(widget.conversationId)),
-              child: const Text('Retry'),
+              child: Text(l10n.buttonRetry),
             ),
           ],
         ),

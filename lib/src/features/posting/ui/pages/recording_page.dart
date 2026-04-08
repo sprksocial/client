@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/recording_page_template.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
@@ -197,9 +198,13 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorWithDetail(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -274,9 +279,13 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorWithDetail(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -414,9 +423,13 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         setState(() {
           _isProcessing = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorWithDetail(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
@@ -473,7 +486,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () => context.router.pop(),
-                    child: const Text('Go Back'),
+                    child: Text(AppLocalizations.of(context).buttonGoBack),
                   ),
                 ],
               ),
@@ -611,7 +624,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () => context.router.pop(),
-                child: const Text('Go Back'),
+                child: Text(AppLocalizations.of(context).buttonGoBack),
               ),
             ],
           ),

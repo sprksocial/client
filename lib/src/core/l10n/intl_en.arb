@@ -287,7 +287,7 @@
     "description": "Type message input placeholder"
   },
 
-  "hintAddDescription": "Add a description... (optional)",
+  "hintAddDescription": "Add a caption... (optional)",
   "@hintAddDescription": {
     "description": "Add description placeholder"
   },
@@ -485,5 +485,593 @@
   "categoryOther": "Other",
   "@categoryOther": {
     "description": "Report category: Other"
+  },
+
+  "buttonContinue": "Continue",
+  "@buttonContinue": {
+    "description": "Continue button text"
+  },
+
+  "buttonGetStarted": "Get Started",
+  "@buttonGetStarted": {
+    "description": "Get started button text"
+  },
+
+  "buttonHaveAccount": "I already have an account",
+  "@buttonHaveAccount": {
+    "description": "Already have an account button text"
+  },
+
+  "buttonOpen": "Open",
+  "@buttonOpen": {
+    "description": "Open button text"
+  },
+
+  "buttonPost": "Post",
+  "@buttonPost": {
+    "description": "Post button text"
+  },
+
+  "buttonDone": "Done",
+  "@buttonDone": {
+    "description": "Done button text"
+  },
+
+  "buttonEdit": "Edit",
+  "@buttonEdit": {
+    "description": "Edit button text"
+  },
+
+  "buttonBack": "Back",
+  "@buttonBack": {
+    "description": "Back button text"
+  },
+
+  "buttonShare": "Share",
+  "@buttonShare": {
+    "description": "Share button text"
+  },
+
+  "buttonCopied": "Copied",
+  "@buttonCopied": {
+    "description": "Copied state text for copy link"
+  },
+
+  "buttonCopyLink": "Copy link",
+  "@buttonCopyLink": {
+    "description": "Copy link button text"
+  },
+
+  "errorInvalidHandle": "Invalid handle",
+  "@errorInvalidHandle": {
+    "description": "Error message for invalid handle"
+  },
+
+  "errorHandleNotFound": "Could not find this handle",
+  "@errorHandleNotFound": {
+    "description": "Error message for handle not found"
+  },
+
+  "errorCompletingSignIn": "Completing sign in...",
+  "@errorCompletingSignIn": {
+    "description": "Loading message when completing sign in"
+  },
+
+  "errorProfileNotFound": "Profile not found",
+  "@errorProfileNotFound": {
+    "description": "Error message for profile not found"
+  },
+
+  "errorLoadingPost": "Error loading post",
+  "@errorLoadingPost": {
+    "description": "Error loading post message"
+  },
+
+  "errorLoadingMessages": "Failed to load messages",
+  "@errorLoadingMessages": {
+    "description": "Error loading messages message"
+  },
+
+  "errorLoadingConversations": "Failed to load conversations",
+  "@errorLoadingConversations": {
+    "description": "Error loading conversations message"
+  },
+
+  "errorUnableToOpenLink": "Unable to open link right now.",
+  "@errorUnableToOpenLink": {
+    "description": "Error message when unable to open a link"
+  },
+
+  "errorLoadingLabelerSettings": "Error Loading Labeler Settings",
+  "@errorLoadingLabelerSettings": {
+    "description": "Error loading labeler settings message"
+  },
+
+  "errorWithDetail": "Error: {error}",
+  "@errorWithDetail": {
+    "description": "Error message with detail",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "hintAddComment": "Add a comment...",
+  "@hintAddComment": {
+    "description": "Add a comment input placeholder"
+  },
+
+  "hintSearchUsersMessages": "Search users",
+  "@hintSearchUsersMessages": {
+    "description": "Search users placeholder in messages"
+  },
+
+  "dialogDeleteCommentConfirm": "Are you sure you want to delete this comment? This action cannot be undone.",
+  "@dialogDeleteCommentConfirm": {
+    "description": "Delete comment confirmation message"
+  },
+
+  "dialogDeletePostConfirm": "Are you sure you want to delete this post? This action cannot be undone.",
+  "@dialogDeletePostConfirm": {
+    "description": "Delete post confirmation message"
+  },
+
+  "dialogBlockUser": "Block User",
+  "@dialogBlockUser": {
+    "description": "Block user dialog title"
+  },
+
+  "dialogBlockUserConfirm": "Are you sure you want to block this user? You will no longer see their posts.",
+  "@dialogBlockUserConfirm": {
+    "description": "Block user confirmation message"
+  },
+
+  "dialogUnblockUser": "Unblock User",
+  "@dialogUnblockUser": {
+    "description": "Unblock user dialog title"
+  },
+
+  "dialogUnblockUserConfirm": "Are you sure you want to unblock this user?",
+  "@dialogUnblockUserConfirm": {
+    "description": "Unblock user confirmation message"
+  },
+
+"dialogRemoveFeedConfirm": "Are you sure you want to remove \"{name}\"?",
+  "@dialogRemoveFeedConfirm": {
+    "description": "Remove feed confirmation message with name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "dialogOpenBlueskyAccount": "Open Bluesky account management?",
+  "@dialogOpenBlueskyAccount": {
+    "description": "Dialog title for opening Bluesky account management"
+  },
+
+  "dialogOpenBlueskyAccountDescription": "This opens the Bluesky account management screen. You may have to log in again.\n\nIf prompted for an account provider, use:\n{pdsUrl}",
+  "@dialogOpenBlueskyAccountDescription": {
+    "description": "Description for opening Bluesky account management dialog",
+    "placeholders": {
+      "pdsUrl": {
+        "type": "String"
+      }
+    }
+  },
+
+  "pageTitleReplies": "Replies",
+  "@pageTitleReplies": {
+    "description": "Replies page title"
+  },
+
+  "pageTitleReviewVideo": "Review Video",
+  "@pageTitleReviewVideo": {
+    "description": "Review video page title"
+  },
+
+  "pageTitleReviewImagePost": "Review Image Post",
+  "@pageTitleReviewImagePost": {
+    "description": "Review image post page title"
+  },
+
+  "pageTitleLegal": "Legal",
+  "@pageTitleLegal": {
+    "description": "Legal page title"
+  },
+
+  "pageTitleFollowers": "Followers",
+  "@pageTitleFollowers": {
+    "description": "Followers page title"
+  },
+
+  "pageTitleFollowing": "Following",
+  "@pageTitleFollowing": {
+    "description": "Following page title"
+  },
+
+  "emptyNoVideosUsingSound": "No videos using this sound yet",
+  "@emptyNoVideosUsingSound": {
+    "description": "Empty state for no videos using a sound"
+  },
+
+  "emptyNoPhotoLibrary": "No photos or videos found in your library.",
+  "@emptyNoPhotoLibrary": {
+    "description": "Empty state for no photos in library"
+  },
+
+  "messagePermissionPhotoLibrary": "Allow photo library access to pick photos and videos.",
+  "@messagePermissionPhotoLibrary": {
+    "description": "Permission message for photo library access"
+  },
+
+  "messagePostingStory": "Posting story...",
+  "@messagePostingStory": {
+    "description": "Posting story progress message"
+  },
+
+  "messageProcessingVideo": "Processing video...",
+  "@messageProcessingVideo": {
+    "description": "Processing video progress message"
+  },
+
+  "messageUploadingVideo": "Uploading video",
+  "@messageUploadingVideo": {
+    "description": "Uploading video status message"
+  },
+
+  "messageReadyToPost": "Ready to post",
+  "@messageReadyToPost": {
+    "description": "Ready to post status message"
+  },
+
+  "messageUploadFailed": "Upload failed",
+  "@messageUploadFailed": {
+    "description": "Upload failed status message"
+  },
+
+  "messageUploadingPercent": "Uploading {percent}%",
+  "@messageUploadingPercent": {
+    "description": "Uploading percentage status message",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+
+  "labelOriginalSound": "Original Sound",
+  "@labelOriginalSound": {
+    "description": "Original sound label"
+  },
+
+  "labelShare": "Share",
+  "@labelShare": {
+    "description": "Share label"
+  },
+
+  "labelFollowing": "Following",
+  "@labelFollowing": {
+    "description": "Following label"
+  },
+
+  "labelPosts": "Posts",
+  "@labelPosts": {
+    "description": "Posts label"
+  },
+
+  "labelPrivacyPolicy": "Privacy Policy",
+  "@labelPrivacyPolicy": {
+    "description": "Privacy policy link label"
+  },
+
+  "labelTermsOfService": "Terms of Service",
+  "@labelTermsOfService": {
+    "description": "Terms of service link label"
+  },
+
+  "labelSupport": "Support",
+  "@labelSupport": {
+    "description": "Support link label"
+  },
+
+  "tooltipBack": "Back",
+  "@tooltipBack": {
+    "description": "Back tooltip"
+  },
+
+  "errorFailedToLoadImage": "Failed to load image",
+  "@errorFailedToLoadImage": {
+    "description": "Error message for failed image load"
+  },
+
+  "pageTitleSignIn": "Sign In",
+  "@pageTitleSignIn": {
+    "description": "Sign in page title"
+  },
+
+  "messageEnterHandle": "Enter your handle to continue with OAuth",
+  "@messageEnterHandle": {
+    "description": "Message to enter handle for OAuth"
+  },
+
+  "messageCompletingSignUp": "Completing sign up...",
+  "@messageCompletingSignUp": {
+    "description": "Loading message when completing sign up"
+  },
+
+  "messageWelcome": "Welcome!",
+  "@messageWelcome": {
+    "description": "Welcome message on register page"
+  },
+
+  "messageWelcomeDescription": "Share videos, connect with friends,\nand take back your timeline.",
+  "@messageWelcomeDescription": {
+    "description": "Welcome description on register page"
+  },
+
+  "labelReply": "Reply",
+  "@labelReply": {
+    "description": "Reply button label"
+  },
+
+  "hintAddImage": "Add image (1 max)",
+  "@hintAddImage": {
+    "description": "Add image tooltip"
+  },
+
+  "messagePostingImage": "Posting...",
+  "@messagePostingImage": {
+    "description": "Posting image progress message"
+  },
+
+  "messageMaximumImagesReached": "Maximum images reached",
+  "@messageMaximumImagesReached": {
+    "description": "Maximum images reached tooltip"
+  },
+
+  "labelSound": "Sound",
+  "@labelSound": {
+    "description": "Sound label for video editor toolbar"
+  },
+
+  "labelStickers": "Stickers",
+  "@labelStickers": {
+    "description": "Stickers label"
+  },
+
+  "labelPaint": "Paint",
+  "@labelPaint": {
+    "description": "Paint editor label"
+  },
+
+  "labelText": "Text",
+  "@labelText": {
+    "description": "Text editor label"
+  },
+
+  "labelCrop": "Crop",
+  "@labelCrop": {
+    "description": "Crop editor label"
+  },
+
+  "labelTune": "Tune",
+  "@labelTune": {
+    "description": "Tune editor label"
+  },
+
+  "labelFilter": "Filter",
+  "@labelFilter": {
+    "description": "Filter editor label"
+  },
+
+  "labelBlur": "Blur",
+  "@labelBlur": {
+    "description": "Blur editor label"
+  },
+
+  "labelEmoji": "Emoji",
+  "@labelEmoji": {
+    "description": "Emoji editor label"
+  },
+
+  "labelMention": "Mention",
+  "@labelMention": {
+    "description": "Mention editor label"
+  },
+
+  "labelDraw": "Draw",
+  "@labelDraw": {
+    "description": "Draw editor label"
+  },
+
+  "labelMyAwesomeVideo": "My awesome video",
+  "@labelMyAwesomeVideo": {
+    "description": "Default video clip title"
+  },
+
+  "errorUploadingVideo": "Uploading video",
+  "@errorUploadingVideo": {
+    "description": "Video upload status when uploading"
+  },
+
+  "errorProcessingVideoStatus": "Processing video",
+  "@errorProcessingVideoStatus": {
+    "description": "Video processing status"
+  },
+
+  "errorReadyToPost": "Ready to post",
+  "@errorReadyToPost": {
+    "description": "Ready to post status"
+  },
+
+  "errorUploadFailed": "Upload failed",
+  "@errorUploadFailed": {
+    "description": "Upload failed status"
+  },
+
+  "errorSnackBar": "Error: {error}",
+  "@errorSnackBar": {
+    "description": "Error message in snackbar",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "buttonLikeFeed": "Like Feed",
+  "@buttonLikeFeed": {
+    "description": "Like feed button text"
+  },
+
+  "buttonUnlikeFeed": "Unlike Feed",
+  "@buttonUnlikeFeed": {
+    "description": "Unlike feed button text"
+  },
+
+  "emptyNoNotifications": "No notifications",
+  "@emptyNoNotifications": {
+    "description": "Empty state for no notifications"
+  },
+
+  "messageAllCaughtUp": "You''re all caught up!",
+  "@messageAllCaughtUp": {
+    "description": "Message when all notifications are read"
+  },
+
+  "messageLabelerConfigDescription": "Configure how this labeler''s content labels are handled in your feeds.",
+  "@messageLabelerConfigDescription": {
+    "description": "Description for labeler configuration"
+  },
+
+  "errorLoadingNotifications": "Failed to load notifications",
+  "@errorLoadingNotifications": {
+    "description": "Error loading notifications message"
+  },
+
+  "labelContentLabelSettings": "Content Label Settings",
+  "@labelContentLabelSettings": {
+    "description": "Content label settings title"
+  },
+
+  "errorPhotoSelectLimit": "You can only select photos in multi-select mode.",
+  "@errorPhotoSelectLimit": {
+    "description": "Error when trying to select photos in single-select mode"
+  },
+
+  "errorPhotoSelectMax": "You can select up to {max}.",
+  "@errorPhotoSelectMax": {
+    "description": "Error when exceeding max photo selection",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+
+  "errorUnableToAccessPhotos": "Unable to access the selected photos.",
+  "@errorUnableToAccessPhotos": {
+    "description": "Error when unable to access selected photos"
+  },
+
+  "errorUnableToAccessMedia": "Unable to access this media item.",
+  "@errorUnableToAccessMedia": {
+    "description": "Error when unable to access a media item"
+  },
+
+  "labelSingleSelect": "Single Select",
+  "@labelSingleSelect": {
+    "description": "Single select mode label"
+  },
+
+  "labelSelectMultiple": "Select multiple",
+  "@labelSelectMultiple": {
+    "description": "Select multiple mode label"
+  },
+
+  "labelLibrary": "Library",
+  "@labelLibrary": {
+    "description": "Library header label"
+  },
+
+  "labelDoneCount": "Done ({current}/{max})",
+  "@labelDoneCount": {
+    "description": "Done button with selection count",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+
+  "messageLimitedLibraryAccess": "Limited library access is enabled. You can change this in settings.",
+  "@messageLimitedLibraryAccess": {
+    "description": "Permission info about limited library access"
+  },
+
+  "tabPosts": "Posts",
+  "@tabPosts": {
+    "description": "Posts search tab label"
+  },
+
+  "tabUsers": "Users",
+  "@tabUsers": {
+    "description": "Users search tab label"
+  },
+
+  "hintSearchByHandle": "Search by handle or display name",
+  "@hintSearchByHandle": {
+    "description": "Search by handle or display name placeholder"
+  },
+
+  "labelFeedByCreator": "by @{handle}",
+  "@labelFeedByCreator": {
+    "description": "Feed creator attribution label",
+    "placeholders": {
+      "handle": {
+        "type": "String"
+      }
+    }
+  },
+
+  "messagePostsFromFollowing": "Posts from people you follow",
+  "@messagePostsFromFollowing": {
+    "description": "Subtitle for following/timeline feed"
+  },
+
+  "buttonAddFeed": "Add feed",
+  "@buttonAddFeed": {
+    "description": "Add feed button text"
+  },
+
+  "buttonUnpinFeed": "Unpin feed",
+  "@buttonUnpinFeed": {
+    "description": "Unpin feed button text"
+  },
+
+  "buttonPinFeed": "Pin feed",
+  "@buttonPinFeed": {
+    "description": "Pin feed button text"
+  },
+
+  "emptyNoConversations": "No conversations yet",
+  "@emptyNoConversations": {
+    "description": "Empty state for no conversations in share panel"
+  },
+
+  "messageSending": "Sending...",
+  "@messageSending": {
+    "description": "Sending message progress indicator"
+  },
+
+  "buttonSend": "Send",
+  "@buttonSend": {
+    "description": "Send button text"
   }
 }

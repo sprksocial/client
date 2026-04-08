@@ -2,6 +2,7 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
@@ -59,6 +60,7 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(
       commentsPageProvider(postUri: AtUri.parse(widget.postUri)),
     );
@@ -72,7 +74,7 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
         backgroundColor: backgroundColor,
         elevation: 0,
         title: Text(
-          'Replies',
+          l10n.pageTitleReplies,
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         leading: AppLeadingButton(color: textColor),
@@ -118,7 +120,8 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
             ],
           ),
         ),
-        error: (error, stackTrace) => Center(child: Text('Error: $error')),
+        error: (error, stackTrace) =>
+            Center(child: Text(l10n.errorWithDetail(error.toString()))),
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );

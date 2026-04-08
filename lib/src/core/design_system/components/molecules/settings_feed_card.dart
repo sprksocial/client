@@ -5,6 +5,7 @@ import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 
 enum SettingsFeedCardMode { display, edit }
@@ -41,11 +42,11 @@ class SettingsFeedCard extends StatelessWidget {
 
   bool get _isLiked => feed.view?.viewer?.like != null;
 
-  String get _title {
+  String _getTitle(AppLocalizations l10n) {
     if (generator != null) {
       return generator!.displayName;
     }
-    return _isTimeline ? 'Following' : feed.config.value;
+    return _isTimeline ? l10n.labelFollowing : feed.config.value;
   }
 
   String? get _subtitle {
@@ -101,7 +102,7 @@ class SettingsFeedCard extends StatelessWidget {
             children: [
               _buildAvatar(),
               const SizedBox(width: 12),
-              Expanded(child: _buildTextContent()),
+              Expanded(child: _buildTextContent(context)),
               const SizedBox(width: 8),
               _buildLikeButton(),
             ],
@@ -134,7 +135,7 @@ class SettingsFeedCard extends StatelessWidget {
             children: [
               _buildAvatar(),
               const SizedBox(width: 12),
-              Expanded(child: _buildTextContent()),
+              Expanded(child: _buildTextContent(context)),
               const SizedBox(width: 8),
               _buildEditActions(),
               const SizedBox(width: 8),
@@ -185,13 +186,14 @@ class SettingsFeedCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTextContent() {
+  Widget _buildTextContent(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          _title,
+          _getTitle(l10n),
           style: AppTypography.textSmallBold,
           overflow: TextOverflow.ellipsis,
           maxLines: 1,

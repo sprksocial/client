@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
@@ -29,7 +30,9 @@ class StoryDirectPost {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const _PostingOverlay(message: 'Posting story...'),
+      builder: (_) => _PostingOverlay(
+        message: AppLocalizations.of(context).messagePostingStory,
+      ),
     );
 
     try {
@@ -91,7 +94,9 @@ class StoryDirectPost {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const _PostingOverlay(message: 'Processing video...'),
+      builder: (_) => _PostingOverlay(
+        message: AppLocalizations.of(context).messageProcessingVideo,
+      ),
     );
 
     try {

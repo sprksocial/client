@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/video_review_page_template.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -220,29 +221,29 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     });
   }
 
-  String? get _uploadStatusLabel {
+  String? _uploadStatusLabel(AppLocalizations l10n) {
     if (_uploadErrorMessage != null) return _uploadErrorMessage;
     return switch (_uploadPhase) {
-      _VideoUploadPhase.uploading => 'Uploading video',
-      _VideoUploadPhase.processing => 'Processing video',
-      _VideoUploadPhase.ready => 'Ready to post',
+      _VideoUploadPhase.uploading => l10n.messageUploadingVideo,
+      _VideoUploadPhase.processing => l10n.messageProcessingVideo,
+      _VideoUploadPhase.ready => l10n.messageReadyToPost,
       null => null,
     };
   }
 
-  String get _postLabel {
-    if (_uploadErrorMessage != null) return 'Upload failed';
-    if (_uploadResult != null) return 'Post';
+  String _postLabel(AppLocalizations l10n) {
+    if (_uploadErrorMessage != null) return l10n.messageUploadFailed;
+    if (_uploadResult != null) return l10n.buttonPost;
     final percent = (_uploadProgress * 100).round();
     switch (_uploadPhase) {
       case _VideoUploadPhase.uploading:
-        return 'Uploading $percent%';
+        return l10n.messageUploadingPercent(percent);
       case _VideoUploadPhase.processing:
-        return 'Processing video';
+        return l10n.messageProcessingVideo;
       case _VideoUploadPhase.ready:
-        return 'Post';
+        return l10n.buttonPost;
       case null:
-        return 'Uploading video';
+        return l10n.messageUploadingVideo;
     }
   }
 
@@ -326,13 +327,14 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final rawAspectRatio = _player?.value.aspectRatio;
     final ar = rawAspectRatio != null && rawAspectRatio > 0
         ? rawAspectRatio
         : 1.0;
     final textLength = _descriptionController.text.runes.length;
     final isOverLimit = textLength > AppConstants.postDescriptionMaxChars;
-    final uploadStatusLabel = _uploadStatusLabel;
+    final uploadStatusLabel = _uploadStatusLabel(l10n);
     final canPost =
         !_isPosting &&
         _uploadResult != null &&
@@ -340,7 +342,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         !isOverLimit;
 
     return VideoReviewPageTemplate(
-      title: 'Review Video',
+      title: l10n.pageTitleReviewVideo,
       onBack: () => context.maybePop(),
       aspectRatio: ar,
       videoPreview: _player == null
@@ -362,7 +364,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       showCrossPost: !widget.storyMode,
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
-      postLabel: _postLabel,
+      postLabel: _postLabel(l10n),
       isPosting: _isPosting,
       isOverLimit: isOverLimit,
       onPost: canPost

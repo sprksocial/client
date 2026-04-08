@@ -52,25 +52,22 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _handleManageAccount() async {
+    final l10n = AppLocalizations.of(context);
     final authRepository = GetIt.instance<AuthRepository>();
     final pdsUrl = authRepository.pdsEndpoint ?? 'your PDS URL';
     final shouldOpen = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Open Bluesky account management?'),
-        content: Text(
-          'This opens the Bluesky account management screen. '
-          'You may have to log in again.\n\n'
-          'If prompted for an account provider, use:\n$pdsUrl',
-        ),
+        title: Text(l10n.dialogOpenBlueskyAccount),
+        content: Text(l10n.dialogOpenBlueskyAccountDescription(pdsUrl)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.buttonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Open'),
+            child: Text(l10n.buttonOpen),
           ),
         ],
       ),
@@ -89,9 +86,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       );
 
       if (!didLaunch && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open link right now.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     } catch (error, stackTrace) {
       logger.e(
@@ -101,9 +98,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to open link right now.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     }
   }

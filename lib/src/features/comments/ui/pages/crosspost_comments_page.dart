@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/ui/widgets/image_content.dart';
@@ -31,6 +32,7 @@ class CrosspostCommentsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final anchorUri = AtUri.parse(postUri);
+    final l10n = AppLocalizations.of(context);
     final asyncComments = ref.watch(crosspostCommentsProvider(anchorUri));
     final textColor = Theme.of(context).colorScheme.onSurface;
     final borderColor = Theme.of(context).colorScheme.outline;
@@ -76,9 +78,7 @@ class CrosspostCommentsPage extends ConsumerWidget {
             child: asyncComments.when(
               data: (comments) {
                 if (comments.isEmpty) {
-                  return const Center(
-                    child: Text('No crosspost comments yet.'),
-                  );
+                  return Center(child: Text(l10n.emptyNoCrosspostComments));
                 }
 
                 return ListView.separated(
@@ -97,7 +97,7 @@ class CrosspostCommentsPage extends ConsumerWidget {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stackTrace) =>
-                  Center(child: Text('Error: $error')),
+                  Center(child: Text(l10n.errorWithDetail(error.toString()))),
             ),
           ),
         ],

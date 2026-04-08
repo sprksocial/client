@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
@@ -150,7 +151,9 @@ class _StandaloneRepostsFeedPageState
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading reposts: $error',
+                    AppLocalizations.of(
+                      context,
+                    ).errorWithDetail(error.toString()),
                     style: const TextStyle(color: AppColors.white),
                     textAlign: TextAlign.center,
                   ),
@@ -166,7 +169,7 @@ class _StandaloneRepostsFeedPageState
                           )
                           .refresh();
                     },
-                    child: const Text('Retry'),
+                    child: Text(AppLocalizations.of(context).buttonRetry),
                   ),
                 ],
               ),

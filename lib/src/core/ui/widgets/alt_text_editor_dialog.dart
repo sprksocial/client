@@ -35,6 +35,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final backgroundColor = isDarkMode ? AppColors.nearBlack : Colors.white;
@@ -81,7 +82,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
                   maxLines: 4,
                   style: TextStyle(color: textColor, fontSize: 16),
                   decoration: InputDecoration(
-                    hintText: 'Add alt text',
+                    hintText: l10n.hintAddAltText,
                     hintStyle: TextStyle(color: textColor.withAlpha(100)),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(

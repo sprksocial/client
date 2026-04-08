@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 /// A dialog that displays the alt text (image description) for an image.
 class AltTextDialog extends StatelessWidget {
@@ -8,6 +9,7 @@ class AltTextDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       left: false,
@@ -40,7 +42,7 @@ class AltTextDialog extends StatelessWidget {
                 ),
               ),
             ),
-            Text('Image Description', style: theme.textTheme.titleLarge),
+            Text(l10n.hintImageDescription, style: theme.textTheme.titleLarge),
             const SizedBox(height: 12),
             Text(
               altText,

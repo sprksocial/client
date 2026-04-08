@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/design_system/components/organisms/side_action_bar.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
@@ -313,22 +314,20 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
   Future<void> _handleDeletePost() async {
     final currentPost = _currentPost ?? widget.post;
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Post'),
-        content: const Text(
-          'Are you sure you want to delete this post?'
-          '\nThis action cannot be undone.',
-        ),
+        title: Text(l10n.dialogDeletePost),
+        content: Text(l10n.dialogDeletePostConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.buttonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(l10n.buttonDelete),
           ),
         ],
       ),
@@ -359,29 +358,29 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     final currentPost = _currentPost ?? widget.post;
     final author = currentPost.author;
     final wasBlocked = isBlocking(author.viewer);
+    final l10n = AppLocalizations.of(context);
 
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(wasBlocked ? 'Unblock User' : 'Block User'),
+        title: Text(wasBlocked ? l10n.dialogUnblockUser : l10n.dialogBlockUser),
         content: Text(
           wasBlocked
-              ? 'Are you sure you want to unblock this user?'
-              : 'Are you sure you want to block this user? '
-                    'You will no longer see their posts.',
+              ? l10n.dialogUnblockUserConfirm
+              : l10n.dialogBlockUserConfirm,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.buttonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: wasBlocked ? null : Colors.red,
             ),
-            child: Text(wasBlocked ? 'Unblock' : 'Block'),
+            child: Text(wasBlocked ? l10n.buttonUnblock : l10n.buttonBlock),
           ),
         ],
       ),

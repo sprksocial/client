@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:video_player/video_player.dart';
 
 /// A widget that previews a video from a file path.
@@ -71,14 +72,15 @@ class _PreviewVideoState extends State<PreviewVideo> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Result')),
+      appBar: AppBar(title: Text(l10n.pageTitleResult)),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Stack(
             children: [
               Positioned.fill(child: _buildVideoPlayer(constraints)),
-              _buildGenerationInfos(),
+              _buildGenerationInfos(l10n),
             ],
           );
         },
@@ -122,7 +124,7 @@ class _PreviewVideoState extends State<PreviewVideo> {
     );
   }
 
-  Widget _buildGenerationInfos() {
+  Widget _buildGenerationInfos(AppLocalizations l10n) {
     const tableSpace = TableRow(children: [SizedBox(height: 3), SizedBox()]);
     return Positioned(
       top: 10,
@@ -146,7 +148,7 @@ class _PreviewVideoState extends State<PreviewVideo> {
                   children: [
                     TableRow(
                       children: [
-                        const Text('Generation time:'),
+                        Text(l10n.labelGenerationTime),
                         Text('${_generationTime}ms', style: _valueStyle),
                       ],
                     ),
@@ -154,21 +156,21 @@ class _PreviewVideoState extends State<PreviewVideo> {
                     if (md != null) ...[
                       TableRow(
                         children: [
-                          const Text('Duration:'),
+                          Text(l10n.labelDuration),
                           Text(md.duration.toString(), style: _valueStyle),
                         ],
                       ),
                       tableSpace,
                       TableRow(
                         children: [
-                          const Text('Size:'),
+                          Text(l10n.labelSize),
                           Text(_formatBytes(md.fileSize), style: _valueStyle),
                         ],
                       ),
                       tableSpace,
                       TableRow(
                         children: [
-                          const Text('Resolution:'),
+                          Text(l10n.labelResolution),
                           Text(
                             '${md.resolution.width.toInt()}x'
                             '${md.resolution.height.toInt()}',

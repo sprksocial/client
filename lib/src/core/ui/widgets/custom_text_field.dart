@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 /// A custom styled text field with optional undo functionality.
 class CustomTextField extends StatelessWidget {
@@ -55,7 +56,7 @@ class CustomTextField extends StatelessWidget {
             ? IconButton(
                 icon: const Icon(Icons.undo, size: 20),
                 onPressed: onUndo,
-                tooltip: 'Revert',
+                tooltip: AppLocalizations.of(context).tooltipRevert,
               )
             : null,
       ),

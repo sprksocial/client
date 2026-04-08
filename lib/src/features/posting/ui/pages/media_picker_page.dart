@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/posting/ui/models/media_selection.dart';
 
@@ -207,7 +208,7 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
 
   void _toggleMultiPhotoSelection(AssetEntity asset) {
     if (asset.type != AssetType.image) {
-      _showSnackBar('You can only select photos in multi-select mode.');
+      _showSnackBar(AppLocalizations.of(context).errorPhotoSelectLimit);
       return;
     }
 
@@ -223,7 +224,11 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
     }
 
     if (_selectedPhotoAssets.length >= widget.maxMultiPhotoSelection) {
-      _showSnackBar('You can select up to ${widget.maxMultiPhotoSelection}.');
+      _showSnackBar(
+        AppLocalizations.of(
+          context,
+        ).errorPhotoSelectMax(widget.maxMultiPhotoSelection),
+      );
       return;
     }
 
@@ -235,6 +240,9 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
   Future<void> _submitMultiPhotoSelection() async {
     if (_selectedPhotoAssets.isEmpty) return;
 
+    final errorUnableToAccessPhotos = AppLocalizations.of(
+      context,
+    ).errorUnableToAccessPhotos;
     final files = <XFile>[];
     for (final asset in _selectedPhotoAssets) {
       final file = await _assetToXFile(asset, showErrorMessage: false);
@@ -244,7 +252,7 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
     }
 
     if (files.isEmpty) {
-      _showSnackBar('Unable to access the selected photos.');
+      _showSnackBar(errorUnableToAccessPhotos);
       return;
     }
 
@@ -256,11 +264,15 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
     AssetEntity asset, {
     required bool showErrorMessage,
   }) async {
+    final errorUnableToAccessMedia = showErrorMessage
+        ? AppLocalizations.of(context).errorUnableToAccessMedia
+        : null;
+
     try {
       final file = await asset.file ?? await asset.originFile;
       if (file == null) {
-        if (showErrorMessage) {
-          _showSnackBar('Unable to access this media item.');
+        if (errorUnableToAccessMedia != null) {
+          _showSnackBar(errorUnableToAccessMedia);
         }
         return null;
       }
@@ -272,8 +284,8 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
         error: e,
         stackTrace: stackTrace,
       );
-      if (showErrorMessage) {
-        _showSnackBar('Unable to access this media item.');
+      if (errorUnableToAccessMedia != null) {
+        _showSnackBar(errorUnableToAccessMedia);
       }
       return null;
     }
@@ -308,9 +320,10 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     final multiSelectLabel = _isMultiPhotoSelection
-        ? 'Single Select'
-        : 'Select multiple';
+        ? l10n.labelSingleSelect
+        : l10n.labelSelectMultiple;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -335,9 +348,9 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.close),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Library',
+                      l10n.labelLibrary,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 18,
@@ -372,7 +385,10 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
                             ? null
                             : _submitMultiPhotoSelection,
                         child: Text(
-                          'Done (${_selectedPhotoAssets.length}/${widget.maxMultiPhotoSelection})',
+                          l10n.labelDoneCount(
+                            _selectedPhotoAssets.length,
+                            widget.maxMultiPhotoSelection,
+                          ),
                         ),
                       ),
                     ],
@@ -389,8 +405,7 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  'Limited library access is enabled. '
-                  'You can change this in settings.',
+                  l10n.messageLimitedLibraryAccess,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSecondaryContainer,
                   ),
@@ -418,19 +433,19 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
             children: [
               const Icon(Icons.photo_library_outlined, size: 40),
               const SizedBox(height: 12),
-              const Text(
-                'Allow photo library access to pick photos and videos.',
+              Text(
+                AppLocalizations.of(context).messagePermissionPhotoLibrary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: _requestPermissionAndLoadAssets,
-                child: const Text('Allow Access'),
+                child: Text(AppLocalizations.of(context).buttonAllowAccess),
               ),
               const SizedBox(height: 8),
-              const TextButton(
+              TextButton(
                 onPressed: PhotoManager.openSetting,
-                child: Text('Open Settings'),
+                child: Text(AppLocalizations.of(context).buttonOpenSettings),
               ),
             ],
           ),
@@ -448,8 +463,8 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
     }
 
     if (_mediaAssets.isEmpty) {
-      return const Center(
-        child: Text('No photos or videos found in your library.'),
+      return Center(
+        child: Text(AppLocalizations.of(context).emptyNoPhotoLibrary),
       );
     }
 

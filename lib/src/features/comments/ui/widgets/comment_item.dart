@@ -86,10 +86,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.dialogDeleteComment),
-        content: Text(
-          'Are you sure you want to delete this comment? This action '
-          'cannot be undone.',
-        ),
+        content: Text(l10n.dialogDeleteCommentConfirm),
         actions: [
           TextButton(
             onPressed: () => context.router.maybePop(),
@@ -330,6 +327,7 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final notifier = ref.read(commentProvider(widget.thread).notifier);
     return Row(
       children: [
@@ -369,7 +367,7 @@ class _ActionButtons extends StatelessWidget {
             );
           },
           child: Text(
-            'Reply',
+            l10n.labelReply,
             style: TextStyle(fontSize: 12, color: secondaryTextColor),
           ),
         ),

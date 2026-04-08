@@ -19,6 +19,7 @@ import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/utils/blocking_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
@@ -237,9 +238,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               currentUserDid != null && currentUserDid == widget.did;
           final colorScheme = theme.colorScheme;
 
+          final l10n = AppLocalizations.of(context);
           return ErrorScreen(
             context: context,
-            message: 'Profile not found',
+            message: l10n.errorProfileNotFound,
             stackTrace: null,
             onRetry: notifier.refreshProfile,
             theme: theme,
@@ -378,28 +380,38 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     // Show confirmation dialog
                     final confirmed = await showDialog<bool>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text(wasBlocked ? 'Unblock User' : 'Block User'),
-                        content: Text(
-                          wasBlocked
-                              ? 'Are you sure you want to unblock this user?'
-                              : 'Are you sure you want to block this user? '
-                                    'You will no longer see their posts.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('Cancel'),
+                      builder: (context) {
+                        final dialogL10n = AppLocalizations.of(context);
+                        return AlertDialog(
+                          title: Text(
+                            wasBlocked
+                                ? dialogL10n.dialogUnblockUser
+                                : dialogL10n.dialogBlockUser,
                           ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            style: TextButton.styleFrom(
-                              foregroundColor: wasBlocked ? null : Colors.red,
+                          content: Text(
+                            wasBlocked
+                                ? dialogL10n.dialogUnblockUserConfirm
+                                : dialogL10n.dialogBlockUserConfirm,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text(dialogL10n.buttonCancel),
                             ),
-                            child: Text(wasBlocked ? 'Unblock' : 'Block'),
-                          ),
-                        ],
-                      ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              style: TextButton.styleFrom(
+                                foregroundColor: wasBlocked ? null : Colors.red,
+                              ),
+                              child: Text(
+                                wasBlocked
+                                    ? dialogL10n.buttonUnblock
+                                    : dialogL10n.buttonBlock,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     );
 
                     if (confirmed != true) return;
@@ -672,7 +684,10 @@ class ErrorScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            TextButton(onPressed: onRetry, child: const Text('Retry')),
+            TextButton(
+              onPressed: onRetry,
+              child: Text(AppLocalizations.of(context).buttonRetry),
+            ),
           ],
         ),
       ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
@@ -152,6 +153,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Check if we need to reload post due to state changes
     final feedState = ref.watch(feedProvider(widget.feed));
     final navigationState = ref.watch(navigationProvider);
@@ -345,7 +347,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             decoration: const BoxDecoration(color: AppColors.black),
             child: Center(
               child: Text(
-                'Error loading post: ${snapshot.error}',
+                l10n.errorWithDetail(snapshot.error.toString()),
                 style: const TextStyle(color: Colors.white),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/profile/ui/pages/profile_page.dart';
 
@@ -13,9 +14,8 @@ class UserProfilePage extends ConsumerWidget {
     final currentUserDid = ref.watch(currentDidProvider);
 
     if (currentUserDid == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in to view your profile')),
-      );
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(body: Center(child: Text(l10n.messagePleaseLogin)));
     }
 
     // Use the existing ProfilePage but pass the current user's DID

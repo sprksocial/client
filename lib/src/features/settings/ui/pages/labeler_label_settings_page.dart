@@ -11,6 +11,7 @@ import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
@@ -289,6 +290,7 @@ class _LabelerLabelSettingsPageState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     if (_isLoading) {
       return Scaffold(
@@ -302,7 +304,7 @@ class _LabelerLabelSettingsPageState
           titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
             color: colorScheme.onSurface,
           ),
-          title: const Text('Labeler Settings'),
+          title: Text(l10n.pageTitleLabelerSettings),
           centerTitle: true,
           leading: const AppLeadingButton(),
         ),
@@ -322,7 +324,7 @@ class _LabelerLabelSettingsPageState
           titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
             color: colorScheme.onSurface,
           ),
-          title: const Text('Labeler Settings'),
+          title: Text(l10n.pageTitleLabelerSettings),
           centerTitle: true,
           leading: const AppLeadingButton(),
         ),
@@ -335,7 +337,7 @@ class _LabelerLabelSettingsPageState
                 Icon(Icons.error_outline, size: 48, color: colorScheme.error),
                 const SizedBox(height: 16),
                 Text(
-                  'Error Loading Labeler Settings',
+                  l10n.errorLoadingLabelerSettings,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -351,7 +353,7 @@ class _LabelerLabelSettingsPageState
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _loadLabelerSettings,
-                  child: const Text('Retry'),
+                  child: Text(l10n.buttonRetry),
                 ),
               ],
             ),
@@ -371,7 +373,7 @@ class _LabelerLabelSettingsPageState
         titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
           color: colorScheme.onSurface,
         ),
-        title: const Text('Labeler Settings'),
+        title: Text(l10n.pageTitleLabelerSettings),
         centerTitle: true,
         leading: const AppLeadingButton(),
       ),
@@ -457,7 +459,7 @@ class _LabelerLabelSettingsPageState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Content Label Settings',
+                    l10n.labelContentLabelSettings,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -466,8 +468,7 @@ class _LabelerLabelSettingsPageState
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Configure how this labeler's content labels "
-                    'are handled in your feeds.',
+                    l10n.messageLabelerConfigDescription,
                     style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(178),
                       fontSize: 14,

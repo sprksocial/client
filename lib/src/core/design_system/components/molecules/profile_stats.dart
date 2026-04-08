@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class ProfileStats extends StatelessWidget {
   const ProfileStats({
@@ -20,19 +21,23 @@ class ProfileStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _StatItem(count: postsCount, label: 'Posts'),
+        _StatItem(count: postsCount, label: l10n.labelPosts),
         GestureDetector(
           onTap: onFollowersTap,
           behavior: HitTestBehavior.opaque,
-          child: _StatItem(count: followersCount, label: 'Followers'),
+          child: _StatItem(
+            count: followersCount,
+            label: l10n.pageTitleFollowers,
+          ),
         ),
         GestureDetector(
           onTap: onFollowingTap,
           behavior: HitTestBehavior.opaque,
-          child: _StatItem(count: followingCount, label: 'Following'),
+          child: _StatItem(count: followingCount, label: l10n.labelFollowing),
         ),
       ],
     );

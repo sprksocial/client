@@ -6,6 +6,7 @@ import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 
 class FeedCard extends StatelessWidget {
@@ -34,19 +35,19 @@ class FeedCard extends StatelessWidget {
 
   bool get _isTimeline => feed.type == 'timeline';
 
-  String get _title {
+  String _getTitle(AppLocalizations l10n) {
     if (generator != null) {
       return generator!.displayName;
     }
-    return _isTimeline ? 'Following' : feed.config.value;
+    return _isTimeline ? l10n.labelFollowing : feed.config.value;
   }
 
-  String? get _subtitle {
+  String? _getSubtitle(AppLocalizations l10n) {
     if (generator != null) {
-      return 'by @${generator!.creator.handle}';
+      return l10n.labelFeedByCreator(generator!.creator.handle);
     }
     if (_isTimeline) {
-      return 'Posts from people you follow';
+      return l10n.messagePostsFromFollowing;
     }
     return null;
   }
@@ -62,10 +63,10 @@ class FeedCard extends StatelessWidget {
 
   bool get _isPrimaryAction => !isAdded || !isPinned;
 
-  String get _actionLabel {
-    if (!isAdded) return 'Add feed';
-    if (isPinned) return 'Unpin feed';
-    return 'Pin feed';
+  String _getActionLabel(AppLocalizations l10n) {
+    if (!isAdded) return l10n.buttonAddFeed;
+    if (isPinned) return l10n.buttonUnpinFeed;
+    return l10n.buttonPinFeed;
   }
 
   VoidCallback get _actionCallback {
@@ -127,18 +128,20 @@ class FeedCard extends StatelessWidget {
   }
 
   Widget _buildTextContent(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final subtitle = _getSubtitle(l10n);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          _title,
+          _getTitle(l10n),
           style: AppTypography.textSmallBold,
           overflow: TextOverflow.ellipsis,
         ),
-        if (_subtitle != null)
+        if (subtitle != null)
           Text(
-            _subtitle!,
+            subtitle,
             style: AppTypography.textSmallThin,
             overflow: TextOverflow.ellipsis,
           ),
@@ -180,6 +183,7 @@ class FeedCard extends StatelessWidget {
   }
 
   Widget _buildActionButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPrimary = _isPrimaryAction;
     final backgroundColor = isPrimary
@@ -218,7 +222,7 @@ class FeedCard extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Text(
-          _actionLabel,
+          _getActionLabel(l10n),
           style: textStyle,
           overflow: TextOverflow.ellipsis,
         ),

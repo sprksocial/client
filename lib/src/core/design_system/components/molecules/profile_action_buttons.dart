@@ -3,6 +3,7 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/interactiv
 import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   const ProfileActionButtons({
@@ -26,6 +27,7 @@ class ProfileActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (isCurrentUser) {
       return Row(
         children: [Expanded(child: _EditButton(onTap: onEditTap))],
@@ -41,7 +43,7 @@ class ProfileActionButtons extends StatelessWidget {
             onFollow: onFollowTap ?? () {},
             onUnfollow: onUnfollowTap ?? () {},
             onUnblock: onUnblockTap,
-            unfollowText: 'Following',
+            unfollowText: l10n.labelFollowing,
             width: double.infinity,
           ),
         ),

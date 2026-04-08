@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/image_review_page_template.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -158,13 +159,14 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final canPickMore = _imageFiles.length < _maxImages;
     final showCrossPostWarning = _crosspostToBsky && _imageFiles.length > 4;
     final textLength = _descriptionController.text.runes.length;
     final isOverLimit = textLength > AppConstants.postDescriptionMaxChars;
 
     return ImageReviewPageTemplate(
-      title: 'Review Image Post',
+      title: l10n.pageTitleReviewImagePost,
       onBack: () => context.router.maybePop(),
       imagePaths: _imageFiles.map((e) => e.path).toList(),
       currentPage: _currentPage,
@@ -193,7 +195,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
       showCrossPostWarning: showCrossPostWarning,
-      postLabel: 'Post',
+      postLabel: l10n.buttonPost,
       isPosting: _isPosting,
       isOverLimit: isOverLimit,
       onPost: _isPosting

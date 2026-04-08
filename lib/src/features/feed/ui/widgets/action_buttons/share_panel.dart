@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/messages/providers/conversation_provider.dart';
 import 'package:spark/src/features/messages/providers/conversations_provider.dart';
@@ -86,6 +87,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final textColor = theme.colorScheme.onSurface;
     final dividerColor = theme.colorScheme.outline.withValues(alpha: 0.2);
@@ -124,7 +126,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Share',
+                  l10n.labelShare,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 18,
@@ -142,7 +144,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                         child: Text(
-                          'No conversations yet',
+                          l10n.emptyNoConversations,
                           style: TextStyle(color: textColor.withAlpha(153)),
                         ),
                       );
@@ -172,7 +174,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                   error: (e, st) => Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                     child: Text(
-                      'Failed to load conversations',
+                      l10n.errorLoadingConversations,
                       style: TextStyle(color: theme.colorScheme.error),
                     ),
                   ),
@@ -217,7 +219,9 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                             key: const ValueKey('selected-actions'),
                             width: double.infinity,
                             child: LongButton(
-                              label: _sending ? 'Sending...' : 'Send',
+                              label: _sending
+                                  ? l10n.messageSending
+                                  : l10n.buttonSend,
                               onPressed: _sending
                                   ? null
                                   : _sendToSelectedConversation,
@@ -228,7 +232,9 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                             children: [
                               Expanded(
                                 child: LongButton(
-                                  label: _copiedLink ? 'Copied' : 'Copy link',
+                                  label: _copiedLink
+                                      ? l10n.buttonCopied
+                                      : l10n.buttonCopyLink,
                                   onPressed: _copyLink,
                                   variant: LongButtonVariant.regular,
                                 ),
@@ -236,7 +242,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: LongButton(
-                                  label: 'Share',
+                                  label: l10n.buttonShare,
                                   onPressed: _shareNatively,
                                   variant: LongButtonVariant.regular,
                                 ),

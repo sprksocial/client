@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
@@ -38,6 +39,7 @@ class _StoryMentionPickerSheetState
   @override
   Widget build(BuildContext context) {
     final typeaheadState = ref.watch(actorTypeaheadProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -84,7 +86,7 @@ class _StoryMentionPickerSheetState
             style: const TextStyle(color: Colors.white),
             cursorColor: Colors.white,
             decoration: InputDecoration(
-              hintText: 'Search by handle or display name',
+              hintText: l10n.hintSearchByHandle,
               hintStyle: const TextStyle(color: Color(0xFF64748B)),
               prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
               filled: true,

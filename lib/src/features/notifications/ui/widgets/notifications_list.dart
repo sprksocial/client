@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/features/notifications/providers/notification_provider.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/notifications/ui/widgets/notification_item.dart';
 
 class NotificationsList extends ConsumerStatefulWidget {
@@ -47,6 +48,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final notificationState = ref.watch(
       notificationProvider(priority: widget.priority, reasons: widget.reasons),
     );
@@ -89,7 +91,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Failed to load notifications',
+                    l10n.errorLoadingNotifications,
                     style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(179),
                       fontSize: 16,
@@ -121,7 +123,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                             reasons: widget.reasons,
                           );
                     },
-                    child: const Text('Retry'),
+                    child: Text(l10n.buttonRetry),
                   ),
                 ],
               ),
@@ -160,7 +162,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No notifications',
+                    l10n.emptyNoNotifications,
                     style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(179),
                       fontSize: 18,
@@ -169,7 +171,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "You're all caught up!",
+                    l10n.messageAllCaughtUp,
                     style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(102),
                       fontSize: 14,

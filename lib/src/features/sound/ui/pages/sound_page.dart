@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/sound/providers/sound_page_provider.dart';
@@ -51,11 +52,12 @@ class _SoundPageState extends ConsumerState<SoundPage> {
     final soundState = ref.watch(soundPageProvider(_audioAtUri));
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Sound'),
+        title: Text(l10n.pageTitleSound),
         elevation: 0,
         leading: const AppLeadingButton(),
       ),
@@ -93,7 +95,7 @@ class _SoundPageState extends ConsumerState<SoundPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No videos using this sound yet',
+                          l10n.emptyNoVideosUsingSound,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -153,12 +155,12 @@ class _SoundPageState extends ConsumerState<SoundPage> {
             children: [
               const Icon(FluentIcons.error_circle_24_regular, size: 48),
               const SizedBox(height: 16),
-              Text('Error loading sound: $error'),
+              Text(l10n.errorWithDetail(error.toString())),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () =>
                     ref.read(soundPageProvider(_audioAtUri).notifier).refresh(),
-                child: const Text('Retry'),
+                child: Text(l10n.buttonRetry),
               ),
             ],
           ),

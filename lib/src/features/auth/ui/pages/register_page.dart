@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
@@ -111,6 +112,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isLoading = ref.watch(
       authProvider.select((state) => state.isLoading),
     );
@@ -136,7 +138,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             const CircularProgressIndicator(),
                             const SizedBox(height: 16),
                             Text(
-                              'Completing sign up...',
+                              l10n.messageCompletingSignUp,
                               style: AppTypography.textMediumMedium.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -163,7 +165,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             const SizedBox(height: 32),
                             // Welcome text
                             Text(
-                              'Welcome!',
+                              l10n.messageWelcome,
                               style: AppTypography.displaySmallBold.copyWith(
                                 color: colorScheme.onSurface,
                               ),
@@ -171,8 +173,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Share videos, connect with friends,\n'
-                              'and take back your timeline.',
+                              l10n.messageWelcomeDescription,
                               style: AppTypography.textMediumMedium.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                                 height: 1.5,
@@ -198,13 +199,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 Opacity(
                   opacity: isLoading ? 0.5 : 1.0,
                   child: LongButton(
-                    label: 'Get Started',
+                    label: l10n.buttonGetStarted,
                     onPressed: isLoading ? null : _initiateOAuth,
                   ),
                 ),
                 const SizedBox(height: 12),
                 LongButton(
-                  label: 'I already have an account',
+                  label: l10n.buttonHaveAccount,
                   variant: LongButtonVariant.regular,
                   onPressed: () => context.router.push(const LoginRoute()),
                 ),

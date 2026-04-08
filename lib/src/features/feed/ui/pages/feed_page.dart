@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/features/feed/providers/feed_action_controller.dart';
@@ -87,6 +88,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
 
+    final l10n = AppLocalizations.of(context);
     final state = ref.watch(feedProvider(widget.feed));
     final notifier = ref.read(feedProvider(widget.feed).notifier);
     final shouldBeActive = ref.watch(
@@ -156,10 +158,10 @@ class _FeedPageState extends ConsumerState<FeedPage>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Error loading feed'),
+                  Text(l10n.errorLoadingFeed),
                   TextButton(
                     onPressed: onRefresh,
-                    child: const Text('Try again'),
+                    child: Text(l10n.buttonTryAgain),
                   ),
                 ],
               ),

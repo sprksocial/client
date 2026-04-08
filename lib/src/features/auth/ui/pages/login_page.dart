@@ -7,6 +7,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
@@ -132,6 +133,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isLoading = ref.watch(
       authProvider.select((state) => state.isLoading),
     );
@@ -155,7 +157,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     children: [
                       if (!_hasReceivedCallback) ...[
                         Text(
-                          'Sign In',
+                          l10n.pageTitleSignIn,
                           style: AppTypography.displaySmallBold.copyWith(
                             color: colorScheme.onSurface,
                           ),
@@ -163,7 +165,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Enter your handle to continue with OAuth',
+                          l10n.messageEnterHandle,
                           style: AppTypography.textMediumMedium.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -231,10 +233,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             switch (error) {
                               final String e
                                   when e.contains('must be a valid handle') =>
-                                'Invalid handle',
+                                l10n.errorInvalidHandle,
                               final String e
                                   when e.contains('Failed to resolve') =>
-                                'Could not find this handle',
+                                l10n.errorHandleNotFound,
                               _ => error,
                             },
                             style: AppTypography.textSmallMedium.copyWith(
@@ -250,7 +252,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             const CircularProgressIndicator(),
                             const SizedBox(height: 16),
                             Text(
-                              'Completing sign in...',
+                              l10n.errorCompletingSignIn,
                               style: AppTypography.textMediumMedium.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -262,7 +264,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         Opacity(
                           opacity: isLoading ? 0.5 : 1.0,
                           child: LongButton(
-                            label: 'Continue',
+                            label: l10n.buttonContinue,
                             onPressed: isLoading ? null : _initiateOAuth,
                           ),
                         ),

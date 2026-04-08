@@ -11,7 +11,7 @@ class MentionInputField extends ConsumerStatefulWidget {
   const MentionInputField({
     required this.controller,
     required this.onMentionsChanged,
-    this.hintText = 'Add a description... (optional)',
+    required this.hintText,
     this.maxChars = AppConstants.postDescriptionMaxChars,
     this.maxLines = 5,
     this.minLines = 1,

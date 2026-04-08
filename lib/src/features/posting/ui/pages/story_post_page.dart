@@ -8,6 +8,7 @@ import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/error_messages.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
 
@@ -95,7 +96,7 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
     }
 
     setState(() {
-      _statusMessage = 'Posting story...';
+      _statusMessage = AppLocalizations.of(context).messagePostingStory;
     });
 
     final uploadedImage = uploadedImages.first;
@@ -113,7 +114,7 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
 
   Future<void> _postVideoStory() async {
     setState(() {
-      _statusMessage = 'Processing video...';
+      _statusMessage = AppLocalizations.of(context).messageProcessingVideo;
     });
 
     final result = await ref.read(
@@ -301,7 +302,7 @@ class _StoryPostingErrorCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context).buttonCancel),
                 ),
               ),
               const SizedBox(width: 10),
@@ -316,7 +317,7 @@ class _StoryPostingErrorCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Retry'),
+                  child: Text(AppLocalizations.of(context).buttonRetry),
                 ),
               ),
             ],
