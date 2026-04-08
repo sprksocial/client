@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -1169,7 +1170,10 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<VideoUploadResult> uploadVideo(String videoPath) async {
+  Future<VideoUploadResult> uploadVideo(
+    String videoPath, {
+    void Function(double progress)? onUploadProgress,
+  }) async {
     _logger.d('Uploading video from path: $videoPath');
 
     return _client.executeWithRetry(() async {
@@ -1215,7 +1219,6 @@ class FeedRepositoryImpl implements FeedRepository {
           limitBytes: maxUploadSizeBytes,
         );
       }
-      final videoBytes = await file.readAsBytes();
 
       final pdsService = authAtProto.service;
       final serviceTokenRes = await authAtProto.server.getServiceAuth(
@@ -1230,16 +1233,33 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       final serviceToken = serviceTokenRes.data.token;
-      var response = await http.post(
-        Uri.parse(
-          '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo',
-        ),
-        headers: {
-          'Authorization': 'Bearer $serviceToken',
-          'Content-Type': _getContentType(cleanVideoPath),
-        },
-        body: videoBytes,
-      );
+      final uploadRequest =
+          http.StreamedRequest(
+              'POST',
+              Uri.parse(
+                '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo',
+              ),
+            )
+            ..contentLength = videoSizeBytes
+            ..headers.addAll({
+              'Authorization': 'Bearer $serviceToken',
+              'Content-Type': _getContentType(cleanVideoPath),
+            });
+
+      onUploadProgress?.call(0);
+      final uploadResponseFuture = uploadRequest.send();
+      try {
+        await uploadRequest.sink.addStream(
+          _trackUploadProgress(
+            file.openRead(),
+            totalBytes: videoSizeBytes,
+            onUploadProgress: onUploadProgress,
+          ),
+        );
+      } finally {
+        unawaited(uploadRequest.sink.close());
+      }
+      var response = await http.Response.fromStream(await uploadResponseFuture);
 
       if (response.statusCode != 200) {
         _logger.e(
@@ -1344,6 +1364,26 @@ class FeedRepositoryImpl implements FeedRepository {
         audioDetails: audioDetails,
       );
     });
+  }
+
+  Stream<List<int>> _trackUploadProgress(
+    Stream<List<int>> chunks, {
+    required int totalBytes,
+    void Function(double progress)? onUploadProgress,
+  }) async* {
+    var uploadedBytes = 0;
+
+    await for (final chunk in chunks) {
+      uploadedBytes += chunk.length;
+      if (totalBytes > 0) {
+        onUploadProgress?.call(
+          (uploadedBytes / totalBytes).clamp(0, 1).toDouble(),
+        );
+      }
+      yield chunk;
+    }
+
+    onUploadProgress?.call(1);
   }
 
   /// Crosspost images to Bluesky using adapter to handle Bluesky-specific model

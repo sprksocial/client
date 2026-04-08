@@ -31,6 +31,11 @@ class VideoReviewPageTemplate extends StatelessWidget {
     this.aspectRatio = 1.0,
     this.backgroundColor,
     this.isOverLimit = false,
+    this.uploadProgress,
+    this.uploadStatusLabel,
+    this.uploadIndeterminate = false,
+    this.hasUploadError = false,
+    this.onUploadRetry,
     super.key,
   });
 
@@ -52,6 +57,11 @@ class VideoReviewPageTemplate extends StatelessWidget {
   final double aspectRatio;
   final Color? backgroundColor;
   final bool isOverLimit;
+  final double? uploadProgress;
+  final String? uploadStatusLabel;
+  final bool uploadIndeterminate;
+  final bool hasUploadError;
+  final VoidCallback? onUploadRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +85,8 @@ class VideoReviewPageTemplate extends StatelessWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -85,6 +97,16 @@ class VideoReviewPageTemplate extends StatelessWidget {
                         onAltEdit: onAltEdit,
                         child: videoPreview,
                       ),
+                      if (uploadStatusLabel != null) ...[
+                        const SizedBox(height: 16),
+                        _UploadStatusSection(
+                          progress: uploadProgress ?? 0,
+                          label: uploadStatusLabel!,
+                          isIndeterminate: uploadIndeterminate,
+                          hasError: hasUploadError,
+                          onRetry: onUploadRetry,
+                        ),
+                      ],
                       const SizedBox(height: 20),
                       _DescriptionSection(
                         controller: descriptionController,
@@ -133,6 +155,82 @@ class VideoReviewPageTemplate extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _UploadStatusSection extends StatelessWidget {
+  const _UploadStatusSection({
+    required this.progress,
+    required this.label,
+    required this.isIndeterminate,
+    required this.hasError,
+    this.onRetry,
+  });
+
+  final double progress;
+  final String label;
+  final bool isIndeterminate;
+  final bool hasError;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final clampedProgress = progress.clamp(0, 1).toDouble();
+    final percent = (clampedProgress * 100).round();
+    final accent = hasError ? AppColors.red300 : AppColors.primary500;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTypography.textMediumBold.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              if (!isIndeterminate)
+                Text(
+                  '$percent%',
+                  style: AppTypography.textSmallBold.copyWith(color: accent),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: isIndeterminate ? null : clampedProgress,
+              minHeight: 6,
+              backgroundColor: colorScheme.outline.withValues(alpha: 0.18),
+              valueColor: AlwaysStoppedAnimation<Color>(accent),
+            ),
+          ),
+          if (hasError && onRetry != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: onRetry,
+                child: const Text('Try again'),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

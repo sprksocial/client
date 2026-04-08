@@ -162,7 +162,10 @@ abstract class FeedRepository {
   /// Upload a video to the server
   ///
   /// [videoPath] The path to the video file
-  Future<VideoUploadResult> uploadVideo(String videoPath);
+  Future<VideoUploadResult> uploadVideo(
+    String videoPath, {
+    void Function(double progress)? onUploadProgress,
+  });
 
   /// Returns a [VideoUploadResult] containing the video blob & optional audio
 
