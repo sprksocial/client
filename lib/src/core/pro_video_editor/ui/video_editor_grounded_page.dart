@@ -6,7 +6,7 @@ import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ColorFilter;
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -23,7 +23,7 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_initiali
 import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_fullscreen_preview_page.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
-import 'package:video_player/video_player.dart';
+import 'package:video_player/video_player.dart' hide VideoAudioTrack;
 
 @RoutePage()
 class VideoEditorGroundedPage extends StatefulWidget {
@@ -518,23 +518,35 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       }
     }
 
-    final exportModel = RenderVideoModel(
+    final customAudioPath = await _audioService.safeCustomAudioPath(
+      customAudioTrack,
+    );
+
+    final exportModel = VideoRenderData(
       id: _taskId,
-      video: _video,
+      videoSegments: [VideoSegment(video: _video, volume: originalVolume)],
       outputFormat: _outputFormat,
       enableAudio: _proVideoController?.isAudioEnabled ?? true,
-      imageBytes: parameters.layers.isNotEmpty ? parameters.image : null,
+      imageLayers: parameters.layers.isNotEmpty
+          ? [ImageLayer(image: EditorLayerImage.memory(parameters.image))]
+          : null,
       blur: parameters.blur,
-      colorMatrixList: parameters.colorFilters,
+      colorFilters: parameters.colorFilters
+          .map((matrix) => ColorFilter(matrix: matrix))
+          .toList(),
       startTime: parameters.startTime,
       endTime: parameters.endTime,
       transform: _buildExportTransform(parameters),
       bitrate: _videoMetadata.bitrate,
-      customAudioPath: await _audioService.safeCustomAudioPath(
-        customAudioTrack,
-      ),
-      originalAudioVolume: originalVolume,
-      customAudioVolume: overlayVolume,
+      audioTracks: customAudioPath != null
+          ? [
+              VideoAudioTrack(
+                path: customAudioPath,
+                volume: overlayVolume,
+                loop: true,
+              ),
+            ]
+          : const [],
     );
 
     final now = DateTime.now().millisecondsSinceEpoch;

@@ -32,12 +32,12 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   }
 
   @override
-  Future<Uint8List> renderVideo(RenderVideoModel model) {
+  Future<Uint8List> renderVideo(VideoRenderData model) {
     return ProVideoEditor.instance.renderVideo(model);
   }
 
   @override
-  Future<String> renderVideoToFile(String outputPath, RenderVideoModel model) {
+  Future<String> renderVideoToFile(String outputPath, VideoRenderData model) {
     return ProVideoEditor.instance.renderVideoToFile(outputPath, model);
   }
 

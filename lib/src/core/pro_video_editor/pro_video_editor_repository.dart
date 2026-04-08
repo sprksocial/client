@@ -21,14 +21,14 @@ abstract class ProVideoEditorRepository {
   Future<List<Uint8List>> getKeyFrames(KeyFramesConfigs configs);
 
   /// Render a video and return the bytes. Use for small/short videos.
-  Future<Uint8List> renderVideo(RenderVideoModel model);
+  Future<Uint8List> renderVideo(VideoRenderData model);
 
   /// Render a video directly to a file path to avoid RAM pressure.
-  Future<String> renderVideoToFile(String outputPath, RenderVideoModel model);
+  Future<String> renderVideoToFile(String outputPath, VideoRenderData model);
 
   /// Stream progress updates for a given render task id.
   ///
-  /// The caller is responsible to pass the same [RenderVideoModel.id] or
+  /// The caller is responsible to pass the same [VideoRenderData.id] or
   /// [ThumbnailConfigs.id]/[KeyFramesConfigs.id].
   Stream<ProgressModel> progressStream();
 
