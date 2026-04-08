@@ -26,7 +26,7 @@ android {
     namespace = "so.sprk.app"
     compileSdk = 36
     buildToolsVersion = "34.0.0"
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

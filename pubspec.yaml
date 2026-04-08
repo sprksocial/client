@@ -2,7 +2,7 @@ name: spark
 description: "Spark mobile app"
 publish_to: "none"
 # The number after + should stay fixed, the android workflow will change it on every build
-version: 0.10.0+1
+version: 0.10.1+1
 environment:
   sdk: ^3.11.0
 workspace:
@@ -57,10 +57,7 @@ dependencies:
   pool: ^1.5.2
   posthog_flutter: ^5.23.0
   pro_image_editor: ^12.0.13
-  pro_video_editor:
-    git:
-      url: https://github.com/sprksocial/pro_video_editor.git
-      ref: dev
+  pro_video_editor: 1.14.3
   riverpod_annotation: ^4.0.2
   share_plus: ^12.0.2
   shared_preferences: ^2.5.5
