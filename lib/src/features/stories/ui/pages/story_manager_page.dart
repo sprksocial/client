@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
 import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
 
@@ -100,13 +99,9 @@ class StoryManagerPage extends ConsumerWidget {
                     ? '${age.inMinutes}m'
                     : 'now';
                 final thumbUrl = switch (story.media) {
-                  MediaViewVideo(:final thumbnail) => resolveImageUrlOrEmpty(
-                    thumbnail,
-                  ),
-                  MediaViewImage(:final image) => resolveImageUrlOrEmpty(
-                    image.thumb,
-                  ),
-                  _ => resolveImageUrlOrEmpty(story.author.avatar),
+                  MediaViewVideo(:final thumbnail) => thumbnail.toString(),
+                  MediaViewImage(:final image) => image.thumb.toString(),
+                  _ => story.author.avatar.toString(),
                 };
                 return Material(
                   color: Colors.transparent,

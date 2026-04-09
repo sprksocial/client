@@ -15,7 +15,6 @@ import 'package:spark/src/core/ui/widgets/image_content.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
 import 'package:spark/src/core/ui/widgets/user_avatar.dart';
-import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/core/utils/utils.dart';
 import 'package:spark/src/features/comments/providers/comment_provider.dart';
 import 'package:spark/src/features/comments/providers/comment_state.dart';
@@ -385,7 +384,7 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return UserAvatar(
-      imageUrl: resolveImageUrlObject(widget.thread.post.author.avatar) ?? '',
+      imageUrl: widget.thread.post.author.avatar.toString(),
       username: widget.thread.post.author.handle,
       size: 36,
     );

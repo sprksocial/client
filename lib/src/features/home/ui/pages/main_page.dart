@@ -8,7 +8,6 @@ import 'package:spark/src/core/design_system/components/organisms/bottom_nav_bar
 import 'package:spark/src/core/notifications/push_notification_service.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/theme/data/models/app_theme.dart';
-import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:spark/src/features/home/providers/navigation_provider.dart';
@@ -97,9 +96,8 @@ class _MainPageState extends ConsumerState<MainPage> {
         final profileAsync = userDid != null
             ? ref.watch(profileProvider(did: userDid))
             : null;
-        final userAvatar = resolveImageUrlObject(
-          profileAsync?.asData?.value.profile?.avatar,
-        );
+        final userAvatar = profileAsync?.asData?.value.profile?.avatar
+            ?.toString();
 
         final avatarProvider = userAvatar != null && userAvatar.isNotEmpty
             ? CachedNetworkImageProvider(userAvatar)

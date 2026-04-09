@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
@@ -145,11 +144,8 @@ class _StoryPageState extends ConsumerState<StoryPage>
 
   String _getImageUrl(StoryView story) {
     return switch (story.media) {
-      MediaViewImage(:final image) => resolveImageUrlOrEmpty(
-        image.fullsize,
-        isFullsize: true,
-      ),
-      _ => resolveImageUrlOrEmpty(widget.story.author.avatar),
+      MediaViewImage(:final image) => image.fullsize.toString(),
+      _ => widget.story.author.avatar.toString(),
     };
   }
 

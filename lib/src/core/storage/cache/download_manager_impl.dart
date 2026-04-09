@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
-import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/feed/providers/feed_state.dart';
 
@@ -222,7 +221,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               task.post.videoUrl,
               placeholder: CachedNetworkImage(
                 fadeInDuration: Duration.zero,
-                imageUrl: resolveImageUrlOrEmpty(thumbnail),
+                imageUrl: thumbnail.toString(),
               ),
               cacheConfiguration: BetterPlayerCacheConfiguration(
                 useCache: true,

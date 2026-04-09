@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/utils/image_url_resolver.dart';
 
 /// A customizable user avatar with fallback options when no image is available
 class UserAvatar extends StatelessWidget {
@@ -27,7 +26,6 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final resolvedImageUrl = resolveImageUrlString(imageUrl);
 
     final effectiveBorderColor = borderColor ?? colorScheme.outline;
     final effectiveBackgroundColor = backgroundColor ?? colorScheme.primary;
@@ -35,7 +33,7 @@ class UserAvatar extends StatelessWidget {
         fallbackTextColor ?? colorScheme.onPrimary;
 
     // If no image URL is provided, show fallback avatar
-    if (resolvedImageUrl == null) {
+    if (imageUrl.isEmpty) {
       return Container(
         width: size,
         height: size,
@@ -77,7 +75,7 @@ class UserAvatar extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: CachedNetworkImage(
         fadeInDuration: Duration.zero,
-        imageUrl: resolvedImageUrl,
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => ColoredBox(
           color: effectiveBackgroundColor,

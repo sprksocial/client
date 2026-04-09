@@ -3,7 +3,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
-import 'package:spark/src/core/utils/image_url_resolver.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 
 class ImageContent extends StatelessWidget {
@@ -52,10 +51,6 @@ class ImageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedImageUrl = imageUrls.isEmpty
-        ? null
-        : resolveImageUrlString(imageUrls.first, isFullsize: true);
-
     return GestureDetector(
       onTap: () => _showImageCarousel(context),
       child: ClipRRect(
@@ -67,37 +62,24 @@ class ImageContent extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (resolvedImageUrl != null)
-                CachedNetworkImage(
-                  fadeInDuration: Duration.zero,
-                  imageUrl: resolvedImageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[850]?.withValues(alpha: 128),
-                    child: const Center(
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white54,
-                        ),
+              CachedNetworkImage(
+                fadeInDuration: Duration.zero,
+                imageUrl: imageUrls.first,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[850]?.withValues(alpha: 128),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white54,
                       ),
                     ),
                   ),
-                  errorWidget: (context, url, error) => ColoredBox(
-                    color: AppColors.darkPurple.withValues(alpha: 26),
-                    child: const Center(
-                      child: Icon(
-                        FluentIcons.image_off_24_regular,
-                        size: 24,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ),
-                )
-              else
-                ColoredBox(
+                ),
+                errorWidget: (context, url, error) => ColoredBox(
                   color: AppColors.darkPurple.withValues(alpha: 26),
                   child: const Center(
                     child: Icon(
@@ -107,6 +89,7 @@ class ImageContent extends StatelessWidget {
                     ),
                   ),
                 ),
+              ),
 
               if (imageUrls.length > 1)
                 Positioned(
