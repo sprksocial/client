@@ -52,7 +52,8 @@ app.*.map.json
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 
-.vscode/
+# AI assistant settings
+.claude/
 
 # Generated files
 *.freezed.dart
