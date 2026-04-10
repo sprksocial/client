@@ -58,6 +58,29 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
     }
   }
 
+  /// Extracts the thread root URI and CID from the reply record.
+  /// Returns null if the thread post is a root post (not a reply).
+  ({String uri, String cid})? _getThreadRoot(ThreadViewPost thread) {
+    final post = thread.post;
+    if (post is ThreadReplyView) {
+      final record = post.reply.record;
+      if (record is Map<String, dynamic>) {
+        final reply = record['reply'] as Map<String, dynamic>?;
+        if (reply != null) {
+          final root = reply['root'] as Map<String, dynamic>?;
+          if (root != null) {
+            final uri = root['uri'] as String?;
+            final cid = root['cid'] as String?;
+            if (uri != null && cid != null) {
+              return (uri: uri, cid: cid);
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -80,46 +103,51 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
         leading: AppLeadingButton(color: textColor),
       ),
       body: state.when(
-        data: (data) => SafeArea(
-          child: Column(
-            children: [
-              if (data.thread.parent is ThreadViewPost)
-                CommentItem(
-                  key: ValueKey(
-                    'comment-'
-                    '${(data.thread.parent! as ThreadViewPost).post.uri}',
+        data: (data) {
+          final threadRoot = _getThreadRoot(data.thread);
+          return SafeArea(
+            child: Column(
+              children: [
+                if (data.thread.parent is ThreadViewPost)
+                  CommentItem(
+                    key: ValueKey(
+                      'comment-'
+                      '${(data.thread.parent! as ThreadViewPost).post.uri}',
+                    ),
+                    thread: data.thread.parent! as ThreadViewPost,
+                    mainPostUri: AtUri.parse(widget.postUri),
                   ),
-                  thread: data.thread.parent! as ThreadViewPost,
-                  mainPostUri: AtUri.parse(widget.postUri),
-                ),
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.only(
-                    bottom: 16 + (keyboardHeight > 0 ? 0 : 80),
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: EdgeInsets.only(
+                      bottom: 16 + (keyboardHeight > 0 ? 0 : 80),
+                    ),
+                    itemCount: data.thread.replies?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final comment =
+                          data.thread.replies![index] as ThreadViewPost;
+                      return CommentItem(
+                        key: ValueKey('comment-${comment.post.cid}'),
+                        thread: comment,
+                        mainPostUri: AtUri.parse(widget.postUri),
+                      );
+                    },
                   ),
-                  itemCount: data.thread.replies?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final comment =
-                        data.thread.replies![index] as ThreadViewPost;
-                    return CommentItem(
-                      key: ValueKey('comment-${comment.post.cid}'),
-                      thread: comment,
-                      mainPostUri: AtUri.parse(widget.postUri),
-                    );
-                  },
                 ),
-              ),
-              CommentInputWidget(
-                videoId: widget.postUri,
-                postUri: widget.postUri,
-                isSprk: data.thread.post.isSprk,
-                focusNode: _focusNode,
-                postCid: data.thread.post.cid,
-              ),
-            ],
-          ),
-        ),
+                CommentInputWidget(
+                  videoId: widget.postUri,
+                  postUri: widget.postUri,
+                  isSprk: data.thread.post.isSprk,
+                  focusNode: _focusNode,
+                  postCid: data.thread.post.cid,
+                  rootUri: threadRoot?.uri,
+                  rootCid: threadRoot?.cid,
+                ),
+              ],
+            ),
+          );
+        },
         error: (error, stackTrace) =>
             Center(child: Text(l10n.errorWithDetail(error.toString()))),
         loading: () => const Center(child: CircularProgressIndicator()),
