@@ -5,6 +5,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "lib/**"
+      - "android/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/android.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

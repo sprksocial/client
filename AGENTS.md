@@ -50,7 +50,8 @@
 - `lib/src/features/README.md`
 - `lib/src/core/utils/logging/README.md`
 - `.github/workflows/flutter_lint.yml`
-- `.github/workflows/android-internal-release.yml`
+- `.github/workflows/flutter-test.yml`
+- `.github/workflows/android.yml`
 
 ## Safety
 - Never commit secrets (`.env`, platform credentials)
