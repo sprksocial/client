@@ -47,7 +47,7 @@ jobs:
         if: steps.changed_files.outputs.any_changed == 'true'
         run: |
           touch .env
-          flutter pub get --enforce-lockfile
+          flutter pub get
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Codegen (widgetbook)
