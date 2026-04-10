@@ -33,13 +33,26 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           final convo = tuple.$2;
           final last = convo.lastMessage;
           final ts = _formatTime(last?.sentAt);
-          final preview = (last?.text ?? '').trim();
+          final text = (last?.text ?? '').trim();
+          String preview;
+          if (text.isNotEmpty) {
+            preview = text;
+          } else if (last?.embed != null && last!.embed!.isNotEmpty) {
+            final senderDid = last.sender.did;
+            final senderProfile = convo.members.firstWhere(
+              (m) => m.did == senderDid,
+              orElse: () => profile,
+            );
+            preview = 'Post by @${senderProfile.handle}';
+          } else {
+            preview = '';
+          }
           return ChatListItemData(
             avatarUrl: profile.avatar?.toString(),
             displayName: profile.displayName ?? profile.handle,
             handle: profile.handle,
             timestamp: ts,
-            preview: preview.isNotEmpty ? preview : '',
+            preview: preview,
             unread: (convo.unreadCount) > 0,
           );
         }).toList();
