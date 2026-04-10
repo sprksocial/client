@@ -1,4 +1,4 @@
-name: "Internal testing android release"
+name: "Build for Android"
 
 on:
   workflow_dispatch:
