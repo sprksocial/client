@@ -132,7 +132,7 @@ void main() {
           ],
         );
 
-        final label = (String val) => Label(
+        Label label(String val) => Label(
           src: 'did:plc:l',
           uri: 'at://test',
           val: val,
@@ -187,7 +187,7 @@ void main() {
           ],
         );
 
-        final label = (String val) => Label(
+        Label label(String val) => Label(
           src: 'did:plc:l',
           uri: 'at://test',
           val: val,

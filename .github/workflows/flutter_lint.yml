@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -70,7 +72,7 @@ jobs:
         run: flutter analyze --write=flutter_analyze.log ${{ steps.analyze_targets.outputs.targets }}
 
       - name: Flutter Analyze Commenter
-        if: ${{ !cancelled() && steps.changed_files.outputs.any_changed == 'true' }} # Run only when analyze executed
+        if: ${{ !cancelled() && steps.changed_files.outputs.any_changed == 'true' && github.event_name == 'pull_request' }} # Run only when analyze executed and on PRs
         uses: yorifuji/flutter-analyze-commenter@v1
         with:
           analyze-log: flutter_analyze.log
