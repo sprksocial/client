@@ -4,8 +4,8 @@ Welcome to the codebase for the Spark Social mobile app.
 
 Get the Spark Social app:
 
-- iOS
-- Android
+- [iOS](https://apps.apple.com/us/app/spark-social-in-your-hands/id6743555448)
+- [Android](https://play.google.com/store/apps/details?id=so.sprk.app)
 
 ## Overview
 
