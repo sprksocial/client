@@ -12,7 +12,7 @@ import 'package:spark/src/features/profile/providers/profile_feed_state.dart';
 
 part 'profile_likes_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class ProfileLikes extends _$ProfileLikes {
   final FeedRepository _feedRepository = GetIt.instance<SprkRepository>().feed;
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
