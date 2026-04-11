@@ -25,6 +25,12 @@ class Recording extends _$Recording {
     state = state.copyWith(isRecording: true, error: null);
 
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      // Guard against accessing state after provider disposal
+      if (!ref.mounted) {
+        timer.cancel();
+        return;
+      }
+
       final newDuration =
           state.elapsedDuration + const Duration(milliseconds: 100);
 

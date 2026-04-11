@@ -241,7 +241,11 @@ class DownloadManagerImpl implements DownloadManagerInterface {
       task.onComplete(task);
     } catch (e, s) {
       task.status = DownloadTaskStatus.failed;
-      _logger.w('Failed to cache media for ${task.uri}');
+      _logger.w(
+        'Failed to cache media for ${task.uri}',
+        error: e,
+        stackTrace: s,
+      );
       task.onError(task, e, s);
     } finally {
       // Remove from the main queue regardless of outcome, as it's processed.

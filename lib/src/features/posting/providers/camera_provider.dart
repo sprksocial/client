@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,12 +13,19 @@ part 'camera_provider.g.dart';
 @riverpod
 class Camera extends _$Camera {
   late final SparkLogger _logger;
+  AppLifecycleListener? _lifecycleListener;
 
   @override
   FutureOr<CameraState> build() async {
     _logger = GetIt.instance<LogService>().getLogger('Camera');
 
     ref.onDispose(_disposeCamera);
+
+    // Listen to app lifecycle to dispose camera when backgrounded
+    _lifecycleListener = AppLifecycleListener(
+      onHide: _onAppBackgrounded,
+      onInactive: _onAppBackgrounded,
+    );
 
     _logger.i('Initializing camera provider');
 
@@ -313,6 +321,10 @@ class Camera extends _$Camera {
   Future<void> _disposeCamera() async {
     _logger.d('Disposing camera');
 
+    // Dispose lifecycle listener to prevent further callbacks
+    _lifecycleListener?.dispose();
+    _lifecycleListener = null;
+
     try {
       final currentState = state.value;
       final controller = currentState?.controller;
@@ -373,6 +385,13 @@ class Camera extends _$Camera {
       _logger.d('Clearing camera error');
       state = AsyncValue.data(currentState.copyWith(error: null));
     }
+  }
+
+  /// Handles app lifecycle changes when app is backgrounded or becomes inactive.
+  /// Disposes the camera to free resources and prevent battery drain.
+  void _onAppBackgrounded() {
+    _logger.i('App backgrounded/inactive, disposing camera');
+    _disposeCamera();
   }
 
   Future<void> disposeCamera() async {
