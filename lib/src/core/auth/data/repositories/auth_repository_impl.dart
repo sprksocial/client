@@ -139,9 +139,17 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       // Parse expiresAt, default to epoch if not found (will trigger refresh)
-      final expiresAt = account.expiresAt != null
-          ? DateTime.parse(account.expiresAt!)
-          : DateTime.fromMillisecondsSinceEpoch(0);
+      DateTime expiresAt;
+      try {
+        expiresAt = account.expiresAt != null
+            ? DateTime.parse(account.expiresAt!)
+            : DateTime.fromMillisecondsSinceEpoch(0);
+      } catch (e) {
+        _logger.w(
+          'Failed to parse expiresAt "${account.expiresAt}", defaulting to epoch',
+        );
+        expiresAt = DateTime.fromMillisecondsSinceEpoch(0);
+      }
 
       _did = account.did;
       _handle = account.handle;

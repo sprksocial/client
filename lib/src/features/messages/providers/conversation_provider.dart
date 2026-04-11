@@ -18,6 +18,12 @@ class Conversation extends _$Conversation {
     // Load conversation and initial messages
     final convo = await repo.getConversation(convoId);
     final meDid = GetIt.I<AuthRepository>().did;
+
+    // Handle edge case where conversation has no members
+    if (convo.members.isEmpty) {
+      throw StateError('Conversation $convoId has no members');
+    }
+
     final other = convo.members.firstWhere(
       (member) => member.did != meDid,
       orElse: () => convo.members.first,

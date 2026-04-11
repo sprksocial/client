@@ -67,9 +67,19 @@ class FeedRepositoryImpl implements FeedRepository {
 
     for (final rawPost in rawPosts) {
       try {
-        final postData = rawPost is Map<String, dynamic>
-            ? rawPost
-            : rawPost.toJson();
+        final Map<String, dynamic> postData;
+        if (rawPost is Map<String, dynamic>) {
+          postData = rawPost;
+        } else {
+          final json = rawPost.toJson();
+          if (json is! Map<String, dynamic>) {
+            _logger.w(
+              'Unexpected post data type: ${json.runtimeType}, skipping',
+            );
+            continue;
+          }
+          postData = json;
+        }
 
         // Fix missing $type field for FeedViewPost union type
         if ((postData[r'$type'] as String?) == null) {
@@ -80,7 +90,7 @@ class FeedRepositoryImpl implements FeedRepository {
           }
         }
 
-        final parsedPost = fromJson(postData as Map<String, dynamic>);
+        final parsedPost = fromJson(postData);
 
         if (hasMedia(parsedPost)) {
           posts.add(parsedPost);
