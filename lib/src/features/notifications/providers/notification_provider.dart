@@ -54,6 +54,8 @@ class NotificationNotifier extends _$NotificationNotifier {
         reasons: reasons,
       );
 
+      if (!ref.mounted) return;
+
       state = state.copyWith(
         notifications: response.notifications,
         cursor: response.cursor,
@@ -67,6 +69,9 @@ class NotificationNotifier extends _$NotificationNotifier {
         error: e,
         stackTrace: stackTrace,
       );
+
+      if (!ref.mounted) return;
+
       state = state.copyWith(
         isLoading: false,
         isRefreshing: false,
@@ -94,6 +99,8 @@ class NotificationNotifier extends _$NotificationNotifier {
         reasons: reasons,
       );
 
+      if (!ref.mounted) return;
+
       state = state.copyWith(
         notifications: [...state.notifications, ...response.notifications],
         cursor: response.cursor,
@@ -105,6 +112,9 @@ class NotificationNotifier extends _$NotificationNotifier {
         error: e,
         stackTrace: stackTrace,
       );
+
+      if (!ref.mounted) return;
+
       state = state.copyWith(
         isLoadingMore: false,
         hasError: true,

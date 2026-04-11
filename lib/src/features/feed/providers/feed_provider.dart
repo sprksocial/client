@@ -116,10 +116,12 @@ class FeedNotifier extends _$FeedNotifier {
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
       _lastErrorTime = DateTime.now();
-      state = state.copyWith(loadingFirstLoad: false, error: true);
+      if (ref.mounted) {
+        state = state.copyWith(loadingFirstLoad: false, error: true);
+      }
     } finally {
       _isLoadingInProgress = false;
-      if (state.loadingFirstLoad) {
+      if (ref.mounted && state.loadingFirstLoad) {
         state = state.copyWith(loadingFirstLoad: false);
       }
     }
@@ -204,6 +206,8 @@ class FeedNotifier extends _$FeedNotifier {
         extraInfo,
       );
 
+      if (!ref.mounted) return;
+
       if (filteredPosts.isEmpty) {
         state = state.copyWith(
           cursor: cursor,
@@ -244,7 +248,9 @@ class FeedNotifier extends _$FeedNotifier {
         stackTrace: stackTrace,
       );
       // Ensure loadingFirstLoad is set to false even on error
-      state = state.copyWith(loadingFirstLoad: false, error: true);
+      if (ref.mounted) {
+        state = state.copyWith(loadingFirstLoad: false, error: true);
+      }
     }
   }
 
@@ -312,24 +318,30 @@ class FeedNotifier extends _$FeedNotifier {
         if (fetchedPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            state = state.copyWith(
-              loadingFirstLoad: false,
-              isEndOfNetworkFeed: true,
-            );
+            if (ref.mounted) {
+              state = state.copyWith(
+                loadingFirstLoad: false,
+                isEndOfNetworkFeed: true,
+              );
+            }
             break;
           }
           if (fetchedCount > 0) {
             consecutiveEmptyResults++;
             if (consecutiveEmptyResults >= maxConsecutiveEmpty) {
               await endOfNetworkFeed();
-              state = state.copyWith(
-                loadingFirstLoad: false,
-                isEndOfNetworkFeed: true,
-              );
+              if (ref.mounted) {
+                state = state.copyWith(
+                  loadingFirstLoad: false,
+                  isEndOfNetworkFeed: true,
+                );
+              }
               break;
             }
           }
-          state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
+          if (ref.mounted) {
+            state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
+          }
           continue;
         }
 
@@ -339,13 +351,17 @@ class FeedNotifier extends _$FeedNotifier {
         if (newPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            state = state.copyWith(
-              loadingFirstLoad: false,
-              isEndOfNetworkFeed: true,
-            );
+            if (ref.mounted) {
+              state = state.copyWith(
+                loadingFirstLoad: false,
+                isEndOfNetworkFeed: true,
+              );
+            }
             break;
           }
-          state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
+          if (ref.mounted) {
+            state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
+          }
           continue;
         }
 
@@ -359,7 +375,9 @@ class FeedNotifier extends _$FeedNotifier {
     } catch (e, stackTrace) {
       _logger.e('Error prefetching feed: $e', stackTrace: stackTrace);
       _lastErrorTime = DateTime.now();
-      state = state.copyWith(error: true, loadingFirstLoad: false);
+      if (ref.mounted) {
+        state = state.copyWith(error: true, loadingFirstLoad: false);
+      }
       rethrow;
     } finally {
       _isFetching = false;
