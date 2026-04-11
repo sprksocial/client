@@ -32,6 +32,12 @@ abstract class ProVideoEditorRepository {
   /// [ThumbnailConfigs.id]/[KeyFramesConfigs.id].
   Stream<ProgressModel> progressStream();
 
+  /// Concatenates recorded video [segments] into a single file for editing.
+  ///
+  /// When only one segment is provided, returns a copied file so the caller can
+  /// clean up the original temporary capture safely.
+  Future<XFile> stitchVideoSegments(List<XFile> segments);
+
   /// Opens the ProImageEditor UI to edit the given [source] image and returns
   /// an edited image file when the editor is closed.
   ///

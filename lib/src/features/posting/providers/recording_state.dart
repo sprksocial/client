@@ -8,12 +8,17 @@ abstract class RecordingState with _$RecordingState {
     @Default(false) bool isRecording,
     @Default(Duration.zero) Duration elapsedDuration,
     @Default(Duration(minutes: 3)) Duration maxDuration,
+    @Default(<String>[]) List<String> segmentPaths,
     String? error,
   }) = _RecordingState;
 
   const RecordingState._();
 
   bool get hasReachedMaxDuration => elapsedDuration >= maxDuration;
+  bool get hasSegments => segmentPaths.isNotEmpty;
+  bool get canResume => hasSegments && !isRecording && !hasReachedMaxDuration;
+  bool get canFinalize => hasSegments && !isRecording;
+  int get segmentCount => segmentPaths.length;
 
   double get progress =>
       elapsedDuration.inMilliseconds / maxDuration.inMilliseconds;

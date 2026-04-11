@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/features/posting/providers/recording_state.dart';
 
@@ -16,15 +18,11 @@ class Recording extends _$Recording {
   }
 
   void startRecording() {
-    if (state.isRecording) {
+    if (state.isRecording || state.hasReachedMaxDuration) {
       return;
     }
 
-    state = state.copyWith(
-      isRecording: true,
-      elapsedDuration: Duration.zero,
-      error: null,
-    );
+    state = state.copyWith(isRecording: true, error: null);
 
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       final newDuration =
@@ -32,10 +30,7 @@ class Recording extends _$Recording {
 
       if (newDuration >= state.maxDuration) {
         stopTimer();
-        state = state.copyWith(
-          elapsedDuration: state.maxDuration,
-          isRecording: false,
-        );
+        state = state.copyWith(elapsedDuration: state.maxDuration);
         return;
       }
 
@@ -50,6 +45,35 @@ class Recording extends _$Recording {
 
     stopTimer();
     state = state.copyWith(isRecording: false);
+  }
+
+  void addSegment(XFile file) {
+    state = state.copyWith(
+      segmentPaths: [...state.segmentPaths, file.path],
+      error: null,
+    );
+  }
+
+  Future<void> discardSession({Iterable<String> keepPaths = const []}) async {
+    stopTimer();
+
+    final keepSet = keepPaths.toSet();
+    final pathsToDelete = state.segmentPaths.where(
+      (path) => !keepSet.contains(path),
+    );
+
+    for (final path in pathsToDelete) {
+      try {
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (_) {
+        // Best-effort cleanup for temporary session files.
+      }
+    }
+
+    state = const RecordingState();
   }
 
   void reset() {

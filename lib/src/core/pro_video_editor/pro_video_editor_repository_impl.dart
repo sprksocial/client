@@ -46,6 +46,47 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
       ProVideoEditor.instance.progressStream;
 
   @override
+  Future<XFile> stitchVideoSegments(List<XFile> segments) async {
+    if (segments.isEmpty) {
+      throw ArgumentError.value(
+        segments,
+        'segments',
+        'At least one segment is required',
+      );
+    }
+
+    final dir = await getTemporaryDirectory();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final outputPath = '${dir.path}/spark_recording_$timestamp.mp4';
+
+    if (segments.length == 1) {
+      final copiedFile = await File(segments.first.path).copy(outputPath);
+      return XFile(
+        copiedFile.path,
+        mimeType: 'video/mp4',
+        name: copiedFile.uri.pathSegments.last,
+      );
+    }
+
+    await ProVideoEditor.instance.renderVideoToFile(
+      outputPath,
+      VideoRenderData(
+        videoSegments: segments
+            .map(
+              (segment) => VideoSegment(video: EditorVideo.file(segment.path)),
+            )
+            .toList(),
+      ),
+    );
+
+    return XFile(
+      outputPath,
+      mimeType: 'video/mp4',
+      name: outputPath.split('/').last,
+    );
+  }
+
+  @override
   Future<XFile?> openImageEditor(BuildContext context, XFile source) async {
     return Navigator.of(context).push<XFile?>(
       MaterialPageRoute(

@@ -19,7 +19,11 @@ class RecordingPageTemplate extends StatelessWidget {
     required this.onFlipCamera,
     required this.canFlipCamera,
     required this.captureMode,
+    this.isProcessing = false,
+    this.processingLabel,
     this.onOpenLibrary,
+    this.onDone,
+    this.doneLabel,
     this.onTap,
     this.onRecordStart,
     this.onRecordStop,
@@ -35,7 +39,11 @@ class RecordingPageTemplate extends StatelessWidget {
   final VoidCallback? onFlipCamera;
   final bool canFlipCamera;
   final CaptureMode captureMode;
+  final bool isProcessing;
+  final String? processingLabel;
   final VoidCallback? onOpenLibrary;
+  final VoidCallback? onDone;
+  final String? doneLabel;
 
   /// Called on tap. In videoOnly: toggle recording. In hybrid: take photo.
   final VoidCallback? onTap;
@@ -88,6 +96,12 @@ class RecordingPageTemplate extends StatelessWidget {
                             duration: elapsedDuration,
                             maxDuration: maxDuration,
                           ),
+                          trailing: onDone != null
+                              ? _ActionButton(
+                                  label: doneLabel ?? 'Done',
+                                  onPressed: onDone!,
+                                )
+                              : const SizedBox(width: 40),
                         ),
                         // Bottom overlay sits inside rounded view
                         _BottomOverlay(
@@ -102,6 +116,10 @@ class RecordingPageTemplate extends StatelessWidget {
                           ),
                           bottomPadding: 24,
                         ),
+                        if (isProcessing)
+                          _ProcessingOverlay(
+                            label: processingLabel ?? 'Processing...',
+                          ),
                       ],
                     ),
                   );
@@ -119,11 +137,73 @@ class RecordingPageTemplate extends StatelessWidget {
   }
 }
 
+class _ProcessingOverlay extends StatelessWidget {
+  const _ProcessingOverlay({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: Colors.black.withAlpha(110),
+        child: Center(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withAlpha(130),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.white.withAlpha(35)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TopOverlay extends StatelessWidget {
-  const _TopOverlay({required this.onBack, required this.timer});
+  const _TopOverlay({
+    required this.onBack,
+    required this.timer,
+    required this.trailing,
+  });
 
   final VoidCallback onBack;
   final Widget timer;
+  final Widget trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -136,8 +216,48 @@ class _TopOverlay extends StatelessWidget {
           children: [
             _CloseButton(onPressed: onBack),
             timer,
-            const SizedBox(width: 40),
+            trailing,
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onPressed();
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 40, minWidth: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              color: Colors.black.withAlpha(90),
+              border: Border.all(color: Colors.white.withAlpha(40)),
+            ),
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
       ),
     );

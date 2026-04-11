@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
@@ -45,6 +46,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   late final SparkLogger _logger;
   bool _isProcessing = false;
   bool _isExiting = false;
+  bool _isFinalizingRecordingSession = false;
 
   // Store notifier reference for safe disposal
   Recording? _recordingNotifier;
@@ -53,12 +55,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   void initState() {
     super.initState();
     _logger = GetIt.instance<LogService>().getLogger('RecordingPage');
-    // Save reference to notifier for use in dispose
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _recordingNotifier = ref.read(recordingProvider.notifier);
-      }
-    });
+    _recordingNotifier = ref.read(recordingProvider.notifier);
   }
 
   bool _hasCameras() {
@@ -83,14 +80,18 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   void _handleTap() {
     if (!_isCameraReady()) return;
 
+    final recordingState = ref.read(recordingProvider);
+
     if (widget.captureMode == CaptureMode.videoOnly) {
-      final recordingState = ref.read(recordingProvider);
       if (recordingState.isRecording) {
         _stopRecording();
       } else {
         _startRecording();
       }
     } else {
+      if (recordingState.hasSegments) {
+        return;
+      }
       // Hybrid mode - tap takes photo
       _takePhoto();
     }
@@ -138,7 +139,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (_isProcessing) return;
 
     final recordingState = ref.read(recordingProvider);
-    if (recordingState.isRecording) return;
+    if (recordingState.isRecording || recordingState.hasSegments) return;
 
     final selection = await showMediaLibraryPickerSheet(
       context,
@@ -291,6 +292,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   }
 
   void _startRecording() {
+    if (_isProcessing) return;
+
+    final recordingState = ref.read(recordingProvider);
+    if (recordingState.hasReachedMaxDuration) return;
+
     final cameraNotifier = ref.read(cameraProvider.notifier);
     final recordingNotifier = ref.read(recordingProvider.notifier)
       // Start timer optimistically so UI responds immediately
@@ -304,7 +310,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     });
   }
 
-  void _stopRecording() {
+  void _stopRecording({bool finalizeSession = false}) {
     if (_isProcessing) return;
 
     setState(() {
@@ -312,7 +318,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     });
 
     final cameraNotifier = ref.read(cameraProvider.notifier);
-    ref.read(recordingProvider.notifier).stopRecording();
+    final recordingNotifier = ref.read(recordingProvider.notifier)
+      ..stopRecording();
 
     // Defer heavy stop so the "processing" frame paints before blocking
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -326,14 +333,90 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         return;
       }
 
-      await _processVideo(videoFile);
+      recordingNotifier.addSegment(videoFile);
+
+      final shouldFinalize =
+          finalizeSession || ref.read(recordingProvider).hasReachedMaxDuration;
+      if (!shouldFinalize) {
+        setState(() {
+          _isProcessing = false;
+        });
+        return;
+      }
+
+      await _finalizeRecordingSession();
     });
+  }
+
+  Future<void> _finalizeRecordingSession() async {
+    if (!mounted) return;
+
+    if (!_isProcessing) {
+      setState(() {
+        _isProcessing = true;
+      });
+    }
+    if (!_isFinalizingRecordingSession) {
+      setState(() {
+        _isFinalizingRecordingSession = true;
+      });
+    }
+
+    final recordingState = ref.read(recordingProvider);
+    if (!recordingState.canFinalize) {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+      return;
+    }
+
+    final segments = recordingState.segmentPaths.map(XFile.new).toList();
+    final repository = GetIt.I<ProVideoEditorRepository>();
+
+    try {
+      final stitchedVideo = await repository.stitchVideoSegments(segments);
+      if (!mounted) return;
+
+      await ref
+          .read(recordingProvider.notifier)
+          .discardSession(keepPaths: {stitchedVideo.path});
+
+      if (!mounted) return;
+      await _processVideo(stitchedVideo);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error stitching recorded video segments',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _isFinalizingRecordingSession = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorWithDetail(e.toString()),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _processVideo(XFile videoFile) async {
     if (!mounted) return;
 
     try {
+      if (_isFinalizingRecordingSession) {
+        setState(() {
+          _isFinalizingRecordingSession = false;
+        });
+      }
+
       final cameraNotifier = ref.read(cameraProvider.notifier);
       await cameraNotifier.disposeCamera();
 
@@ -355,6 +438,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       if (result == null) {
         setState(() {
           _isProcessing = false;
+          _isFinalizingRecordingSession = false;
         });
         await cameraNotifier.reinitializeCamera();
         return;
@@ -401,6 +485,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           setState(() {
             _isExiting = false;
             _isProcessing = false;
+            _isFinalizingRecordingSession = false;
           });
         }
       } else {
@@ -422,6 +507,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       if (mounted) {
         setState(() {
           _isProcessing = false;
+          _isFinalizingRecordingSession = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -448,7 +534,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         recordingState.isRecording &&
         !_isProcessing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _stopRecording();
+        _stopRecording(finalizeSession: true);
       });
     }
 
@@ -540,6 +626,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             onFlipCamera: null,
             canFlipCamera: false,
             captureMode: widget.captureMode,
+            isProcessing: _isFinalizingRecordingSession,
+            processingLabel: AppLocalizations.of(
+              context,
+            ).messageProcessingVideo,
+            onDone: null,
             onTap: null,
             onRecordStart: null,
             onRecordStop: null,
@@ -554,8 +645,17 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             availableLensDirections.contains(CameraLensDirection.front) &&
             availableLensDirections.contains(CameraLensDirection.back) &&
             !recordingState.isRecording &&
+            !recordingState.hasSegments &&
             !cameraState.isFlipping;
         final aspectRatio = cameraState.controller!.value.aspectRatio;
+        final canFinalizeSession =
+            recordingState.canFinalize && !_isProcessing && hasCameras;
+        final onTap =
+            _isProcessing ||
+                (widget.captureMode == CaptureMode.hybrid &&
+                    recordingState.hasSegments)
+            ? null
+            : _handleTap;
 
         return Stack(
           children: [
@@ -576,10 +676,19 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               onFlipCamera: canFlipCamera ? _handleFlipCamera : null,
               canFlipCamera: canFlipCamera,
               captureMode: widget.captureMode,
-              onTap: _isProcessing ? null : _handleTap,
+              isProcessing: _isFinalizingRecordingSession,
+              processingLabel: AppLocalizations.of(
+                context,
+              ).messageProcessingVideo,
+              doneLabel: AppLocalizations.of(context).buttonDone,
+              onDone: canFinalizeSession ? _finalizeRecordingSession : null,
+              onTap: onTap,
               onRecordStart: _isProcessing ? null : _handleRecordStart,
               onRecordStop: _isProcessing ? null : _handleRecordStop,
-              onOpenLibrary: _isProcessing || recordingState.isRecording
+              onOpenLibrary:
+                  _isProcessing ||
+                      recordingState.isRecording ||
+                      recordingState.hasSegments
                   ? null
                   : _openMediaLibraryPicker,
             ),
@@ -638,7 +747,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     // Defer modifying provider to avoid modifying while finalizing widget tree
     final notifier = _recordingNotifier;
     if (notifier != null) {
-      Future(notifier.reset);
+      unawaited(notifier.discardSession());
     }
     super.dispose();
   }
