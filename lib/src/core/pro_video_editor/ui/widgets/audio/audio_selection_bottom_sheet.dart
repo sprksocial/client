@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_edit_controls_section.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
 
@@ -118,10 +117,12 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.grey900,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -170,12 +171,14 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   }
 
   Widget _buildDragHandle() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(top: 12, bottom: 8),
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: AppColors.grey600,
+        color: colorScheme.outlineVariant,
         borderRadius: BorderRadius.circular(2),
       ),
     );
@@ -183,6 +186,8 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
 
   Widget _buildHeader() {
     final i18n = widget.configs.i18n.audioEditor;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
@@ -190,16 +195,16 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
           Expanded(
             child: Text(
               _showEditControls ? i18n.editTrack : 'Select Track',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
           if (!_showEditControls)
             IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
+              icon: Icon(Icons.close, color: colorScheme.onSurface),
               onPressed: () => Navigator.of(context).pop(),
             ),
         ],

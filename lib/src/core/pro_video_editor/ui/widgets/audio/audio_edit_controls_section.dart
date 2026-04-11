@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_waveform_selector.dart';
 
 /// Displays edit controls for the selected audio track.
@@ -95,10 +94,12 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
   }
 
   Widget _buildTrackInfo() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.grey800,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -128,10 +129,10 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
               children: [
                 Text(
                   widget.audioTrack.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: colorScheme.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -141,7 +142,7 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
                   widget.audioTrack.subtitle,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white.withAlpha(179),
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -169,15 +170,17 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
 
   Widget _buildBalanceSlider() {
     final balanceSliderBackground = _style.balanceSliderBackground;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Balance',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -216,15 +219,17 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
   }
 
   Widget _buildStartTimeSelector() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Start Time',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),

@@ -32,7 +32,7 @@ class AudioTrackListSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (audioTracks.isEmpty) {
-      return _buildEmptyState();
+      return _buildEmptyState(context);
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
@@ -53,7 +53,9 @@ class AudioTrackListSection extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -63,14 +65,14 @@ class AudioTrackListSection extends StatelessWidget {
             Icon(
               configs.audioEditor.icons.audioTrackDefaultIcon,
               size: 48,
-              color: Colors.white.withAlpha(128),
+              color: colorScheme.onSurfaceVariant.withAlpha(128),
             ),
             const SizedBox(height: 16),
             Text(
               'No audio tracks available',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white.withAlpha(179),
+                color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
