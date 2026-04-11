@@ -17,6 +17,8 @@ class VideoTimeline extends StatelessWidget {
     required this.onToggleFullscreen,
     required this.canUndo,
     required this.canRedo,
+    this.onTrimChanged,
+    this.onTrimEnd,
     super.key,
   });
 
@@ -30,6 +32,8 @@ class VideoTimeline extends StatelessWidget {
   final VoidCallback onToggleFullscreen;
   final bool canUndo;
   final bool canRedo;
+  final void Function(double start, double end)? onTrimChanged;
+  final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +61,8 @@ class VideoTimeline extends StatelessWidget {
                 onToggleMute: onToggleMute,
                 onAddSound: onAddSound,
                 onSeek: onSeek,
+                onTrimChanged: onTrimChanged,
+                onTrimEnd: onTrimEnd,
                 isMuted: videoTimelineState.isMuted,
               ),
             ],
@@ -96,13 +102,8 @@ class _TransportControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentPosition = Duration(
-      milliseconds:
-          (videoTimelineState.progress *
-                  videoTimelineState.videoDuration.inMilliseconds)
-              .round(),
-    );
-    final totalDuration = videoTimelineState.videoDuration;
+    final currentPosition = videoTimelineState.trimmedPosition;
+    final totalDuration = videoTimelineState.trimmedDuration;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -205,6 +206,8 @@ class _TracksSection extends StatelessWidget {
     required this.onAddSound,
     required this.onSeek,
     required this.isMuted,
+    this.onTrimChanged,
+    this.onTrimEnd,
   });
 
   final VideoTimelineState videoTimelineState;
@@ -212,6 +215,8 @@ class _TracksSection extends StatelessWidget {
   final VoidCallback onAddSound;
   final void Function(double progress) onSeek;
   final bool isMuted;
+  final void Function(double start, double end)? onTrimChanged;
+  final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -226,6 +231,8 @@ class _TracksSection extends StatelessWidget {
               videoTimelineState: videoTimelineState,
               onSeek: onSeek,
               onAddSound: onAddSound,
+              onTrimChanged: onTrimChanged,
+              onTrimEnd: onTrimEnd,
               pixelsPerSecond: 50,
             ),
           ),

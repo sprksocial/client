@@ -66,6 +66,8 @@ class VideoEditorConfigsBuilder {
     required VoidCallback onToggleMute,
     required VoidCallback onAddSound,
     required VoidCallback onToggleFullscreen,
+    void Function(double start, double end)? onTrimChanged,
+    void Function(double start, double end, bool isStartHandle)? onTrimEnd,
     Future<void> Function()? onMention,
     void Function(ProImageEditorState editor)? onDone,
     bool storyMode = false,
@@ -122,6 +124,8 @@ class VideoEditorConfigsBuilder {
                 onToggleMute: onToggleMute,
                 onAddSound: onAddSound,
                 onToggleFullscreen: onToggleFullscreen,
+                onTrimChanged: onTrimChanged,
+                onTrimEnd: onTrimEnd,
               );
             },
             stream: rebuildStream,

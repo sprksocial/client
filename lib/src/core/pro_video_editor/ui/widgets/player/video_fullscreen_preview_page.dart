@@ -164,15 +164,13 @@ class _OverlayControls extends StatelessWidget {
                   child: AnimatedBuilder(
                     animation: videoTimelineState,
                     builder: (context, _) {
-                      final duration = videoTimelineState.videoDuration;
+                      final duration = videoTimelineState.trimmedDuration;
                       final isDurationValid = duration.inMilliseconds > 0;
                       final progress = isDurationValid
-                          ? videoTimelineState.progress.clamp(0.0, 1.0)
+                          ? videoTimelineState.trimmedProgress
                           : 0.0;
-                      final currentPosition = Duration(
-                        milliseconds: (progress * duration.inMilliseconds)
-                            .round(),
-                      );
+                      final currentPosition =
+                          videoTimelineState.trimmedPosition;
 
                       return Column(
                         mainAxisSize: MainAxisSize.min,
@@ -225,7 +223,14 @@ class _OverlayControls extends StatelessWidget {
                             ),
                             child: Slider(
                               value: progress,
-                              onChanged: isDurationValid ? onSeek : null,
+                              onChanged: isDurationValid
+                                  ? (value) => onSeek(
+                                      videoTimelineState
+                                          .sourceProgressFromTrimmedProgress(
+                                            value,
+                                          ),
+                                    )
+                                  : null,
                             ),
                           ),
                         ],

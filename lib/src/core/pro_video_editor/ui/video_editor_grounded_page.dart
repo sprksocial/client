@@ -69,6 +69,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   /// Indicates whether a seek operation is in progress.
   bool _isSeeking = false;
 
+  /// Tracks whether reaching the end should jump back to the active span start.
+  ///
+  /// This is enabled only after the user explicitly starts playback, so manual
+  /// scrubbing to the end does not snap the editor back to the beginning.
+  bool _shouldResetOnPlaybackComplete = false;
+
   /// Stores the currently selected trim duration span.
   TrimDurationSpan? _durationSpan;
 
@@ -223,6 +229,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       onToggleMute: _onToggleMute,
       onAddSound: _showAudioSelectionBottomSheet,
       onToggleFullscreen: _openFullscreenPreview,
+      onTrimChanged: _onTrimChanged,
+      onTrimEnd: _onTrimEnd,
       onMention: widget.storyMode ? addStoryMention : null,
       onDone: widget.storyMode ? finishStoryEditing : null,
     );
@@ -349,9 +357,16 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     // Update audio timeline progress
     _videoTimelineState.setProgressFromDuration(duration);
 
-    if (_durationSpan != null && duration >= _durationSpan!.end) {
+    if (_durationSpan != null && duration < _durationSpan!.start) {
       _seekToPosition(_durationSpan!);
-    } else if (duration >= totalVideoDuration) {
+    } else if (_durationSpan != null &&
+        duration >= _durationSpan!.end &&
+        _shouldResetOnPlaybackComplete) {
+      _shouldResetOnPlaybackComplete = false;
+      _seekToPosition(_durationSpan!);
+    } else if (duration >= totalVideoDuration &&
+        _shouldResetOnPlaybackComplete) {
+      _shouldResetOnPlaybackComplete = false;
       _seekToPosition(
         TrimDurationSpan(start: Duration.zero, end: totalVideoDuration),
       );
@@ -359,34 +374,45 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   }
 
   Future<void> _seekToPosition(TrimDurationSpan span) async {
+    await _seekToTrimPosition(span, span.start);
+  }
+
+  Future<void> _seekToTrimPosition(
+    TrimDurationSpan span,
+    Duration targetPosition,
+  ) async {
     _durationSpan = span;
 
     if (_isSeeking) {
-      _tempDurationSpan = span; // Store the latest seek request
+      _tempDurationSpan = span;
       return;
     }
     _isSeeking = true;
 
     _proVideoController!.pause();
-    _proVideoController!.setPlayTime(_durationSpan!.start);
+    _proVideoController!.setPlayTime(targetPosition);
 
     await _videoController.pause();
-    await _videoController.seekTo(span.start);
+    await _videoController.seekTo(targetPosition);
+    _videoTimelineState.setProgressFromDuration(targetPosition);
 
     _isSeeking = false;
 
-    // Check if there's a pending seek request
     if (_tempDurationSpan != null) {
       final nextSeek = _tempDurationSpan!;
-      _tempDurationSpan = null; // Clear the pending seek
-      await _seekToPosition(nextSeek); // Process the latest request
+      _tempDurationSpan = null;
+      await _seekToTrimPosition(nextSeek, nextSeek.start);
     }
   }
 
   void _onTimelineSeek(double progress) {
+    _shouldResetOnPlaybackComplete = false;
     final duration = _videoMetadata.duration;
+    final targetProgress = progress
+        .clamp(_videoTimelineState.trimStart, _videoTimelineState.trimEnd)
+        .toDouble();
     final targetPosition = Duration(
-      milliseconds: (duration.inMilliseconds * progress).round(),
+      milliseconds: (duration.inMilliseconds * targetProgress).round(),
     );
 
     _videoController.seekTo(targetPosition);
@@ -395,16 +421,52 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   }
 
   void _onTogglePlay() {
-    // Use ProVideoController to toggle play state - this updates the internal
-    // overlay and triggers the video player callbacks we've configured
     _proVideoController?.togglePlayState();
   }
 
   void _onToggleMute() {
-    // Use ProVideoController to toggle mute state - this updates the internal
-    // state and triggers our configured onMuteToggle callback
     final isMuted = _proVideoController?.isMutedNotifier.value ?? false;
     _proVideoController?.setMuteState(!isMuted);
+  }
+
+  void _onTrimChanged(double start, double end) {
+    _shouldResetOnPlaybackComplete = false;
+    if (_videoController.value.isPlaying) {
+      _proVideoController?.pause();
+    }
+    _setTrimSpan(_spanFromTrimFractions(start, end));
+  }
+
+  Future<void> _onTrimEnd(double start, double end, bool isStartHandle) async {
+    final span = _spanFromTrimFractions(start, end);
+    _setTrimSpan(span);
+    if (isStartHandle) {
+      await _seekToPosition(span);
+      return;
+    }
+
+    final currentPosition = _videoController.value.position;
+    final clampedPosition = currentPosition < span.start
+        ? span.start
+        : (currentPosition > span.end ? span.end : currentPosition);
+    await _seekToTrimPosition(span, clampedPosition);
+  }
+
+  TrimDurationSpan _spanFromTrimFractions(double start, double end) {
+    final totalMs = _videoMetadata.duration.inMilliseconds;
+    final clampedStart = start.clamp(0.0, 1.0).toDouble();
+    final clampedEnd = end.clamp(0.0, 1.0).toDouble();
+    final trimStart = math.min(clampedStart, clampedEnd);
+    final trimEnd = math.max(clampedStart, clampedEnd);
+    return TrimDurationSpan(
+      start: Duration(milliseconds: (trimStart * totalMs).round()),
+      end: Duration(milliseconds: (trimEnd * totalMs).round()),
+    );
+  }
+
+  void _setTrimSpan(TrimDurationSpan span) {
+    _durationSpan = span;
+    _proVideoController?.setTrimSpan(span);
   }
 
   Future<void> _openFullscreenPreview() async {
@@ -552,8 +614,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       colorFilters: parameters.colorFilters
           .map((matrix) => ColorFilter(matrix: matrix))
           .toList(),
-      startTime: parameters.startTime,
-      endTime: parameters.endTime,
+      startTime: _durationSpan?.start ?? parameters.startTime,
+      endTime: _durationSpan?.end ?? parameters.endTime,
       transform: exportTransform,
       bitrate: shouldCompressForUpload
           ? _uploadCompressionBitrate
@@ -632,8 +694,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   }
 
   bool _hasTrim(CompleteParameters parameters) {
-    final startTime = parameters.startTime ?? Duration.zero;
-    final endTime = parameters.endTime ?? _videoMetadata.duration;
+    final startTime =
+        _durationSpan?.start ?? parameters.startTime ?? Duration.zero;
+    final endTime =
+        _durationSpan?.end ?? parameters.endTime ?? _videoMetadata.duration;
 
     return startTime > _trimTolerance ||
         _videoMetadata.duration - endTime > _trimTolerance;
@@ -841,10 +905,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
             onCloseEditor: onCloseEditor,
             videoEditorCallbacks: VideoEditorCallbacks(
               onPause: () {
+                _shouldResetOnPlaybackComplete = false;
                 _videoController.pause();
                 _videoTimelineState.setPlaying(isPlaying: false);
               },
               onPlay: () {
+                _shouldResetOnPlaybackComplete = true;
                 _videoController.play();
                 _videoTimelineState.setPlaying(isPlaying: true);
               },
