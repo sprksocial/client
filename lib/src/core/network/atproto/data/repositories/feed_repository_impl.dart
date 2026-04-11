@@ -1209,11 +1209,26 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       // Check if the video is in a compatible format
-      final videoSizeBytes = await file.length();
-      if (videoSizeBytes == 0) {
+      // Use BigInt to avoid overflow for very large files (>2GB)
+      final videoSizeBigInt = BigInt.from(await file.length());
+      if (videoSizeBigInt == BigInt.zero) {
         throw Exception('Video file is empty');
       }
 
+      // Check for integer overflow (files > 2GB could overflow int on 32-bit)
+      if (videoSizeBigInt > BigInt.from(2 * 1024 * 1024 * 1024)) {
+        _logger.w(
+          'Video file exceeds 2GB, may cause issues: $videoSizeBigInt bytes',
+        );
+        throw VideoUploadException(
+          'Video is too large. Maximum supported size is 2GB.',
+          statusCode: 413,
+          uploadSizeBytes: videoSizeBigInt.toInt(),
+          limitBytes: 2 * 1024 * 1024 * 1024,
+        );
+      }
+
+      final videoSizeBytes = videoSizeBigInt.toInt();
       _logger.i('Video file size: $videoSizeBytes bytes');
       final maxUploadSizeBytes = (AppConfig.maxUploadSizeMB * 1024 * 1024)
           .round();
@@ -1227,6 +1242,17 @@ class FeedRepositoryImpl implements FeedRepository {
           statusCode: 413,
           uploadSizeBytes: videoSizeBytes,
           limitBytes: maxUploadSizeBytes,
+        );
+      }
+
+      // Validate content length will fit in HTTP header (max ~2GB for int32)
+      if (videoSizeBytes > 2147483647) {
+        _logger.e('Video file too large for HTTP content-length header');
+        throw VideoUploadException(
+          'Video is too large to upload.',
+          statusCode: 413,
+          uploadSizeBytes: videoSizeBytes,
+          limitBytes: 2147483647,
         );
       }
 
@@ -1293,7 +1319,9 @@ class FeedRepositoryImpl implements FeedRepository {
       // Poll job status until it finishes (handles both QUEUED and PROCESSING)
       var jobState = responseData['jobStatus']?['state'] as String?;
       var attempts = 0;
+      var consecutivePollErrors = 0;
       const maxAttempts = 120; // ~4 minutes at 2s interval
+      const maxConsecutivePollErrors = 3; // Allow 3 consecutive polling errors
       while (jobState == 'JOB_STATE_QUEUED' ||
           jobState == 'JOB_STATE_PROCESSING') {
         _logger.d('Video upload in progress, status: $jobState');
@@ -1325,13 +1353,34 @@ class FeedRepositoryImpl implements FeedRepository {
           responseData = jsonDecode(response.body);
           _logger.d('Video upload status response: $responseData');
           jobState = responseData['jobStatus']?['state'] as String?;
+          // Reset consecutive errors on success
+          consecutivePollErrors = 0;
         } catch (e) {
-          // Network or parsing error during polling - log and rethrow
-          _logger.e(
-            'Error polling video upload status on attempt $attempts/$maxAttempts',
-            error: e,
+          // Network or parsing error during polling - log and retry
+          consecutivePollErrors++;
+          _logger.w(
+            'Error polling video upload status on attempt '
+            '$attempts/$maxAttempts '
+            '(consecutive errors: $consecutivePollErrors/$maxConsecutivePollErrors): '
+            '$e',
           );
-          rethrow;
+
+          // Only fail if we've had too many consecutive errors
+          if (consecutivePollErrors >= maxConsecutivePollErrors) {
+            _logger.e(
+              'Too many consecutive polling errors, giving up: $e',
+              error: e,
+            );
+            throw Exception(
+              'Failed to check video upload status after '
+              '$maxConsecutivePollErrors attempts: $e',
+            );
+          }
+
+          // Continue polling on transient errors
+          _logger.d('Retrying poll after error...');
+          jobState =
+              'JOB_STATE_PROCESSING'; // Assume still processing and retry
         }
       }
 
