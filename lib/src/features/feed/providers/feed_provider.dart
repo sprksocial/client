@@ -29,13 +29,27 @@ class FeedNotifier extends _$FeedNotifier {
   late final SparkLogger _logger;
   late final DownloadManagerInterface _downloadManager;
 
+  // Track active fetch operation for cancellation
+  int _fetchGeneration = 0;
+
   // Add a flag to track if this notifier has been built before
   bool _hasBeenBuilt = false;
   FeedState? _preservedState;
 
   @override
   FeedState build(Feed feed) {
+    // Track previous feed to detect changes
+    final previousFeed = _hasBeenBuilt ? _feed : null;
     _feed = feed;
+
+    // If feed changed, increment generation to cancel any pending fetches
+    if (previousFeed != null && previousFeed.config.id != feed.config.id) {
+      _fetchGeneration++;
+      _logger.d(
+        'Feed changed from ${previousFeed.config.id} to ${feed.config.id}, '
+        'incremented generation to $_fetchGeneration',
+      );
+    }
 
     // Initialize logger first for debugging
     if (!_isInitialized()) {
@@ -100,6 +114,10 @@ class FeedNotifier extends _$FeedNotifier {
       return;
     }
 
+    // Increment fetch generation to invalidate any in-flight fetches
+    _fetchGeneration++;
+    final currentGeneration = _fetchGeneration;
+
     _isLoadingInProgress = true;
     try {
       state = state.copyWith(
@@ -112,16 +130,23 @@ class FeedNotifier extends _$FeedNotifier {
       await _maybeFetchNextBatch(
         limit: FeedState.firstLoadLimit,
         replaceExisting: true,
+        generation: currentGeneration,
       );
     } catch (e, stackTrace) {
-      _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
-      _lastErrorTime = DateTime.now();
-      if (ref.mounted) {
+      // Only update state if this is still the current generation
+      if (ref.mounted && _fetchGeneration == currentGeneration) {
+        _logger.e(
+          'Error in loadAndUpdateFirstLoad: $e',
+          stackTrace: stackTrace,
+        );
+        _lastErrorTime = DateTime.now();
         state = state.copyWith(loadingFirstLoad: false, error: true);
       }
     } finally {
       _isLoadingInProgress = false;
-      if (ref.mounted && state.loadingFirstLoad) {
+      if (ref.mounted &&
+          _fetchGeneration == currentGeneration &&
+          state.loadingFirstLoad) {
         state = state.copyWith(loadingFirstLoad: false);
       }
     }
@@ -131,9 +156,19 @@ class FeedNotifier extends _$FeedNotifier {
     List<PostView> posts, {
     String? cursor,
     bool replaceExisting = false,
+    int? generation,
   }) async {
+    // Check if generation has changed
+    if (generation != null && generation != _fetchGeneration) {
+      _logger.d('Process posts superseded by newer generation');
+      return;
+    }
+
     if (posts.isEmpty) {
-      state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
+      if (ref.mounted &&
+          (generation == null || generation == _fetchGeneration)) {
+        state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
+      }
       return;
     }
 
@@ -208,24 +243,34 @@ class FeedNotifier extends _$FeedNotifier {
 
       if (!ref.mounted) return;
 
+      // Check generation after async operation
+      if (generation != null && generation != _fetchGeneration) {
+        _logger.d('Process posts superseded after filtering');
+        return;
+      }
+
       if (filteredPosts.isEmpty) {
-        state = state.copyWith(
-          cursor: cursor,
-          extraInfo: extraInfo,
-          loadingFirstLoad: false,
-        );
+        if (generation == null || generation == _fetchGeneration) {
+          state = state.copyWith(
+            cursor: cursor,
+            extraInfo: extraInfo,
+            loadingFirstLoad: false,
+          );
+        }
         return;
       }
 
       final updatedPosts = replaceExisting
           ? filteredPosts
           : [...state.loadedPosts, ...filteredPosts];
-      state = state.copyWith(
-        loadedPosts: updatedPosts,
-        cursor: cursor,
-        extraInfo: extraInfo,
-        loadingFirstLoad: false,
-      );
+      if (generation == null || generation == _fetchGeneration) {
+        state = state.copyWith(
+          loadedPosts: updatedPosts,
+          cursor: cursor,
+          extraInfo: extraInfo,
+          loadingFirstLoad: false,
+        );
+      }
 
       for (final post in filteredPosts) {
         _downloadManager.submitTask(
@@ -299,6 +344,7 @@ class FeedNotifier extends _$FeedNotifier {
   Future<void> _maybeFetchNextBatch({
     int? limit,
     bool replaceExisting = false,
+    int? generation,
   }) async {
     if (_isFetching || state.isEndOfNetworkFeed) {
       return;
@@ -312,13 +358,28 @@ class FeedNotifier extends _$FeedNotifier {
       const maxConsecutiveEmpty = 3;
       while (attempts < maxAttempts && !state.isEndOfNetworkFeed) {
         attempts++;
+
+        // Check if generation has changed (fetch was superseded)
+        if (generation != null && generation != _fetchGeneration) {
+          _logger.d('Fetch superseded by newer generation, cancelling');
+          return;
+        }
+
         final (:count, :posts, :cursor) = await fetch(limit: limit);
+
+        // Check again after await
+        if (generation != null && generation != _fetchGeneration) {
+          _logger.d('Fetch superseded after network call, discarding results');
+          return;
+        }
+
         final fetchedCount = count;
         final fetchedPosts = posts;
         if (fetchedPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            if (ref.mounted) {
+            if (ref.mounted &&
+                (generation == null || generation == _fetchGeneration)) {
               state = state.copyWith(
                 loadingFirstLoad: false,
                 isEndOfNetworkFeed: true,
@@ -330,7 +391,8 @@ class FeedNotifier extends _$FeedNotifier {
             consecutiveEmptyResults++;
             if (consecutiveEmptyResults >= maxConsecutiveEmpty) {
               await endOfNetworkFeed();
-              if (ref.mounted) {
+              if (ref.mounted &&
+                  (generation == null || generation == _fetchGeneration)) {
                 state = state.copyWith(
                   loadingFirstLoad: false,
                   isEndOfNetworkFeed: true,
@@ -339,7 +401,8 @@ class FeedNotifier extends _$FeedNotifier {
               break;
             }
           }
-          if (ref.mounted) {
+          if (ref.mounted &&
+              (generation == null || generation == _fetchGeneration)) {
             state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
           }
           continue;
@@ -351,7 +414,8 @@ class FeedNotifier extends _$FeedNotifier {
         if (newPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            if (ref.mounted) {
+            if (ref.mounted &&
+                (generation == null || generation == _fetchGeneration)) {
               state = state.copyWith(
                 loadingFirstLoad: false,
                 isEndOfNetworkFeed: true,
@@ -359,7 +423,8 @@ class FeedNotifier extends _$FeedNotifier {
             }
             break;
           }
-          if (ref.mounted) {
+          if (ref.mounted &&
+              (generation == null || generation == _fetchGeneration)) {
             state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
           }
           continue;
@@ -369,13 +434,16 @@ class FeedNotifier extends _$FeedNotifier {
           newPosts,
           cursor: cursor,
           replaceExisting: replaceExisting,
+          generation: generation,
         );
         break;
       }
     } catch (e, stackTrace) {
-      _logger.e('Error prefetching feed: $e', stackTrace: stackTrace);
-      _lastErrorTime = DateTime.now();
-      if (ref.mounted) {
+      // Only update error state if this generation is still current
+      if (ref.mounted &&
+          (generation == null || generation == _fetchGeneration)) {
+        _logger.e('Error prefetching feed: $e', stackTrace: stackTrace);
+        _lastErrorTime = DateTime.now();
         state = state.copyWith(error: true, loadingFirstLoad: false);
       }
       rethrow;
