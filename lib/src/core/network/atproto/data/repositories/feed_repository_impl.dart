@@ -778,82 +778,90 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<RepoStrongRef> likePost(String postCid, AtUri postUri) async {
     _logger.d('Liking post with String: $postCid, URI: $postUri');
 
-    // Determine if this is a Bluesky post or Spark post
-    final isBskyPost = postUri.collection.toString().startsWith(
-      'app.bsky.feed.post',
-    );
-    final likeType = isBskyPost ? 'app.bsky.feed.like' : 'so.sprk.feed.like';
+    return _client.executeWithRetry(() async {
+      // Determine if this is a Bluesky post or Spark post
+      final isBskyPost = postUri.collection.toString().startsWith(
+        'app.bsky.feed.post',
+      );
+      final likeType = isBskyPost ? 'app.bsky.feed.like' : 'so.sprk.feed.like';
 
-    _logger.d(
-      'Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: '
-      '$likeType',
-    );
+      _logger.d(
+        'Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: '
+        '$likeType',
+      );
 
-    final likeRecord = {
-      r'$type': likeType,
-      'subject': {'cid': postCid, 'uri': postUri.toString()},
-      'createdAt': DateTime.now().toUtc().toIso8601String(),
-    };
+      final likeRecord = {
+        r'$type': likeType,
+        'subject': {'cid': postCid, 'uri': postUri.toString()},
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+      };
 
-    final result = await _client.repo.createRecord(
-      collection: likeType,
-      record: likeRecord,
-    );
-    _logger.i('Post liked successfully: ${result.uri}');
+      final result = await _client.repo.createRecord(
+        collection: likeType,
+        record: likeRecord,
+      );
+      _logger.i('Post liked successfully: ${result.uri}');
 
-    return result;
+      return result;
+    });
   }
 
   @override
   Future<void> unlikePost(AtUri likeUri) async {
     _logger.d('Unliking post with like URI: $likeUri');
-    await _client.repo.deleteRecord(
-      uri: likeUri,
-      skipBskyCrosspostCleanup: true,
-    );
-    _logger.i('Post unliked successfully');
+    return _client.executeWithRetry(() async {
+      await _client.repo.deleteRecord(
+        uri: likeUri,
+        skipBskyCrosspostCleanup: true,
+      );
+      _logger.i('Post unliked successfully');
+    });
   }
 
   @override
   Future<RepoStrongRef> repostPost(String postCid, AtUri postUri) async {
     _logger.d('Reposting post with CID: $postCid, URI: $postUri');
 
-    // Determine if this is a Bluesky post or Spark post
-    final isBskyPost = postUri.collection.toString().startsWith(
-      'app.bsky.feed.post',
-    );
-    final repostType = isBskyPost
-        ? 'app.bsky.feed.repost'
-        : 'so.sprk.feed.repost';
+    return _client.executeWithRetry(() async {
+      // Determine if this is a Bluesky post or Spark post
+      final isBskyPost = postUri.collection.toString().startsWith(
+        'app.bsky.feed.post',
+      );
+      final repostType = isBskyPost
+          ? 'app.bsky.feed.repost'
+          : 'so.sprk.feed.repost';
 
-    _logger.d(
-      'Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: '
-      '$repostType',
-    );
+      _logger.d(
+        'Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: '
+        '$repostType',
+      );
 
-    final repostRecord = {
-      r'$type': repostType,
-      'subject': {'cid': postCid, 'uri': postUri.toString()},
-      'createdAt': DateTime.now().toUtc().toIso8601String(),
-    };
+      final repostRecord = {
+        r'$type': repostType,
+        'subject': {'cid': postCid, 'uri': postUri.toString()},
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+      };
 
-    final result = await _client.repo.createRecord(
-      collection: repostType,
-      record: repostRecord,
-    );
-    _logger.i('Post reposted successfully: ${result.uri}');
+      final result = await _client.repo.createRecord(
+        collection: repostType,
+        record: repostRecord,
+      );
+      _logger.i('Post reposted successfully: ${result.uri}');
 
-    return result;
+      return result;
+    });
   }
 
   @override
   Future<void> unrepostPost(AtUri repostUri) async {
     _logger.d('Unreposting post with repost URI: $repostUri');
-    await _client.repo.deleteRecord(
-      uri: repostUri,
-      skipBskyCrosspostCleanup: true,
-    );
-    _logger.i('Post unreposted successfully');
+    return _client.executeWithRetry(() async {
+      await _client.repo.deleteRecord(
+        uri: repostUri,
+        skipBskyCrosspostCleanup: true,
+      );
+      _logger.i('Post unreposted successfully');
+    });
   }
 
   @override

@@ -181,6 +181,11 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     List<dynamic>? facets,
     String? embed,
   }) async {
+    // NOTE: We intentionally do NOT retry sendMessage because it's not
+    // idempotent. Retrying could create duplicate user-visible messages
+    // if the first request succeeded but the connection dropped before
+    // the client received the response.
+    // See: https://docs.aws.amazon.com/general/latest/gr/api-retries.html
     final body = <String, dynamic>{
       'convoId': convoId,
       'message': <String, dynamic>{

@@ -158,11 +158,13 @@ class GraphRepositoryImpl implements GraphRepository {
   @override
   Future<void> unfollowUser(AtUri followUri) async {
     _logger.d('Unfollowing user with follow URI: $followUri');
-    await _client.repo.deleteRecord(
-      uri: followUri,
-      skipBskyCrosspostCleanup: true,
-    );
-    _logger.i('User unfollowed successfully');
+    return _client.executeWithRetry(() async {
+      await _client.repo.deleteRecord(
+        uri: followUri,
+        skipBskyCrosspostCleanup: true,
+      );
+      _logger.i('User unfollowed successfully');
+    });
   }
 
   @override
@@ -291,11 +293,13 @@ class GraphRepositoryImpl implements GraphRepository {
   @override
   Future<void> unblockUser(AtUri blockUri) async {
     _logger.d('Unblocking user with block URI: $blockUri');
-    await _client.repo.deleteRecord(
-      uri: blockUri,
-      skipBskyCrosspostCleanup: true,
-    );
-    _logger.i('User unblocked successfully');
+    return _client.executeWithRetry(() async {
+      await _client.repo.deleteRecord(
+        uri: blockUri,
+        skipBskyCrosspostCleanup: true,
+      );
+      _logger.i('User unblocked successfully');
+    });
   }
 
   @override
