@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -18,11 +20,13 @@ import 'package:spark/src/features/notifications/models/grouped_notification.dar
 class NotificationItem extends ConsumerStatefulWidget {
   const NotificationItem({
     required this.groupedNotification,
+    required this.isVisibleInViewport,
     this.onViewed,
     super.key,
   });
 
   final GroupedNotification groupedNotification;
+  final bool isVisibleInViewport;
   final VoidCallback? onViewed;
 
   @override
@@ -31,6 +35,7 @@ class NotificationItem extends ConsumerStatefulWidget {
 
 class _NotificationItemState extends ConsumerState<NotificationItem> {
   bool _hasBeenViewed = false;
+  Timer? _viewTimer;
 
   SprkRepository get _sprkRepository => GetIt.instance<SprkRepository>();
 
@@ -41,14 +46,45 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
   @override
   void initState() {
     super.initState();
-    // Mark as viewed after a short delay to ensure it's actually visible
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted && !_hasBeenViewed && !widget.groupedNotification.isRead) {
-          _hasBeenViewed = true;
-          _markAsViewed();
-        }
-      });
+    _updateViewTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant NotificationItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.isVisibleInViewport != widget.isVisibleInViewport ||
+        oldWidget.groupedNotification.isRead !=
+            widget.groupedNotification.isRead) {
+      _updateViewTimer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _viewTimer?.cancel();
+    super.dispose();
+  }
+
+  void _updateViewTimer() {
+    _viewTimer?.cancel();
+
+    if (_hasBeenViewed ||
+        widget.groupedNotification.isRead ||
+        !widget.isVisibleInViewport) {
+      return;
+    }
+
+    _viewTimer = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted ||
+          _hasBeenViewed ||
+          widget.groupedNotification.isRead ||
+          !widget.isVisibleInViewport) {
+        return;
+      }
+
+      _hasBeenViewed = true;
+      _markAsViewed();
     });
   }
 
