@@ -15,17 +15,45 @@ class Camera extends _$Camera {
   late final SparkLogger _logger;
   AppLifecycleListener? _lifecycleListener;
 
+  // Track if camera was disposed due to app lifecycle (not user navigation)
+  bool _wasDisposedByLifecycle = false;
+
   @override
   FutureOr<CameraState> build() async {
     _logger = GetIt.instance<LogService>().getLogger('Camera');
 
-    ref.onDispose(_disposeCamera);
+    // Only dispose lifecycle listener when provider is permanently disposed
+    // Don't use _disposeCamera here - we need to keep lifecycle listener
+    // active so we can detect when app returns to foreground
+    ref.onDispose(_disposeLifecycleListener);
 
-    // Listen to app lifecycle to dispose camera when backgrounded
-    _lifecycleListener = AppLifecycleListener(
+    // Listen to app lifecycle to pause/resume camera
+    // Note: onHide is for app fully backgrounded (not transient inactive states)
+    // onShow handles when app returns to foreground
+    _lifecycleListener ??= AppLifecycleListener(
       onHide: _onAppBackgrounded,
-      onInactive: _onAppBackgrounded,
+      onShow: _onAppForegrounded,
     );
+
+    // If camera was disposed by lifecycle, reinitialize now
+    if (_wasDisposedByLifecycle && state.value != null) {
+      _logger.i('Reinitializing camera after app resume');
+      _wasDisposedByLifecycle = false;
+      try {
+        return await _initializeCamera();
+      } catch (e, stackTrace) {
+        _logger.e(
+          'Failed to reinitialize camera after resume',
+          error: e,
+          stackTrace: stackTrace,
+        );
+        // Return error state but don't crash
+        return CameraState(
+          error: 'Failed to restart camera: $e',
+          cameras: state.value?.cameras ?? [],
+        );
+      }
+    }
 
     _logger.i('Initializing camera provider');
 
@@ -321,10 +349,6 @@ class Camera extends _$Camera {
   Future<void> _disposeCamera() async {
     _logger.d('Disposing camera');
 
-    // Dispose lifecycle listener to prevent further callbacks
-    _lifecycleListener?.dispose();
-    _lifecycleListener = null;
-
     try {
       final currentState = state.value;
       final controller = currentState?.controller;
@@ -366,6 +390,13 @@ class Camera extends _$Camera {
     }
   }
 
+  /// Disposes the lifecycle listener. Should only be called when provider
+  /// is being permanently disposed (not for lifecycle pauses).
+  void _disposeLifecycleListener() {
+    _lifecycleListener?.dispose();
+    _lifecycleListener = null;
+  }
+
   Future<void> _waitForPreviewDetach() async {
     if (!ref.mounted) return;
 
@@ -387,11 +418,24 @@ class Camera extends _$Camera {
     }
   }
 
-  /// Handles app lifecycle changes when app is backgrounded or becomes inactive.
+  /// Handles app lifecycle changes when app is fully backgrounded (onHide).
   /// Disposes the camera to free resources and prevent battery drain.
   void _onAppBackgrounded() {
-    _logger.i('App backgrounded/inactive, disposing camera');
+    _logger.i('App backgrounded, disposing camera');
+    _wasDisposedByLifecycle = true;
     _disposeCamera();
+  }
+
+  /// Handles app lifecycle changes when app returns to foreground (onShow).
+  /// Triggers a rebuild which will reinitialize the camera.
+  void _onAppForegrounded() {
+    _logger.i('App returned to foreground');
+    if (_wasDisposedByLifecycle) {
+      _logger.d('Camera was disposed by lifecycle, will reinitialize');
+      // Trigger a rebuild by invalidating the state
+      // The build method will check _wasDisposedByLifecycle and reinit
+      ref.invalidateSelf();
+    }
   }
 
   Future<void> disposeCamera() async {
