@@ -77,7 +77,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       final currentState = ref.read(onboardingProvider).value;
       if (currentState?.localAvatarBytes != null) {
         avatarToUse = currentState!.localAvatarBytes;
-      } else if (currentState?.bskyProfileRecord?.avatar != null) {
+      } else if (currentState?.removeInitialAvatar != true &&
+          currentState?.bskyProfileRecord?.avatar != null) {
         avatarToUse = currentState!.bskyProfileRecord!.avatar;
       }
 
@@ -159,6 +160,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           ),
         ),
         data: (state) {
+          final hasImportedBskyProfile = state.bskyProfileRecord != null;
           ImageProvider<Object>? avatarImageProvider;
           if (state.localAvatarBytes != null) {
             avatarImageProvider = MemoryImage(state.localAvatarBytes!);
@@ -169,6 +171,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           }
 
           final hasLocalAvatar = state.localAvatarBytes != null;
+          final hasInitialAvatar =
+              (state.initialAvatarUrl?.isNotEmpty ?? false) ||
+              (state.initialAvatarCid?.isNotEmpty ?? false);
           final isAvatarActive =
               hasLocalAvatar || notifier.currentAvatarDisplayUrl != null;
 
@@ -180,6 +185,22 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (hasImportedBskyProfile) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          'We found your Bluesky profile in your repo and used it to autofill these details. You can change anything here before continuing, and this profile only appears in Spark, not on Bluesky.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     Center(
                       child: Stack(
                         alignment: Alignment.bottomRight,
@@ -250,6 +271,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                         ],
                       ),
                     ),
+                    if (state.removeInitialAvatar && hasInitialAvatar) ...[
+                      const SizedBox(height: 8),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: notifier.revertAvatarToInitial,
+                          icon: const Icon(Icons.undo),
+                          label: const Text('Use Bluesky avatar'),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Form(
                       key: _formKey,

@@ -38,11 +38,8 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       }
 
       final profileDataMap = await _onboardingRepository.getBskyProfile();
-
       final avatarCid = profileDataMap?.avatar?.ref.link;
-      final avatarUrl = avatarCid != null && avatarCid.isNotEmpty
-          ? 'https://cdn.bsky.app/img/avatar/plain/$userDid/$avatarCid@jpeg'
-          : null;
+      final avatarUrl = await _onboardingRepository.getBskyAvatarUrl();
 
       return OnboardingScreenState(
         isLoading: false,
@@ -91,7 +88,12 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null && state.hasValue) {
       final bytes = await pickedFile.readAsBytes();
-      state = AsyncValue.data(state.value!.copyWith(localAvatarBytes: bytes));
+      state = AsyncValue.data(
+        state.value!.copyWith(
+          localAvatarBytes: bytes,
+          removeInitialAvatar: false,
+        ),
+      );
     }
   }
 
@@ -117,13 +119,28 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
   void revertAvatarToInitial() {
     if (state.hasValue) {
-      state = AsyncValue.data(state.value!.copyWith(localAvatarBytes: null));
+      state = AsyncValue.data(
+        state.value!.copyWith(
+          localAvatarBytes: null,
+          removeInitialAvatar: false,
+        ),
+      );
     }
   }
 
   void clearAvatarSelection() {
     if (state.hasValue) {
-      state = AsyncValue.data(state.value!.copyWith(localAvatarBytes: null));
+      final current = state.value!;
+      final hasInitialAvatar =
+          (current.initialAvatarUrl?.isNotEmpty ?? false) ||
+          (current.initialAvatarCid?.isNotEmpty ?? false);
+
+      state = AsyncValue.data(
+        current.copyWith(
+          localAvatarBytes: null,
+          removeInitialAvatar: hasInitialAvatar,
+        ),
+      );
     }
   }
 
@@ -132,6 +149,10 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     if (currentVal == null) return null;
 
     if (currentVal.localAvatarBytes != null) {
+      return null;
+    }
+
+    if (currentVal.removeInitialAvatar) {
       return null;
     }
 
@@ -156,6 +177,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     Uint8List? avatarBytes,
     String? initialAvatarUrl,
     String? initialAvatarCid,
+    bool removeInitialAvatar,
   })?
   getOnboardingDataForNextStep() {
     if (!state.hasValue) return null;
@@ -166,6 +188,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       avatarBytes: current.localAvatarBytes,
       initialAvatarUrl: current.initialAvatarUrl,
       initialAvatarCid: current.initialAvatarCid,
+      removeInitialAvatar: current.removeInitialAvatar,
     );
   }
 }

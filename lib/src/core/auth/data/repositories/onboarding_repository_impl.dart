@@ -56,14 +56,60 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
   @override
   Future<ActorProfileRecord?> getBskyProfile() async {
-    if (_did == null) return null;
+    await _authRepository.initializationComplete;
+
+    if (_did == null || _did!.isEmpty) return null;
 
     try {
+      final atproto = _atproto;
+      if (atproto == null) {
+        _logger.w('AtProto not initialized while fetching Bluesky profile');
+        return null;
+      }
+
       final uri = AtUri.parse('at://$_did/app.bsky.actor.profile/self');
-      final response = await _repoRepository.getRecord(uri: uri);
-      return ActorProfileRecord.fromJson(response.record.toJson());
+      final response = await atproto.repo.getRecord(
+        repo: uri.hostname,
+        collection: uri.collection.toString(),
+        rkey: uri.rkey,
+      );
+
+      return ActorProfileRecord.fromJson(response.data.value);
     } catch (e) {
       _logger.i('Bluesky profile not found', error: e);
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> getBskyAvatarUrl() async {
+    await _authRepository.initializationComplete;
+
+    if (_did == null || _did!.isEmpty) return null;
+
+    try {
+      final atproto = _atproto;
+      if (atproto == null) {
+        _logger.w('AtProto not initialized while fetching Bluesky avatar URL');
+        return null;
+      }
+
+      final oauthSession = atproto.oAuthSession;
+      if (oauthSession == null) {
+        _logger.w('OAuth session missing while fetching Bluesky avatar URL');
+        return null;
+      }
+
+      final bluesky = bs.Bluesky.fromOAuthSession(oauthSession);
+      final profile = await bluesky.actor.getProfile(actor: _did!);
+
+      return profile.data.avatar;
+    } catch (e, s) {
+      _logger.i(
+        'Failed to resolve Bluesky avatar URL',
+        error: e,
+        stackTrace: s,
+      );
       return null;
     }
   }

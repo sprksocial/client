@@ -13,6 +13,7 @@ abstract class OnboardingScreenState with _$OnboardingScreenState {
     String? initialAvatarCid,
     String? initialAvatarUrl,
     Uint8List? localAvatarBytes,
+    @Default(false) bool removeInitialAvatar,
     @Default('') String displayName,
     @Default('') String description,
     String? errorMessage,

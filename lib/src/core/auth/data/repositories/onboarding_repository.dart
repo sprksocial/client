@@ -8,6 +8,9 @@ abstract class OnboardingRepository {
   /// Retrieves the Bluesky profile for import
   Future<ActorProfileRecord?> getBskyProfile();
 
+  /// Retrieves the resolved Bluesky avatar URL for the current user.
+  Future<String?> getBskyAvatarUrl();
+
   /// Creates a Spark actor profile with custom values
   Future<void> createSparkProfile({
     required String displayName,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import 'package:spark/src/core/utils/logging/console_output.dart';
@@ -11,10 +13,12 @@ class LoggerFactory {
   /// Global minimum log level
   static LogLevel _globalMinLevel = LogLevel.warning;
 
+  static bool get _supportsFileLogging => !kIsWeb && !Platform.isIOS;
+
   /// List of default outputs
   static final List<LogOutput> _defaultOutputs = [
     ConsoleOutput(),
-    if (!kIsWeb) FileOutput(),
+    if (_supportsFileLogging) FileOutput(),
   ];
 
   /// Map of logger instances by name
@@ -69,7 +73,7 @@ class LoggerFactory {
     _defaultOutputs
       ..clear()
       ..add(ConsoleOutput());
-    if (!kIsWeb) {
+    if (_supportsFileLogging) {
       _defaultOutputs.add(FileOutput());
     }
     _globalMinLevel = LogLevel.warning;
