@@ -92,7 +92,6 @@ class PushNotificationService {
     final author = data['author'] as String?;
     final recordUri = data['recordUri'] as String?;
     final reasonSubject = data['reasonSubject'] as String?;
-    final threadRootUri = data['threadRootUri'] as String?;
 
     if (!GetIt.instance.isRegistered<AppRouter>()) {
       _pendingNotification = message;
@@ -104,13 +103,6 @@ class PushNotificationService {
     if (reason == 'follow' && author != null) {
       // Navigate to profile for follow notifications
       router.push(ProfileRoute(did: author));
-    } else if (reason == 'reply' && threadRootUri != null) {
-      router.push(
-        StandalonePostRoute(
-          postUri: threadRootUri,
-          highlightedReplyUri: recordUri,
-        ),
-      );
     } else if (reasonSubject != null) {
       // For likes/reposts, navigate to the subject (the post being liked/reposted)
       router.push(StandalonePostRoute(postUri: reasonSubject));
