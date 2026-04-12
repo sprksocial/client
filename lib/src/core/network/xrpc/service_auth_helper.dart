@@ -16,6 +16,7 @@ class ServiceAuthHelper {
 
   // Cache tokens by NSID to avoid redundant requests
   final Map<String, ({String token, DateTime expiry})> _tokenCache = {};
+  String? _cachedDid;
 
   /// Service DID for the chat service (audience for JWT)
   String get serviceDid => AppConfig.chatServiceDid;
@@ -23,6 +24,17 @@ class ServiceAuthHelper {
   /// Gets a service auth token for the specified NSID (lexicon method)
   /// Tokens are cached and reused if not expired
   Future<String> getServiceToken(String nsid) async {
+    final currentDid = _authRepository.did;
+
+    if (_cachedDid != currentDid) {
+      _logger.d(
+        'Auth identity changed for service auth cache '
+        '($_cachedDid -> $currentDid), clearing cached tokens',
+      );
+      _tokenCache.clear();
+      _cachedDid = currentDid;
+    }
+
     // Check cache first
     final cached = _tokenCache[nsid];
     if (cached != null &&
@@ -59,6 +71,7 @@ class ServiceAuthHelper {
         token: token,
         expiry: DateTime.fromMillisecondsSinceEpoch(exp * 1000),
       );
+      _cachedDid = currentDid;
 
       return token;
     } catch (e) {
@@ -70,6 +83,7 @@ class ServiceAuthHelper {
   /// Clears the token cache
   void clearCache() {
     _tokenCache.clear();
+    _cachedDid = null;
   }
 
   /// Clears a specific token from cache

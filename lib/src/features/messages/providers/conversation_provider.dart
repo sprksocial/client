@@ -11,6 +11,31 @@ part 'conversation_provider.g.dart';
 class Conversation extends _$Conversation {
   String? _oldestCursor;
 
+  ConversationState _mergeMessagesIntoState(
+    ConversationState current,
+    Iterable<MessageView> incoming, {
+    String? cursor,
+  }) {
+    final mergedById = <String, MessageView>{
+      for (final message in current.messages) message.id: message,
+    };
+
+    for (final message in incoming) {
+      mergedById[message.id] = message;
+    }
+
+    final mergedMessages = mergedById.values.toList();
+    final lastMessage = mergedMessages.isNotEmpty
+        ? mergedMessages.last
+        : current.convo.lastMessage;
+
+    return current.copyWith(
+      messages: mergedMessages,
+      cursor: cursor ?? current.cursor,
+      convo: current.convo.copyWith(lastMessage: lastMessage),
+    );
+  }
+
   @override
   FutureOr<ConversationState> build(String convoId) async {
     final repo = GetIt.I<MessagesRepository>();
@@ -50,9 +75,14 @@ class Conversation extends _$Conversation {
     if (current == null) throw StateError('Conversation not loaded');
 
     final sent = await repo.sendMessage(convoId, text: text, embed: embed);
-    state = AsyncValue.data(
-      current.copyWith(messages: [...current.messages, sent]),
-    );
+
+    if (!ref.mounted) {
+      return sent;
+    }
+
+    final latestState = state.value ?? current;
+    state = AsyncValue.data(_mergeMessagesIntoState(latestState, [sent]));
+
     return sent;
   }
 
@@ -63,15 +93,20 @@ class Conversation extends _$Conversation {
 
     // Fetch latest batch (no cursor -> newest)
     final latest = await repo.getMessages(current.convo.id, limit: 50);
-    // Merge by id
-    final existingIds = {for (final m in current.messages) m.id};
-    final newOnes = latest.messages
-        .where((m) => !existingIds.contains(m.id))
-        .toList();
-    if (newOnes.isNotEmpty) {
-      state = AsyncValue.data(
-        current.copyWith(messages: [...current.messages, ...newOnes]),
-      );
+
+    if (!ref.mounted) {
+      return;
+    }
+
+    final latestState = state.value ?? current;
+    final mergedState = _mergeMessagesIntoState(
+      latestState,
+      latest.messages,
+      cursor: latest.cursor ?? latestState.cursor,
+    );
+
+    if (mergedState != latestState) {
+      state = AsyncValue.data(mergedState);
     }
   }
 

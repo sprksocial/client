@@ -19,6 +19,72 @@ import 'package:spark/src/core/utils/share_urls.dart';
 import 'package:spark/src/features/messages/ui/widgets/message_bubble.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+enum _ResolvedLinkKind { none, image, video }
+
+class _MessageLinkClassifier {
+  static final Map<String, _ResolvedLinkKind> _cache = {};
+
+  static Future<_ResolvedLinkKind> classify(String url) async {
+    final cached = _cache[url];
+    if (cached != null) {
+      return cached;
+    }
+
+    final resolved = await _resolve(url);
+    _cache[url] = resolved;
+    return resolved;
+  }
+
+  static Future<_ResolvedLinkKind> _resolve(String url) async {
+    final contentType = await _fetchContentType(url);
+    if (contentType == null) {
+      return _ResolvedLinkKind.none;
+    }
+
+    if (_isImage(contentType)) {
+      return _ResolvedLinkKind.image;
+    }
+
+    if (_isVideo(contentType)) {
+      return _ResolvedLinkKind.video;
+    }
+
+    return _ResolvedLinkKind.none;
+  }
+
+  static Future<String?> _fetchContentType(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      final headResponse = await http.head(uri);
+      final headContentType = headResponse.headers['content-type'];
+      if (headResponse.statusCode == 200 && headContentType != null) {
+        return headContentType;
+      }
+
+      if (headResponse.statusCode != 405 && headResponse.statusCode < 500) {
+        return headContentType;
+      }
+
+      final getResponse = await http.get(uri);
+      if (getResponse.statusCode != 200) {
+        return null;
+      }
+
+      return getResponse.headers['content-type'];
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static bool _isImage(String contentType) {
+    return contentType.startsWith('image/');
+  }
+
+  static bool _isVideo(String contentType) {
+    return contentType.startsWith('video/');
+  }
+}
+
 class MessagesList extends StatelessWidget {
   const MessagesList({
     required this.messages,
@@ -34,162 +100,6 @@ class MessagesList extends StatelessWidget {
   final String? currentUserDid;
   final String? otherUserHandle;
   final String? otherUserAvatar;
-
-  Future<void> logLinkMetadata(List<String> links) async {
-    if (links.isEmpty) return;
-    for (final link in links) {
-      try {
-        final metadata = await AnyLinkPreview.getMetadata(link: link);
-        GetIt.I<LogService>()
-            .getLogger('MessagesList')
-            .i('Link metadata for $link: $metadata');
-      } catch (e) {
-        GetIt.I<LogService>()
-            .getLogger('MessagesList')
-            .e('Failed to get metadata for link $link: $e');
-      }
-    }
-  }
-
-  Future<bool> validateImage(String imageUrl) async {
-    http.Response res;
-    try {
-      res = await http.get(Uri.parse(imageUrl));
-    } catch (e) {
-      return false;
-    }
-    if (res.statusCode != 200) return false;
-    final Map<String, dynamic> data = res.headers;
-    return checkIfImage(data['content-type'] as String);
-  }
-
-  bool checkIfImage(String param) {
-    if (param == 'image/jpeg' ||
-        param == 'image/png' ||
-        param == 'image/gif' ||
-        param == 'image/webp' ||
-        param == 'image/bmp' ||
-        param == 'image/svg+xml') {
-      return true;
-    }
-    return false;
-  }
-
-  Future<bool> validateVideo(String videoUrl) async {
-    http.Response res;
-    try {
-      res = await http.get(Uri.parse(videoUrl));
-    } catch (e) {
-      return false;
-    }
-    if (res.statusCode != 200) return false;
-    final Map<String, dynamic> data = res.headers;
-    return checkIfVideo(data['content-type'] as String);
-  }
-
-  bool checkIfVideo(String param) {
-    if (param == 'video/mp4' ||
-        param == 'video/webm' ||
-        param == 'video/ogg' ||
-        param == 'video/avi' ||
-        param == 'video/mov' ||
-        param == 'video/quicktime') {
-      return true;
-    }
-    return false;
-  }
-
-  /// Checks if a URL is a sprk.so watch URL and extracts the post URI
-  String? extractSprkPostUri(String url) {
-    return extractSparkPostUri(url);
-  }
-
-  Future<List<Widget>?> validateAndCreateEmbedsFromText(String text) async {
-    List<Widget>? embeds;
-
-    // Extract links from text
-    final urlRegex = RegExp(
-      r'https?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*|www\.[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*',
-      caseSensitive: false,
-    );
-    final links = urlRegex.allMatches(text).map((m) => m.group(0)!).toList();
-    if (links.isEmpty) return embeds;
-
-    final images = <String>[];
-    final videos = <String>[];
-    final sprkPosts = <String>[];
-
-    final linksToRemove = <String>[];
-    for (final link in links) {
-      if (link.isEmpty) continue;
-      if (Uri.tryParse(link)?.hasScheme != true) continue;
-
-      final sprkPostUri = extractSprkPostUri(link);
-      if (sprkPostUri != null) {
-        sprkPosts.add(sprkPostUri);
-        linksToRemove.add(link);
-      } else if (await validateImage(link)) {
-        images.add(link);
-        linksToRemove.add(link);
-      } else if (await validateVideo(link)) {
-        videos.add(link);
-        linksToRemove.add(link);
-      }
-    }
-    // Remove reclassified links
-    final filteredLinks = links
-        .where((l) => !linksToRemove.contains(l))
-        .toList();
-
-    if (images.isNotEmpty) {
-      embeds ??= [];
-      embeds.add(
-        ImageContent(
-          imageUrls: images,
-          borderRadius: BorderRadius.circular(12),
-          thumbnailSize: 200,
-        ),
-      );
-    }
-    if (videos.isNotEmpty) {
-      embeds ??= [];
-      for (final videoUrl in videos) {
-        embeds.add(
-          VideoContent(
-            borderRadius: BorderRadius.circular(12),
-            videoUrl: videoUrl,
-          ),
-        );
-      }
-    }
-    if (sprkPosts.isNotEmpty) {
-      embeds ??= [];
-      for (final postUri in sprkPosts) {
-        embeds.add(_SprkPostThumbnail(postUri: postUri));
-      }
-    }
-    if (filteredLinks.isNotEmpty) {
-      embeds ??= [];
-      GetIt.I<LogService>()
-          .getLogger('MessagesList')
-          .i('Links found in message: $filteredLinks');
-      embeds.add(
-        ListView.builder(
-          shrinkWrap: true,
-          cacheExtent: 50,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: filteredLinks.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _LinkPreview(url: filteredLinks[index]),
-            );
-          },
-        ),
-      );
-    }
-    return embeds;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -244,29 +154,185 @@ class MessagesList extends StatelessWidget {
 
         return Column(
           children: [
-            FutureBuilder<List<Widget>?>(
-              future: validateAndCreateEmbedsFromText(message.text),
-              builder: (context, snapshot) {
-                final combinedEmbeds = <Widget>[];
-                if (message.embed != null && message.embed!.isNotEmpty) {
-                  combinedEmbeds.add(_PostEmbedPreview(atUri: message.embed!));
-                }
-                if (snapshot.hasData && (snapshot.data?.isNotEmpty ?? false)) {
-                  combinedEmbeds.addAll(snapshot.data!);
-                }
-
-                return MessageBubble(
-                  message: message,
-                  isCurrentUser: isCurrentUser,
-                  showAvatar: showAvatar,
-                  otherUserAvatar: otherUserAvatar,
-                  otherUserHandle: otherUserHandle,
-                  embeds: combinedEmbeds,
-                );
-              },
+            _MessageListItem(
+              key: ValueKey(message.id),
+              message: message,
+              isCurrentUser: isCurrentUser,
+              showAvatar: showAvatar,
+              otherUserAvatar: otherUserAvatar,
+              otherUserHandle: otherUserHandle,
             ),
             const SizedBox(height: 8),
           ],
+        );
+      },
+    );
+  }
+}
+
+class _MessageListItem extends StatefulWidget {
+  const _MessageListItem({
+    required this.message,
+    required this.isCurrentUser,
+    required this.showAvatar,
+    required this.otherUserAvatar,
+    required this.otherUserHandle,
+    super.key,
+  });
+
+  final MessageView message;
+  final bool isCurrentUser;
+  final bool showAvatar;
+  final String? otherUserAvatar;
+  final String? otherUserHandle;
+
+  @override
+  State<_MessageListItem> createState() => _MessageListItemState();
+}
+
+class _MessageListItemState extends State<_MessageListItem> {
+  late Future<List<Widget>?> _embedsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _embedsFuture = _buildEmbeds();
+  }
+
+  @override
+  void didUpdateWidget(covariant _MessageListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.message.id != widget.message.id ||
+        oldWidget.message.text != widget.message.text ||
+        oldWidget.message.embed != widget.message.embed) {
+      _embedsFuture = _buildEmbeds();
+    }
+  }
+
+  Future<List<Widget>?> _buildEmbeds() async {
+    final embedsFromText = await _buildEmbedsFromText(widget.message.text);
+    final combinedEmbeds = <Widget>[];
+
+    if (widget.message.embed != null && widget.message.embed!.isNotEmpty) {
+      combinedEmbeds.add(_PostEmbedPreview(atUri: widget.message.embed!));
+    }
+
+    if (embedsFromText != null && embedsFromText.isNotEmpty) {
+      combinedEmbeds.addAll(embedsFromText);
+    }
+
+    return combinedEmbeds.isEmpty ? null : combinedEmbeds;
+  }
+
+  Future<List<Widget>?> _buildEmbedsFromText(String text) async {
+    List<Widget>? embeds;
+
+    final urlRegex = RegExp(
+      r'https?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*|www\.[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*',
+      caseSensitive: false,
+    );
+    final links = urlRegex.allMatches(text).map((m) => m.group(0)!).toList();
+    if (links.isEmpty) {
+      return embeds;
+    }
+
+    final images = <String>[];
+    final videos = <String>[];
+    final sprkPosts = <String>[];
+    final filteredLinks = <String>[];
+
+    for (final link in links) {
+      if (link.isEmpty) {
+        continue;
+      }
+
+      final uri = Uri.tryParse(link);
+      if (uri?.hasScheme != true) {
+        continue;
+      }
+
+      final sprkPostUri = extractSparkPostUri(link);
+      if (sprkPostUri != null) {
+        sprkPosts.add(sprkPostUri);
+        continue;
+      }
+
+      switch (await _MessageLinkClassifier.classify(link)) {
+        case _ResolvedLinkKind.image:
+          images.add(link);
+        case _ResolvedLinkKind.video:
+          videos.add(link);
+        case _ResolvedLinkKind.none:
+          filteredLinks.add(link);
+      }
+    }
+
+    if (images.isNotEmpty) {
+      embeds ??= [];
+      embeds.add(
+        ImageContent(
+          imageUrls: images,
+          borderRadius: BorderRadius.circular(12),
+          thumbnailSize: 200,
+        ),
+      );
+    }
+
+    if (videos.isNotEmpty) {
+      embeds ??= [];
+      for (final videoUrl in videos) {
+        embeds.add(
+          VideoContent(
+            borderRadius: BorderRadius.circular(12),
+            videoUrl: videoUrl,
+          ),
+        );
+      }
+    }
+
+    if (sprkPosts.isNotEmpty) {
+      embeds ??= [];
+      for (final postUri in sprkPosts) {
+        embeds.add(_SprkPostThumbnail(postUri: postUri));
+      }
+    }
+
+    if (filteredLinks.isNotEmpty) {
+      embeds ??= [];
+      GetIt.I<LogService>()
+          .getLogger('MessagesList')
+          .i('Links found in message: $filteredLinks');
+      embeds.add(
+        ListView.builder(
+          shrinkWrap: true,
+          cacheExtent: 50,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: filteredLinks.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _LinkPreview(url: filteredLinks[index]),
+            );
+          },
+        ),
+      );
+    }
+
+    return embeds;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Widget>?>(
+      future: _embedsFuture,
+      builder: (context, snapshot) {
+        return MessageBubble(
+          message: widget.message,
+          isCurrentUser: widget.isCurrentUser,
+          showAvatar: widget.showAvatar,
+          otherUserAvatar: widget.otherUserAvatar,
+          otherUserHandle: widget.otherUserHandle,
+          embeds: snapshot.data,
         );
       },
     );
