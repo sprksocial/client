@@ -1,16 +1,11 @@
 import 'dart:async';
 
-import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart'
     as models;
-import 'package:spark/src/core/network/atproto/data/models/record_models.dart'
-    hide Image;
-import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
 import 'package:spark/src/core/ui/widgets/user_avatar.dart';
@@ -36,8 +31,6 @@ class NotificationItem extends ConsumerStatefulWidget {
 class _NotificationItemState extends ConsumerState<NotificationItem> {
   bool _hasBeenViewed = false;
   Timer? _viewTimer;
-
-  SprkRepository get _sprkRepository => GetIt.instance<SprkRepository>();
 
   /// The primary notification (most recent in the group)
   models.Notification get notification =>
@@ -182,41 +175,8 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
       // Navigate to profile (use first author for grouped follows)
       context.router.push(ProfileRoute(did: notification.author.did));
     } else if (notification.reason == 'reply') {
-      // Reply notification - navigate to root post with reply highlighted
       final replyUri = notification.uri.toString();
-      final rootPostUri = _getRootPostUri();
-      if (rootPostUri != null) {
-        context.router.push(
-          StandalonePostRoute(
-            postUri: rootPostUri,
-            highlightedReplyUri: replyUri,
-          ),
-        );
-      } else {
-        // Fallback to standalone post
-        context.router.push(StandalonePostRoute(postUri: replyUri));
-      }
-    } else if (notification.reason == 'like' && _isReplySubject()) {
-      // Like on a reply - get root post URI from embedded subject or fetch it
-      final replyUri = notification.reasonSubject!.toString();
-
-      // First try to get root from embedded subject record
-      var rootPostUri = _getRootPostUriFromEmbeddedSubject();
-
-      // If not available, fetch the reply record
-      rootPostUri ??= await _fetchRootPostUriFromReply(replyUri);
-
-      if (rootPostUri != null && context.mounted) {
-        context.router.push(
-          StandalonePostRoute(
-            postUri: rootPostUri,
-            highlightedReplyUri: replyUri,
-          ),
-        );
-      } else if (context.mounted) {
-        // Fallback to standalone post showing the reply
-        context.router.push(StandalonePostRoute(postUri: replyUri));
-      }
+      context.router.push(StandalonePostRoute(postUri: replyUri));
     } else if (notification.reasonSubject != null) {
       // Navigate to the post/thread
       final reasonSubjectStr = notification.reasonSubject!.toString();
@@ -233,70 +193,6 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
       // Fallback to author profile
       context.router.push(ProfileRoute(did: notification.author.did));
     }
-  }
-
-  /// Check if the reasonSubject is a reply (not a post)
-  bool _isReplySubject() {
-    if (notification.reasonSubject == null) return false;
-    final collection = notification.reasonSubject!.collection.toString();
-    return collection.contains('reply');
-  }
-
-  /// Get the root post URI from a reply notification's record
-  String? _getRootPostUri() {
-    try {
-      final record = notification.record;
-      final reply = record['reply'] as Map<String, dynamic>?;
-      if (reply != null) {
-        final root = reply['root'] as Map<String, dynamic>?;
-        if (root != null) {
-          return root['uri'] as String?;
-        }
-      }
-    } catch (e) {
-      // Ignore parsing errors
-    }
-    return null;
-  }
-
-  /// Get the root post URI from the embedded subject record (for like/repost on reply)
-  String? _getRootPostUriFromEmbeddedSubject() {
-    try {
-      final record = notification.record;
-      // The backend embeds the subject record in notification.record['subject']
-      final subject = record['subject'] as Map<String, dynamic>?;
-      if (subject != null) {
-        final reply = subject['reply'] as Map<String, dynamic>?;
-        if (reply != null) {
-          final root = reply['root'] as Map<String, dynamic>?;
-          if (root != null) {
-            return root['uri'] as String?;
-          }
-        }
-      }
-    } catch (e) {
-      // Ignore parsing errors
-    }
-    return null;
-  }
-
-  /// Fetch the reply record and extract the root post URI
-  Future<String?> _fetchRootPostUriFromReply(String replyUriStr) async {
-    try {
-      final replyUri = AtUri.parse(replyUriStr);
-      final result = await _sprkRepository.repo.getRecord(uri: replyUri);
-      final record = result.record;
-
-      // Check if it's a reply record and extract the root URI
-      if (record is ReplyRecord) {
-        return record.reply.root.uri.toString();
-      } else if (record is BskyPostRecord && record.reply != null) {
-        return record.reply!.root.uri.toString();
-      }
-    } catch (e) {
-      // If we can't fetch the record, return null to use fallback
-    }
-    return null;
   }
 
   String? _getContentPreview() {

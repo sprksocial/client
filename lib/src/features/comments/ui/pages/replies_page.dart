@@ -11,8 +11,13 @@ import 'package:spark/src/features/comments/ui/widgets/comment_item.dart';
 
 @RoutePage()
 class RepliesPage extends ConsumerStatefulWidget {
-  const RepliesPage({required this.postUri, super.key});
+  const RepliesPage({
+    required this.postUri,
+    super.key,
+    this.highlightedReplyUri,
+  });
   final String postUri;
+  final String? highlightedReplyUri;
 
   @override
   ConsumerState<RepliesPage> createState() => _RepliesPageState();
@@ -21,6 +26,7 @@ class RepliesPage extends ConsumerStatefulWidget {
 class _RepliesPageState extends ConsumerState<RepliesPage> {
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
+  bool _hasScrolledToHighlighted = false;
 
   @override
   void initState() {
@@ -53,6 +59,29 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  void _scrollToHighlightedReply(List<dynamic> replies) {
+    if (_hasScrolledToHighlighted || widget.highlightedReplyUri == null) return;
+    _hasScrolledToHighlighted = true;
+
+    int? highlightedIndex;
+    for (var i = 0; i < replies.length; i++) {
+      final reply = replies[i] as ThreadViewPost;
+      if (reply.post.uri.toString() == widget.highlightedReplyUri) {
+        highlightedIndex = i;
+        break;
+      }
+    }
+
+    if (highlightedIndex != null && _scrollController.hasClients) {
+      final estimatedOffset = highlightedIndex * 100.0;
+      _scrollController.animateTo(
+        estimatedOffset.clamp(0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeOut,
       );
     }
@@ -105,6 +134,13 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
       body: state.when(
         data: (data) {
           final threadRoot = _getThreadRoot(data.thread);
+          if (widget.highlightedReplyUri != null &&
+              !_hasScrolledToHighlighted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _scrollToHighlightedReply(data.thread.replies ?? const []);
+            });
+          }
+
           return SafeArea(
             child: Column(
               children: [
@@ -127,10 +163,15 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
                     itemBuilder: (context, index) {
                       final comment =
                           data.thread.replies![index] as ThreadViewPost;
+                      final isHighlighted =
+                          widget.highlightedReplyUri != null &&
+                          comment.post.uri.toString() ==
+                              widget.highlightedReplyUri;
                       return CommentItem(
                         key: ValueKey('comment-${comment.post.cid}'),
                         thread: comment,
                         mainPostUri: AtUri.parse(widget.postUri),
+                        isHighlighted: isHighlighted,
                       );
                     },
                   ),

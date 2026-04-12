@@ -103,11 +103,13 @@ class PushNotificationService {
     if (reason == 'follow' && author != null) {
       // Navigate to profile for follow notifications
       router.push(ProfileRoute(did: author));
+    } else if (reason == 'reply' && recordUri != null) {
+      router.push(StandalonePostRoute(postUri: recordUri));
     } else if (reasonSubject != null) {
       // For likes/reposts, navigate to the subject (the post being liked/reposted)
       router.push(StandalonePostRoute(postUri: reasonSubject));
     } else if (recordUri != null) {
-      // For replies/mentions, navigate to the record itself
+      // For mentions and other record notifications, navigate to the record itself
       router.push(StandalonePostRoute(postUri: recordUri));
     } else if (author != null) {
       // Fallback to author profile
