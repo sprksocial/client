@@ -21,16 +21,26 @@ class ErrorMessages {
         }
         return 'This video is too large to upload. Please trim or compress it and try again.';
       }
+
+      final detailedMessage = _cleanErrorMessage(error.message);
+      if (detailedMessage.isNotEmpty) {
+        return detailedMessage;
+      }
       return 'Unable to upload video. Please try again';
     }
 
-    final errorStr = error.toString().toLowerCase();
+    final rawMessage = _cleanErrorMessage(error.toString());
+    final errorStr = rawMessage.toLowerCase();
 
     // Upload size errors
     if (errorStr.contains('413') ||
         errorStr.contains('payload too large') ||
         errorStr.contains('too large')) {
       return 'This file is too large to upload. Please trim or compress it and try again.';
+    }
+
+    if (_shouldSurfaceDetailedMessage(errorStr)) {
+      return rawMessage;
     }
 
     // Network errors
@@ -150,5 +160,24 @@ class ErrorMessages {
       return '${(bytes / kb).toStringAsFixed(0)} KB';
     }
     return '$bytes B';
+  }
+
+  static String _cleanErrorMessage(String message) {
+    return message
+        .replaceFirst(
+          RegExp(r'^(exception|error):\s*', caseSensitive: false),
+          '',
+        )
+        .trim();
+  }
+
+  static bool _shouldSurfaceDetailedMessage(String message) {
+    return message.startsWith('failed to upload video') ||
+        message.startsWith('video processing failed') ||
+        message.startsWith('failed to check video processing status') ||
+        message.startsWith('video processing timed out') ||
+        message.startsWith('timed out waiting for video processing') ||
+        message.startsWith('video file not found') ||
+        message.startsWith('video file is empty');
   }
 }

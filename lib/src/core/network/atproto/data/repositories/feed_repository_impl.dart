@@ -1310,9 +1310,12 @@ class FeedRepositoryImpl implements FeedRepository {
           'Video upload failed: ${response.statusCode} ${response.body}',
         );
         throw VideoUploadException(
-          response.statusCode == 413
-              ? 'Video is too large to upload.'
-              : 'Failed to upload video.',
+          _buildVideoUploadFailureMessage(
+            fallback: response.statusCode == 413
+                ? 'Video is too large to upload.'
+                : 'Failed to upload video.',
+            detail: response.body,
+          ),
           statusCode: response.statusCode,
           uploadSizeBytes: videoSizeBytes,
           limitBytes: maxUploadSizeBytes > 0 ? maxUploadSizeBytes : null,
@@ -1337,7 +1340,9 @@ class FeedRepositoryImpl implements FeedRepository {
         await Future.delayed(const Duration(seconds: 2));
         attempts++;
         if (attempts > maxAttempts) {
-          throw Exception('Timed out waiting for video processing to finish');
+          throw const VideoUploadException(
+            'Video processing timed out. Please try again.',
+          );
         }
 
         try {
@@ -1379,9 +1384,12 @@ class FeedRepositoryImpl implements FeedRepository {
               'Too many consecutive polling errors, giving up: $e',
               error: e,
             );
-            throw Exception(
-              'Failed to check video upload status after '
-              '$maxConsecutivePollErrors attempts: $e',
+            throw VideoUploadException(
+              _buildVideoUploadFailureMessage(
+                fallback: 'Failed to check video processing status.',
+                detail: e.toString(),
+              ),
+              responseBody: e.toString(),
             );
           }
 
@@ -1393,8 +1401,17 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
-        throw Exception(
-          'Video upload failed: ${responseData['jobStatus']?['status']}',
+        final failureMessage = _buildVideoUploadFailureMessage(
+          fallback: 'Video processing failed.',
+          detail: responseData['jobStatus'] ?? responseData,
+        );
+        _logger.e(
+          'Video processing job failed: $failureMessage',
+          error: responseData,
+        );
+        throw VideoUploadException(
+          failureMessage,
+          responseBody: jsonEncode(responseData),
         );
       }
 
@@ -1974,5 +1991,110 @@ class FeedRepositoryImpl implements FeedRepository {
       default:
         return 'video/mp4'; // Default to mp4
     }
+  }
+
+  String _buildVideoUploadFailureMessage({
+    required String fallback,
+    dynamic detail,
+  }) {
+    final normalizedDetail = _extractVideoUploadFailureDetail(detail);
+    if (normalizedDetail == null) {
+      return fallback;
+    }
+
+    final normalizedFallback = fallback.trim();
+    if (normalizedDetail.toLowerCase() == normalizedFallback.toLowerCase()) {
+      return normalizedFallback;
+    }
+    if (normalizedDetail.toLowerCase().startsWith(
+      normalizedFallback.toLowerCase(),
+    )) {
+      return normalizedDetail;
+    }
+
+    final separator = normalizedFallback.endsWith('.') ? ' ' : ': ';
+    return '$normalizedFallback$separator$normalizedDetail';
+  }
+
+  String? _extractVideoUploadFailureDetail(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) {
+        return null;
+      }
+
+      try {
+        final decoded = jsonDecode(trimmed);
+        final decodedDetail = _extractVideoUploadFailureDetail(decoded);
+        if (decodedDetail != null) {
+          return decodedDetail;
+        }
+      } catch (_) {
+        // Fall back to the raw string when the response is not JSON.
+      }
+
+      return _sanitizeVideoUploadFailureText(trimmed);
+    }
+
+    if (value is Map) {
+      for (final key in const [
+        'message',
+        'status',
+        'detail',
+        'reason',
+        'description',
+        'error',
+      ]) {
+        final nestedDetail = _extractVideoUploadFailureDetail(value[key]);
+        if (nestedDetail != null) {
+          return nestedDetail;
+        }
+      }
+
+      final jobStatusDetail = _extractVideoUploadFailureDetail(
+        value['jobStatus'],
+      );
+      if (jobStatusDetail != null) {
+        return jobStatusDetail;
+      }
+
+      return null;
+    }
+
+    if (value is Iterable) {
+      for (final item in value) {
+        final itemDetail = _extractVideoUploadFailureDetail(item);
+        if (itemDetail != null) {
+          return itemDetail;
+        }
+      }
+      return null;
+    }
+
+    return _sanitizeVideoUploadFailureText(value.toString());
+  }
+
+  String? _sanitizeVideoUploadFailureText(String text) {
+    final sanitized = text
+        .replaceFirst(
+          RegExp(r'^(exception|error):\s*', caseSensitive: false),
+          '',
+        )
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    if (sanitized.isEmpty ||
+        sanitized == '{}' ||
+        sanitized == '[]' ||
+        sanitized.startsWith('<!DOCTYPE html') ||
+        sanitized.startsWith('<html')) {
+      return null;
+    }
+
+    return sanitized;
   }
 }

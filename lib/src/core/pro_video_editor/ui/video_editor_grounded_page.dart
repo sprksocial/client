@@ -47,7 +47,6 @@ class VideoEditorGroundedPage extends StatefulWidget {
 class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     with StoryMentionEditing<VideoEditorGroundedPage> {
   static const _storyCanvasSize = Size(1440, 2560);
-  static const _trimTolerance = Duration(milliseconds: 100);
   static const _uploadCompressionMinFileSizeBytes = 25 * 1024 * 1024;
   static const _uploadCompressionBitrate = 3000000;
   static const _uploadCompressionMaxLongEdge = 1920.0;
@@ -574,11 +573,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       sourceVideoPath,
     );
 
-    if (_canUseOriginalVideo(parameters) && !shouldCompressForUpload) {
-      _outputPath = sourceVideoPath;
-      return;
-    }
-
     final directory = await getTemporaryDirectory();
 
     double overlayVolume = 0;
@@ -671,54 +665,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       scaleX: (transform.scaleX ?? 1) * scale,
       scaleY: (transform.scaleY ?? 1) * scale,
     );
-  }
-
-  bool _canUseOriginalVideo(CompleteParameters parameters) {
-    if (parameters.layers.isNotEmpty ||
-        parameters.colorFilters.isNotEmpty ||
-        parameters.customAudioTrack != null ||
-        (parameters.blur).abs() > 0.001 ||
-        _hasTrim(parameters) ||
-        _hasRotation(parameters) ||
-        parameters.flipX ||
-        parameters.flipY ||
-        (_proVideoController?.isAudioEnabled == false)) {
-      return false;
-    }
-
-    if (!widget.storyMode) {
-      return !parameters.isTransformed;
-    }
-
-    return _isStoryExportTransformIdentity();
-  }
-
-  bool _hasTrim(CompleteParameters parameters) {
-    final startTime =
-        _durationSpan?.start ?? parameters.startTime ?? Duration.zero;
-    final endTime =
-        _durationSpan?.end ?? parameters.endTime ?? _videoMetadata.duration;
-
-    return startTime > _trimTolerance ||
-        _videoMetadata.duration - endTime > _trimTolerance;
-  }
-
-  bool _hasRotation(CompleteParameters parameters) {
-    final normalizedTurns = parameters.rotateTurns % 4;
-    return normalizedTurns != 0;
-  }
-
-  bool _isStoryExportTransformIdentity() {
-    final coverCrop = _computeStoryCoverCrop(_videoMetadata.resolution);
-    final sourceWidth = _videoMetadata.resolution.width.round();
-    final sourceHeight = _videoMetadata.resolution.height.round();
-
-    return coverCrop.x == 0 &&
-        coverCrop.y == 0 &&
-        coverCrop.width == sourceWidth &&
-        coverCrop.height == sourceHeight &&
-        _storyTargetWidth(coverCrop) == coverCrop.width &&
-        _storyTargetHeight(coverCrop) == coverCrop.height;
   }
 
   int? _targetExportBitrate(ExportTransform? transform) {

@@ -30,5 +30,30 @@ void main() {
         'This file is too large to upload. Please trim or compress it and try again.',
       );
     });
+
+    test('preserves detailed video processing failure reasons', () {
+      const error = VideoUploadException(
+        'Video processing failed. Unsupported video codec: hev1.',
+      );
+
+      final message = ErrorMessages.getOperationErrorMessage('post', error);
+
+      expect(
+        message,
+        'Video processing failed. Unsupported video codec: hev1.',
+      );
+    });
+
+    test(
+      'preserves detailed upload failure reasons from generic exceptions',
+      () {
+        final message = ErrorMessages.getOperationErrorMessage(
+          'post',
+          Exception('Failed to upload video. Unsupported container: mov.'),
+        );
+
+        expect(message, 'Failed to upload video. Unsupported container: mov.');
+      },
+    );
   });
 }
