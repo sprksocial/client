@@ -21,6 +21,12 @@ class AppConfig {
   static String get messagesServiceUrl =>
       _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
 
+  /// Base URL for the AIP OAuth server.
+  static String get aipBaseUrl => _getStringValue(
+    'AIP_BASE_URL',
+    _getStringValue('OAUTH_ISSUER_URL', 'https://auth.sprk.so'),
+  );
+
   /// Service DID for the chat service (used for service auth).
   static String get chatServiceDid =>
       _getStringValue('CHAT_SERVICE_DID', 'did:web:chat.sprk.so');
@@ -47,26 +53,45 @@ class AppConfig {
 
   /// Helper method to retrieve string values from environment with defaults
   static String _getStringValue(String key, String defaultValue) {
-    return dotenv.env[key] ?? defaultValue;
+    try {
+      return dotenv.env[key] ?? defaultValue;
+    } catch (_) {
+      return defaultValue;
+    }
   }
 
   /// Helper method to retrieve boolean values from environment with defaults
   static bool _getBoolValue(String key, bool defaultValue) {
-    final value = dotenv.env[key]?.toLowerCase();
+    String? value;
+    try {
+      value = dotenv.env[key]?.toLowerCase();
+    } catch (_) {
+      return defaultValue;
+    }
     if (value == null) return defaultValue;
     return value == 'true' || value == '1' || value == 'yes';
   }
 
   /// Helper method to retrieve integer values from environment with defaults
   static int _getIntValue(String key, int defaultValue) {
-    final value = dotenv.env[key];
+    String? value;
+    try {
+      value = dotenv.env[key];
+    } catch (_) {
+      return defaultValue;
+    }
     if (value == null) return defaultValue;
     return int.tryParse(value) ?? defaultValue;
   }
 
   /// Helper method to retrieve double values from environment with defaults
   static double _getDoubleValue(String key, double defaultValue) {
-    final value = dotenv.env[key];
+    String? value;
+    try {
+      value = dotenv.env[key];
+    } catch (_) {
+      return defaultValue;
+    }
     if (value == null) return defaultValue;
     return double.tryParse(value) ?? defaultValue;
   }

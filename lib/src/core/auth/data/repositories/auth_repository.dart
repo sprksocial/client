@@ -28,9 +28,10 @@ abstract class AuthRepository {
   /// Returns the authorization URL that the user should be redirected to
   Future<String> initiateOAuth(String handle);
 
-  /// Initiates the OAuth flow without a handle, using a specific service
+  /// Initiates the OAuth flow without a handle.
   ///
-  /// [service] - The OAuth service host (e.g., 'pds.sprk.so')
+  /// [service] is retained as a compatibility parameter and is ignored in
+  /// AIP-backed auth mode.
   ///
   /// Returns the authorization URL that the user should be redirected to
   Future<String> initiateOAuthWithService(String service);

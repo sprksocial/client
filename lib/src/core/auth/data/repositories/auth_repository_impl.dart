@@ -1,60 +1,69 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:atproto/atproto.dart';
-import 'package:atproto_core/atproto_core.dart' show restoreOAuthSession;
-import 'package:atproto_core/atproto_oauth.dart';
+import 'package:atproto_oauth/atproto_oauth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:spark/src/core/auth/data/models/account.dart';
+import 'package:oauth2/oauth2.dart' as oauth2;
+import 'package:spark/src/core/auth/data/models/aip_session_response.dart';
+import 'package:spark/src/core/auth/data/models/auth_snapshot.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/storage/storage.dart';
-import 'package:spark/src/core/utils/did_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
-import 'package:spark/src/core/utils/oauth_resolver.dart';
 
-/// OAuth client metadata URL
-const String _clientMetadataUrl = 'https://sprk.so/oauth-client-metadata.json';
+typedef AtprotoSessionFetcher =
+    Future<({String did, String handle})> Function(ATProto atproto);
 
-/// Cached OAuth client metadata to avoid repeated network calls
-OAuthClientMetadata? _cachedClientMetadata;
+const String _redirectUriValue = 'sprk://oauth-callback';
+const String _aipScope = 'atproto transition:generic';
+const String _clientName = 'Spark Mobile App';
+const String _clientUri = 'https://sprk.so';
+const String _softwareId = 'spark-mobile';
+const String _softwareVersion = '1.0.0';
+const Duration _refreshLeeway = Duration(minutes: 5);
+const String _randomCharset =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
 
-/// Implementation of the authentication repository for AT Protocol using OAuth
 class AuthRepositoryImpl implements AuthRepository {
-  AuthRepositoryImpl() {
+  AuthRepositoryImpl({
+    LocalStorageInterface? secureStorage,
+    http.Client? httpClient,
+    SparkLogger? logger,
+    DateTime Function()? now,
+    AtprotoSessionFetcher? fetchSessionInfo,
+  }) : _secureStorage = secureStorage ?? StorageManager.instance.secure,
+       _httpClient = httpClient ?? http.Client(),
+       _logger = logger ?? _buildLogger(),
+       _now = now ?? DateTime.now,
+       _fetchSessionInfo = fetchSessionInfo ?? _defaultFetchSessionInfo,
+       _aipBaseUri = _normalizeBaseUri(AppConfig.aipBaseUrl) {
     _initialize();
   }
 
+  final LocalStorageInterface _secureStorage;
+  final http.Client _httpClient;
+  final SparkLogger _logger;
+  final DateTime Function() _now;
+  final AtprotoSessionFetcher _fetchSessionInfo;
+  final Uri _aipBaseUri;
+  final Completer<void> _initCompleter = Completer<void>();
+
+  Future<bool>? _refreshInFlight;
+  int _authGeneration = 0;
+  AuthSnapshot? _snapshot;
   OAuthSession? _oauthSession;
   ATProto? _atProto;
   String? _did;
   String? _handle;
   String? _pdsEndpoint;
-  String? _oauthServer;
-
-  /// Pending OAuth context during authorization flow
-  OAuthContext? _pendingContext;
-  OAuthClient? _oauthClient;
-
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'AuthRepository',
-  );
-
-  final Completer<void> _initCompleter = Completer<void>();
 
   @override
   Future<void> get initializationComplete => _initCompleter.future;
-
-  /// Gets cached OAuth client metadata, fetching once if needed
-  Future<OAuthClientMetadata> _getCachedClientMetadata() async {
-    if (_cachedClientMetadata != null) {
-      return _cachedClientMetadata!;
-    }
-    _cachedClientMetadata = await getClientMetadata(_clientMetadataUrl);
-    return _cachedClientMetadata!;
-  }
 
   @override
   bool get isAuthenticated =>
@@ -78,245 +87,396 @@ class AuthRepositoryImpl implements AuthRepository {
       if (!_initCompleter.isCompleted) {
         _initCompleter.complete();
       }
-    } catch (e) {
-      _logger.e('AuthRepository initialization failed', error: e);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AuthRepository initialization failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
       if (!_initCompleter.isCompleted) {
-        _initCompleter.completeError(e);
+        _initCompleter.completeError(e, stackTrace);
       }
     }
-  }
-
-  /// Fetches a DID document, handling both did:plc and did:web methods.
-  Future<Map<String, dynamic>> _fetchDidDocument(String did) async {
-    final url = DidUtils.buildDidDocumentUrl(did);
-    final response = await http.get(url);
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to fetch DID document: ${response.statusCode}');
-    }
-
-    return json.decode(response.body) as Map<String, dynamic>;
-  }
-
-  String? _extractPdsEndpoint(Map<String, dynamic> doc) {
-    final services = doc['service'] as List<dynamic>?;
-    if (services == null || services.isEmpty) {
-      return null;
-    }
-
-    final pdsService = services.firstWhere(
-      (s) => s['id'] == '#atproto_pds',
-      orElse: () => null,
-    );
-
-    if (pdsService == null) {
-      return null;
-    }
-
-    return pdsService['serviceEndpoint'] as String?;
   }
 
   Future<void> _loadSavedSession() async {
-    try {
-      // Load account as single JSON object - much faster than multiple reads
-      final accountJson = await StorageManager.instance.secure.getString(
-        StorageKeys.account,
-      );
+    final snapshot = await _loadSnapshotFromStorage();
+    if (snapshot == null) {
+      return;
+    }
 
-      if (accountJson == null) {
-        return;
-      }
-
-      final account = Account.fromJsonString(accountJson);
-
-      _oauthSession = restoreOAuthSession(
-        accessToken: account.accessToken,
-        refreshToken: account.refreshToken,
-        clientId: account.clientId ?? _clientMetadataUrl,
-        dPoPNonce: account.dpopNonce,
-        publicKey: account.publicKey,
-        privateKey: account.privateKey,
-      );
-
-      // Parse expiresAt, default to epoch if not found (will trigger refresh)
-      DateTime expiresAt;
+    final cachedSession = snapshot.pdsSessionCache;
+    if (cachedSession != null && _isFresh(cachedSession.expiresAtDateTime)) {
       try {
-        expiresAt = account.expiresAt != null
-            ? DateTime.parse(account.expiresAt!)
-            : DateTime.fromMillisecondsSinceEpoch(0);
-      } catch (e) {
+        _applyCachedPdsSession(cachedSession);
+        return;
+      } catch (e, stackTrace) {
         _logger.w(
-          'Failed to parse expiresAt "${account.expiresAt}", defaulting to epoch',
+          'Failed to restore cached PDS session, falling back to AIP bootstrap',
+          error: e,
+          stackTrace: stackTrace,
         );
-        expiresAt = DateTime.fromMillisecondsSinceEpoch(0);
       }
+    }
 
-      _did = account.did;
-      _handle = account.handle;
-      _pdsEndpoint = account.pdsEndpoint;
-      _oauthServer = account.server;
+    if (snapshot.aipGrant != null) {
+      final refreshed = await _refreshAuthState();
+      if (!refreshed) {
+        await _clearSessionState(preserveRegistration: true);
+      }
+      return;
+    }
 
-      // Check if token needs refresh (5 minutes before expiration per README)
-      final tokenNeedsRefresh = expiresAt.isBefore(
-        DateTime.now().add(const Duration(minutes: 5)),
+    if (snapshot.pdsSessionCache != null) {
+      await _clearSessionState(
+        preserveRegistration: snapshot.aipClientRegistration != null,
       );
-
-      // Only fetch OAuth client metadata if we need to refresh the token
-      // This avoids a blocking network call on app start when token is valid
-      if (tokenNeedsRefresh && _oauthServer != null) {
-        final metadata = await _getCachedClientMetadata();
-        _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-        final refreshed = await refreshToken();
-        if (!refreshed) {
-          await _clearSavedSession();
-          _oauthSession = null;
-          _atProto = null;
-          _did = null;
-          _handle = null;
-          _pdsEndpoint = null;
-          _oauthServer = null;
-          _oauthClient = null;
-          return;
-        }
-      }
-
-      // Extract just the host from the PDS endpoint
-      final pdsHost = _pdsEndpoint != null
-          ? Uri.parse(_pdsEndpoint!).host
-          : null;
-
-      _atProto = ATProto.fromOAuthSession(_oauthSession!, service: pdsHost);
-    } catch (e) {
-      _logger.e('Error loading saved account', error: e);
     }
   }
 
-  Future<void> _saveSession() async {
-    if (_oauthSession == null) return;
+  Future<AuthSnapshot?> _loadSnapshotFromStorage() async {
+    final snapshotJson = await _secureStorage.getString(StorageKeys.account);
+    if (snapshotJson == null) {
+      _snapshot = null;
+      return null;
+    }
 
     try {
-      final account = Account(
-        accessToken: _oauthSession!.accessToken,
-        refreshToken: _oauthSession!.refreshToken,
-        publicKey: _oauthSession!.$publicKey,
-        privateKey: _oauthSession!.$privateKey,
-        clientId: _oauthSession!.$clientId ?? _clientMetadataUrl,
-        dpopNonce: _oauthSession!.$dPoPNonce,
-        expiresAt: _oauthSession!.expiresAt.toIso8601String(),
-        did: _did,
-        handle: _handle,
-        pdsEndpoint: _pdsEndpoint,
-        server: _oauthServer,
+      final payload = _decodeJsonObject(snapshotJson);
+      final snapshot = await _parseStoredAuthSnapshot(payload);
+      _snapshot = snapshot;
+      return snapshot;
+    } catch (e, stackTrace) {
+      _logger.w(
+        'Clearing legacy or invalid auth snapshot',
+        error: e,
+        stackTrace: stackTrace,
       );
-
-      await StorageManager.instance.secure.setString(
-        StorageKeys.account,
-        account.toJsonString(),
-      );
-    } catch (e) {
-      _logger.e('Failed to save account', error: e);
+      await _removeAllAuthStorage();
+      _snapshot = null;
+      return null;
     }
   }
 
-  Future<void> _clearSavedSession() async {
-    try {
-      await StorageManager.instance.secure.remove(StorageKeys.account);
-      await StorageManager.instance.secure.remove(
-        StorageKeys.pendingAuthContext,
-      );
-      // Also clear old session format if exists
-      await StorageManager.instance.secure.remove(StorageKeys.userSession);
-    } catch (e) {
-      _logger.e('Failed to clear account', error: e);
+  Future<AuthSnapshot> _parseStoredAuthSnapshot(
+    Map<String, dynamic> payload,
+  ) async {
+    final version = payload['version'];
+    if (version != null) {
+      return AuthSnapshot.fromJson(payload);
     }
+
+    throw const FormatException(
+      'Legacy auth payloads are no longer supported.',
+    );
+  }
+
+  void _applyCachedPdsSession(PdsSessionCache cache) {
+    final normalizedCache = cache.copyWith(
+      publicKey: normalizeDpopKeyEncoding(cache.publicKey),
+      privateKey: normalizeDpopKeyEncoding(cache.privateKey),
+    );
+    _oauthSession = restorePdsOAuthSessionFromCache(normalizedCache);
+    _did = normalizedCache.did;
+    _handle = normalizedCache.handle;
+    _pdsEndpoint = normalizedCache.pdsEndpoint;
+    _atProto = ATProto.fromOAuthSession(
+      _oauthSession!,
+      service: Uri.parse(normalizedCache.pdsEndpoint).host,
+    );
+    if (normalizedCache.publicKey != cache.publicKey ||
+        normalizedCache.privateKey != cache.privateKey) {
+      _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
+        pdsSessionCache: normalizedCache,
+      );
+      unawaited(_saveSnapshot());
+    }
+  }
+
+  Future<void> _saveSnapshot() async {
+    final snapshot = _snapshot;
+    if (snapshot == null || snapshot.isEmpty) {
+      await _secureStorage.remove(StorageKeys.account);
+      return;
+    }
+
+    await _secureStorage.setString(
+      StorageKeys.account,
+      snapshot.toJsonString(),
+    );
+  }
+
+  Future<void> _saveCurrentPdsSession() async {
+    final oauthSession = _oauthSession;
+    final did = _did;
+    final handle = _handle;
+    final pdsEndpoint = _pdsEndpoint;
+    if (oauthSession == null ||
+        did == null ||
+        handle == null ||
+        pdsEndpoint == null) {
+      return;
+    }
+
+    _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
+      pdsSessionCache: PdsSessionCache(
+        accessToken: oauthSession.accessToken,
+        expiresAt: oauthSession.expiresAt.toIso8601String(),
+        did: did,
+        handle: handle,
+        pdsEndpoint: pdsEndpoint,
+        scope: oauthSession.scope,
+        dpopNonce: oauthSession.$dPoPNonce,
+        publicKey: oauthSession.$publicKey,
+        privateKey: oauthSession.$privateKey,
+      ),
+    );
+    await _saveSnapshot();
+  }
+
+  Future<void> _clearPendingContext() async {
+    await _secureStorage.remove(StorageKeys.pendingAuthContext);
+  }
+
+  Future<void> _removeAllAuthStorage() async {
+    await _secureStorage.remove(StorageKeys.account);
+    await _secureStorage.remove(StorageKeys.pendingAuthContext);
+    await _secureStorage.remove(StorageKeys.userSession);
+  }
+
+  void _invalidateInFlightRefreshes() {
+    _authGeneration += 1;
+  }
+
+  bool _isCurrentAuthGeneration(int generation) {
+    return generation == _authGeneration;
+  }
+
+  Future<void> _waitForInFlightRefresh() async {
+    final inFlight = _refreshInFlight;
+    if (inFlight == null) {
+      return;
+    }
+
+    try {
+      await inFlight;
+    } catch (_) {
+      // Ignore the refresh outcome here. Callers are invalidating it anyway.
+    }
+  }
+
+  Future<void> _clearSessionState({required bool preserveRegistration}) async {
+    _invalidateInFlightRefreshes();
+    await _waitForInFlightRefresh();
+
+    final registration = preserveRegistration
+        ? _snapshot?.aipClientRegistration
+        : null;
+
+    _snapshot = registration == null
+        ? null
+        : AuthSnapshot(aipClientRegistration: registration);
+
+    await _clearPendingContext();
+    await _secureStorage.remove(StorageKeys.userSession);
+    await _saveSnapshot();
+    _resetInMemorySession();
+  }
+
+  void _resetInMemorySession() {
+    _oauthSession = null;
+    _atProto = null;
+    _did = null;
+    _handle = null;
+    _pdsEndpoint = null;
+  }
+
+  bool _isFresh(DateTime expiresAt) {
+    return expiresAt.isAfter(_now().toUtc().add(_refreshLeeway));
+  }
+
+  bool _credentialsNeedRefresh(oauth2.Credentials credentials) {
+    final expiration = credentials.expiration;
+    if (expiration == null) {
+      return false;
+    }
+
+    return expiration.isBefore(_now().toUtc().add(_refreshLeeway));
+  }
+
+  bool _registrationNeedsRefresh(AipClientRegistration registration) {
+    final expiration = registration.clientSecretExpiresAtDateTime;
+    if (expiration == null) {
+      return false;
+    }
+
+    return expiration.isBefore(_now().toUtc().add(_refreshLeeway));
+  }
+
+  Future<_AipOAuthMetadata> _discoverOAuthMetadata() async {
+    final response = await _httpClient.get(
+      _aipBaseUri.resolve('/.well-known/oauth-authorization-server'),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(
+        'Failed to fetch AIP OAuth metadata: '
+                '${response.statusCode} ${response.reasonPhrase ?? ''}'
+            .trim(),
+      );
+    }
+
+    return _AipOAuthMetadata.fromJson(
+      _decodeJsonObject(response.body),
+      baseUri: _aipBaseUri,
+    );
+  }
+
+  Future<AipClientRegistration> _ensureClientRegistration(
+    _AipOAuthMetadata metadata,
+  ) async {
+    final existing = _snapshot?.aipClientRegistration;
+    if (existing != null && !_registrationNeedsRefresh(existing)) {
+      return existing;
+    }
+
+    final response = await _httpClient.post(
+      metadata.registrationEndpoint,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'client_name': _clientName,
+        'client_uri': _clientUri,
+        'redirect_uris': [_redirectUriValue],
+        'response_types': ['code'],
+        'grant_types': ['authorization_code', 'refresh_token'],
+        'token_endpoint_auth_method': 'client_secret_post',
+        'scope': _aipScope,
+        'software_id': _softwareId,
+        'software_version': _softwareVersion,
+      }),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(
+        'AIP client registration failed: ${_responseError(response)}',
+      );
+    }
+
+    final registration = _AipClientRegistrationResponse.fromJson(
+      _decodeJsonObject(response.body),
+    ).toStoredRegistration();
+
+    final previousClientId = existing?.clientId;
+    _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
+      aipClientRegistration: registration,
+      aipGrant: previousClientId == registration.clientId
+          ? _snapshot?.aipGrant
+          : null,
+    );
+    await _saveSnapshot();
+    return registration;
+  }
+
+  oauth2.AuthorizationCodeGrant _createAuthorizationGrant(
+    _AipOAuthMetadata metadata,
+    AipClientRegistration registration,
+    String codeVerifier,
+  ) {
+    return oauth2.AuthorizationCodeGrant(
+      registration.clientId,
+      metadata.authorizationEndpoint,
+      metadata.tokenEndpoint,
+      secret: registration.clientSecret,
+      basicAuth: false,
+      httpClient: _httpClient,
+      codeVerifier: codeVerifier,
+    );
+  }
+
+  Future<void> _storePendingContext(PendingAipAuthContext context) async {
+    await _secureStorage.setString(
+      StorageKeys.pendingAuthContext,
+      context.toJsonString(),
+    );
+  }
+
+  Future<PendingAipAuthContext?> _readPendingContext() async {
+    final raw = await _secureStorage.getString(StorageKeys.pendingAuthContext);
+    if (raw == null) {
+      return null;
+    }
+
+    return PendingAipAuthContext.fromJsonString(raw);
+  }
+
+  String _generateRandomToken(int length) {
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => _randomCharset[random.nextInt(_randomCharset.length)],
+    ).join();
   }
 
   @override
   Future<String> initiateOAuth(String handle) async {
-    try {
-      // Resolve handle to DID
-      final at = ATProto.anonymous(service: 'public.api.bsky.app');
-      final didRes = await at.identity.resolveHandle(handle: handle);
-      final resolvedDid = didRes.data.did;
-
-      final didDoc = await _fetchDidDocument(resolvedDid);
-      final pdsEndpoint = _extractPdsEndpoint(didDoc);
-
-      if (pdsEndpoint == null) {
-        _logger.e('PDS endpoint not found in DID document');
-        throw Exception('PDS endpoint not found in DID document');
-      }
-
-      // Store user info for later
-      _did = resolvedDid;
-      _handle = handle;
-      _pdsEndpoint = pdsEndpoint;
-
-      // Get client metadata (cached)
-      final metadata = await _getCachedClientMetadata();
-      // Resolve OAuth server from PDS endpoint
-      _oauthServer = await resolveOAuthServer(pdsEndpoint);
-      _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-
-      // Start OAuth authorization
-      final (authUrl, ctx) = await _oauthClient!.authorize(handle);
-      _pendingContext = ctx;
-
-      // Extract state parameter from authorization URL for restoration
-      final authUri = Uri.parse(authUrl.toString());
-      final stateParam = authUri.queryParameters['state'];
-
-      // Store pending context in case app is killed during OAuth flow
-      await StorageManager.instance.secure.setString(
-        StorageKeys.pendingAuthContext,
-        json.encode({
-          'handle': handle,
-          'did': resolvedDid,
-          'pdsEndpoint': pdsEndpoint,
-          'server': _oauthServer,
-          'state': stateParam,
-        }),
-      );
-
-      return authUrl.toString();
-    } catch (e) {
-      _logger.e('Failed to initiate OAuth', error: e);
-      rethrow;
-    }
+    return _startOAuthFlow(loginHint: handle.trim());
   }
 
   @override
   Future<String> initiateOAuthWithService(String service) async {
+    if (service.isNotEmpty) {
+      _logger.d(
+        'Ignoring initiateOAuthWithService service hint in AIP auth mode: $service',
+      );
+    }
+
+    return _startOAuthFlow();
+  }
+
+  Future<String> _startOAuthFlow({String? loginHint}) async {
     try {
-      // Store service for later
-      _pdsEndpoint = 'https://$service';
-      _oauthServer = service;
-
-      // Get client metadata (cached)
-      final metadata = await _getCachedClientMetadata();
-      _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-
-      // Start OAuth authorization without login hint
-      final (authUrl, ctx) = await _oauthClient!.authorize();
-      _pendingContext = ctx;
-
-      // Extract state parameter from authorization URL for restoration
-      final authUri = Uri.parse(authUrl.toString());
-      final stateParam = authUri.queryParameters['state'];
-
-      // Store pending context in case app was killed during OAuth flow
-      await StorageManager.instance.secure.setString(
-        StorageKeys.pendingAuthContext,
-        json.encode({
-          'pdsEndpoint': _pdsEndpoint,
-          'server': _oauthServer,
-          'state': stateParam,
-        }),
+      final metadata = await _discoverOAuthMetadata();
+      final registration = await _ensureClientRegistration(metadata);
+      final state = _generateRandomToken(32);
+      final codeVerifier = _generateRandomToken(64);
+      final redirectUri = Uri.parse(_redirectUriValue);
+      final grant = _createAuthorizationGrant(
+        metadata,
+        registration,
+        codeVerifier,
       );
 
-      return authUrl.toString();
-    } catch (e) {
-      _logger.e('Failed to initiate OAuth with service', error: e);
+      var authorizationUri = grant.getAuthorizationUrl(
+        redirectUri,
+        scopes: _aipScope.split(' '),
+        state: state,
+      );
+
+      if (loginHint != null && loginHint.isNotEmpty) {
+        authorizationUri = authorizationUri.replace(
+          queryParameters: {
+            ...authorizationUri.queryParameters,
+            'login_hint': loginHint,
+          },
+        );
+      }
+
+      await _storePendingContext(
+        PendingAipAuthContext(
+          clientId: registration.clientId,
+          state: state,
+          codeVerifier: codeVerifier,
+          redirectUri: redirectUri.toString(),
+        ),
+      );
+
+      return authorizationUri.toString();
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Failed to initiate AIP OAuth',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -324,220 +484,436 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<LoginResult> completeOAuth(String callbackUrl) async {
     try {
-      if (_oauthClient == null || _pendingContext == null) {
-        // Try to restore context if app was killed
-        final savedContext = await StorageManager.instance.secure.getString(
-          StorageKeys.pendingAuthContext,
+      await initializationComplete;
+
+      final context = await _readPendingContext();
+      if (context == null) {
+        return LoginResult.failed(
+          'OAuth session was interrupted. Please start again.',
         );
-        if (savedContext != null) {
-          final contextData = json.decode(savedContext) as Map<String, dynamic>;
-          _handle = contextData['handle'] as String?;
-          _did = contextData['did'] as String?;
-          _pdsEndpoint = contextData['pdsEndpoint'] as String?;
-          _oauthServer = contextData['server'] as String?;
-          final savedState = contextData['state'] as String?;
-
-          // Verify state parameter matches if present
-          if (savedState != null) {
-            final callbackUri = Uri.parse(callbackUrl);
-            final callbackState = callbackUri.queryParameters['state'];
-            if (callbackState != savedState) {
-              _logger.e(
-                'OAuth state mismatch. '
-                'Expected: $savedState, got: $callbackState',
-              );
-              // Clear invalid context
-              await StorageManager.instance.secure.remove(
-                StorageKeys.pendingAuthContext,
-              );
-              return LoginResult.failed(
-                'OAuth state verification failed. Please try again.',
-              );
-            }
-          }
-
-          // Recreate OAuth client with the correct OAuth server
-          if (_oauthServer != null) {
-            final metadata = await _getCachedClientMetadata();
-            _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-          }
-        }
-        if (_pendingContext == null) {
-          _logger.e(
-            'No pending OAuth context found. '
-            'App may have been killed during OAuth flow.',
-          );
-          // Clear any partial context data
-          await StorageManager.instance.secure.remove(
-            StorageKeys.pendingAuthContext,
-          );
-          return LoginResult.failed(
-            'OAuth session was interrupted. '
-            'Please start the sign-up process again.',
-          );
-        }
-
-        if (_oauthClient == null) {
-          _logger.e('OAuth client could not be restored');
-          return LoginResult.failed('OAuth client initialization failed');
-        }
       }
 
-      // Complete OAuth flow
-      _oauthSession = await _oauthClient!.callback(
-        callbackUrl,
-        _pendingContext!,
+      _snapshot ??= await _loadSnapshotFromStorage();
+      final registration = _snapshot?.aipClientRegistration;
+      if (registration == null || registration.clientId != context.clientId) {
+        return LoginResult.failed(
+          'OAuth client registration was lost. Please try again.',
+        );
+      }
+
+      final metadata = await _discoverOAuthMetadata();
+      final grant = _createAuthorizationGrant(
+        metadata,
+        registration,
+        context.codeVerifier,
       );
 
-      // Create ATProto client from OAuth session
-      if (_pdsEndpoint != null) {
-        final pdsHost = Uri.parse(_pdsEndpoint!).host;
-        _atProto = ATProto.fromOAuthSession(_oauthSession!, service: pdsHost);
-      } else {
-        _logger.e('PDS endpoint is null, cannot create ATProto client');
-        return LoginResult.failed('PDS endpoint not found');
-      }
-
-      // Fetch session info to get DID and handle if not already set
-      // This is needed for registration flow where handle/DID aren't known upfront
-      if (_did == null || _handle == null) {
-        try {
-          final sessionResponse = await _atProto!.server.getSession();
-          _did = sessionResponse.data.did;
-          _handle = sessionResponse.data.handle;
-        } catch (e) {
-          _logger.e('Failed to fetch session info', error: e);
-          return LoginResult.failed('Failed to get session info: $e');
-        }
-      }
-
-      // Save session
-      await _saveSession();
-
-      // Clear pending context
-      await StorageManager.instance.secure.remove(
-        StorageKeys.pendingAuthContext,
+      grant.getAuthorizationUrl(
+        Uri.parse(context.redirectUri),
+        scopes: _aipScope.split(' '),
+        state: context.state,
       );
-      _pendingContext = null;
+
+      final client = await grant.handleAuthorizationResponse(
+        Uri.parse(callbackUrl).queryParameters,
+      );
+
+      _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
+        aipGrant: AipGrant(credentialsJson: client.credentials.toJson()),
+      );
+      await _saveSnapshot();
+
+      final bootstrapped = await _bootstrapPdsSession(
+        client.credentials,
+        authGeneration: _authGeneration,
+      );
+      if (!bootstrapped) {
+        await _clearSessionState(preserveRegistration: true);
+        return LoginResult.failed(
+          'Failed to bootstrap a direct PDS session from AIP.',
+        );
+      }
 
       return LoginResult.success();
     } catch (e, stackTrace) {
-      _logger.e('OAuth callback failed', error: e, stackTrace: stackTrace);
+      _logger.e('AIP OAuth callback failed', error: e, stackTrace: stackTrace);
+      await _clearSessionState(preserveRegistration: true);
       return LoginResult.failed(e.toString());
+    } finally {
+      await _clearPendingContext();
+    }
+  }
+
+  Future<oauth2.Credentials?> _loadAipCredentials() async {
+    final aipGrant = _snapshot?.aipGrant;
+    if (aipGrant == null) {
+      return null;
+    }
+
+    return oauth2.Credentials.fromJson(aipGrant.credentialsJson);
+  }
+
+  Future<oauth2.Credentials?> _ensureFreshAipGrant({
+    required int authGeneration,
+  }) async {
+    final credentials = await _loadAipCredentials();
+    if (credentials == null) {
+      return null;
+    }
+
+    if (!_credentialsNeedRefresh(credentials)) {
+      return credentials;
+    }
+
+    return _refreshStoredAipGrant(
+      credentials: credentials,
+      authGeneration: authGeneration,
+    );
+  }
+
+  Future<oauth2.Credentials?> _refreshStoredAipGrant({
+    oauth2.Credentials? credentials,
+    required int authGeneration,
+  }) async {
+    final currentCredentials = credentials ?? await _loadAipCredentials();
+    final registration = _snapshot?.aipClientRegistration;
+    if (currentCredentials == null || registration == null) {
+      return null;
+    }
+
+    if (!currentCredentials.canRefresh) {
+      throw Exception('Stored AIP credentials cannot be refreshed.');
+    }
+
+    final client = oauth2.Client(
+      currentCredentials,
+      identifier: registration.clientId,
+      secret: registration.clientSecret,
+      basicAuth: false,
+      httpClient: _httpClient,
+    );
+
+    try {
+      await client.refreshCredentials();
+      final refreshed = client.credentials;
+      if (!_isCurrentAuthGeneration(authGeneration)) {
+        return null;
+      }
+
+      _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
+        aipGrant: AipGrant(credentialsJson: refreshed.toJson()),
+      );
+      await _saveSnapshot();
+      return refreshed;
+    } finally {
+      client.close();
+    }
+  }
+
+  Future<AipAtprotocolSessionResponse> _fetchAtprotocolSession(
+    oauth2.Credentials credentials,
+  ) async {
+    final response = await _httpClient.get(
+      _aipBaseUri.resolve('/api/atprotocol/session'),
+      headers: {'Authorization': 'Bearer ${credentials.accessToken}'},
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(
+        'AIP session request failed: ${_responseError(response)}',
+      );
+    }
+
+    return AipAtprotocolSessionResponse.fromJson(
+      _decodeJsonObject(response.body),
+    );
+  }
+
+  Future<bool> _bootstrapPdsSession(
+    oauth2.Credentials credentials, {
+    required int authGeneration,
+  }) async {
+    try {
+      final sessionResponse = await _fetchAtprotocolSession(credentials);
+      if (!_isCurrentAuthGeneration(authGeneration)) {
+        return false;
+      }
+
+      final existingNonce =
+          _oauthSession?.$dPoPNonce ??
+          _snapshot?.pdsSessionCache?.dpopNonce ??
+          '';
+      final pdsSession = buildPdsSessionCacheFromAipResponse(
+        sessionResponse,
+        dpopNonce: existingNonce,
+      );
+
+      _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
+        pdsSessionCache: pdsSession,
+      );
+      await _saveSnapshot();
+      if (!_isCurrentAuthGeneration(authGeneration)) {
+        return false;
+      }
+
+      _applyCachedPdsSession(pdsSession);
+      return true;
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Failed to bootstrap direct PDS session from AIP',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<bool> _refreshAuthState() async {
+    final inFlight = _refreshInFlight;
+    if (inFlight != null) {
+      return inFlight;
+    }
+
+    final future = _refreshAuthStateInternal();
+    _refreshInFlight = future;
+
+    try {
+      return await future;
+    } finally {
+      if (identical(_refreshInFlight, future)) {
+        _refreshInFlight = null;
+      }
+    }
+  }
+
+  Future<bool> _refreshAuthStateInternal() async {
+    final authGeneration = _authGeneration;
+
+    try {
+      final credentials = await _ensureFreshAipGrant(
+        authGeneration: authGeneration,
+      );
+      if (credentials == null) {
+        return false;
+      }
+
+      return _bootstrapPdsSession(credentials, authGeneration: authGeneration);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Failed to refresh auth state from AIP',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return false;
     }
   }
 
   @override
   Future<void> logout() async {
     try {
-      await _clearSavedSession();
-      _oauthSession = null;
-      _atProto = null;
-      _did = null;
-      _handle = null;
-      _pdsEndpoint = null;
-      _oauthServer = null;
-      _oauthClient = null;
-      _pendingContext = null;
-    } catch (e) {
-      _logger.e('Logout failed', error: e);
+      await _clearSessionState(preserveRegistration: true);
+    } catch (e, stackTrace) {
+      _logger.e('Logout failed', error: e, stackTrace: stackTrace);
     }
   }
 
   @override
   Future<bool> validateSession() async {
-    // Wait for initialization to complete first
     await initializationComplete;
 
-    if (_atProto == null ||
-        _oauthSession == null ||
-        _did == null ||
-        _did!.isEmpty) {
+    final atProto = _atProto;
+    final did = _did;
+    if (atProto == null || did == null || did.isEmpty) {
       return false;
     }
 
     try {
-      final sessionResponse = await _atProto!.server.getSession();
-
-      if (sessionResponse.data.did != _did) {
-        _logger.w(
-          'Session DID mismatch. '
-          'Expected $_did but got ${sessionResponse.data.did}',
-        );
+      final session = await _fetchSessionInfo(atProto);
+      if (session.did != did) {
+        _logger.w('Session DID mismatch. Expected $did but got ${session.did}');
         await logout();
         return false;
       }
 
-      final latestHandle = sessionResponse.data.handle;
-      if (latestHandle.isNotEmpty && latestHandle != _handle) {
-        _handle = latestHandle;
-        await _saveSession();
+      if (session.handle.isNotEmpty) {
+        _handle = session.handle;
       }
-
+      await _saveCurrentPdsSession();
       return true;
-    } catch (e) {
-      // Try to refresh the token before giving up
-      final refreshed = await refreshToken();
-      if (refreshed) {
-        try {
-          final sessionResponse = await _atProto!.server.getSession();
+    } catch (e, stackTrace) {
+      _logger.w(
+        'Direct PDS session validation failed, attempting AIP rebootstrap',
+        error: e,
+        stackTrace: stackTrace,
+      );
 
-          if (sessionResponse.data.did != _did) {
-            _logger.w(
-              'Session DID mismatch after refresh. '
-              'Expected $_did but got ${sessionResponse.data.did}',
-            );
-            await logout();
-            return false;
-          }
-
-          final latestHandle = sessionResponse.data.handle;
-          if (latestHandle.isNotEmpty && latestHandle != _handle) {
-            _handle = latestHandle;
-            await _saveSession();
-          }
-
-          return true;
-        } catch (refreshError) {
-          _logger.e(
-            'Session validation failed after token refresh',
-            error: refreshError,
-          );
-        }
+      final refreshed = await _refreshAuthState();
+      if (!refreshed || _atProto == null) {
+        await logout();
+        return false;
       }
 
-      await logout();
-      return false;
+      try {
+        final session = await _fetchSessionInfo(_atProto!);
+        if (session.did != did) {
+          _logger.w(
+            'Session DID mismatch after AIP rebootstrap. '
+            'Expected $did but got ${session.did}',
+          );
+          await logout();
+          return false;
+        }
+
+        if (session.handle.isNotEmpty) {
+          _handle = session.handle;
+        }
+        await _saveCurrentPdsSession();
+        return true;
+      } catch (refreshError, refreshStackTrace) {
+        _logger.e(
+          'Session validation failed after AIP rebootstrap',
+          error: refreshError,
+          stackTrace: refreshStackTrace,
+        );
+        await logout();
+        return false;
+      }
     }
   }
 
   @override
   Future<bool> refreshToken() async {
-    try {
-      if (_oauthSession == null || _oauthClient == null) {
-        // Try to recreate OAuth client if we have a session but no client
-        if (_oauthSession != null && _oauthServer != null) {
-          final metadata = await _getCachedClientMetadata();
-          _oauthClient = OAuthClient(metadata, service: _oauthServer!);
-        } else {
-          return false;
-        }
+    await initializationComplete;
+
+    final refreshed = await _refreshAuthState();
+    if (!refreshed) {
+      await _clearSessionState(preserveRegistration: true);
+    }
+
+    return refreshed;
+  }
+}
+
+Future<({String did, String handle})> _defaultFetchSessionInfo(
+  ATProto atproto,
+) async {
+  final sessionResponse = await atproto.server.getSession();
+  return (did: sessionResponse.data.did, handle: sessionResponse.data.handle);
+}
+
+SparkLogger _buildLogger() {
+  final getIt = GetIt.instance;
+  if (getIt.isRegistered<LogService>()) {
+    return getIt<LogService>().getLogger('AuthRepository');
+  }
+
+  return SparkLogger(name: 'AuthRepository');
+}
+
+Uri _normalizeBaseUri(String rawValue) {
+  final uri = Uri.parse(rawValue);
+  final trimmedPath = uri.path.length > 1 && uri.path.endsWith('/')
+      ? uri.path.substring(0, uri.path.length - 1)
+      : uri.path;
+  return uri.replace(path: trimmedPath);
+}
+
+Map<String, dynamic> _decodeJsonObject(String body) {
+  final decoded = json.decode(body);
+  if (decoded is! Map<String, dynamic>) {
+    throw const FormatException('Expected a JSON object.');
+  }
+
+  return decoded;
+}
+
+String _responseError(http.Response response) {
+  try {
+    final body = _decodeJsonObject(response.body);
+    final description = body['error_description'] ?? body['error'];
+    if (description is String && description.isNotEmpty) {
+      return description;
+    }
+  } catch (_) {
+    if (response.body.trim().isNotEmpty) {
+      return response.body.trim();
+    }
+  }
+
+  return '${response.statusCode} ${response.reasonPhrase ?? ''}'.trim();
+}
+
+class _AipOAuthMetadata {
+  const _AipOAuthMetadata({
+    required this.authorizationEndpoint,
+    required this.tokenEndpoint,
+    required this.registrationEndpoint,
+  });
+
+  factory _AipOAuthMetadata.fromJson(
+    Map<String, dynamic> json, {
+    required Uri baseUri,
+  }) {
+    Uri resolveEndpoint(String value) {
+      final endpoint = Uri.parse(value);
+      if (endpoint.hasScheme) {
+        return endpoint;
       }
 
-      final refreshedSession = await _oauthClient!.refresh(_oauthSession!);
-      _oauthSession = refreshedSession;
-
-      final pdsHost = _pdsEndpoint != null
-          ? Uri.parse(_pdsEndpoint!).host
-          : null;
-      _atProto = ATProto.fromOAuthSession(_oauthSession!, service: pdsHost);
-
-      await _saveSession();
-      return true;
-    } catch (e) {
-      _logger.e('OAuth token refresh failed', error: e);
-      // Don't logout here - let the caller decide what to do
-      return false;
+      return baseUri.resolveUri(endpoint);
     }
+
+    final registrationValue =
+        json['registration_endpoint'] as String? ??
+        baseUri.resolve('/oauth/clients/register').toString();
+
+    return _AipOAuthMetadata(
+      authorizationEndpoint: resolveEndpoint(
+        json['authorization_endpoint'] as String,
+      ),
+      tokenEndpoint: resolveEndpoint(json['token_endpoint'] as String),
+      registrationEndpoint: resolveEndpoint(registrationValue),
+    );
+  }
+
+  final Uri authorizationEndpoint;
+  final Uri tokenEndpoint;
+  final Uri registrationEndpoint;
+}
+
+class _AipClientRegistrationResponse {
+  const _AipClientRegistrationResponse({
+    required this.clientId,
+    this.clientSecret,
+    this.registrationAccessToken,
+    this.clientSecretExpiresAt,
+  });
+
+  factory _AipClientRegistrationResponse.fromJson(Map<String, dynamic> json) {
+    return _AipClientRegistrationResponse(
+      clientId: json['client_id'] as String,
+      clientSecret: json['client_secret'] as String?,
+      registrationAccessToken: json['registration_access_token'] as String?,
+      clientSecretExpiresAt: json['client_secret_expires_at'] as int?,
+    );
+  }
+
+  final String clientId;
+  final String? clientSecret;
+  final String? registrationAccessToken;
+  final int? clientSecretExpiresAt;
+
+  AipClientRegistration toStoredRegistration() {
+    final secretExpiry = clientSecretExpiresAt;
+    final expiryDateTime = secretExpiry == null || secretExpiry <= 0
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(secretExpiry * 1000, isUtc: true);
+
+    return AipClientRegistration(
+      clientId: clientId,
+      clientSecret: clientSecret,
+      registrationAccessToken: registrationAccessToken,
+      clientSecretExpiresAt: expiryDateTime?.toIso8601String(),
+    );
   }
 }

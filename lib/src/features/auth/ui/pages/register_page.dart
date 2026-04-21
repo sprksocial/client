@@ -29,10 +29,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final authNotifier = ref.read(authProvider.notifier);
 
     try {
-      // Initiate OAuth flow without handle, using pds.sprk.so service
-      final authUrl = await authNotifier.initiateOAuthWithService(
-        'pds.sprk.so',
-      );
+      // Start the AIP OAuth flow without a login hint for account creation.
+      final authUrl = await authNotifier.initiateOAuthWithService('');
 
       if (!mounted) return;
 
