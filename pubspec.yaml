@@ -2,7 +2,7 @@ name: spark
 description: "Spark mobile app"
 publish_to: "none"
 # The number after + should stay fixed, the android workflow will change it on every build
-version: 0.11.0+1
+version: 0.11.1+1
 environment:
   sdk: ^3.11.0
 workspace:
