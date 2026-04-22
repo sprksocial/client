@@ -1,0 +1,9 @@
+[
+  {
+    "adapter": "Dart",
+    "type": "flutter",
+    "label": "Debug Main",
+    "request": "launch",
+    "program": "lib/main.dart",
+  },
+]
