@@ -24,11 +24,14 @@ import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Client for interacting with Spark API endpoints
 class SprkRepositoryImpl implements SprkRepository {
-  SprkRepositoryImpl(this._authRepository) : _sprkDid = _getSprkDid() {
+  SprkRepositoryImpl(this._authRepository)
+    : _sprkDid = _getSprkDid(),
+      _bskyDid = _getBskyDid() {
     _logger.d('SprkRepository initialized with DID: $_sprkDid');
   }
   final AuthRepository _authRepository;
   final String _sprkDid;
+  final String _bskyDid;
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
     'SprkRepository',
   );
@@ -52,17 +55,22 @@ class SprkRepositoryImpl implements SprkRepository {
   String get sprkDid => _sprkDid;
 
   @override
-  String get bskyDid => 'did:web:api.bsky.app#bsky_appview';
+  String get bskyDid => _bskyDid;
 
   @override
-  String get modDid => 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler';
+  String get modDid => AppConfig.modDid;
 
   @override
-  String get bskyModDid => 'did:plc:ar7c4by46qjdydhdevvrndac#atproto_labeler';
+  String get bskyModDid => AppConfig.bskyModDid;
 
   static String _getSprkDid() {
     final sprkAppView = Uri.parse(AppConfig.appViewUrl);
     return 'did:web:${sprkAppView.host}#sprk_appview';
+  }
+
+  static String _getBskyDid() {
+    final bskyAppView = Uri.parse(AppConfig.bskyAppViewUrl);
+    return 'did:web:${bskyAppView.host}#bsky_appview';
   }
 
   /// Execute API request with token expiration handling

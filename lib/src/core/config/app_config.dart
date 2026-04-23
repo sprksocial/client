@@ -8,24 +8,38 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AppConfig {
   /// Base URL for the video processing service.
   static String get videoServiceUrl =>
-      _getStringValue('VIDEO_SERVICE_URL', 'http://localhost:3000');
+      _getStringValue('VIDEO_SERVICE_URL', 'https://video.sprk.so');
 
   /// License key for the img.ly editor.
   static String get license => _getStringValue('SHOWCASES_LICENSE_FLUTTER', '');
 
   /// URL for the app view (web view display).
   static String get appViewUrl =>
-      _getStringValue('SPRK_APPVIEW_URL', 'http://localhost:3000');
+      _getStringValue('SPRK_APPVIEW_URL', 'https://api.sprk.so');
+
+  /// Base URL for the Bluesky appview.
+  static String get bskyAppViewUrl =>
+      _getStringValue('BSKY_APPVIEW_URL', 'https://api.bsky.app');
+
+  /// DID for the Spark moderation service.
+  static String get modDid => _getStringValue(
+    'MOD_DID',
+    'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler',
+  );
+
+  /// DID for the Bluesky moderation service.
+  static String get bskyModDid => _getStringValue(
+    'BSKY_MOD_DID',
+    'did:plc:ar7c4by46qjdydhdevvrndac#atproto_labeler',
+  );
 
   /// Base URL for the messages service (chat service).
   static String get messagesServiceUrl =>
-      _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
+      _getStringValue('MESSAGES_SERVICE_URL', 'https://chat.sprk.so');
 
   /// Base URL for the AIP OAuth server.
-  static String get aipBaseUrl => _getStringValue(
-    'AIP_BASE_URL',
-    _getStringValue('OAUTH_ISSUER_URL', 'https://auth.sprk.so'),
-  );
+  static String get aipBaseUrl =>
+      _getStringValue('AIP_BASE_URL', 'https://auth.sprk.so');
 
   /// Service DID for the chat service (used for service auth).
   static String get chatServiceDid =>

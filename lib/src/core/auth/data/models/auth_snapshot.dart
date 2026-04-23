@@ -89,6 +89,7 @@ class AipClientRegistration {
     this.clientSecret,
     this.registrationAccessToken,
     this.clientSecretExpiresAt,
+    this.scope,
   });
 
   factory AipClientRegistration.fromJson(Map<String, dynamic> json) {
@@ -97,6 +98,7 @@ class AipClientRegistration {
       clientSecret: json['clientSecret'] as String?,
       registrationAccessToken: json['registrationAccessToken'] as String?,
       clientSecretExpiresAt: json['clientSecretExpiresAt'] as String?,
+      scope: json['scope'] as String?,
     );
   }
 
@@ -104,6 +106,7 @@ class AipClientRegistration {
   final String? clientSecret;
   final String? registrationAccessToken;
   final String? clientSecretExpiresAt;
+  final String? scope;
 
   DateTime? get clientSecretExpiresAtDateTime {
     final value = clientSecretExpiresAt;
@@ -117,6 +120,7 @@ class AipClientRegistration {
       'clientSecret': clientSecret,
       'registrationAccessToken': registrationAccessToken,
       'clientSecretExpiresAt': clientSecretExpiresAt,
+      'scope': scope,
     };
   }
 }

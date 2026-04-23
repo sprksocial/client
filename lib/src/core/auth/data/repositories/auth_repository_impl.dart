@@ -20,7 +20,6 @@ typedef AtprotoSessionFetcher =
     Future<({String did, String handle})> Function(ATProto atproto);
 
 const String _redirectUriValue = 'sprk://oauth-callback';
-const String _aipScope = 'atproto transition:generic';
 const String _clientName = 'Spark Mobile App';
 const String _clientUri = 'https://sprk.so';
 const String _softwareId = 'spark-mobile';
@@ -28,6 +27,16 @@ const String _softwareVersion = '1.0.0';
 const Duration _refreshLeeway = Duration(minutes: 5);
 const String _randomCharset =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+
+List<String> _buildAipScopes() {
+  return const <String>['atproto', 'transition:generic'];
+}
+
+String _buildAipScope() => _buildAipScopes().join(' ');
+
+bool _registrationScopeMatches(AipClientRegistration registration) {
+  return registration.scope == _buildAipScope();
+}
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
@@ -51,6 +60,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final DateTime Function() _now;
   final AtprotoSessionFetcher _fetchSessionInfo;
   final Uri _aipBaseUri;
+  final List<String> _aipScopes = _buildAipScopes();
   final Completer<void> _initCompleter = Completer<void>();
 
   Future<bool>? _refreshInFlight;
@@ -336,7 +346,9 @@ class AuthRepositoryImpl implements AuthRepository {
     _AipOAuthMetadata metadata,
   ) async {
     final existing = _snapshot?.aipClientRegistration;
-    if (existing != null && !_registrationNeedsRefresh(existing)) {
+    if (existing != null &&
+        !_registrationNeedsRefresh(existing) &&
+        _registrationScopeMatches(existing)) {
       return existing;
     }
 
@@ -350,7 +362,7 @@ class AuthRepositoryImpl implements AuthRepository {
         'response_types': ['code'],
         'grant_types': ['authorization_code', 'refresh_token'],
         'token_endpoint_auth_method': 'client_secret_post',
-        'scope': _aipScope,
+        'scope': _buildAipScope(),
         'software_id': _softwareId,
         'software_version': _softwareVersion,
       }),
@@ -364,7 +376,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     final registration = _AipClientRegistrationResponse.fromJson(
       _decodeJsonObject(response.body),
-    ).toStoredRegistration();
+    ).toStoredRegistration(scope: _buildAipScope());
 
     final previousClientId = existing?.clientId;
     _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
@@ -448,7 +460,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       var authorizationUri = grant.getAuthorizationUrl(
         redirectUri,
-        scopes: _aipScope.split(' '),
+        scopes: _aipScopes,
         state: state,
       );
 
@@ -510,7 +522,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       grant.getAuthorizationUrl(
         Uri.parse(context.redirectUri),
-        scopes: _aipScope.split(' '),
+        scopes: _aipScopes,
         state: context.state,
       );
 
@@ -903,7 +915,7 @@ class _AipClientRegistrationResponse {
   final String? registrationAccessToken;
   final int? clientSecretExpiresAt;
 
-  AipClientRegistration toStoredRegistration() {
+  AipClientRegistration toStoredRegistration({required String scope}) {
     final secretExpiry = clientSecretExpiresAt;
     final expiryDateTime = secretExpiry == null || secretExpiry <= 0
         ? null
@@ -914,6 +926,7 @@ class _AipClientRegistrationResponse {
       clientSecret: clientSecret,
       registrationAccessToken: registrationAccessToken,
       clientSecretExpiresAt: expiryDateTime?.toIso8601String(),
+      scope: scope,
     );
   }
 }

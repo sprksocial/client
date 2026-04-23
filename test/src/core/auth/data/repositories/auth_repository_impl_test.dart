@@ -519,6 +519,10 @@ void main() {
                 registrationBody['grant_types'],
                 containsAll(<String>['authorization_code', 'refresh_token']),
               );
+              expect(
+                registrationBody['scope'] as String,
+                'atproto transition:generic',
+              );
               return http.Response(
                 json.encode({
                   'client_id': 'client-1',
@@ -565,6 +569,7 @@ void main() {
         expect(authUri.queryParameters['login_hint'], 'alice.sprk.so');
         expect(authUri.queryParameters['code_challenge'], isNotEmpty);
         expect(authUri.queryParameters['state'], isNotEmpty);
+        expect(authUri.queryParameters['scope'], 'atproto transition:generic');
 
         final callbackUrl = Uri.parse(_redirectUri)
             .replace(
@@ -581,6 +586,79 @@ void main() {
         expect(registrationCalls, 1);
         expect(tokenCalls, 1);
         expect(sessionCalls, 1);
+      },
+    );
+
+    test(
+      'initiateOAuth re-registers when the cached AIP client scope is stale',
+      () async {
+        final storage = _InMemoryStorage();
+        await _storeSnapshot(
+          storage,
+          AuthSnapshot(
+            aipClientRegistration: const AipClientRegistration(
+              clientId: 'stale-client',
+              clientSecret: 'secret-1',
+              scope: 'atproto',
+            ),
+          ),
+        );
+
+        var registrationCalls = 0;
+        final client = MockClient((request) async {
+          switch (request.url.path) {
+            case '/.well-known/oauth-authorization-server':
+              return http.Response(
+                json.encode({
+                  'authorization_endpoint':
+                      'https://auth.sprk.so/oauth/authorize',
+                  'token_endpoint': 'https://auth.sprk.so/oauth/token',
+                  'registration_endpoint':
+                      'https://auth.sprk.so/oauth/clients/register',
+                }),
+                200,
+              );
+            case '/oauth/clients/register':
+              registrationCalls += 1;
+              final registrationBody =
+                  json.decode(request.body) as Map<String, dynamic>;
+              expect(
+                registrationBody['scope'] as String,
+                'atproto transition:generic',
+              );
+              return http.Response(
+                json.encode({
+                  'client_id': 'client-2',
+                  'client_secret': 'secret-2',
+                }),
+                201,
+              );
+            default:
+              return http.Response('unexpected request', 500);
+          }
+        });
+
+        final repository = AuthRepositoryImpl(
+          secureStorage: storage,
+          httpClient: client,
+          logger: SparkLogger(name: 'AuthRepositoryTest'),
+        );
+
+        await repository.initializationComplete;
+        final authUrl = await repository.initiateOAuth('alice.sprk.so');
+        final authUri = Uri.parse(authUrl);
+
+        expect(registrationCalls, 1);
+        expect(authUri.queryParameters['scope'], 'atproto transition:generic');
+
+        final savedSnapshot = AuthSnapshot.fromJsonString(
+          (await storage.getString(StorageKeys.account))!,
+        );
+        expect(savedSnapshot.aipClientRegistration?.clientId, 'client-2');
+        expect(
+          savedSnapshot.aipClientRegistration?.scope,
+          'atproto transition:generic',
+        );
       },
     );
 
