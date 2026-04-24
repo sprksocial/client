@@ -51,6 +51,39 @@ void main() {
       expect(restored.$privateKey, normalizedCache.privateKey);
     });
 
+    test('restores with exported client_id when token omits the claim', () {
+      final cache = buildPdsSessionCacheFromAipResponse(
+        _sessionResponse(
+          accessToken: _jwt(clientId: null),
+          clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+        ),
+      );
+
+      final restored = restorePdsOAuthSessionFromCache(cache);
+
+      expect(
+        restored.$clientId,
+        'https://auth.sprk.so/oauth-client-metadata.json',
+      );
+    });
+
+    test(
+      'restores with caller-provided client_id when token omits the claim',
+      () {
+        final cache = buildPdsSessionCacheFromAipResponse(
+          _sessionResponse(accessToken: _jwt(clientId: null)),
+          clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+        );
+
+        final restored = restorePdsOAuthSessionFromCache(cache);
+
+        expect(
+          restored.$clientId,
+          'https://auth.sprk.so/oauth-client-metadata.json',
+        );
+      },
+    );
+
     test('rejects responses without private DPoP key material', () {
       final response = _sessionResponse(
         accessToken: _jwt(clientId: 'spark-client'),
@@ -88,6 +121,7 @@ void main() {
 
 AipAtprotocolSessionResponse _sessionResponse({
   required String accessToken,
+  String? clientId,
   String? d = 'AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI',
   String x = 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE',
   String y = 'AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM',
@@ -100,6 +134,7 @@ AipAtprotocolSessionResponse _sessionResponse({
     scopes: const ['atproto'],
     pdsEndpoint: 'https://pds.sprk.so',
     expiresAt: DateTime.utc(2030, 1, 1),
+    clientId: clientId,
     dpopKey: 'did:key:test',
     dpopJwk: AipDpopJwk(kty: 'EC', crv: 'P-256', x: x, y: y, d: d),
   );

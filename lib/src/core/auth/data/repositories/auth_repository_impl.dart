@@ -238,6 +238,9 @@ class AuthRepositoryImpl implements AuthRepository {
         pdsEndpoint: pdsEndpoint,
         scope: oauthSession.scope,
         dpopNonce: oauthSession.$dPoPNonce,
+        clientId:
+            oauthSession.$clientId ??
+            extractClientIdFromAccessToken(oauthSession.accessToken),
         publicKey: oauthSession.$publicKey,
         privateKey: oauthSession.$privateKey,
       ),
@@ -661,6 +664,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final pdsSession = buildPdsSessionCacheFromAipResponse(
         sessionResponse,
         dpopNonce: existingNonce,
+        clientId: _aipAtprotocolClientId,
       );
 
       _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
@@ -682,6 +686,9 @@ class AuthRepositoryImpl implements AuthRepository {
       return false;
     }
   }
+
+  String get _aipAtprotocolClientId =>
+      _aipBaseUri.resolve('/oauth-client-metadata.json').toString();
 
   Future<bool> _refreshAuthState() async {
     final inFlight = _refreshInFlight;

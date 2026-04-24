@@ -14,6 +14,7 @@ class AipAtprotocolSessionResponse {
     required this.scopes,
     required this.pdsEndpoint,
     required this.expiresAt,
+    this.clientId,
     this.dpopKey,
     this.dpopJwk,
   });
@@ -32,6 +33,7 @@ class AipAtprotocolSessionResponse {
         (json['expires_at'] as int) * 1000,
         isUtc: true,
       ),
+      clientId: json['client_id'] as String?,
       dpopKey: json['dpop_key'] as String?,
       dpopJwk: json['dpop_jwk'] == null
           ? null
@@ -46,6 +48,7 @@ class AipAtprotocolSessionResponse {
   final List<String> scopes;
   final String pdsEndpoint;
   final DateTime expiresAt;
+  final String? clientId;
   final String? dpopKey;
   final AipDpopJwk? dpopJwk;
 }
@@ -88,6 +91,7 @@ class AipExportedSessionException implements Exception {
 PdsSessionCache buildPdsSessionCacheFromAipResponse(
   AipAtprotocolSessionResponse response, {
   String dpopNonce = '',
+  String? clientId,
 }) {
   final dpopJwk = response.dpopJwk;
   if (dpopJwk == null || dpopJwk.d == null || dpopJwk.d!.isEmpty) {
@@ -96,8 +100,11 @@ PdsSessionCache buildPdsSessionCacheFromAipResponse(
     );
   }
 
-  final clientId = extractClientIdFromAccessToken(response.accessToken);
-  if (clientId == null || clientId.isEmpty) {
+  final resolvedClientId =
+      response.clientId ??
+      clientId ??
+      extractClientIdFromAccessToken(response.accessToken);
+  if (resolvedClientId == null || resolvedClientId.isEmpty) {
     throw const AipExportedSessionException(
       'AIP-exported token is incompatible with direct-PDS mode: missing client_id.',
     );
@@ -111,13 +118,15 @@ PdsSessionCache buildPdsSessionCacheFromAipResponse(
     pdsEndpoint: response.pdsEndpoint,
     scope: response.scopes.join(' '),
     dpopNonce: dpopNonce,
+    clientId: resolvedClientId,
     publicKey: encodeDpopPublicKey(dpopJwk.x, dpopJwk.y),
     privateKey: encodeDpopPrivateKey(dpopJwk.d!),
   );
 }
 
 OAuthSession restorePdsOAuthSessionFromCache(PdsSessionCache cache) {
-  final clientId = extractClientIdFromAccessToken(cache.accessToken);
+  final clientId =
+      cache.clientId ?? extractClientIdFromAccessToken(cache.accessToken);
   if (clientId == null || clientId.isEmpty) {
     throw const AipExportedSessionException(
       'AIP-exported token is incompatible with direct-PDS mode: missing client_id.',

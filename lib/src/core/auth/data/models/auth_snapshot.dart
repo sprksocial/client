@@ -148,19 +148,22 @@ class PdsSessionCache {
     required this.pdsEndpoint,
     required this.scope,
     required this.dpopNonce,
+    this.clientId,
     required this.publicKey,
     required this.privateKey,
   });
 
   factory PdsSessionCache.fromJson(Map<String, dynamic> json) {
+    final accessToken = json['accessToken'] as String;
     return PdsSessionCache(
-      accessToken: json['accessToken'] as String,
+      accessToken: accessToken,
       expiresAt: json['expiresAt'] as String,
       did: json['did'] as String,
       handle: json['handle'] as String,
       pdsEndpoint: json['pdsEndpoint'] as String,
       scope: json['scope'] as String,
       dpopNonce: json['dpopNonce'] as String? ?? '',
+      clientId: json['clientId'] as String?,
       publicKey: json['publicKey'] as String,
       privateKey: json['privateKey'] as String,
     );
@@ -173,6 +176,7 @@ class PdsSessionCache {
   final String pdsEndpoint;
   final String scope;
   final String dpopNonce;
+  final String? clientId;
   final String publicKey;
   final String privateKey;
 
@@ -187,6 +191,7 @@ class PdsSessionCache {
       'pdsEndpoint': pdsEndpoint,
       'scope': scope,
       'dpopNonce': dpopNonce,
+      'clientId': clientId,
       'publicKey': publicKey,
       'privateKey': privateKey,
     };
@@ -200,6 +205,7 @@ class PdsSessionCache {
     String? pdsEndpoint,
     String? scope,
     String? dpopNonce,
+    Object? clientId = _missingValue,
     String? publicKey,
     String? privateKey,
   }) {
@@ -211,6 +217,9 @@ class PdsSessionCache {
       pdsEndpoint: pdsEndpoint ?? this.pdsEndpoint,
       scope: scope ?? this.scope,
       dpopNonce: dpopNonce ?? this.dpopNonce,
+      clientId: identical(clientId, _missingValue)
+          ? this.clientId
+          : clientId as String?,
       publicKey: publicKey ?? this.publicKey,
       privateKey: privateKey ?? this.privateKey,
     );

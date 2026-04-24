@@ -688,9 +688,7 @@ void main() {
             case '/api/atprotocol/session':
               sessionCalls += 1;
               return http.Response(
-                json.encode(
-                  _sessionResponseBody(_pdsJwt(clientId: 'client-1')),
-                ),
+                json.encode(_sessionResponseBody(_pdsJwt(clientId: null))),
                 200,
               );
             default:
@@ -884,7 +882,7 @@ Map<String, dynamic> _sessionResponseBody(String accessToken) {
   };
 }
 
-String _pdsJwt({required String clientId, DateTime? exp}) {
+String _pdsJwt({required String? clientId, DateTime? exp}) {
   final payload = <String, Object?>{
     'sub': 'did:plc:test',
     'exp': (exp ?? DateTime.utc(2030, 1, 1)).millisecondsSinceEpoch ~/ 1000,
