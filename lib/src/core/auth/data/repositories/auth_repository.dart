@@ -15,6 +15,9 @@ abstract class AuthRepository {
   /// Gets the current user's handle
   String? get handle;
 
+  /// Gets the saved handle from the last persisted session, if available
+  String? get lastKnownHandle;
+
   /// Gets the current user's PDS endpoint
   String? get pdsEndpoint;
 

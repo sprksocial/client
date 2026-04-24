@@ -202,6 +202,9 @@ class _FakeAuthRepository implements AuthRepository {
   String? get handle => 'me.test';
 
   @override
+  String? get lastKnownHandle => handle;
+
+  @override
   Future<void> get initializationComplete async {}
 
   @override

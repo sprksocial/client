@@ -797,6 +797,46 @@
     "description": "Message to enter handle for OAuth"
   },
 
+  "pageTitleSignInAgain": "Sign in again",
+  "@pageTitleSignInAgain": {
+    "description": "Title for auth recovery page when a saved session could not be verified"
+  },
+
+  "messageSavedSessionRecovery": "We found your saved account, but your session could not be verified. You can sign in again with this handle or go back to get started.",
+  "@messageSavedSessionRecovery": {
+    "description": "Explanation on auth recovery page after saved session verification fails"
+  },
+
+  "buttonContinueAs": "Continue as {handle}",
+  "@buttonContinueAs": {
+    "description": "Button label for continuing OAuth with a prefilled handle",
+    "placeholders": {
+      "handle": {
+        "type": "String"
+      }
+    }
+  },
+
+  "buttonGoToGetStarted": "Go to get started",
+  "@buttonGoToGetStarted": {
+    "description": "Button label to leave auth recovery and open the normal get started page"
+  },
+
+  "errorEnterHandle": "Enter your handle",
+  "@errorEnterHandle": {
+    "description": "Validation error when handle field is empty"
+  },
+
+  "errorSignInFailed": "Sign in failed: {details}",
+  "@errorSignInFailed": {
+    "description": "Error message when OAuth sign in fails",
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+
   "messageCompletingSignUp": "Completing sign up...",
   "@messageCompletingSignUp": {
     "description": "Loading message when completing sign up"

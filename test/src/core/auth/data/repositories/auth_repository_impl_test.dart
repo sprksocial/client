@@ -139,6 +139,47 @@ void main() {
       expect(sessionCalls, 1);
     });
 
+    test('startup refresh failure preserves the saved auth snapshot', () async {
+      final storage = _InMemoryStorage();
+      await _storeSnapshot(
+        storage,
+        AuthSnapshot(
+          aipClientRegistration: const AipClientRegistration(
+            clientId: 'client-1',
+          ),
+          aipGrant: AipGrant(
+            credentialsJson: oauth2.Credentials(
+              'aip-access',
+              expiration: DateTime.utc(2030, 1, 1),
+            ).toJson(),
+          ),
+          pdsSessionCache: _pdsSessionCache(
+            accessToken: _pdsJwt(
+              clientId: 'client-1',
+              exp: DateTime.utc(2020, 1, 1),
+            ),
+            expiresAt: DateTime.utc(2020, 1, 1),
+          ),
+        ),
+      );
+      final storedBefore = await storage.getString(StorageKeys.account);
+
+      final repository = AuthRepositoryImpl(
+        secureStorage: storage,
+        httpClient: MockClient(
+          (_) async => http.Response('temporary outage', 503),
+        ),
+        logger: SparkLogger(name: 'AuthRepositoryTest'),
+      );
+
+      await repository.initializationComplete;
+
+      expect(repository.isAuthenticated, isFalse);
+      expect(repository.handle, isNull);
+      expect(repository.lastKnownHandle, 'test.sprk.so');
+      expect(await storage.getString(StorageKeys.account), storedBefore);
+    });
+
     test(
       'refreshToken refreshes AIP grant before fetching a new PDS session',
       () async {
@@ -167,7 +208,7 @@ void main() {
 
         var tokenCalls = 0;
         var sessionCalls = 0;
-        final client = MockClient((request) async {
+        final client = _CloseAwareMockClient((request) async {
           if (request.url.path == '/oauth/token') {
             tokenCalls += 1;
             return http.Response(
@@ -204,6 +245,7 @@ void main() {
         final refreshed = await repository.refreshToken();
 
         expect(refreshed, isTrue);
+        expect(client.isClosed, isFalse);
         expect(tokenCalls, 1);
         expect(sessionCalls, 1);
 
@@ -217,6 +259,57 @@ void main() {
         );
       },
     );
+
+    test('refreshToken failure preserves the saved auth snapshot', () async {
+      final storage = _InMemoryStorage();
+      await _storeSnapshot(
+        storage,
+        AuthSnapshot(
+          aipClientRegistration: const AipClientRegistration(
+            clientId: 'client-1',
+            clientSecret: 'secret-1',
+          ),
+          aipGrant: AipGrant(
+            credentialsJson: oauth2.Credentials(
+              'expired-aip-access',
+              refreshToken: 'refresh-1',
+              tokenEndpoint: Uri.parse('https://auth.sprk.so/oauth/token'),
+              expiration: DateTime.utc(2020, 1, 1),
+            ).toJson(),
+          ),
+          pdsSessionCache: _pdsSessionCache(
+            accessToken: _pdsJwt(clientId: 'client-1'),
+            expiresAt: DateTime.utc(2030, 1, 1),
+          ),
+        ),
+      );
+      final storedBefore = AuthSnapshot.fromJsonString(
+        (await storage.getString(StorageKeys.account))!,
+      );
+
+      final repository = AuthRepositoryImpl(
+        secureStorage: storage,
+        httpClient: MockClient(
+          (_) async => http.Response('temporary outage', 503),
+        ),
+        logger: SparkLogger(name: 'AuthRepositoryTest'),
+      );
+
+      await repository.initializationComplete;
+      final refreshed = await repository.refreshToken();
+
+      expect(refreshed, isFalse);
+      expect(repository.isAuthenticated, isFalse);
+      final savedSnapshot = AuthSnapshot.fromJsonString(
+        (await storage.getString(StorageKeys.account))!,
+      );
+      expect(savedSnapshot.aipClientRegistration?.clientId, 'client-1');
+      expect(savedSnapshot.aipGrant?.credentialsJson, contains('refresh-1'));
+      expect(
+        savedSnapshot.pdsSessionCache?.did,
+        storedBefore.pdsSessionCache?.did,
+      );
+    });
 
     test('concurrent refreshToken calls share one in-flight refresh', () async {
       final storage = _InMemoryStorage();
@@ -444,6 +537,55 @@ void main() {
       expect(fetchCalls, 2);
       expect(sessionCalls, 1);
       expect(repository.handle, 'updated.sprk.so');
+    });
+
+    test('validateSession failure preserves the saved auth snapshot', () async {
+      final storage = _InMemoryStorage();
+      await _storeSnapshot(
+        storage,
+        AuthSnapshot(
+          aipClientRegistration: const AipClientRegistration(
+            clientId: 'client-1',
+          ),
+          aipGrant: AipGrant(
+            credentialsJson: oauth2.Credentials(
+              'aip-access',
+              expiration: DateTime.utc(2030, 1, 1),
+            ).toJson(),
+          ),
+          pdsSessionCache: _pdsSessionCache(
+            accessToken: _pdsJwt(clientId: 'client-1'),
+            expiresAt: DateTime.utc(2030, 1, 1),
+          ),
+        ),
+      );
+      final storedBefore = AuthSnapshot.fromJsonString(
+        (await storage.getString(StorageKeys.account))!,
+      );
+
+      final repository = AuthRepositoryImpl(
+        secureStorage: storage,
+        httpClient: MockClient(
+          (_) async => http.Response('temporary outage', 503),
+        ),
+        logger: SparkLogger(name: 'AuthRepositoryTest'),
+        fetchSessionInfo: (_) async => throw Exception('Unauthorized'),
+      );
+
+      await repository.initializationComplete;
+      final isValid = await repository.validateSession();
+
+      expect(isValid, isFalse);
+      expect(repository.isAuthenticated, isFalse);
+      final savedSnapshot = AuthSnapshot.fromJsonString(
+        (await storage.getString(StorageKeys.account))!,
+      );
+      expect(savedSnapshot.aipClientRegistration?.clientId, 'client-1');
+      expect(savedSnapshot.aipGrant?.credentialsJson, contains('aip-access'));
+      expect(
+        savedSnapshot.pdsSessionCache?.did,
+        storedBefore.pdsSessionCache?.did,
+      );
     });
 
     test(
@@ -821,5 +963,26 @@ class _InMemoryStorage implements LocalStorageInterface {
   @override
   Future<void> setStringList(String key, List<String> value) async {
     _values[key] = List<String>.from(value);
+  }
+}
+
+class _CloseAwareMockClient extends MockClient {
+  _CloseAwareMockClient(super.fn);
+
+  bool isClosed = false;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    if (isClosed) {
+      throw StateError('HTTP client is closed');
+    }
+
+    return super.send(request);
+  }
+
+  @override
+  void close() {
+    isClosed = true;
+    super.close();
   }
 }

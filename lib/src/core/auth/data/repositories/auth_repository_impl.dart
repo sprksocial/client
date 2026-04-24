@@ -86,6 +86,9 @@ class AuthRepositoryImpl implements AuthRepository {
   String? get handle => _handle;
 
   @override
+  String? get lastKnownHandle => _handle ?? _snapshot?.pdsSessionCache?.handle;
+
+  @override
   String? get pdsEndpoint => _pdsEndpoint;
 
   @override
@@ -132,15 +135,13 @@ class AuthRepositoryImpl implements AuthRepository {
     if (snapshot.aipGrant != null) {
       final refreshed = await _refreshAuthState();
       if (!refreshed) {
-        await _clearSessionState(preserveRegistration: true);
+        _resetInMemorySession();
       }
       return;
     }
 
     if (snapshot.pdsSessionCache != null) {
-      await _clearSessionState(
-        preserveRegistration: snapshot.aipClientRegistration != null,
-      );
+      _resetInMemorySession();
     }
   }
 
@@ -495,8 +496,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<LoginResult> completeOAuth(String callbackUrl) async {
+    AuthSnapshot? previousSnapshot;
     try {
       await initializationComplete;
+      previousSnapshot = _snapshot;
 
       final context = await _readPendingContext();
       if (context == null) {
@@ -540,7 +543,9 @@ class AuthRepositoryImpl implements AuthRepository {
         authGeneration: _authGeneration,
       );
       if (!bootstrapped) {
-        await _clearSessionState(preserveRegistration: true);
+        _snapshot = previousSnapshot;
+        await _saveSnapshot();
+        _resetInMemorySession();
         return LoginResult.failed(
           'Failed to bootstrap a direct PDS session from AIP.',
         );
@@ -549,7 +554,9 @@ class AuthRepositoryImpl implements AuthRepository {
       return LoginResult.success();
     } catch (e, stackTrace) {
       _logger.e('AIP OAuth callback failed', error: e, stackTrace: stackTrace);
-      await _clearSessionState(preserveRegistration: true);
+      _snapshot = previousSnapshot;
+      await _saveSnapshot();
+      _resetInMemorySession();
       return LoginResult.failed(e.toString());
     } finally {
       await _clearPendingContext();
@@ -605,21 +612,17 @@ class AuthRepositoryImpl implements AuthRepository {
       httpClient: _httpClient,
     );
 
-    try {
-      await client.refreshCredentials();
-      final refreshed = client.credentials;
-      if (!_isCurrentAuthGeneration(authGeneration)) {
-        return null;
-      }
-
-      _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
-        aipGrant: AipGrant(credentialsJson: refreshed.toJson()),
-      );
-      await _saveSnapshot();
-      return refreshed;
-    } finally {
-      client.close();
+    await client.refreshCredentials();
+    final refreshed = client.credentials;
+    if (!_isCurrentAuthGeneration(authGeneration)) {
+      return null;
     }
+
+    _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
+      aipGrant: AipGrant(credentialsJson: refreshed.toJson()),
+    );
+    await _saveSnapshot();
+    return refreshed;
   }
 
   Future<AipAtprotocolSessionResponse> _fetchAtprotocolSession(
@@ -743,7 +746,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final session = await _fetchSessionInfo(atProto);
       if (session.did != did) {
         _logger.w('Session DID mismatch. Expected $did but got ${session.did}');
-        await logout();
+        _resetInMemorySession();
         return false;
       }
 
@@ -761,7 +764,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final refreshed = await _refreshAuthState();
       if (!refreshed || _atProto == null) {
-        await logout();
+        _resetInMemorySession();
         return false;
       }
 
@@ -772,7 +775,7 @@ class AuthRepositoryImpl implements AuthRepository {
             'Session DID mismatch after AIP rebootstrap. '
             'Expected $did but got ${session.did}',
           );
-          await logout();
+          _resetInMemorySession();
           return false;
         }
 
@@ -787,7 +790,7 @@ class AuthRepositoryImpl implements AuthRepository {
           error: refreshError,
           stackTrace: refreshStackTrace,
         );
-        await logout();
+        _resetInMemorySession();
         return false;
       }
     }
@@ -799,7 +802,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     final refreshed = await _refreshAuthState();
     if (!refreshed) {
-      await _clearSessionState(preserveRegistration: true);
+      _resetInMemorySession();
     }
 
     return refreshed;

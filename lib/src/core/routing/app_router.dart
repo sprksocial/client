@@ -30,17 +30,20 @@ class AuthGuard extends AutoRouteGuard {
 
     try {
       await authRepository.initializationComplete;
-      final hadSavedSession = authRepository.did?.isNotEmpty ?? false;
+      final savedHandle = authRepository.lastKnownHandle?.trim();
+      final hadSavedSession = savedHandle != null && savedHandle.isNotEmpty;
       final isSessionValid = await authRepository.validateSession();
 
       if (!isSessionValid) {
         _logger.i(
           hadSavedSession
-              ? 'Redirecting to login because the saved session is no longer valid'
+              ? 'Redirecting to auth recovery because the saved session could not be verified'
               : 'Redirecting to register because the user is not signed in',
         );
         resolver.redirectUntil(
-          hadSavedSession ? const LoginRoute() : const RegisterRoute(),
+          hadSavedSession
+              ? AuthRecoveryRoute(handle: savedHandle)
+              : const RegisterRoute(),
         );
         return;
       }
@@ -177,6 +180,7 @@ class AppRouter extends RootStackRouter {
 
     // Alternate starting routes
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
+    AutoRoute(page: AuthRecoveryRoute.page, path: '/auth/recover'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegisterRoute.page, path: '/register'),
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),

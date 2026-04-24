@@ -488,6 +488,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messageEnterHandle => 'Enter your handle to continue with OAuth';
 
   @override
+  String get pageTitleSignInAgain => 'Sign in again';
+
+  @override
+  String get messageSavedSessionRecovery =>
+      'We found your saved account, but your session could not be verified. You can sign in again with this handle or go back to get started.';
+
+  @override
+  String buttonContinueAs(String handle) {
+    return 'Continue as $handle';
+  }
+
+  @override
+  String get buttonGoToGetStarted => 'Go to get started';
+
+  @override
+  String get errorEnterHandle => 'Enter your handle';
+
+  @override
+  String errorSignInFailed(String details) {
+    return 'Sign in failed: $details';
+  }
+
+  @override
   String get messageCompletingSignUp => 'Completing sign up...';
 
   @override

@@ -1000,6 +1000,42 @@ abstract class AppLocalizations {
   /// **'Enter your handle to continue with OAuth'**
   String get messageEnterHandle;
 
+  /// Title for auth recovery page when a saved session could not be verified
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again'**
+  String get pageTitleSignInAgain;
+
+  /// Explanation on auth recovery page after saved session verification fails
+  ///
+  /// In en, this message translates to:
+  /// **'We found your saved account, but your session could not be verified. You can sign in again with this handle or go back to get started.'**
+  String get messageSavedSessionRecovery;
+
+  /// Button label for continuing OAuth with a prefilled handle
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as {handle}'**
+  String buttonContinueAs(String handle);
+
+  /// Button label to leave auth recovery and open the normal get started page
+  ///
+  /// In en, this message translates to:
+  /// **'Go to get started'**
+  String get buttonGoToGetStarted;
+
+  /// Validation error when handle field is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your handle'**
+  String get errorEnterHandle;
+
+  /// Error message when OAuth sign in fails
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed: {details}'**
+  String errorSignInFailed(String details);
+
   /// Loading message when completing sign up
   ///
   /// In en, this message translates to:
