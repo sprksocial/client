@@ -1,4 +1,4 @@
-name: Flutter Analyze Changed Files
+name: analyze
 
 on:
   pull_request:
