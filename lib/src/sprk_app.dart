@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:posthog_flutter/posthog_flutter.dart';
 import 'package:spark/src/core/design_system/theme/app_theme.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -89,7 +90,29 @@ class _SprkAppState extends ConsumerState<SprkApp> {
         }
         return supportedLocales.first;
       },
-      routerConfig: _appRouter.config(),
+      routerConfig: _appRouter.config(
+        navigatorObservers: () => [
+          PosthogObserver(nameExtractor: _postHogScreenName),
+        ],
+      ),
     );
   }
+}
+
+String? _postHogScreenName(RouteSettings settings) {
+  final name = settings.name?.trim();
+  if (name == null || name.isEmpty) {
+    return null;
+  }
+
+  if (name == '/') {
+    return 'Root';
+  }
+
+  const routeSuffix = 'Route';
+  if (name.endsWith(routeSuffix)) {
+    return name.substring(0, name.length - routeSuffix.length);
+  }
+
+  return name;
 }
