@@ -667,7 +667,7 @@ abstract class AppLocalizations {
   /// Already have an account button text
   ///
   /// In en, this message translates to:
-  /// **'I already have an account'**
+  /// **'I have an Atmosphere Account'**
   String get buttonHaveAccount;
 
   /// Open button text
@@ -997,7 +997,7 @@ abstract class AppLocalizations {
   /// Message to enter handle for OAuth
   ///
   /// In en, this message translates to:
-  /// **'Enter your handle to continue with OAuth'**
+  /// **'Enter your Atmosphere Account handle to sign in.'**
   String get messageEnterHandle;
 
   /// Title for auth recovery page when a saved session could not be verified

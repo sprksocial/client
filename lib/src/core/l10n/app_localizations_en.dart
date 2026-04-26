@@ -306,7 +306,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonGetStarted => 'Get Started';
 
   @override
-  String get buttonHaveAccount => 'I already have an account';
+  String get buttonHaveAccount => 'I have an Atmosphere Account';
 
   @override
   String get buttonOpen => 'Open';
@@ -485,7 +485,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pageTitleSignIn => 'Sign In';
 
   @override
-  String get messageEnterHandle => 'Enter your handle to continue with OAuth';
+  String get messageEnterHandle =>
+      'Enter your Atmosphere Account handle to sign in.';
 
   @override
   String get pageTitleSignInAgain => 'Sign in again';

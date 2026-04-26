@@ -4,6 +4,7 @@ import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/actor_adapter.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
@@ -121,13 +122,12 @@ class ActorRepositoryImpl implements ActorRepository {
   }) async {
     _logger.d('Searching actor typeahead with query: $query, limit: $limit');
     return _client.executeWithRetry(() async {
+      final clampedLimit = limit.clamp(1, 100);
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
+        return _searchActorsTypeaheadFromAppView(query, limit: clampedLimit);
       }
 
-      final clampedLimit = limit.clamp(1, 100);
       final result = await atproto.get(
         NSID.parse('so.sprk.actor.searchActorsTypeahead'),
         parameters: {'q': query, 'limit': clampedLimit.toString()},
@@ -143,6 +143,42 @@ class ActorRepositoryImpl implements ActorRepository {
         result.data as Map<String, dynamic>,
       );
     });
+  }
+
+  Future<SearchActorsTypeaheadResponse> _searchActorsTypeaheadFromAppView(
+    String query, {
+    required int limit,
+  }) async {
+    final uri = _appViewXrpcUri(
+      'so.sprk.actor.searchActorsTypeahead',
+      queryParameters: {'q': query, 'limit': limit.toString()},
+    );
+    final response = await http.get(uri);
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        'Actor typeahead failed with status ${response.statusCode}',
+      );
+    }
+
+    return SearchActorsTypeaheadResponse.fromJson(
+      jsonDecode(response.body) as Map<String, dynamic>,
+    );
+  }
+
+  Uri _appViewXrpcUri(
+    String nsid, {
+    required Map<String, String> queryParameters,
+  }) {
+    final baseUri = Uri.parse(AppConfig.appViewUrl);
+    final basePath = baseUri.path.endsWith('/')
+        ? baseUri.path.substring(0, baseUri.path.length - 1)
+        : baseUri.path;
+
+    return baseUri.replace(
+      path: '$basePath/xrpc/$nsid',
+      queryParameters: queryParameters,
+    );
   }
 
   @override

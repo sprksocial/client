@@ -497,7 +497,7 @@
     "description": "Get started button text"
   },
 
-  "buttonHaveAccount": "I already have an account",
+  "buttonHaveAccount": "I have an Atmosphere Account",
   "@buttonHaveAccount": {
     "description": "Already have an account button text"
   },
@@ -792,7 +792,7 @@
     "description": "Sign in page title"
   },
 
-  "messageEnterHandle": "Enter your handle to continue with OAuth",
+  "messageEnterHandle": "Enter your Atmosphere Account handle to sign in.",
   "@messageEnterHandle": {
     "description": "Message to enter handle for OAuth"
   },
