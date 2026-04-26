@@ -874,6 +874,12 @@ abstract class AppLocalizations {
   /// **'Followers'**
   String get pageTitleFollowers;
 
+  /// Known followers page title
+  ///
+  /// In en, this message translates to:
+  /// **'Known followers'**
+  String get pageTitleKnownFollowers;
+
   /// Following page title
   ///
   /// In en, this message translates to:
@@ -1335,6 +1341,34 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sending...'**
   String get messageSending;
+
+  /// Profile social context when one known follower is displayed
+  ///
+  /// In en, this message translates to:
+  /// **'Followed by {name}'**
+  String profileKnownFollowersOne(String name);
+
+  /// Profile social context when two known followers are displayed
+  ///
+  /// In en, this message translates to:
+  /// **'Followed by {firstName} and {secondName}'**
+  String profileKnownFollowersTwo(String firstName, String secondName);
+
+  /// Profile social context when one known follower is displayed plus additional known followers
+  ///
+  /// In en, this message translates to:
+  /// **'Followed by {name} and {count, plural, =1{1 other} other{{count} others}}'**
+  String profileKnownFollowersOneAndOthers(String name, int count);
+
+  /// Profile social context when two known followers are displayed plus additional known followers
+  ///
+  /// In en, this message translates to:
+  /// **'Followed by {firstName}, {secondName}, and {count, plural, =1{1 other} other{{count} others}}'**
+  String profileKnownFollowersTwoAndOthers(
+    String firstName,
+    String secondName,
+    int count,
+  );
 
   /// Send button text
   ///

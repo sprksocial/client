@@ -6,7 +6,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
 import 'package:spark/src/features/profile/ui/widgets/user_list_view.dart';
 
-enum UserListType { followers, following }
+enum UserListType { followers, following, knownFollowers }
 
 @RoutePage()
 class UserListPage extends ConsumerStatefulWidget {
@@ -51,9 +51,11 @@ class _UserListPageState extends ConsumerState<UserListPage> {
       userListProvider(did: widget.did, type: widget.type),
     );
     final l10n = AppLocalizations.of(context);
-    final title = widget.type == UserListType.followers
-        ? l10n.pageTitleFollowers
-        : l10n.pageTitleFollowing;
+    final title = switch (widget.type) {
+      UserListType.followers => l10n.pageTitleFollowers,
+      UserListType.following => l10n.pageTitleFollowing,
+      UserListType.knownFollowers => l10n.pageTitleKnownFollowers,
+    };
 
     return Scaffold(
       appBar: AppBar(

@@ -421,6 +421,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pageTitleFollowers => 'Followers';
 
   @override
+  String get pageTitleKnownFollowers => 'Known followers';
+
+  @override
   String get pageTitleFollowing => 'Following';
 
   @override
@@ -673,6 +676,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messageSending => 'Sending...';
+
+  @override
+  String profileKnownFollowersOne(String name) {
+    return 'Followed by $name';
+  }
+
+  @override
+  String profileKnownFollowersTwo(String firstName, String secondName) {
+    return 'Followed by $firstName and $secondName';
+  }
+
+  @override
+  String profileKnownFollowersOneAndOthers(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count others',
+      one: '1 other',
+    );
+    return 'Followed by $name and $_temp0';
+  }
+
+  @override
+  String profileKnownFollowersTwoAndOthers(
+    String firstName,
+    String secondName,
+    int count,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count others',
+      one: '1 other',
+    );
+    return 'Followed by $firstName, $secondName, and $_temp0';
+  }
 
   @override
   String get buttonSend => 'Send';

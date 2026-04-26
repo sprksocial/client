@@ -57,14 +57,19 @@ class UserList extends _$UserList {
     List<ProfileView> profiles;
     String? cursor;
 
-    if (type == UserListType.followers) {
-      final response = await _graphRepository.getFollowers(did);
-      profiles = response.followers.toList();
-      cursor = response.cursor;
-    } else {
-      final response = await _graphRepository.getFollows(did);
-      profiles = response.follows.toList();
-      cursor = response.cursor;
+    switch (type) {
+      case UserListType.followers:
+        final response = await _graphRepository.getFollowers(did);
+        profiles = response.followers.toList();
+        cursor = response.cursor;
+      case UserListType.following:
+        final response = await _graphRepository.getFollows(did);
+        profiles = response.follows.toList();
+        cursor = response.cursor;
+      case UserListType.knownFollowers:
+        final response = await _graphRepository.getKnownFollowers(did);
+        profiles = response.followers.toList();
+        cursor = response.cursor;
     }
 
     await _fetchAndMergeProfiles(profiles);
@@ -186,20 +191,28 @@ class UserList extends _$UserList {
       List<ProfileView> newProfiles;
       String? newCursor;
 
-      if (type == UserListType.followers) {
-        final response = await _graphRepository.getFollowers(
-          did,
-          cursor: state.value!.cursor,
-        );
-        newProfiles = response.followers.toList();
-        newCursor = response.cursor;
-      } else {
-        final response = await _graphRepository.getFollows(
-          did,
-          cursor: state.value!.cursor,
-        );
-        newProfiles = response.follows.toList();
-        newCursor = response.cursor;
+      switch (type) {
+        case UserListType.followers:
+          final response = await _graphRepository.getFollowers(
+            did,
+            cursor: state.value!.cursor,
+          );
+          newProfiles = response.followers.toList();
+          newCursor = response.cursor;
+        case UserListType.following:
+          final response = await _graphRepository.getFollows(
+            did,
+            cursor: state.value!.cursor,
+          );
+          newProfiles = response.follows.toList();
+          newCursor = response.cursor;
+        case UserListType.knownFollowers:
+          final response = await _graphRepository.getKnownFollowers(
+            did,
+            cursor: state.value!.cursor,
+          );
+          newProfiles = response.followers.toList();
+          newCursor = response.cursor;
       }
 
       await _fetchAndMergeProfiles(newProfiles);

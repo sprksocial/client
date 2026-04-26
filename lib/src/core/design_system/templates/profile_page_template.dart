@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:spark/src/core/design_system/components/atoms/avatar_stack.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_action_buttons.dart';
@@ -8,6 +9,8 @@ import 'package:spark/src/core/design_system/components/molecules/profile_info.d
 import 'package:spark/src/core/design_system/components/molecules/profile_stats.dart';
 import 'package:spark/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 
 class ProfilePageTemplate extends StatelessWidget {
   const ProfilePageTemplate({
@@ -23,6 +26,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.avatarUrl,
     this.description,
     this.links,
+    this.knownFollowers,
     this.hasStories = false,
     this.isFollowing = false,
     this.isBlocking = false,
@@ -35,6 +39,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.onUnfollowTap,
     this.onUnblockTap,
     this.onEarlySupporterTap,
+    this.onKnownFollowersTap,
     this.onMentionTap,
     this.onAddStoryTap,
     this.appBarTitle,
@@ -56,6 +61,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final String? avatarUrl;
   final String? description;
   final List<String>? links;
+  final KnownFollowers? knownFollowers;
   final bool hasStories;
   final bool isCurrentUser;
   final bool isFollowing;
@@ -69,6 +75,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final VoidCallback? onUnfollowTap;
   final VoidCallback? onUnblockTap;
   final VoidCallback? onEarlySupporterTap;
+  final VoidCallback? onKnownFollowersTap;
   final Function(String username)? onMentionTap;
   final VoidCallback? onAddStoryTap;
   final String? appBarTitle;
@@ -116,6 +123,7 @@ class ProfilePageTemplate extends StatelessWidget {
                     avatarUrl: avatarUrl,
                     description: description,
                     links: links,
+                    knownFollowers: knownFollowers,
                     hasStories: hasStories,
                     isCurrentUser: isCurrentUser,
                     isFollowing: isFollowing,
@@ -129,6 +137,7 @@ class ProfilePageTemplate extends StatelessWidget {
                     onUnfollowTap: onUnfollowTap,
                     onUnblockTap: onUnblockTap,
                     onEarlySupporterTap: onEarlySupporterTap,
+                    onKnownFollowersTap: onKnownFollowersTap,
                     onMentionTap: onMentionTap,
                     onAddStoryTap: onAddStoryTap,
                   ),
@@ -165,6 +174,7 @@ class _ProfileHeaderSection extends StatelessWidget {
     this.avatarUrl,
     this.description,
     this.links,
+    this.knownFollowers,
     this.onAvatarTap,
     this.onFollowersTap,
     this.onFollowingTap,
@@ -173,6 +183,7 @@ class _ProfileHeaderSection extends StatelessWidget {
     this.onUnfollowTap,
     this.onUnblockTap,
     this.onEarlySupporterTap,
+    this.onKnownFollowersTap,
     this.onMentionTap,
     this.onAddStoryTap,
   });
@@ -185,6 +196,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final String? avatarUrl;
   final String? description;
   final List<String>? links;
+  final KnownFollowers? knownFollowers;
   final bool hasStories;
   final bool isCurrentUser;
   final bool isFollowing;
@@ -198,6 +210,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final VoidCallback? onUnfollowTap;
   final VoidCallback? onUnblockTap;
   final VoidCallback? onEarlySupporterTap;
+  final VoidCallback? onKnownFollowersTap;
   final Function(String username)? onMentionTap;
   final VoidCallback? onAddStoryTap;
 
@@ -270,6 +283,10 @@ class _ProfileHeaderSection extends StatelessWidget {
               onMentionTap: onMentionTap,
             ),
           ],
+          KnownFollowersSummary(
+            knownFollowers: knownFollowers,
+            onTap: onKnownFollowersTap,
+          ),
           const SizedBox(height: 16),
           Skeleton.leaf(
             child: ProfileActionButtons(
@@ -285,5 +302,106 @@ class _ProfileHeaderSection extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class KnownFollowersSummary extends StatelessWidget {
+  const KnownFollowersSummary({
+    required this.knownFollowers,
+    super.key,
+    this.onTap,
+  });
+
+  final KnownFollowers? knownFollowers;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final knownFollowers = this.knownFollowers;
+    if (knownFollowers == null ||
+        knownFollowers.count <= 0 ||
+        knownFollowers.followers.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final l10n = AppLocalizations.of(context);
+    final followers = knownFollowers.followers;
+    final visibleFollowers = followers.take(2).toList();
+    final othersCount = knownFollowers.count - visibleFollowers.length;
+    final text = _summaryText(l10n, visibleFollowers, othersCount);
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Semantics(
+        button: onTap != null,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                AvatarStack(
+                  avatars: followers
+                      .map(
+                        (follower) => AvatarData(
+                          imageUrl: follower.avatar?.toString() ?? '',
+                          username: follower.displayName ?? follower.handle,
+                        ),
+                      )
+                      .toList(),
+                  largeAvatarCount: 3,
+                  largeSize: 24,
+                  largeOverlap: 8,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    text,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.textSmallMedium.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _summaryText(
+    AppLocalizations l10n,
+    List<ProfileViewBasic> followers,
+    int othersCount,
+  ) {
+    final firstName = _displayName(followers.first);
+    if (followers.length == 1) {
+      if (othersCount > 0) {
+        return l10n.profileKnownFollowersOneAndOthers(firstName, othersCount);
+      }
+      return l10n.profileKnownFollowersOne(firstName);
+    }
+
+    final secondName = _displayName(followers[1]);
+    if (othersCount > 0) {
+      return l10n.profileKnownFollowersTwoAndOthers(
+        firstName,
+        secondName,
+        othersCount,
+      );
+    }
+    return l10n.profileKnownFollowersTwo(firstName, secondName);
+  }
+
+  String _displayName(ProfileViewBasic profile) {
+    final displayName = profile.displayName;
+    if (displayName != null && displayName.trim().isNotEmpty) {
+      return displayName;
+    }
+    return profile.handle;
   }
 }

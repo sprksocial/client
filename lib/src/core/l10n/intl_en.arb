@@ -687,6 +687,11 @@
     "description": "Followers page title"
   },
 
+  "pageTitleKnownFollowers": "Known followers",
+  "@pageTitleKnownFollowers": {
+    "description": "Known followers page title"
+  },
+
   "pageTitleFollowing": "Following",
   "@pageTitleFollowing": {
     "description": "Following page title"
@@ -1108,6 +1113,58 @@
   "messageSending": "Sending...",
   "@messageSending": {
     "description": "Sending message progress indicator"
+  },
+
+  "profileKnownFollowersOne": "Followed by {name}",
+  "@profileKnownFollowersOne": {
+    "description": "Profile social context when one known follower is displayed",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "profileKnownFollowersTwo": "Followed by {firstName} and {secondName}",
+  "@profileKnownFollowersTwo": {
+    "description": "Profile social context when two known followers are displayed",
+    "placeholders": {
+      "firstName": {
+        "type": "String"
+      },
+      "secondName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "profileKnownFollowersOneAndOthers": "Followed by {name} and {count, plural, =1{1 other} other{{count} others}}",
+  "@profileKnownFollowersOneAndOthers": {
+    "description": "Profile social context when one known follower is displayed plus additional known followers",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "profileKnownFollowersTwoAndOthers": "Followed by {firstName}, {secondName}, and {count, plural, =1{1 other} other{{count} others}}",
+  "@profileKnownFollowersTwoAndOthers": {
+    "description": "Profile social context when two known followers are displayed plus additional known followers",
+    "placeholders": {
+      "firstName": {
+        "type": "String"
+      },
+      "secondName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   },
 
   "buttonSend": "Send",

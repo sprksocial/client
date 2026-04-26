@@ -56,6 +56,46 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
+  Future<FollowersResponse> getKnownFollowers(
+    String did, {
+    String? cursor,
+  }) async {
+    _logger.d('Getting known followers for DID: $did with cursor: $cursor');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+      try {
+        final params = <String, dynamic>{'actor': did};
+        if (cursor != null) {
+          params['cursor'] = cursor;
+        }
+        final result = await atproto.get(
+          NSID.parse('so.sprk.graph.getKnownFollowers'),
+          parameters: params,
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
+        );
+        _logger.d('Known followers retrieved successfully');
+        return FollowersResponse.fromJson(result.data as Map<String, dynamic>);
+      } on FormatException catch (fe) {
+        _logger.e('Error retrieving known followers for DID: $did', error: fe);
+        throw Exception('Failed to retrieve known followers for DID: $did');
+      }
+    });
+  }
+
+  @override
   Future<FollowsResponse> getFollows(String did, {String? cursor}) async {
     _logger.d('Getting follows for DID: $did with cursor: $cursor');
     return _client.executeWithRetry(() async {

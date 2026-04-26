@@ -280,6 +280,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           avatarUrl: profile.avatar?.toString(),
           description: description.isNotEmpty ? description : null,
           links: uniqueLinks.isNotEmpty ? uniqueLinks : null,
+          knownFollowers: profile.viewer?.knownFollowers,
+          onKnownFollowersTap: () => context.router.push(
+            UserListRoute(did: widget.did, type: UserListType.knownFollowers),
+          ),
           hasStories: profile.stories?.isNotEmpty ?? false,
           isCurrentUser: isCurrentUser,
           isFollowing: profile.viewer?.following != null,

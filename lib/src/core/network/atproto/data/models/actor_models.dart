@@ -18,7 +18,7 @@ abstract class ActorViewer with _$ActorViewer {
     // blocked by list: when we add lists add this field
     @AtUriConverter() AtUri? following,
     @AtUriConverter() AtUri? followedBy,
-    KnownFollowers? followers,
+    KnownFollowers? knownFollowers,
   }) = _ActorViewer;
   const ActorViewer._();
 
@@ -31,21 +31,12 @@ abstract class KnownFollowers with _$KnownFollowers {
   @JsonSerializable(explicitToJson: true)
   const factory KnownFollowers({
     required int count,
-    required List<String> followersDids, // to avoid circular dependency
+    required List<ProfileViewBasic> followers,
   }) = _KnownFollowers;
   const KnownFollowers._();
 
-  factory KnownFollowers.fromJson(Map<String, dynamic> json) => switch (json) {
-    {
-      'followers': final List<ProfileViewBasic> profiles,
-      'count': final int count,
-    } =>
-      _$KnownFollowersFromJson({
-        'count': count,
-        'followersDids': profiles.map((e) => e.did).toList(),
-      }),
-    _ => _$KnownFollowersFromJson(json),
-  };
+  factory KnownFollowers.fromJson(Map<String, dynamic> json) =>
+      _$KnownFollowersFromJson(json);
 }
 
 @freezed
