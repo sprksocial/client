@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/com_atproto_repo_strongref.dart';
+import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:bluesky/app_bsky_feed_getauthorfeed.dart';
 import 'package:bluesky/app_bsky_richtext_facet.dart';
@@ -1264,19 +1265,7 @@ class FeedRepositoryImpl implements FeedRepository {
         );
       }
 
-      final pdsService = authAtProto.service;
-      final serviceTokenRes = await authAtProto.server.getServiceAuth(
-        aud: 'did:web:$pdsService',
-        lxm: 'com.atproto.repo.uploadBlob',
-        exp:
-            DateTime.now()
-                .toUtc()
-                .add(const Duration(minutes: 5))
-                .millisecondsSinceEpoch ~/
-            1000,
-      );
-
-      final serviceToken = serviceTokenRes.data.token;
+      var serviceToken = await _createVideoServiceAuthToken();
       final uploadRequest =
           http.StreamedRequest(
               'POST',
@@ -1357,6 +1346,25 @@ class FeedRepositoryImpl implements FeedRepository {
               'Content-Type': _getContentType(cleanVideoPath),
             },
           );
+          if (_isExpiredVideoServiceTokenResponse(response)) {
+            _logger.i(
+              'Video service token expired while polling; minting a new token',
+            );
+            serviceToken = await _createVideoServiceAuthToken(
+              refreshPdsSessionOnFailure: true,
+            );
+            response = await http.get(
+              Uri.parse(
+                '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus',
+              ).replace(
+                queryParameters: {'jobId': responseData['jobStatus']?['jobId']},
+              ),
+              headers: {
+                'Authorization': 'Bearer $serviceToken',
+                'Content-Type': _getContentType(cleanVideoPath),
+              },
+            );
+          }
           if (response.statusCode != 200) {
             throw Exception(
               'Failed to check video upload status: ${response.statusCode} '
@@ -1468,6 +1476,62 @@ class FeedRepositoryImpl implements FeedRepository {
     }
 
     onUploadProgress?.call(1);
+  }
+
+  Future<String> _createVideoServiceAuthToken({
+    bool refreshPdsSessionOnFailure = false,
+  }) async {
+    final atproto = _client.authRepository.atproto;
+    if (atproto == null) {
+      throw Exception('AtProto not initialized');
+    }
+
+    try {
+      return await _requestVideoServiceAuthToken(atproto);
+    } catch (e) {
+      if (!refreshPdsSessionOnFailure) {
+        rethrow;
+      }
+
+      _logger.i(
+        'Refreshing PDS session before minting video service token',
+        error: e,
+      );
+      final refreshed = await _client.authRepository.refreshToken();
+      if (!refreshed) {
+        throw Exception('Session expired. Please log in again.');
+      }
+
+      final refreshedAtproto = _client.authRepository.atproto;
+      if (refreshedAtproto == null) {
+        throw Exception('AtProto not initialized after refresh');
+      }
+      return _requestVideoServiceAuthToken(refreshedAtproto);
+    }
+  }
+
+  Future<String> _requestVideoServiceAuthToken(ATProto atproto) async {
+    final serviceTokenRes = await atproto.server.getServiceAuth(
+      aud: 'did:web:${atproto.service}',
+      lxm: 'com.atproto.repo.uploadBlob',
+      exp:
+          DateTime.now()
+              .toUtc()
+              .add(const Duration(minutes: 5))
+              .millisecondsSinceEpoch ~/
+          1000,
+    );
+
+    return serviceTokenRes.data.token;
+  }
+
+  bool _isExpiredVideoServiceTokenResponse(http.Response response) {
+    if (response.statusCode != 401) {
+      return false;
+    }
+
+    final body = response.body.toLowerCase();
+    return body.contains('jwt has expired') || body.contains('invalidtoken');
   }
 
   /// Crosspost images to Bluesky using adapter to handle Bluesky-specific model
