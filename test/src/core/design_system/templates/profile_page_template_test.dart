@@ -6,39 +6,29 @@ import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 
 void main() {
   group('KnownFollowersSummary', () {
-    testWidgets('hides when known followers are null', (tester) async {
-      await tester.pumpWidget(
-        _TestApp(child: KnownFollowersSummary(knownFollowers: null)),
-      );
+    testWidgets('hides when there is no visible known follower', (
+      tester,
+    ) async {
+      final cases = <KnownFollowers?>[
+        null,
+        const KnownFollowers(count: 0, followers: []),
+        const KnownFollowers(count: 3, followers: []),
+      ];
 
-      expect(find.textContaining('Followed by'), findsNothing);
-    });
-
-    testWidgets('hides when count is zero', (tester) async {
-      await tester.pumpWidget(
-        _TestApp(
-          child: KnownFollowersSummary(
-            knownFollowers: const KnownFollowers(count: 0, followers: []),
+      for (final knownFollowers in cases) {
+        await tester.pumpWidget(
+          _TestApp(
+            child: KnownFollowersSummary(knownFollowers: knownFollowers),
           ),
-        ),
-      );
+        );
 
-      expect(find.textContaining('Followed by'), findsNothing);
+        expect(find.textContaining('Followed by'), findsNothing);
+      }
     });
 
-    testWidgets('hides when follower list is empty', (tester) async {
-      await tester.pumpWidget(
-        _TestApp(
-          child: KnownFollowersSummary(
-            knownFollowers: const KnownFollowers(count: 3, followers: []),
-          ),
-        ),
-      );
+    testWidgets('shows one known follower and handles taps', (tester) async {
+      var tapped = false;
 
-      expect(find.textContaining('Followed by'), findsNothing);
-    });
-
-    testWidgets('shows one known follower', (tester) async {
       await tester.pumpWidget(
         _TestApp(
           child: KnownFollowersSummary(
@@ -52,11 +42,15 @@ void main() {
                 ),
               ],
             ),
+            onTap: () => tapped = true,
           ),
         ),
       );
 
       expect(find.text('Followed by Alice'), findsOneWidget);
+      await tester.tap(find.text('Followed by Alice'));
+
+      expect(tapped, isTrue);
     });
 
     testWidgets('uses total count for others copy', (tester) async {
@@ -83,32 +77,6 @@ void main() {
       );
 
       expect(find.text('Followed by Alice, Bob, and 3 others'), findsOneWidget);
-    });
-
-    testWidgets('calls onTap when tapped', (tester) async {
-      var tapped = false;
-
-      await tester.pumpWidget(
-        _TestApp(
-          child: KnownFollowersSummary(
-            knownFollowers: const KnownFollowers(
-              count: 1,
-              followers: [
-                ProfileViewBasic(
-                  did: 'did:plc:alice',
-                  handle: 'alice.sprk.so',
-                  displayName: 'Alice',
-                ),
-              ],
-            ),
-            onTap: () => tapped = true,
-          ),
-        ),
-      );
-
-      await tester.tap(find.text('Followed by Alice'));
-
-      expect(tapped, isTrue);
     });
   });
 }
