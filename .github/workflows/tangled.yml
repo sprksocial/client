@@ -26,12 +26,12 @@ jobs:
           echo "$TANGLED_SSH_KEY" > ~/.ssh/tangled_key
           chmod 600 ~/.ssh/tangled_key
 
-          # Configure SSH to use the key for tangled.sh
-          echo "Host tangled.sh
+          # Configure SSH to use the key for tangled.org
+          echo "Host tangled.org
             IdentityFile ~/.ssh/tangled_key" >> ~/.ssh/config
 
           chmod 600 ~/.ssh/config
 
-          git remote add tangled git@tangled.sh:sprk.so/client
+          git remote add tangled git@tangled.org:sprk.so/client
           git push -f --all tangled
           git push -f --tags tangled
