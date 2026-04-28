@@ -15,7 +15,22 @@ Duration syncedCustomAudioPosition({
   final clampedVideoPosition = relativeVideoPosition.isNegative
       ? Duration.zero
       : relativeVideoPosition;
-  return (trackStartTime ?? Duration.zero) + clampedVideoPosition;
+  return customAudioRenderStartTime(
+        trackStartTime: trackStartTime,
+        videoStart: videoStart,
+      ) +
+      clampedVideoPosition;
+}
+
+Duration customAudioRenderStartTime({
+  required Duration? trackStartTime,
+  required Duration videoStart,
+}) {
+  return (trackStartTime ?? Duration.zero) + videoStart;
+}
+
+Duration customAudioExportStartTime({required Duration? trackStartTime}) {
+  return trackStartTime ?? Duration.zero;
 }
 
 bool shouldSeekCustomAudioOnResume({
@@ -90,6 +105,7 @@ class AudioHelperService {
     AudioTrack track, {
     Duration videoPosition = Duration.zero,
     Duration videoStart = Duration.zero,
+    bool forceSeek = false,
   }) async {
     final position = syncedCustomAudioPosition(
       trackStartTime: track.startTime,
@@ -101,6 +117,8 @@ class AudioHelperService {
     if (_currentTrackId != track.id) {
       await _audioPlayer.setSource(_sourceForTrack(track));
       _currentTrackId = track.id;
+      await _audioPlayer.seek(position);
+    } else if (forceSeek) {
       await _audioPlayer.seek(position);
     } else if (shouldSeekCustomAudioOnResume(
       currentPosition: await _audioPlayer.getCurrentPosition(),

@@ -53,6 +53,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   static const _uploadCompressionMinFileSizeBytes = 25 * 1024 * 1024;
   static const _uploadCompressionBitrate = 3000000;
   static const _uploadCompressionMaxLongEdge = 1920.0;
+  static const _videoPlaybackStartPollInterval = Duration(milliseconds: 10);
+  static const _videoPlaybackStartWaitTimeout = Duration(milliseconds: 220);
 
   final _editorKey = GlobalKey<ProImageEditorState>();
   final bool _useMaterialDesign =
@@ -361,6 +363,34 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
   Duration get _playbackStart => _durationSpan?.start ?? Duration.zero;
 
+  Duration _playablePosition(Duration position) {
+    final span = _durationSpan;
+    if (span == null) return position;
+    if (position < span.start || position >= span.end) {
+      return span.start;
+    }
+    return position;
+  }
+
+  Future<Duration> _ensurePlayableVideoPosition() async {
+    final position = _videoController.value.position;
+    final playablePosition = _playablePosition(position);
+    if (playablePosition == position) return position;
+
+    await _videoController.seekTo(playablePosition);
+    _proVideoController?.setPlayTime(playablePosition);
+    _videoTimelineState.setProgressFromDuration(playablePosition);
+    return playablePosition;
+  }
+
+  Future<void> _seekToPlaybackStartWithCustomAudio() async {
+    final playbackStart = _playbackStart;
+    await _videoController.seekTo(playbackStart);
+    _proVideoController?.setPlayTime(playbackStart);
+    _videoTimelineState.setProgressFromDuration(playbackStart);
+    await _syncCustomAudioToVideoPosition(playbackStart);
+  }
+
   Future<void> _syncCustomAudioToVideoPosition(Duration position) async {
     final audioTrack = _proVideoController?.audioTrack;
     if (audioTrack == null) return;
@@ -372,11 +402,34 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   }
 
   Future<void> _playCustomAudioForCurrentVideoPosition(AudioTrack track) async {
+    final videoPosition = await _ensurePlayableVideoPosition();
+    final isPlaybackStart = videoPosition == _playbackStart;
+    final syncedVideoPosition = isPlaybackStart
+        ? await _startVideoPlaybackFromBeginning()
+        : videoPosition;
     await _audioService.play(
       track,
-      videoPosition: _videoController.value.position,
+      videoPosition: syncedVideoPosition,
       videoStart: _playbackStart,
+      forceSeek: isPlaybackStart,
     );
+  }
+
+  Future<Duration> _startVideoPlaybackFromBeginning() async {
+    if (!_videoController.value.isPlaying) {
+      await _videoController.play();
+    }
+
+    final stopwatch = Stopwatch()..start();
+    while (stopwatch.elapsed < _videoPlaybackStartWaitTimeout) {
+      final position = _videoController.value.position;
+      if (position > _playbackStart) {
+        return position;
+      }
+      await Future<void>.delayed(_videoPlaybackStartPollInterval);
+    }
+
+    return _videoController.value.position;
   }
 
   Future<void> _prepareCustomAudioForCurrentVideoPosition(
@@ -559,11 +612,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
           onBalanceChanged: (balance) async {
             await _audioService.balanceAudio(balance);
           },
-          onStartTimeChanged: (startTime) async {
-            await Future.wait([
-              _audioService.seek(startTime),
-              _videoController.seekTo(Duration.zero),
-            ]);
+          onStartTimeChanged: (_) async {
+            await _seekToPlaybackStartWithCustomAudio();
           },
           onConfirm: (track) {
             if (track != null) {
@@ -630,6 +680,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     final exportTransform = shouldCompressForUpload
         ? _uploadCompressionTransform(transform)
         : transform;
+    final exportStartTime = _durationSpan?.start ?? parameters.startTime;
     final exportModel = VideoRenderData(
       id: _taskId,
       videoSegments: [VideoSegment(video: _video, volume: originalVolume)],
@@ -642,7 +693,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       colorFilters: parameters.colorFilters
           .map((matrix) => ColorFilter(matrix: matrix))
           .toList(),
-      startTime: _durationSpan?.start ?? parameters.startTime,
+      startTime: exportStartTime,
       endTime: _durationSpan?.end ?? parameters.endTime,
       transform: exportTransform,
       bitrate: shouldCompressForUpload
@@ -654,7 +705,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
               VideoAudioTrack(
                 path: customAudioPath,
                 volume: overlayVolume,
-                audioStartTime: customAudioTrack?.startTime,
+                audioStartTime: customAudioExportStartTime(
+                  trackStartTime: customAudioTrack?.startTime,
+                ),
                 loop: true,
               ),
             ]
@@ -916,11 +969,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
               onBalanceChange: (value) async {
                 await _audioService.balanceAudio(value);
               },
-              onStartTimeChange: (startTime) async {
-                await Future.wait([
-                  _audioService.seek(startTime),
-                  _videoController.seekTo(Duration.zero),
-                ]);
+              onStartTimeChange: (_) async {
+                await _seekToPlaybackStartWithCustomAudio();
               },
               onPlay: (audio) async {
                 final isNewTrack = !_audioService.useCustomAudio;

@@ -25,24 +25,61 @@ void main() {
       );
     });
 
-    test('uses position relative to trim start', () {
+    test(
+      'adds trim start to the selected sound offset during trimmed playback',
+      () {
+        expect(
+          syncedCustomAudioPosition(
+            trackStartTime: const Duration(seconds: 4),
+            videoPosition: const Duration(seconds: 12),
+            videoStart: const Duration(seconds: 10),
+          ),
+          const Duration(seconds: 16),
+        );
+      },
+    );
+
+    test(
+      'clamps positions before trim start to trim start plus selected sound offset',
+      () {
+        expect(
+          syncedCustomAudioPosition(
+            trackStartTime: const Duration(seconds: 4),
+            videoPosition: const Duration(seconds: 8),
+            videoStart: const Duration(seconds: 10),
+          ),
+          const Duration(seconds: 14),
+        );
+      },
+    );
+  });
+
+  group('customAudioRenderStartTime', () {
+    test('starts at the selected sound offset for untrimmed playback', () {
       expect(
-        syncedCustomAudioPosition(
+        customAudioRenderStartTime(
           trackStartTime: const Duration(seconds: 4),
-          videoPosition: const Duration(seconds: 12),
-          videoStart: const Duration(seconds: 10),
+          videoStart: Duration.zero,
         ),
-        const Duration(seconds: 6),
+        const Duration(seconds: 4),
       );
     });
 
-    test('clamps positions before trim start to the selected sound offset', () {
+    test('adds the trimmed video start to match preview playback', () {
       expect(
-        syncedCustomAudioPosition(
+        customAudioRenderStartTime(
           trackStartTime: const Duration(seconds: 4),
-          videoPosition: const Duration(seconds: 8),
           videoStart: const Duration(seconds: 10),
         ),
+        const Duration(seconds: 14),
+      );
+    });
+  });
+
+  group('customAudioExportStartTime', () {
+    test('does not add the trimmed video start to the audio offset', () {
+      expect(
+        customAudioExportStartTime(trackStartTime: const Duration(seconds: 4)),
         const Duration(seconds: 4),
       );
     });

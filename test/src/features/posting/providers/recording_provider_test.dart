@@ -81,6 +81,34 @@ void main() {
       expect(state.soundGuideOffset, const Duration(seconds: 3));
     });
 
+    test('stores selected sound recording start offset', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        recordingProvider,
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
+
+      final notifier = container.read(recordingProvider.notifier);
+      final track = createTrack(
+        'sound-1',
+      ).copyWith(startTime: const Duration(seconds: 2));
+
+      notifier.selectSound(track);
+
+      expect(
+        container.read(recordingProvider).soundGuideOffset,
+        const Duration(seconds: 2),
+      );
+
+      notifier.setSelectedSoundStartTime(const Duration(seconds: 4));
+
+      final state = container.read(recordingProvider);
+      expect(state.selectedSound?.startTime, const Duration(seconds: 4));
+      expect(state.soundGuideOffset, const Duration(seconds: 4));
+    });
+
     test('clearSound removes selected sound and resets guide offset', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);

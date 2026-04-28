@@ -56,7 +56,12 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   bool _isProcessing = false;
   bool _isExiting = false;
   bool _isFinalizingRecordingSession = false;
+  bool _isStartingRecording = false;
+  bool _cancelPendingRecordingStart = false;
   late final AudioPlayer _guideAudioPlayer;
+  Future<void>? _guideAudioPrepareFuture;
+  String? _preparedGuideAudioUrl;
+  int _guideAudioPrepareRequestId = 0;
 
   // Store notifier reference for safe disposal
   Recording? _recordingNotifier;
@@ -67,6 +72,21 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     _logger = GetIt.instance<LogService>().getLogger('RecordingPage');
     _recordingNotifier = ref.read(recordingProvider.notifier);
     _guideAudioPlayer = AudioPlayer();
+    unawaited(
+      _guideAudioPlayer.setAudioContext(
+        AudioContext(
+          android: const AudioContextAndroid(
+            audioFocus: AndroidAudioFocus.none,
+          ),
+          iOS: AudioContextIOS(
+            options: const {
+              AVAudioSessionOptions.mixWithOthers,
+              AVAudioSessionOptions.duckOthers,
+            },
+          ),
+        ),
+      ),
+    );
     final initialSound = widget.initialSound;
     if (initialSound != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -74,6 +94,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         final initialTrack = audioViewToAudioTrack(initialSound);
         if (initialTrack != null) {
           ref.read(recordingProvider.notifier).selectSound(initialTrack);
+          unawaited(_prepareSelectedSoundGuide());
         }
       });
     }
@@ -101,6 +122,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   void _handleTap() {
     if (!_isCameraReady()) return;
 
+    if (_isStartingRecording) {
+      _cancelPendingRecordingStart = true;
+      return;
+    }
+
     final recordingState = ref.read(recordingProvider);
 
     if (widget.captureMode == CaptureMode.videoOnly) {
@@ -122,6 +148,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   void _handleRecordStart() {
     if (!_isCameraReady()) return;
     if (widget.captureMode != CaptureMode.hybrid) return;
+    if (_isStartingRecording) return;
     _startRecording();
   }
 
@@ -129,6 +156,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   void _handleRecordStop() {
     if (!_isCameraReady()) return;
     if (widget.captureMode != CaptureMode.hybrid) return;
+    if (_isStartingRecording) {
+      _cancelPendingRecordingStart = true;
+      return;
+    }
     final recordingState = ref.read(recordingProvider);
     if (recordingState.isRecording) {
       _stopRecording();
@@ -313,27 +344,85 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   }
 
   void _startRecording() {
-    if (_isProcessing) return;
+    unawaited(_startRecordingAsync());
+  }
+
+  Future<void> _startRecordingAsync() async {
+    if (_isProcessing || _isStartingRecording) return;
 
     final recordingState = ref.read(recordingProvider);
-    if (recordingState.hasReachedMaxDuration) return;
+    if (recordingState.isRecording || recordingState.hasReachedMaxDuration) {
+      return;
+    }
+    final isFirstSegment =
+        !recordingState.hasSegments &&
+        recordingState.elapsedDuration == Duration.zero;
 
     final cameraNotifier = ref.read(cameraProvider.notifier);
-    final recordingNotifier = ref.read(recordingProvider.notifier)
-      // Start timer optimistically so UI responds immediately
-      ..startRecording();
+    final recordingNotifier = ref.read(recordingProvider.notifier);
 
-    // Start native recording; revert timer if it fails
-    cameraNotifier.startVideoRecording().then((success) {
-      if (!success && mounted) {
-        recordingNotifier.stopRecording();
-        unawaited(_pauseSelectedSoundGuide());
+    setState(() {
+      _isStartingRecording = true;
+      _cancelPendingRecordingStart = false;
+    });
+
+    try {
+      await _playSelectedSoundGuide(requireRecording: false);
+      if (!mounted) return;
+
+      if (_cancelPendingRecordingStart) {
+        await _pauseSelectedSoundGuide(
+          saveOffset: false,
+          resetOffset: recordingState.soundGuideOffset,
+        );
         return;
       }
-      if (success && mounted) {
-        unawaited(_playSelectedSoundGuide());
+
+      final success = await cameraNotifier.startVideoRecording();
+      if (!mounted) return;
+
+      if (!success) {
+        await _pauseSelectedSoundGuide(
+          saveOffset: false,
+          resetOffset: recordingState.soundGuideOffset,
+        );
+        return;
       }
-    });
+
+      if (_cancelPendingRecordingStart) {
+        final canceledFile = await cameraNotifier.stopVideoRecording();
+        if (canceledFile != null) {
+          try {
+            await File(canceledFile.path).delete();
+          } catch (e, stackTrace) {
+            _logger.w(
+              'Error deleting canceled recording',
+              error: e,
+              stackTrace: stackTrace,
+            );
+          }
+        }
+        await _pauseSelectedSoundGuide(
+          saveOffset: false,
+          resetOffset: recordingState.soundGuideOffset,
+        );
+        return;
+      }
+
+      recordingNotifier.startRecording();
+      if (ref.read(recordingProvider).isRecording) {
+        await _captureSelectedSoundOffsetAtRecordingStart(
+          isFirstSegment: isFirstSegment,
+        );
+      }
+    } finally {
+      _cancelPendingRecordingStart = false;
+      if (mounted) {
+        setState(() {
+          _isStartingRecording = false;
+        });
+      }
+    }
   }
 
   void _stopRecording({bool finalizeSession = false}) {
@@ -567,17 +656,28 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     await cameraNotifier.flipCamera();
   }
 
-  Future<void> _playSelectedSoundGuide() async {
+  Future<void> _playSelectedSoundGuide({bool requireRecording = true}) async {
     final recordingState = ref.read(recordingProvider);
     final sound = recordingState.selectedSound;
     final audioUrl = sound?.audio.networkUrl;
     if (sound == null || audioUrl == null || audioUrl.isEmpty) return;
 
     try {
-      await _guideAudioPlayer.play(
-        UrlSource(audioUrl),
-        position: recordingState.soundGuideOffset,
-      );
+      await _guideAudioPrepareFuture;
+      if (!mounted ||
+          _cancelPendingRecordingStart ||
+          (requireRecording && !ref.read(recordingProvider).isRecording)) {
+        return;
+      }
+      if (_preparedGuideAudioUrl != audioUrl) {
+        await _prepareSelectedSoundGuide();
+        if (!mounted ||
+            _cancelPendingRecordingStart ||
+            (requireRecording && !ref.read(recordingProvider).isRecording)) {
+          return;
+        }
+      }
+      await _guideAudioPlayer.resume();
     } catch (e, stackTrace) {
       _logger.e(
         'Error playing recording guide sound',
@@ -587,11 +687,84 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     }
   }
 
-  Future<void> _pauseSelectedSoundGuide() async {
+  Future<void> _captureSelectedSoundOffsetAtRecordingStart({
+    required bool isFirstSegment,
+  }) async {
+    if (!isFirstSegment) return;
+
+    final recordingState = ref.read(recordingProvider);
+    if (recordingState.selectedSound == null) return;
+
+    final position = await _guideAudioPlayer.getCurrentPosition();
+    if (position == null || !mounted) return;
+
+    ref.read(recordingProvider.notifier).setSelectedSoundStartTime(position);
+  }
+
+  Future<void> _prepareSelectedSoundGuide() {
+    final recordingState = ref.read(recordingProvider);
+    final sound = recordingState.selectedSound;
+    final audioUrl = sound?.audio.networkUrl;
+    if (sound == null || audioUrl == null || audioUrl.isEmpty) {
+      return Future<void>.value();
+    }
+
+    final requestId = ++_guideAudioPrepareRequestId;
+    final previousPrepareFuture = _guideAudioPrepareFuture;
+    final prepareFuture = () async {
+      try {
+        await previousPrepareFuture;
+      } catch (_) {
+        // Preparation errors are logged in _prepareSoundGuide.
+      }
+      if (!mounted || requestId != _guideAudioPrepareRequestId) return;
+      await _prepareSoundGuide(
+        audioUrl: audioUrl,
+        position: recordingState.soundGuideOffset,
+        requestId: requestId,
+      );
+    }();
+    _guideAudioPrepareFuture = prepareFuture;
+    return prepareFuture;
+  }
+
+  Future<void> _prepareSoundGuide({
+    required String audioUrl,
+    required Duration position,
+    required int requestId,
+  }) async {
+    try {
+      await _guideAudioPlayer.setReleaseMode(ReleaseMode.stop);
+      if (!mounted || requestId != _guideAudioPrepareRequestId) return;
+      if (_preparedGuideAudioUrl != audioUrl) {
+        await _guideAudioPlayer.setSourceUrl(audioUrl);
+        if (!mounted || requestId != _guideAudioPrepareRequestId) return;
+        _preparedGuideAudioUrl = audioUrl;
+      }
+      await _guideAudioPlayer.seek(position);
+    } catch (e, stackTrace) {
+      if (requestId == _guideAudioPrepareRequestId) {
+        _preparedGuideAudioUrl = null;
+      }
+      _logger.e(
+        'Error preparing recording guide sound',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> _pauseSelectedSoundGuide({
+    bool saveOffset = true,
+    Duration? resetOffset,
+  }) async {
     try {
       final position = await _guideAudioPlayer.getCurrentPosition();
       await _guideAudioPlayer.pause();
-      if (position != null && mounted) {
+      if (resetOffset != null) {
+        await _guideAudioPlayer.seek(resetOffset);
+      }
+      if (saveOffset && position != null && mounted) {
         ref.read(recordingProvider.notifier).setSoundGuideOffset(position);
       }
     } catch (e, stackTrace) {
@@ -618,6 +791,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (!mounted || selectedTrack == null) return;
 
     ref.read(recordingProvider.notifier).selectSound(selectedTrack);
+    unawaited(_prepareSelectedSoundGuide());
   }
 
   Future<void> _clearSelectedSound() async {
@@ -628,6 +802,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
     await _pauseSelectedSoundGuide();
     await _guideAudioPlayer.stop();
+    _guideAudioPrepareRequestId++;
+    _guideAudioPrepareFuture = null;
+    _preparedGuideAudioUrl = null;
     if (!mounted) return;
     ref.read(recordingProvider.notifier).clearSound();
   }
@@ -751,14 +928,19 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         final canFlipCamera =
             availableLensDirections.contains(CameraLensDirection.front) &&
             availableLensDirections.contains(CameraLensDirection.back) &&
+            !_isStartingRecording &&
             !recordingState.isRecording &&
             !recordingState.hasSegments &&
             !cameraState.isFlipping;
         final aspectRatio = cameraState.controller!.value.aspectRatio;
         final canFinalizeSession =
-            recordingState.canFinalize && !_isProcessing && hasCameras;
+            recordingState.canFinalize &&
+            !_isProcessing &&
+            !_isStartingRecording &&
+            hasCameras;
         final canChangeSound =
             !_isProcessing &&
+            !_isStartingRecording &&
             !recordingState.isRecording &&
             !recordingState.hasSegments;
         final onTap =
@@ -779,7 +961,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               elapsedDuration: recordingState.elapsedDuration,
               maxDuration: recordingState.maxDuration,
               onBack: () {
-                if (recordingState.isRecording) {
+                if (_isStartingRecording || recordingState.isRecording) {
                   return;
                 }
                 context.router.pop();
@@ -798,6 +980,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               onRecordStop: _isProcessing ? null : _handleRecordStop,
               onOpenLibrary:
                   _isProcessing ||
+                      _isStartingRecording ||
                       recordingState.isRecording ||
                       recordingState.hasSegments
                   ? null
