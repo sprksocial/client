@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/components/molecules/recording_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/recording_timer.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 export 'package:spark/src/core/design_system/components/molecules/recording_button.dart'
     show CaptureMode;
@@ -27,6 +28,9 @@ class RecordingPageTemplate extends StatelessWidget {
     this.onTap,
     this.onRecordStart,
     this.onRecordStop,
+    this.soundLabel,
+    this.onSelectSound,
+    this.onClearSound,
     super.key,
   });
 
@@ -53,6 +57,15 @@ class RecordingPageTemplate extends StatelessWidget {
 
   /// Called when hold ends (hybrid mode only).
   final VoidCallback? onRecordStop;
+
+  /// Selected recording guide sound title.
+  final String? soundLabel;
+
+  /// Called to choose or change the recording guide sound.
+  final VoidCallback? onSelectSound;
+
+  /// Called to clear the selected recording guide sound.
+  final VoidCallback? onClearSound;
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +120,9 @@ class RecordingPageTemplate extends StatelessWidget {
                         _BottomOverlay(
                           onFlipCamera: canFlipCamera ? onFlipCamera : null,
                           onOpenLibrary: onOpenLibrary,
+                          soundLabel: soundLabel,
+                          onSelectSound: onSelectSound,
+                          onClearSound: onClearSound,
                           recordingButton: RecordingButton(
                             isRecording: isRecording,
                             mode: captureMode,
@@ -303,12 +319,18 @@ class _BottomOverlay extends StatelessWidget {
   const _BottomOverlay({
     required this.onFlipCamera,
     required this.onOpenLibrary,
+    required this.soundLabel,
+    required this.onSelectSound,
+    required this.onClearSound,
     required this.recordingButton,
     required this.bottomPadding,
   });
 
   final VoidCallback? onFlipCamera;
   final VoidCallback? onOpenLibrary;
+  final String? soundLabel;
+  final VoidCallback? onSelectSound;
+  final VoidCallback? onClearSound;
   final Widget recordingButton;
   final double bottomPadding;
 
@@ -330,19 +352,128 @@ class _BottomOverlay extends StatelessWidget {
           top: 40,
           bottom: bottomPadding,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            if (onFlipCamera != null)
-              _FlipCameraButton(onPressed: onFlipCamera!)
-            else
-              const SizedBox(width: 80),
-            recordingButton,
-            if (onOpenLibrary != null)
-              _LibraryButton(onPressed: onOpenLibrary!)
-            else
-              const SizedBox(width: 80),
+            if (onSelectSound != null) ...[
+              _SoundButton(
+                label: soundLabel,
+                onPressed: onSelectSound!,
+                onClear: onClearSound,
+              ),
+              const SizedBox(height: 18),
+            ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                if (onFlipCamera != null)
+                  _FlipCameraButton(onPressed: onFlipCamera!)
+                else
+                  const SizedBox(width: 80),
+                recordingButton,
+                if (onOpenLibrary != null)
+                  _LibraryButton(onPressed: onOpenLibrary!)
+                else
+                  const SizedBox(width: 80),
+              ],
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SoundButton extends StatelessWidget {
+  const _SoundButton({
+    required this.label,
+    required this.onPressed,
+    required this.onClear,
+  });
+
+  final String? label;
+  final VoidCallback onPressed;
+  final VoidCallback? onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final effectiveLabel = label ?? l10n.buttonAddSound;
+
+    return Center(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 260, minHeight: 40),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              color: Colors.black.withAlpha(110),
+              border: Border.all(color: Colors.white.withAlpha(45)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onPressed();
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 14,
+                        right: onClear == null ? 14 : 8,
+                        top: 10,
+                        bottom: 10,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.music_note_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              effectiveLabel,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                if (onClear != null)
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onClear!();
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.fromLTRB(4, 8, 12, 8),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 
 part 'recording_state.freezed.dart';
 
@@ -9,6 +10,8 @@ abstract class RecordingState with _$RecordingState {
     @Default(Duration.zero) Duration elapsedDuration,
     @Default(Duration(minutes: 3)) Duration maxDuration,
     @Default(<String>[]) List<String> segmentPaths,
+    AudioTrack? selectedSound,
+    @Default(Duration.zero) Duration soundGuideOffset,
     String? error,
   }) = _RecordingState;
 
@@ -16,6 +19,7 @@ abstract class RecordingState with _$RecordingState {
 
   bool get hasReachedMaxDuration => elapsedDuration >= maxDuration;
   bool get hasSegments => segmentPaths.isNotEmpty;
+  bool get hasSelectedSound => selectedSound != null;
   bool get canResume => hasSegments && !isRecording && !hasReachedMaxDuration;
   bool get canFinalize => hasSegments && !isRecording;
   int get segmentCount => segmentPaths.length;

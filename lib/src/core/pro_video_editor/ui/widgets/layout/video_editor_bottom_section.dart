@@ -14,6 +14,8 @@ class VideoEditorBottomSection extends StatelessWidget {
     required this.onToggleMute,
     required this.onAddSound,
     required this.onToggleFullscreen,
+    required this.onSeekStart,
+    required this.onSeekEnd,
     this.onTrimChanged,
     this.onTrimEnd,
     super.key,
@@ -26,6 +28,8 @@ class VideoEditorBottomSection extends StatelessWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onAddSound;
   final VoidCallback onToggleFullscreen;
+  final VoidCallback onSeekStart;
+  final VoidCallback onSeekEnd;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
 
@@ -44,6 +48,8 @@ class VideoEditorBottomSection extends StatelessWidget {
             onToggleMute: onToggleMute,
             onAddSound: onAddSound,
             onSeek: onSeek,
+            onSeekStart: onSeekStart,
+            onSeekEnd: onSeekEnd,
             onToggleFullscreen: onToggleFullscreen,
             onTrimChanged: onTrimChanged,
             onTrimEnd: onTrimEnd,

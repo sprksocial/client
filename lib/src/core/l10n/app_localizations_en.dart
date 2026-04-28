@@ -318,6 +318,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonDone => 'Done';
 
   @override
+  String get buttonAddSound => 'Add sound';
+
+  @override
   String get buttonEdit => 'Edit';
 
   @override
@@ -430,6 +433,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyNoVideosUsingSound => 'No videos using this sound yet';
 
   @override
+  String get emptyNoSoundsAvailable => 'No sounds available';
+
+  @override
   String get emptyNoPhotoLibrary =>
       'No photos or videos found in your library.';
 
@@ -538,6 +544,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelSound => 'Sound';
+
+  @override
+  String get titleSelectSound => 'Select sound';
 
   @override
   String get labelStickers => 'Stickers';

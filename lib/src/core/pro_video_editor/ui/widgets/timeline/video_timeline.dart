@@ -14,6 +14,8 @@ class VideoTimeline extends StatelessWidget {
     required this.onToggleMute,
     required this.onAddSound,
     required this.onSeek,
+    required this.onSeekStart,
+    required this.onSeekEnd,
     required this.onToggleFullscreen,
     required this.canUndo,
     required this.canRedo,
@@ -29,6 +31,8 @@ class VideoTimeline extends StatelessWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onAddSound;
   final void Function(double progress) onSeek;
+  final VoidCallback onSeekStart;
+  final VoidCallback onSeekEnd;
   final VoidCallback onToggleFullscreen;
   final bool canUndo;
   final bool canRedo;
@@ -61,6 +65,8 @@ class VideoTimeline extends StatelessWidget {
                 onToggleMute: onToggleMute,
                 onAddSound: onAddSound,
                 onSeek: onSeek,
+                onSeekStart: onSeekStart,
+                onSeekEnd: onSeekEnd,
                 onTrimChanged: onTrimChanged,
                 onTrimEnd: onTrimEnd,
                 isMuted: videoTimelineState.isMuted,
@@ -205,6 +211,8 @@ class _TracksSection extends StatelessWidget {
     required this.onToggleMute,
     required this.onAddSound,
     required this.onSeek,
+    required this.onSeekStart,
+    required this.onSeekEnd,
     required this.isMuted,
     this.onTrimChanged,
     this.onTrimEnd,
@@ -214,6 +222,8 @@ class _TracksSection extends StatelessWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onAddSound;
   final void Function(double progress) onSeek;
+  final VoidCallback onSeekStart;
+  final VoidCallback onSeekEnd;
   final bool isMuted;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
@@ -230,6 +240,8 @@ class _TracksSection extends StatelessWidget {
             child: ScrollableTimeline(
               videoTimelineState: videoTimelineState,
               onSeek: onSeek,
+              onSeekStart: onSeekStart,
+              onSeekEnd: onSeekEnd,
               onAddSound: onAddSound,
               onTrimChanged: onTrimChanged,
               onTrimEnd: onTrimEnd,

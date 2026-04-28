@@ -517,6 +517,11 @@
     "description": "Done button text"
   },
 
+  "buttonAddSound": "Add sound",
+  "@buttonAddSound": {
+    "description": "Add sound button text"
+  },
+
   "buttonEdit": "Edit",
   "@buttonEdit": {
     "description": "Edit button text"
@@ -702,6 +707,11 @@
     "description": "Empty state for no videos using a sound"
   },
 
+  "emptyNoSoundsAvailable": "No sounds available",
+  "@emptyNoSoundsAvailable": {
+    "description": "Empty state for no selectable sounds"
+  },
+
   "emptyNoPhotoLibrary": "No photos or videos found in your library.",
   "@emptyNoPhotoLibrary": {
     "description": "Empty state for no photos in library"
@@ -880,6 +890,11 @@
   "labelSound": "Sound",
   "@labelSound": {
     "description": "Sound label for video editor toolbar"
+  },
+
+  "titleSelectSound": "Select sound",
+  "@titleSelectSound": {
+    "description": "Title for the recorder sound picker"
   },
 
   "labelStickers": "Stickers",

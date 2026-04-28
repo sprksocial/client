@@ -688,6 +688,12 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get buttonDone;
 
+  /// Add sound button text
+  ///
+  /// In en, this message translates to:
+  /// **'Add sound'**
+  String get buttonAddSound;
+
   /// Edit button text
   ///
   /// In en, this message translates to:
@@ -892,6 +898,12 @@ abstract class AppLocalizations {
   /// **'No videos using this sound yet'**
   String get emptyNoVideosUsingSound;
 
+  /// Empty state for no selectable sounds
+  ///
+  /// In en, this message translates to:
+  /// **'No sounds available'**
+  String get emptyNoSoundsAvailable;
+
   /// Empty state for no photos in library
   ///
   /// In en, this message translates to:
@@ -1089,6 +1101,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sound'**
   String get labelSound;
+
+  /// Title for the recorder sound picker
+  ///
+  /// In en, this message translates to:
+  /// **'Select sound'**
+  String get titleSelectSound;
 
   /// Stickers label
   ///

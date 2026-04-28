@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/features/posting/providers/recording_state.dart';
 
@@ -58,6 +59,26 @@ class Recording extends _$Recording {
       segmentPaths: [...state.segmentPaths, file.path],
       error: null,
     );
+  }
+
+  void selectSound(AudioTrack sound) {
+    state = state.copyWith(
+      selectedSound: sound,
+      soundGuideOffset: Duration.zero,
+      error: null,
+    );
+  }
+
+  void clearSound() {
+    state = state.copyWith(
+      selectedSound: null,
+      soundGuideOffset: Duration.zero,
+      error: null,
+    );
+  }
+
+  void setSoundGuideOffset(Duration offset) {
+    state = state.copyWith(soundGuideOffset: offset, error: null);
   }
 
   Future<void> discardSession({Iterable<String> keepPaths = const []}) async {

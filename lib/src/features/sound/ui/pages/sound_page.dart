@@ -60,6 +60,23 @@ class _SoundPageState extends ConsumerState<SoundPage> {
         title: Text(l10n.pageTitleSound),
         elevation: 0,
         leading: const AppLeadingButton(),
+        actions: [
+          soundState.maybeWhen(
+            data: (state) => IconButton(
+              tooltip: l10n.buttonAddSound,
+              onPressed: state.audio.audio == null
+                  ? null
+                  : () => context.router.push(
+                      RecordingRoute(
+                        storyMode: false,
+                        initialSound: state.audio,
+                      ),
+                    ),
+              icon: const Icon(FluentIcons.camera_24_regular),
+            ),
+            orElse: () => const SizedBox(width: 48),
+          ),
+        ],
       ),
       body: soundState.when(
         data: (state) => RefreshIndicator(

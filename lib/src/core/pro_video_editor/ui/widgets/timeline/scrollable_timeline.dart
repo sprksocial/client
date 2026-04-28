@@ -19,6 +19,8 @@ class ScrollableTimeline extends StatefulWidget {
     required this.videoTimelineState,
     required this.onSeek,
     required this.onAddSound,
+    this.onSeekStart,
+    this.onSeekEnd,
     this.onTrimChanged,
     this.onTrimEnd,
     this.thumbnailHeight = 56,
@@ -31,6 +33,8 @@ class ScrollableTimeline extends StatefulWidget {
   final VideoTimelineState videoTimelineState;
   final void Function(double progress) onSeek;
   final VoidCallback onAddSound;
+  final VoidCallback? onSeekStart;
+  final VoidCallback? onSeekEnd;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
   final double thumbnailHeight;
@@ -253,13 +257,16 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                         if (!_isProgrammaticScroll) {
                           _scrollEndTimer?.cancel();
                           _isUserScrolling = true;
+                          widget.onSeekStart?.call();
                         }
                       } else if (notification is ScrollEndNotification) {
                         _scrollEndTimer?.cancel();
                         _scrollEndTimer = Timer(
                           const Duration(milliseconds: 300),
                           () {
-                            if (mounted) _isUserScrolling = false;
+                            if (!mounted) return;
+                            _isUserScrolling = false;
+                            widget.onSeekEnd?.call();
                           },
                         );
                       } else if (notification is ScrollUpdateNotification) {

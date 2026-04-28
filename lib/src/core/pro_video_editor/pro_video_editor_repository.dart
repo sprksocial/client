@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
@@ -50,8 +51,9 @@ abstract class ProVideoEditorRepository {
   /// Returns `null` if the user cancels without completing an edit.
   Future<VideoEditorResult?> openVideoEditor(
     BuildContext context,
-    EditorVideo video,
-  );
+    EditorVideo video, {
+    AudioTrack? initialAudioTrack,
+  });
 
   /// Opens the Story Image Editor with a fixed 9:16 aspect ratio canvas.
   ///
@@ -84,6 +86,7 @@ abstract class ProVideoEditorRepository {
   /// Returns `null` if the user cancels without completing the edit.
   Future<VideoEditorResult?> openStoryVideoEditor(
     BuildContext context,
-    EditorVideo video,
-  );
+    EditorVideo video, {
+    AudioTrack? initialAudioTrack,
+  });
 }

@@ -1,14 +1,19 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/recording_page_template.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -28,6 +33,7 @@ class RecordingPage extends ConsumerStatefulWidget {
   const RecordingPage({
     required this.storyMode,
     this.captureMode = CaptureMode.videoOnly,
+    this.initialSound,
     super.key,
   });
 
@@ -38,6 +44,9 @@ class RecordingPage extends ConsumerStatefulWidget {
   /// - [CaptureMode.hybrid]: tap for photo, hold for video
   final CaptureMode captureMode;
 
+  /// Optional sound selected before opening the recorder.
+  final AudioView? initialSound;
+
   @override
   ConsumerState<RecordingPage> createState() => _RecordingPageState();
 }
@@ -47,6 +56,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   bool _isProcessing = false;
   bool _isExiting = false;
   bool _isFinalizingRecordingSession = false;
+  late final AudioPlayer _guideAudioPlayer;
 
   // Store notifier reference for safe disposal
   Recording? _recordingNotifier;
@@ -56,6 +66,17 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     super.initState();
     _logger = GetIt.instance<LogService>().getLogger('RecordingPage');
     _recordingNotifier = ref.read(recordingProvider.notifier);
+    _guideAudioPlayer = AudioPlayer();
+    final initialSound = widget.initialSound;
+    if (initialSound != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final initialTrack = audioViewToAudioTrack(initialSound);
+        if (initialTrack != null) {
+          ref.read(recordingProvider.notifier).selectSound(initialTrack);
+        }
+      });
+    }
   }
 
   bool _hasCameras() {
@@ -306,6 +327,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     cameraNotifier.startVideoRecording().then((success) {
       if (!success && mounted) {
         recordingNotifier.stopRecording();
+        unawaited(_pauseSelectedSoundGuide());
+        return;
+      }
+      if (success && mounted) {
+        unawaited(_playSelectedSoundGuide());
       }
     });
   }
@@ -320,6 +346,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     final cameraNotifier = ref.read(cameraProvider.notifier);
     final recordingNotifier = ref.read(recordingProvider.notifier)
       ..stopRecording();
+    unawaited(_pauseSelectedSoundGuide());
 
     // Defer heavy stop so the "processing" frame paints before blocking
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -379,12 +406,14 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       final stitchedVideo = await repository.stitchVideoSegments(segments);
       if (!mounted) return;
 
+      final selectedSound = recordingState.selectedSound;
+
       await ref
           .read(recordingProvider.notifier)
           .discardSession(keepPaths: {stitchedVideo.path});
 
       if (!mounted) return;
-      await _processVideo(stitchedVideo);
+      await _processVideo(stitchedVideo, initialAudioTrack: selectedSound);
     } catch (e, stackTrace) {
       _logger.e(
         'Error stitching recorded video segments',
@@ -407,7 +436,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     }
   }
 
-  Future<void> _processVideo(XFile videoFile) async {
+  Future<void> _processVideo(
+    XFile videoFile, {
+    AudioTrack? initialAudioTrack,
+  }) async {
     if (!mounted) return;
 
     try {
@@ -427,10 +459,20 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       VideoEditorResult? result;
       if (widget.storyMode) {
         if (!context.mounted) return;
-        result = await repository.openStoryVideoEditor(context, editorVideo);
+        result = await repository.openStoryVideoEditor(
+          context,
+          editorVideo,
+          initialAudioTrack:
+              initialAudioTrack ?? ref.read(recordingProvider).selectedSound,
+        );
       } else {
         if (!context.mounted) return;
-        result = await repository.openVideoEditor(context, editorVideo);
+        result = await repository.openVideoEditor(
+          context,
+          editorVideo,
+          initialAudioTrack:
+              initialAudioTrack ?? ref.read(recordingProvider).selectedSound,
+        );
       }
 
       if (!mounted) return;
@@ -523,6 +565,71 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   Future<void> _handleFlipCamera() async {
     final cameraNotifier = ref.read(cameraProvider.notifier);
     await cameraNotifier.flipCamera();
+  }
+
+  Future<void> _playSelectedSoundGuide() async {
+    final recordingState = ref.read(recordingProvider);
+    final sound = recordingState.selectedSound;
+    final audioUrl = sound?.audio.networkUrl;
+    if (sound == null || audioUrl == null || audioUrl.isEmpty) return;
+
+    try {
+      await _guideAudioPlayer.play(
+        UrlSource(audioUrl),
+        position: recordingState.soundGuideOffset,
+      );
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error playing recording guide sound',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> _pauseSelectedSoundGuide() async {
+    try {
+      final position = await _guideAudioPlayer.getCurrentPosition();
+      await _guideAudioPlayer.pause();
+      if (position != null && mounted) {
+        ref.read(recordingProvider.notifier).setSoundGuideOffset(position);
+      }
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error pausing recording guide sound',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  Future<void> _showSoundPicker() async {
+    if (_isProcessing) return;
+
+    final recordingState = ref.read(recordingProvider);
+    if (recordingState.isRecording || recordingState.hasSegments) return;
+
+    final selectedTrack = await showModalBottomSheet<AudioTrack>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) => const _RecordingSoundPickerSheet(),
+    );
+    if (!mounted || selectedTrack == null) return;
+
+    ref.read(recordingProvider.notifier).selectSound(selectedTrack);
+  }
+
+  Future<void> _clearSelectedSound() async {
+    if (_isProcessing) return;
+
+    final recordingState = ref.read(recordingProvider);
+    if (recordingState.isRecording || recordingState.hasSegments) return;
+
+    await _pauseSelectedSoundGuide();
+    await _guideAudioPlayer.stop();
+    if (!mounted) return;
+    ref.read(recordingProvider.notifier).clearSound();
   }
 
   @override
@@ -650,6 +757,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         final aspectRatio = cameraState.controller!.value.aspectRatio;
         final canFinalizeSession =
             recordingState.canFinalize && !_isProcessing && hasCameras;
+        final canChangeSound =
+            !_isProcessing &&
+            !recordingState.isRecording &&
+            !recordingState.hasSegments;
         final onTap =
             _isProcessing ||
                 (widget.captureMode == CaptureMode.hybrid &&
@@ -691,6 +802,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
                       recordingState.hasSegments
                   ? null
                   : _openMediaLibraryPicker,
+              soundLabel: recordingState.selectedSound?.title,
+              onSelectSound: canChangeSound ? _showSoundPicker : null,
+              onClearSound: canChangeSound && recordingState.hasSelectedSound
+                  ? _clearSelectedSound
+                  : null,
             ),
             if (cameraState.isFlipping)
               const Positioned.fill(
@@ -744,11 +860,109 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   @override
   void dispose() {
+    unawaited(_guideAudioPlayer.dispose());
     // Defer modifying provider to avoid modifying while finalizing widget tree
     final notifier = _recordingNotifier;
     if (notifier != null) {
       unawaited(notifier.discardSession());
     }
     super.dispose();
+  }
+}
+
+class _RecordingSoundPickerSheet extends StatefulWidget {
+  const _RecordingSoundPickerSheet();
+
+  @override
+  State<_RecordingSoundPickerSheet> createState() =>
+      _RecordingSoundPickerSheetState();
+}
+
+class _RecordingSoundPickerSheetState
+    extends State<_RecordingSoundPickerSheet> {
+  late final Future<List<AudioTrack>> _tracksFuture = _loadTracks();
+
+  Future<List<AudioTrack>> _loadTracks() async {
+    final response = await GetIt.instance<SoundRepository>()
+        .getTrendingAudios();
+    return audioViewsToAudioTracks(response.audios);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.62,
+        child: FutureBuilder<List<AudioTrack>>(
+          future: _tracksFuture,
+          builder: (context, snapshot) {
+            final tracks = snapshot.data;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                  child: Text(
+                    l10n.titleSelectSound,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                if (snapshot.connectionState != ConnectionState.done)
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (snapshot.hasError)
+                  Expanded(child: Center(child: Text(l10n.errorLoadingSound)))
+                else if (tracks == null || tracks.isEmpty)
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        l10n.emptyNoSoundsAvailable,
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: tracks.length,
+                      separatorBuilder: (context, index) =>
+                          Divider(height: 1, color: colorScheme.outlineVariant),
+                      itemBuilder: (context, index) {
+                        final track = tracks[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: track.image?.networkUrl != null
+                                ? NetworkImage(track.image!.networkUrl!)
+                                : null,
+                            child: track.image?.networkUrl == null
+                                ? const Icon(Icons.music_note_rounded)
+                                : null,
+                          ),
+                          title: Text(
+                            track.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            '@${track.subtitle}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () => Navigator.of(context).pop(track),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 }

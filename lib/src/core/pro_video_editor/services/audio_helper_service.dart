@@ -4,6 +4,29 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:video_player/video_player.dart';
 
+const _resumeSeekTolerance = Duration(milliseconds: 250);
+
+Duration syncedCustomAudioPosition({
+  required Duration? trackStartTime,
+  required Duration videoPosition,
+  required Duration videoStart,
+}) {
+  final relativeVideoPosition = videoPosition - videoStart;
+  final clampedVideoPosition = relativeVideoPosition.isNegative
+      ? Duration.zero
+      : relativeVideoPosition;
+  return (trackStartTime ?? Duration.zero) + clampedVideoPosition;
+}
+
+bool shouldSeekCustomAudioOnResume({
+  required Duration? currentPosition,
+  required Duration targetPosition,
+}) {
+  if (currentPosition == null) return true;
+  final delta = currentPosition - targetPosition;
+  return delta.abs() > _resumeSeekTolerance;
+}
+
 /// A helper service that manages audio playback alongside video playback.
 class AudioHelperService {
   /// Creates an instance of [AudioHelperService] for the
@@ -21,6 +44,8 @@ class AudioHelperService {
 
   /// Returns whether custom audio is currently active.
   bool get useCustomAudio => _useCustomAudio;
+
+  String? _currentTrackId;
 
   /// Stores the last applied audio balance between video and overlay.
   double _lastVolumeBalance = 0;
@@ -46,22 +71,63 @@ class AudioHelperService {
     await _audioPlayer.dispose();
   }
 
-  /// Plays the given [AudioTrack] with looping enabled.
-  Future<void> play(AudioTrack track) async {
+  Source _sourceForTrack(AudioTrack track) {
     final audio = track.audio;
-    Source source;
     if (audio.hasAssetPath) {
-      source = AssetSource(audio.assetPath!);
-    } else if (audio.hasFile) {
-      source = DeviceFileSource(audio.file!.path);
-    } else if (audio.hasNetworkUrl) {
-      source = UrlSource(audio.networkUrl!);
-    } else {
-      source = BytesSource(audio.bytes!);
+      return AssetSource(audio.assetPath!);
     }
+    if (audio.hasFile) {
+      return DeviceFileSource(audio.file!.path);
+    }
+    if (audio.hasNetworkUrl) {
+      return UrlSource(audio.networkUrl!);
+    }
+    return BytesSource(audio.bytes!);
+  }
+
+  /// Plays the given [AudioTrack] with looping enabled.
+  Future<void> play(
+    AudioTrack track, {
+    Duration videoPosition = Duration.zero,
+    Duration videoStart = Duration.zero,
+  }) async {
+    final position = syncedCustomAudioPosition(
+      trackStartTime: track.startTime,
+      videoPosition: videoPosition,
+      videoStart: videoStart,
+    );
 
     await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    await _audioPlayer.play(source, position: track.startTime);
+    if (_currentTrackId != track.id) {
+      await _audioPlayer.setSource(_sourceForTrack(track));
+      _currentTrackId = track.id;
+      await _audioPlayer.seek(position);
+    } else if (shouldSeekCustomAudioOnResume(
+      currentPosition: await _audioPlayer.getCurrentPosition(),
+      targetPosition: position,
+    )) {
+      await _audioPlayer.seek(position);
+    }
+    await _audioPlayer.resume();
+  }
+
+  Future<void> prepare(
+    AudioTrack track, {
+    Duration videoPosition = Duration.zero,
+    Duration videoStart = Duration.zero,
+  }) async {
+    final position = syncedCustomAudioPosition(
+      trackStartTime: track.startTime,
+      videoPosition: videoPosition,
+      videoStart: videoStart,
+    );
+
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    if (_currentTrackId != track.id) {
+      await _audioPlayer.setSource(_sourceForTrack(track));
+      _currentTrackId = track.id;
+    }
+    await _audioPlayer.seek(position);
   }
 
   /// Pauses the current audio playback.
@@ -79,6 +145,20 @@ class AudioHelperService {
   /// Seeks the audio playback to the specified [startTime].
   Future<void> seek(Duration startTime) {
     return _audioPlayer.seek(startTime);
+  }
+
+  Future<void> seekToVideoPosition(
+    AudioTrack track, {
+    required Duration videoPosition,
+    required Duration videoStart,
+  }) {
+    return seek(
+      syncedCustomAudioPosition(
+        trackStartTime: track.startTime,
+        videoPosition: videoPosition,
+        videoStart: videoStart,
+      ),
+    );
   }
 
   /// Sets the audio mode to either original or custom.

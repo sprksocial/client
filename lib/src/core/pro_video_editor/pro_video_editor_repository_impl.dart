@@ -116,10 +116,16 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   @override
   Future<VideoEditorResult?> openVideoEditor(
     BuildContext context,
-    EditorVideo video,
-  ) async {
+    EditorVideo video, {
+    AudioTrack? initialAudioTrack,
+  }) async {
     return Navigator.of(context).push<VideoEditorResult?>(
-      MaterialPageRoute(builder: (_) => VideoEditorGroundedPage(video: video)),
+      MaterialPageRoute(
+        builder: (_) => VideoEditorGroundedPage(
+          video: video,
+          initialAudioTrack: initialAudioTrack,
+        ),
+      ),
     );
   }
 
@@ -152,11 +158,16 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   @override
   Future<VideoEditorResult?> openStoryVideoEditor(
     BuildContext context,
-    EditorVideo video,
-  ) async {
+    EditorVideo video, {
+    AudioTrack? initialAudioTrack,
+  }) async {
     return Navigator.of(context).push<VideoEditorResult?>(
       MaterialPageRoute(
-        builder: (_) => VideoEditorGroundedPage(video: video, storyMode: true),
+        builder: (_) => VideoEditorGroundedPage(
+          video: video,
+          storyMode: true,
+          initialAudioTrack: initialAudioTrack,
+        ),
       ),
     );
   }
