@@ -62,6 +62,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   Future<void>? _guideAudioPrepareFuture;
   String? _preparedGuideAudioUrl;
   int _guideAudioPrepareRequestId = 0;
+  int _soundPickerSessionId = 0;
 
   // Store notifier reference for safe disposal
   Recording? _recordingNotifier;
@@ -656,7 +657,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     await cameraNotifier.flipCamera();
   }
 
-  Future<void> _playSelectedSoundGuide({bool requireRecording = true}) async {
+  Future<void> _playSelectedSoundGuide({
+    bool requireRecording = true,
+    bool Function()? canPlay,
+  }) async {
     final recordingState = ref.read(recordingProvider);
     final sound = recordingState.selectedSound;
     final audioUrl = sound?.audio.networkUrl;
@@ -666,6 +670,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       await _guideAudioPrepareFuture;
       if (!mounted ||
           _cancelPendingRecordingStart ||
+          canPlay?.call() == false ||
           (requireRecording && !ref.read(recordingProvider).isRecording)) {
         return;
       }
@@ -673,6 +678,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         await _prepareSelectedSoundGuide();
         if (!mounted ||
             _cancelPendingRecordingStart ||
+            canPlay?.call() == false ||
             (requireRecording && !ref.read(recordingProvider).isRecording)) {
           return;
         }
@@ -782,16 +788,46 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     final recordingState = ref.read(recordingProvider);
     if (recordingState.isRecording || recordingState.hasSegments) return;
 
-    final selectedTrack = await showModalBottomSheet<AudioTrack>(
+    final pickerSessionId = ++_soundPickerSessionId;
+    await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (context) => const _RecordingSoundPickerSheet(),
+      builder: (context) => _RecordingSoundPickerSheet(
+        initialSelectedTrack: recordingState.selectedSound,
+        onTrackPreview: (track) =>
+            _previewSoundPickerTrack(track, pickerSessionId),
+      ),
     );
-    if (!mounted || selectedTrack == null) return;
+    if (!mounted) return;
 
-    ref.read(recordingProvider.notifier).selectSound(selectedTrack);
-    unawaited(_prepareSelectedSoundGuide());
+    if (_soundPickerSessionId == pickerSessionId) {
+      _soundPickerSessionId++;
+    }
+    unawaited(_pauseSelectedSoundGuide());
+  }
+
+  bool _isSoundPickerSessionActive(int pickerSessionId) {
+    return mounted && _soundPickerSessionId == pickerSessionId;
+  }
+
+  Future<void> _previewSoundPickerTrack(
+    AudioTrack track,
+    int pickerSessionId,
+  ) async {
+    if (!_isSoundPickerSessionActive(pickerSessionId)) return;
+
+    await _pauseSelectedSoundGuide(saveOffset: false);
+    if (!_isSoundPickerSessionActive(pickerSessionId)) return;
+
+    ref.read(recordingProvider.notifier).selectSound(track);
+    await _prepareSelectedSoundGuide();
+    if (!_isSoundPickerSessionActive(pickerSessionId)) return;
+
+    await _playSelectedSoundGuide(
+      requireRecording: false,
+      canPlay: () => _isSoundPickerSessionActive(pickerSessionId),
+    );
   }
 
   Future<void> _clearSelectedSound() async {
@@ -1043,6 +1079,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   @override
   void dispose() {
+    _soundPickerSessionId++;
     unawaited(_guideAudioPlayer.dispose());
     // Defer modifying provider to avoid modifying while finalizing widget tree
     final notifier = _recordingNotifier;
@@ -1054,7 +1091,13 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 }
 
 class _RecordingSoundPickerSheet extends StatefulWidget {
-  const _RecordingSoundPickerSheet();
+  const _RecordingSoundPickerSheet({
+    required this.onTrackPreview,
+    this.initialSelectedTrack,
+  });
+
+  final AudioTrack? initialSelectedTrack;
+  final Future<void> Function(AudioTrack track) onTrackPreview;
 
   @override
   State<_RecordingSoundPickerSheet> createState() =>
@@ -1064,11 +1107,25 @@ class _RecordingSoundPickerSheet extends StatefulWidget {
 class _RecordingSoundPickerSheetState
     extends State<_RecordingSoundPickerSheet> {
   late final Future<List<AudioTrack>> _tracksFuture = _loadTracks();
+  AudioTrack? _selectedTrack;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTrack = widget.initialSelectedTrack;
+  }
 
   Future<List<AudioTrack>> _loadTracks() async {
     final response = await GetIt.instance<SoundRepository>()
         .getTrendingAudios();
     return audioViewsToAudioTracks(response.audios);
+  }
+
+  void _handleTrackTap(AudioTrack track) {
+    setState(() {
+      _selectedTrack = track;
+    });
+    unawaited(widget.onTrackPreview(track));
   }
 
   @override
@@ -1117,6 +1174,7 @@ class _RecordingSoundPickerSheetState
                           Divider(height: 1, color: colorScheme.outlineVariant),
                       itemBuilder: (context, index) {
                         final track = tracks[index];
+                        final isSelected = track.id == _selectedTrack?.id;
                         return ListTile(
                           leading: CircleAvatar(
                             backgroundImage: track.image?.networkUrl != null
@@ -1136,7 +1194,14 @@ class _RecordingSoundPickerSheetState
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          onTap: () => Navigator.of(context).pop(track),
+                          trailing: isSelected
+                              ? Icon(
+                                  Icons.check_circle_rounded,
+                                  color: colorScheme.primary,
+                                )
+                              : null,
+                          selected: isSelected,
+                          onTap: () => _handleTrackTap(track),
                         );
                       },
                     ),

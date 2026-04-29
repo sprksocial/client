@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_edit_controls_section.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
 
@@ -81,10 +82,18 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   void _handleTrackSelection(AudioTrack track) {
     setState(() {
       _selectedTrack = track;
+    });
+    widget.onTrackPlay(track);
+  }
+
+  void _handleContinue() {
+    final selectedTrack = _selectedTrack;
+    if (selectedTrack == null) return;
+
+    setState(() {
       _showEditControls = true;
     });
-    widget.onTrackSelected(track);
-    widget.onTrackPlay(track);
+    widget.onTrackSelected(selectedTrack);
   }
 
   void _handleChangeTrack() {
@@ -165,6 +174,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
                     ),
             ),
           ),
+          if (!_showEditControls) _buildContinueButton(),
         ],
       ),
     );
@@ -186,6 +196,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
 
   Widget _buildHeader() {
     final i18n = widget.configs.i18n.audioEditor;
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
@@ -194,7 +205,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
         children: [
           Expanded(
             child: Text(
-              _showEditControls ? i18n.editTrack : 'Select Track',
+              _showEditControls ? i18n.editTrack : l10n.titleSelectSound,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -208,6 +219,24 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
               onPressed: () => Navigator.of(context).pop(),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildContinueButton() {
+    final l10n = AppLocalizations.of(context);
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _selectedTrack == null ? null : _handleContinue,
+            child: Text(l10n.buttonContinue),
+          ),
+        ),
       ),
     );
   }
