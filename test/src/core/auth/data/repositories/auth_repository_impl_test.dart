@@ -729,6 +729,81 @@ void main() {
       },
     );
 
+    test('completeOAuth surfaces the AIP bootstrap failure reason', () async {
+      final storage = _InMemoryStorage();
+
+      final client = MockClient((request) async {
+        switch (request.url.path) {
+          case '/.well-known/oauth-authorization-server':
+            return http.Response(
+              json.encode({
+                'authorization_endpoint':
+                    'https://auth.sprk.so/oauth/authorize',
+                'token_endpoint': 'https://auth.sprk.so/oauth/token',
+                'registration_endpoint':
+                    'https://auth.sprk.so/oauth/clients/register',
+              }),
+              200,
+            );
+          case '/oauth/clients/register':
+            return http.Response(
+              json.encode({
+                'client_id': 'client-1',
+                'client_secret': 'secret-1',
+              }),
+              201,
+            );
+          case '/oauth/token':
+            return http.Response(
+              json.encode({
+                'access_token': 'aip-access',
+                'refresh_token': 'aip-refresh',
+                'token_type': 'Bearer',
+                'expires_in': 3600,
+              }),
+              200,
+              headers: {'content-type': 'application/json'},
+            );
+          case '/api/atprotocol/session':
+            return http.Response(
+              json.encode({
+                'error': 'invalid_dpop_proof',
+                'error_description': 'DPoP proof is missing ath',
+              }),
+              400,
+            );
+          default:
+            return http.Response('unexpected request', 500);
+        }
+      });
+
+      final repository = AuthRepositoryImpl(
+        secureStorage: storage,
+        httpClient: client,
+        logger: SparkLogger(name: 'AuthRepositoryTest'),
+      );
+
+      await repository.initializationComplete;
+      final authUri = Uri.parse(await repository.initiateOAuth('alice'));
+      final callbackUrl = Uri.parse(_redirectUri)
+          .replace(
+            queryParameters: {
+              'code': 'code-123',
+              'state': authUri.queryParameters['state']!,
+            },
+          )
+          .toString();
+
+      final result = await repository.completeOAuth(callbackUrl);
+
+      expect(result.isSuccess, isFalse);
+      expect(
+        result.error,
+        'Failed to bootstrap a direct PDS session from AIP: '
+        'AIP session request failed: DPoP proof is missing ath.',
+      );
+    });
+
     test(
       'initiateOAuth re-registers when the cached AIP client scope is stale',
       () async {
@@ -859,6 +934,7 @@ PdsSessionCache _pdsSessionCache({
       _sessionResponseBody(accessToken)
         ..['expires_at'] = expiresAt.millisecondsSinceEpoch ~/ 1000,
     ),
+    clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
   );
 }
 

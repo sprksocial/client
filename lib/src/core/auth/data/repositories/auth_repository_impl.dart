@@ -238,9 +238,7 @@ class AuthRepositoryImpl implements AuthRepository {
         pdsEndpoint: pdsEndpoint,
         scope: oauthSession.scope,
         dpopNonce: oauthSession.$dPoPNonce,
-        clientId:
-            oauthSession.$clientId ??
-            extractClientIdFromAccessToken(oauthSession.accessToken),
+        clientId: oauthSession.$clientId,
         publicKey: oauthSession.$publicKey,
         privateKey: oauthSession.$privateKey,
       ),
@@ -541,16 +539,17 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       await _saveSnapshot();
 
-      final bootstrapped = await _bootstrapPdsSession(
+      final bootstrapResult = await _bootstrapPdsSession(
         client.credentials,
         authGeneration: _authGeneration,
       );
-      if (!bootstrapped) {
+      if (!bootstrapResult.success) {
         _snapshot = previousSnapshot;
         await _saveSnapshot();
         _resetInMemorySession();
         return LoginResult.failed(
-          'Failed to bootstrap a direct PDS session from AIP.',
+          'Failed to bootstrap a direct PDS session from AIP: '
+          '${bootstrapResult.error ?? 'unknown error'}.',
         );
       }
 
@@ -647,14 +646,16 @@ class AuthRepositoryImpl implements AuthRepository {
     );
   }
 
-  Future<bool> _bootstrapPdsSession(
+  Future<_BootstrapPdsSessionResult> _bootstrapPdsSession(
     oauth2.Credentials credentials, {
     required int authGeneration,
   }) async {
     try {
       final sessionResponse = await _fetchAtprotocolSession(credentials);
       if (!_isCurrentAuthGeneration(authGeneration)) {
-        return false;
+        return const _BootstrapPdsSessionResult.failure(
+          'auth state changed while fetching the PDS session',
+        );
       }
 
       final existingNonce =
@@ -672,18 +673,20 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       await _saveSnapshot();
       if (!_isCurrentAuthGeneration(authGeneration)) {
-        return false;
+        return const _BootstrapPdsSessionResult.failure(
+          'auth state changed while saving the PDS session',
+        );
       }
 
       _applyCachedPdsSession(pdsSession);
-      return true;
+      return const _BootstrapPdsSessionResult.success();
     } catch (e, stackTrace) {
       _logger.e(
         'Failed to bootstrap direct PDS session from AIP',
         error: e,
         stackTrace: stackTrace,
       );
-      return false;
+      return _BootstrapPdsSessionResult.failure(_describeError(e));
     }
   }
 
@@ -719,7 +722,11 @@ class AuthRepositoryImpl implements AuthRepository {
         return false;
       }
 
-      return _bootstrapPdsSession(credentials, authGeneration: authGeneration);
+      final bootstrapResult = await _bootstrapPdsSession(
+        credentials,
+        authGeneration: authGeneration,
+      );
+      return bootstrapResult.success;
     } catch (e, stackTrace) {
       _logger.e(
         'Failed to refresh auth state from AIP',
@@ -863,6 +870,33 @@ String _responseError(http.Response response) {
   }
 
   return '${response.statusCode} ${response.reasonPhrase ?? ''}'.trim();
+}
+
+String _describeError(Object error) {
+  if (error is FormatException) {
+    return error.message;
+  }
+
+  final message = error.toString();
+  return message.startsWith('Exception: ')
+      ? message.substring('Exception: '.length)
+      : message;
+}
+
+class _BootstrapPdsSessionResult {
+  const _BootstrapPdsSessionResult._({
+    required this.success,
+    required this.error,
+  });
+
+  const _BootstrapPdsSessionResult.success()
+    : this._(success: true, error: null);
+
+  const _BootstrapPdsSessionResult.failure(String error)
+    : this._(success: false, error: error);
+
+  final bool success;
+  final String? error;
 }
 
 class _AipOAuthMetadata {

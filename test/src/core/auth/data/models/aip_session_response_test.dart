@@ -11,6 +11,7 @@ void main() {
       final dBytes = List<int>.generate(32, (index) => index + 65);
       final response = _sessionResponse(
         accessToken: _jwt(clientId: 'spark-client'),
+        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
         x: _base64UrlNoPadding(xBytes),
         y: _base64UrlNoPadding(yBytes),
         d: _base64UrlNoPadding(dBytes),
@@ -24,7 +25,10 @@ void main() {
 
     test('accepts empty initial nonce and preserves later nonce updates', () {
       final cache = buildPdsSessionCacheFromAipResponse(
-        _sessionResponse(accessToken: _jwt(clientId: 'spark-client')),
+        _sessionResponse(
+          accessToken: _jwt(clientId: 'spark-client'),
+          clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+        ),
       );
 
       expect(cache.dpopNonce, isEmpty);
@@ -38,7 +42,10 @@ void main() {
 
     test('normalizes legacy unpadded cached keys on restore', () {
       final normalizedCache = buildPdsSessionCacheFromAipResponse(
-        _sessionResponse(accessToken: _jwt(clientId: 'spark-client')),
+        _sessionResponse(
+          accessToken: _jwt(clientId: 'spark-client'),
+          clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+        ),
       );
       final legacyCache = normalizedCache.copyWith(
         publicKey: normalizedCache.publicKey.replaceAll('=', ''),
@@ -84,9 +91,33 @@ void main() {
       },
     );
 
+    test('uses caller-provided client_id when exported client_id is empty', () {
+      final cache = buildPdsSessionCacheFromAipResponse(
+        _sessionResponse(
+          accessToken: _jwtFromPayload({
+            'sub': 'did:plc:test',
+            'exp': DateTime.utc(2030, 1, 1).millisecondsSinceEpoch ~/ 1000,
+            'iat': DateTime.utc(2029, 1, 1).millisecondsSinceEpoch ~/ 1000,
+            'scope': 'atproto',
+            'cnf': 'legacy-key-binding',
+          }),
+          clientId: '',
+        ),
+        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+      );
+
+      final restored = restorePdsOAuthSessionFromCache(cache);
+
+      expect(
+        restored.$clientId,
+        'https://auth.sprk.so/oauth-client-metadata.json',
+      );
+    });
+
     test('rejects responses without private DPoP key material', () {
       final response = _sessionResponse(
         accessToken: _jwt(clientId: 'spark-client'),
+        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
         d: null,
       );
 
@@ -102,6 +133,23 @@ void main() {
       );
     });
 
+    test('does not fall back to the token client_id claim', () {
+      final response = _sessionResponse(
+        accessToken: _jwt(clientId: 'spark-client'),
+      );
+
+      expect(
+        () => buildPdsSessionCacheFromAipResponse(response),
+        throwsA(
+          isA<AipExportedSessionException>().having(
+            (error) => error.message,
+            'message',
+            contains('missing client_id'),
+          ),
+        ),
+      );
+    });
+
     test('rejects exported PDS access tokens without client_id', () {
       final response = _sessionResponse(accessToken: _jwt(clientId: null));
 
@@ -112,6 +160,85 @@ void main() {
             (error) => error.message,
             'message',
             contains('missing client_id'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects opaque exported access tokens with direct-PDS context', () {
+      final response = _sessionResponse(
+        accessToken: 'opaque-aip-access-token',
+        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+      );
+
+      expect(
+        () => buildPdsSessionCacheFromAipResponse(response),
+        throwsA(
+          isA<AipExportedSessionException>().having(
+            (error) => error.message,
+            'message',
+            contains('not a JWT'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects malformed exported access token JWTs with context', () {
+      final response = _sessionResponse(
+        accessToken: 'header.not-base64url.signature',
+        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+      );
+
+      expect(
+        () => buildPdsSessionCacheFromAipResponse(response),
+        throwsA(
+          isA<AipExportedSessionException>().having(
+            (error) => error.message,
+            'message',
+            contains('malformed access_token JWT'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects exported access token JWTs missing required claims', () {
+      final response = _sessionResponse(
+        accessToken: _jwtFromPayload({
+          'exp': DateTime.utc(2030, 1, 1).millisecondsSinceEpoch ~/ 1000,
+          'iat': DateTime.utc(2029, 1, 1).millisecondsSinceEpoch ~/ 1000,
+        }),
+        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+      );
+
+      expect(
+        () => buildPdsSessionCacheFromAipResponse(response),
+        throwsA(
+          isA<AipExportedSessionException>().having(
+            (error) => error.message,
+            'message',
+            contains('missing required "sub" claim'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects exported access token JWTs with invalid claim types', () {
+      final response = _sessionResponse(
+        accessToken: _jwtFromPayload({
+          'sub': 'did:plc:test',
+          'exp': '2030-01-01T00:00:00Z',
+          'iat': DateTime.utc(2029, 1, 1).millisecondsSinceEpoch ~/ 1000,
+        }),
+        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
+      );
+
+      expect(
+        () => buildPdsSessionCacheFromAipResponse(response),
+        throwsA(
+          isA<AipExportedSessionException>().having(
+            (error) => error.message,
+            'message',
+            contains('invalid required numeric "exp" claim'),
           ),
         ),
       );
@@ -149,6 +276,10 @@ String _jwt({String? clientId}) {
     'client_id': clientId,
   };
 
+  return _jwtFromPayload(payload);
+}
+
+String _jwtFromPayload(Map<String, Object?> payload) {
   return '${_base64UrlNoPadding(utf8.encode(json.encode({'alg': 'none', 'typ': 'JWT'})))}.${_base64UrlNoPadding(utf8.encode(json.encode(payload)))}.signature';
 }
 
