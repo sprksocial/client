@@ -16,6 +16,13 @@ import 'package:spark/src/features/settings/providers/settings_state.dart';
 
 part 'settings_provider.g.dart';
 
+class SavedFeedsUnavailableException implements Exception {
+  const SavedFeedsUnavailableException();
+
+  @override
+  String toString() => 'Could not load the current saved feeds';
+}
+
 /// Provider for the PrefRepository instance
 @riverpod
 PrefRepository prefRepository(Ref ref) {
@@ -87,6 +94,66 @@ class Settings extends _$Settings {
     await ref
         .read(userPreferencesProvider.notifier)
         .updatePreferences(preferences);
+  }
+
+  Future<Preferences> _getCurrentPreferencesForFeedUpdate() async {
+    try {
+      await ref.read(userPreferencesProvider.notifier).refresh();
+      final preferences = _currentPreferences;
+      if (preferences == null) {
+        throw const SavedFeedsUnavailableException();
+      }
+      return preferences;
+    } catch (e, st) {
+      logger.e(
+        'Cannot update feeds because current saved feeds could not be loaded',
+        error: e,
+        stackTrace: st,
+      );
+      throw const SavedFeedsUnavailableException();
+    }
+  }
+
+  Future<List<Feed>> _updateSavedFeeds(
+    List<SavedFeed> Function(List<SavedFeed> currentSavedFeeds) update,
+  ) async {
+    final preferences = await _getCurrentPreferencesForFeedUpdate();
+    final updatedSavedFeeds = update(
+      List<SavedFeed>.of(_getSavedFeedsFromPreferences(preferences)),
+    );
+
+    final updatedPreferencesList =
+        preferences.preferences
+            .where((pref) => !pref.isSavedFeedsPref(pref))
+            .toList()
+          ..add(Preference.savedFeedsPref(items: updatedSavedFeeds));
+
+    await _updatePreferences(Preferences(preferences: updatedPreferencesList));
+    return _loadFeedsFromSavedFeeds(updatedSavedFeeds);
+  }
+
+  void _setFeedsState(List<Feed> feeds) {
+    final likedFeeds = feeds
+        .where((feed) => feed.view?.viewer?.like != null)
+        .toList();
+    state = state.copyWith(feeds: feeds, likedFeeds: likedFeeds);
+  }
+
+  Future<List<Feed>> _loadFeedsFromSavedFeeds(
+    List<SavedFeed> savedFeeds,
+  ) async {
+    try {
+      return await feedRepository.getFeedsFromSavedFeeds(savedFeeds);
+    } catch (e, st) {
+      logger.w(
+        'Could not hydrate saved feed details; using saved feed configs',
+        error: e,
+        stackTrace: st,
+      );
+      return savedFeeds
+          .map((savedFeed) => Feed(type: savedFeed.type, config: savedFeed))
+          .toList();
+    }
   }
 
   /// Loads the last active feed from local storage
@@ -194,7 +261,7 @@ class Settings extends _$Settings {
           final updatedSavedFeeds = _getSavedFeedsFromPreferences(
             updatedPreferences,
           );
-          final updatedFeeds = await feedRepository.getFeedsFromSavedFeeds(
+          final updatedFeeds = await _loadFeedsFromSavedFeeds(
             updatedSavedFeeds,
           );
           final updatedActiveFeed = _getActiveFeedFromFeeds(
@@ -224,7 +291,7 @@ class Settings extends _$Settings {
       }
 
       // Hydrate feeds with generator views using getFeedGenerators
-      final feeds = await feedRepository.getFeedsFromSavedFeeds(savedFeeds);
+      final feeds = await _loadFeedsFromSavedFeeds(savedFeeds);
 
       // Try to load the last active feed from local storage
       final savedActiveFeed = await _loadLastActiveFeedFromStorage();
@@ -301,8 +368,6 @@ class Settings extends _$Settings {
       }
 
       state = state.copyWith(feeds: updatedFeeds, likedFeeds: likedFeeds);
-
-      await _updateFeedsInPreferences(updatedFeeds);
     }
   }
 
@@ -331,8 +396,6 @@ class Settings extends _$Settings {
           .toList();
 
       state = state.copyWith(feeds: updatedFeeds, likedFeeds: likedFeeds);
-
-      await _updateFeedsInPreferences(updatedFeeds);
     }
   }
 
@@ -361,37 +424,22 @@ class Settings extends _$Settings {
     }
   }
 
-  /// Updates preferences with new feeds list
-  Future<void> _updateFeedsInPreferences(List<Feed> feeds) async {
-    final preferences = _currentPreferences;
-    if (preferences == null) {
-      logger.w('Cannot update feeds: preferences not loaded');
-      return;
-    }
-    final updatedPreferencesList =
-        preferences.preferences
-            .where((pref) => !pref.isSavedFeedsPref(pref))
-            .toList()
-          ..add(
-            Preference.savedFeedsPref(
-              items: feeds.map((feed) => feed.config).toList(),
-            ),
-          );
-    await _updatePreferences(Preferences(preferences: updatedPreferencesList));
-  }
-
   /// Adds a feed to feeds list
   Future<void> addFeed(Feed feed) async {
-    if (!state.feeds.any((f) => f.config.id == feed.config.id)) {
-      // Make all feeds pinned by default
-      final pinnedFeed = Feed(
-        type: feed.type,
-        config: feed.config.copyWith(pinned: true),
-        view: feed.view,
-      );
-      final updatedFeeds = [...state.feeds, pinnedFeed];
-      await _updateFeedsInPreferences(updatedFeeds);
-      state = state.copyWith(feeds: updatedFeeds);
+    final pinnedConfig = feed.config.copyWith(pinned: true);
+    final updatedFeeds = await _updateSavedFeeds((currentSavedFeeds) {
+      if (currentSavedFeeds.any(
+        (savedFeed) => savedFeed.id == pinnedConfig.id,
+      )) {
+        return currentSavedFeeds;
+      }
+      return [...currentSavedFeeds, pinnedConfig];
+    });
+
+    if (updatedFeeds.any(
+      (updatedFeed) => updatedFeed.config.id == pinnedConfig.id,
+    )) {
+      _setFeedsState(updatedFeeds);
     }
   }
 
@@ -403,24 +451,57 @@ class Settings extends _$Settings {
       throw Exception('Cannot delete the Following feed');
     }
 
-    final updatedFeeds = state.feeds
-        .where((f) => f.config.id != feed.config.id)
-        .toList();
-    await _updateFeedsInPreferences(updatedFeeds);
-    state = state.copyWith(feeds: updatedFeeds);
+    final updatedFeeds = await _updateSavedFeeds(
+      (currentSavedFeeds) => currentSavedFeeds
+          .where((savedFeed) => savedFeed.id != feed.config.id)
+          .toList(),
+    );
+    _setFeedsState(updatedFeeds);
   }
 
   /// Reorders a feed in feeds list
-  Future<void> reorderFeed(int oldIndex, int newIndex) async {
-    var actualNewIndex = newIndex;
-    if (newIndex == state.feeds.length) {
-      actualNewIndex = state.feeds.length - 1;
-    }
-    final updatedList = [...state.feeds];
-    final feed = updatedList.removeAt(oldIndex);
-    updatedList.insert(actualNewIndex, feed);
-    state = state.copyWith(feeds: updatedList);
-    await _updateFeedsInPreferences(updatedList);
+  Future<void> reorderFeed({
+    required String movedFeedId,
+    String? beforeFeedId,
+  }) async {
+    final updatedFeeds = await _updateSavedFeeds((currentSavedFeeds) {
+      final movedIndex = currentSavedFeeds.indexWhere(
+        (savedFeed) => savedFeed.id == movedFeedId,
+      );
+      if (movedIndex == -1) {
+        throw StateError('Cannot reorder feed that is not saved');
+      }
+
+      final updatedList = [...currentSavedFeeds];
+      final feed = updatedList.removeAt(movedIndex);
+      if (beforeFeedId == null) {
+        updatedList.add(feed);
+      } else {
+        final beforeIndex = updatedList.indexWhere(
+          (savedFeed) => savedFeed.id == beforeFeedId,
+        );
+        if (beforeIndex == -1) {
+          throw StateError('Cannot reorder before a feed that is not saved');
+        }
+        updatedList.insert(beforeIndex, feed);
+      }
+      return updatedList;
+    });
+    _setFeedsState(updatedFeeds);
+  }
+
+  /// Updates a feed's pinned state without removing and re-adding it.
+  Future<void> setFeedPinned(Feed feed, {required bool pinned}) async {
+    final updatedFeeds = await _updateSavedFeeds((currentSavedFeeds) {
+      return currentSavedFeeds
+          .map(
+            (savedFeed) => savedFeed.id == feed.config.id
+                ? savedFeed.copyWith(pinned: pinned)
+                : savedFeed,
+          )
+          .toList();
+    });
+    _setFeedsState(updatedFeeds);
   }
 
   /// Sets selected feed index and saves to local storage
@@ -826,7 +907,7 @@ class Settings extends _$Settings {
   Future<Feed> getActiveFeed() async {
     final preferences = await _getPreferences();
     final savedFeeds = _getSavedFeedsFromPreferences(preferences);
-    final feeds = await feedRepository.getFeedsFromSavedFeeds(savedFeeds);
+    final feeds = await _loadFeedsFromSavedFeeds(savedFeeds);
     return _getActiveFeedFromFeeds(feeds, savedFeeds);
   }
 

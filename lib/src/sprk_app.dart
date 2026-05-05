@@ -61,13 +61,11 @@ class _SprkAppState extends ConsumerState<SprkApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Force dark status bar and navigation bar
+    // Force dark status bar and navigation bar icons
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
         statusBarBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.black,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );

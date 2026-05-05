@@ -26,6 +26,14 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
   @override
   bool get wantKeepAlive => true;
 
+  void _showFeedUpdateError() {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.errorUpdatingFeeds)));
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -87,21 +95,22 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                     : newIndex;
 
                 try {
-                  // Get the actual indices in the full feeds list
                   final filteredFeeds = _getFilteredFeeds(settingsState);
-                  final actualOldIndex = settingsState.feeds.indexOf(
-                    filteredFeeds[oldIndex],
-                  );
-                  final actualNewIndex = adjustedNewIndex < filteredFeeds.length
-                      ? settingsState.feeds.indexOf(
-                          filteredFeeds[adjustedNewIndex],
-                        )
-                      : settingsState.feeds.length - 1;
+                  final reorderedFeeds = [...filteredFeeds];
+                  final movedFeed = reorderedFeeds.removeAt(oldIndex);
+                  final beforeFeedId = adjustedNewIndex < reorderedFeeds.length
+                      ? reorderedFeeds[adjustedNewIndex].config.id
+                      : null;
 
                   await ref
                       .read(settingsProvider.notifier)
-                      .reorderFeed(actualOldIndex, actualNewIndex);
-                } catch (_) {}
+                      .reorderFeed(
+                        movedFeedId: movedFeed.config.id,
+                        beforeFeedId: beforeFeedId,
+                      );
+                } catch (_) {
+                  _showFeedUpdateError();
+                }
               },
               proxyDecorator: (child, index, animation) {
                 return AnimatedBuilder(
@@ -162,42 +171,36 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .removeFeed(feed);
-                            } catch (_) {}
+                            } catch (_) {
+                              _showFeedUpdateError();
+                            }
                           }
                         : null,
                     onPin: _isEditMode
                         ? () async {
                             // Handle pin action
-                            if (!feed.config.pinned) {
-                              final updatedFeed = Feed(
-                                type: feed.type,
-                                config: feed.config.copyWith(pinned: true),
-                                view: feed.view,
-                              );
-                              await ref
-                                  .read(settingsProvider.notifier)
-                                  .removeFeed(feed);
-                              await ref
-                                  .read(settingsProvider.notifier)
-                                  .addFeed(updatedFeed);
+                            try {
+                              if (!feed.config.pinned) {
+                                await ref
+                                    .read(settingsProvider.notifier)
+                                    .setFeedPinned(feed, pinned: true);
+                              }
+                            } catch (_) {
+                              _showFeedUpdateError();
                             }
                           }
                         : null,
                     onUnpin: _isEditMode
                         ? () async {
                             // Handle unpin action
-                            if (feed.config.pinned) {
-                              final updatedFeed = Feed(
-                                type: feed.type,
-                                config: feed.config.copyWith(pinned: false),
-                                view: feed.view,
-                              );
-                              await ref
-                                  .read(settingsProvider.notifier)
-                                  .removeFeed(feed);
-                              await ref
-                                  .read(settingsProvider.notifier)
-                                  .addFeed(updatedFeed);
+                            try {
+                              if (feed.config.pinned) {
+                                await ref
+                                    .read(settingsProvider.notifier)
+                                    .setFeedPinned(feed, pinned: false);
+                              }
+                            } catch (_) {
+                              _showFeedUpdateError();
                             }
                           }
                         : null,
@@ -207,7 +210,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .likeFeed(feed);
-                            } catch (_) {}
+                            } catch (_) {
+                              _showFeedUpdateError();
+                            }
                           }
                         : null,
                     onUnlike: feed.view?.viewer?.like != null
@@ -216,8 +221,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                               await ref
                                   .read(settingsProvider.notifier)
                                   .unlikeFeed(feed);
-                            } catch (e) {
-                              // Error handling - snackbar removed
+                            } catch (_) {
+                              _showFeedUpdateError();
                             }
                           }
                         : null,

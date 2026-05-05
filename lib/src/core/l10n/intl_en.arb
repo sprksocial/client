@@ -247,6 +247,11 @@
     "description": "Error loading feed message"
   },
 
+  "errorUpdatingFeeds": "Could not update feeds. Try again.",
+  "@errorUpdatingFeeds": {
+    "description": "Error shown when the app cannot safely update saved feeds"
+  },
+
   "errorLoadingSound": "Error loading sound",
   "@errorLoadingSound": {
     "description": "Error loading sound message"

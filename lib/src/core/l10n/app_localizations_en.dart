@@ -159,6 +159,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorLoadingFeed => 'Error loading feed';
 
   @override
+  String get errorUpdatingFeeds => 'Could not update feeds. Try again.';
+
+  @override
   String get errorLoadingSound => 'Error loading sound';
 
   @override

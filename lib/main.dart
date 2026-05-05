@@ -20,7 +20,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Force dark status bar and navigation bar
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
 
   fvp.registerWith();

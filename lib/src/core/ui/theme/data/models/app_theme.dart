@@ -10,19 +10,15 @@ class AppTheme {
 
   /// System UI overlay style for dark mode
   static const SystemUiOverlayStyle darkSystemUiStyle = SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
     statusBarBrightness: Brightness.dark,
-    systemNavigationBarColor: Colors.black,
     systemNavigationBarIconBrightness: Brightness.light,
   );
 
   /// System UI overlay style for light mode
   static const SystemUiOverlayStyle lightSystemUiStyle = SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
     statusBarBrightness: Brightness.light,
-    systemNavigationBarColor: AppColors.background,
     systemNavigationBarIconBrightness: Brightness.dark,
   );
 

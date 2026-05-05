@@ -59,6 +59,7 @@ class UserPreferences extends _$UserPreferences {
     } catch (e, st) {
       _logger.e('Error refreshing preferences: $e');
       state = AsyncValue.error(e, st);
+      rethrow;
     }
   }
 

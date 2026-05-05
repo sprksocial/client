@@ -388,6 +388,12 @@ abstract class AppLocalizations {
   /// **'Error loading feed'**
   String get errorLoadingFeed;
 
+  /// Error shown when the app cannot safely update saved feeds
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update feeds. Try again.'**
+  String get errorUpdatingFeeds;
+
   /// Error loading sound message
   ///
   /// In en, this message translates to:
