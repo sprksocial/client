@@ -1,8 +1,7 @@
 import 'dart:typed_data';
-import 'package:atproto/com_atproto_moderation_createreport.dart';
-import 'package:atproto/com_atproto_repo_strongref.dart';
-import 'package:atproto/com_atproto_services.dart';
-import 'package:atproto/core.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
+import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
 
 /// Interface for Repository-related API endpoints
@@ -70,6 +69,6 @@ abstract class RepoRepository {
   /// Returns true if the report was successfully created
   Future<bool> createReport({
     required ModerationCreateReportInput input,
-    ModerationService? service,
+    dynamic service,
   });
 }

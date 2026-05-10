@@ -1,4 +1,4 @@
-import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 

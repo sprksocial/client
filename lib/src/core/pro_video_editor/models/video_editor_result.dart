@@ -1,4 +1,4 @@
-import 'package:atproto/com_atproto_repo_strongref.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
 

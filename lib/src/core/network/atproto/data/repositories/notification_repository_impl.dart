@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:atproto/core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';

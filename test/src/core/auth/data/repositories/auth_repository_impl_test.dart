@@ -877,42 +877,45 @@ void main() {
       },
     );
 
-    test('initiateOAuthWithService omits login_hint in AIP mode', () async {
-      final storage = _InMemoryStorage();
-      final client = MockClient((request) async {
-        switch (request.url.path) {
-          case '/.well-known/oauth-authorization-server':
-            return http.Response(
-              json.encode({
-                'authorization_endpoint':
-                    'https://auth.sprk.so/oauth/authorize',
-                'token_endpoint': 'https://auth.sprk.so/oauth/token',
-                'registration_endpoint':
-                    'https://auth.sprk.so/oauth/clients/register',
-              }),
-              200,
-            );
-          case '/oauth/clients/register':
-            return http.Response(json.encode({'client_id': 'client-1'}), 201);
-          default:
-            return http.Response('unexpected request', 500);
-        }
-      });
+    test(
+      'initiateOAuthWithoutLoginHint omits login_hint in AIP mode',
+      () async {
+        final storage = _InMemoryStorage();
+        final client = MockClient((request) async {
+          switch (request.url.path) {
+            case '/.well-known/oauth-authorization-server':
+              return http.Response(
+                json.encode({
+                  'authorization_endpoint':
+                      'https://auth.sprk.so/oauth/authorize',
+                  'token_endpoint': 'https://auth.sprk.so/oauth/token',
+                  'registration_endpoint':
+                      'https://auth.sprk.so/oauth/clients/register',
+                }),
+                200,
+              );
+            case '/oauth/clients/register':
+              return http.Response(json.encode({'client_id': 'client-1'}), 201);
+            default:
+              return http.Response('unexpected request', 500);
+          }
+        });
 
-      final repository = AuthRepositoryImpl(
-        secureStorage: storage,
-        httpClient: client,
-        logger: SparkLogger(name: 'AuthRepositoryTest'),
-      );
+        final repository = AuthRepositoryImpl(
+          secureStorage: storage,
+          httpClient: client,
+          logger: SparkLogger(name: 'AuthRepositoryTest'),
+        );
 
-      await repository.initializationComplete;
-      final authUrl = await repository.initiateOAuthWithService('pds.sprk.so');
+        await repository.initializationComplete;
+        final authUrl = await repository.initiateOAuthWithoutLoginHint();
 
-      expect(
-        Uri.parse(authUrl).queryParameters.containsKey('login_hint'),
-        isFalse,
-      );
-    });
+        expect(
+          Uri.parse(authUrl).queryParameters.containsKey('login_hint'),
+          isFalse,
+        );
+      },
+    );
   });
 }
 

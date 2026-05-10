@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:atproto/com_atproto_label_defs.dart';
-import 'package:atproto/core.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';

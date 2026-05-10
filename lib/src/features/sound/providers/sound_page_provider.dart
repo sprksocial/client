@@ -1,4 +1,4 @@
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';

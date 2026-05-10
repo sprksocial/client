@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/app/bsky/feed/search_posts.dart'
+    as bsky_feed_search_posts;
 
-import 'package:atproto_core/atproto_core.dart';
-import 'package:bluesky/app_bsky_feed_searchposts.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
@@ -106,11 +106,14 @@ class PostSearch extends _$PostSearch {
         return;
       }
 
-      final bskyApi = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
+      final bskyApi = PoptartClient.fromOAuthSession(atproto.oAuthSession!);
       final sprkSearch = _feedRepository.searchPosts(query);
-      final bskySearch = bskyApi.feed.searchPosts(
-        q: query,
-        sort: const FeedSearchPostsSort.unknown(data: 'top'),
+      final bskySearch = bskyApi.call(
+        bsky_feed_search_posts.appBskyFeedSearchPosts,
+        parameters: bsky_feed_search_posts.FeedSearchPostsInput(
+          q: query,
+          sort: bsky_feed_search_posts.FeedSearchPostsSort.unknown(data: 'top'),
+        ),
       );
 
       final results = await Future.wait([sprkSearch, bskySearch]);
@@ -123,7 +126,9 @@ class PostSearch extends _$PostSearch {
 
       final sprkResponse =
           results[0] as ({String? cursor, List<PostView> posts});
-      final bskyResponse = results[1] as XRPCResponse<FeedSearchPostsOutput>;
+      final bskyResponse =
+          results[1]
+              as XRPCResponse<bsky_feed_search_posts.FeedSearchPostsOutput>;
 
       final bskyPosts = bskyResponse.data.posts
           .asMap()
@@ -252,11 +257,16 @@ class PostSearch extends _$PostSearch {
       if (atproto == null || atproto.oAuthSession == null) {
         return;
       }
-      final bskyApi = bsky.Bluesky.fromOAuthSession(atproto.oAuthSession!);
-      final response = await bskyApi.feed.searchPosts(
-        q: query,
-        sort: const FeedSearchPostsSort.unknown(data: 'latest'),
-        cursor: bskyCursor,
+      final bskyApi = PoptartClient.fromOAuthSession(atproto.oAuthSession!);
+      final response = await bskyApi.call(
+        bsky_feed_search_posts.appBskyFeedSearchPosts,
+        parameters: bsky_feed_search_posts.FeedSearchPostsInput(
+          q: query,
+          sort: const bsky_feed_search_posts.FeedSearchPostsSort.unknown(
+            data: 'latest',
+          ),
+          cursor: bskyCursor,
+        ),
       );
 
       if (!ref.mounted ||

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:atproto/atproto.dart';
+import 'package:poptart/poptart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -193,7 +193,7 @@ class _FakeMessagesRepository implements MessagesRepository {
 
 class _FakeAuthRepository implements AuthRepository {
   @override
-  ATProto? get atproto => null;
+  PoptartClient? get atproto => null;
 
   @override
   String? get did => 'did:me';
@@ -224,7 +224,7 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<String> initiateOAuthWithService(String service) async {
+  Future<String> initiateOAuthWithoutLoginHint() async {
     throw UnimplementedError();
   }
 

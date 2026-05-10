@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 
 /// Authentication repository interface for AT Protocol using OAuth
@@ -22,7 +22,7 @@ abstract class AuthRepository {
   String? get pdsEndpoint;
 
   /// Gets the AT Protocol client
-  ATProto? get atproto;
+  PoptartClient? get atproto;
 
   /// Initiates the OAuth flow for the given handle
   ///
@@ -31,13 +31,10 @@ abstract class AuthRepository {
   /// Returns the authorization URL that the user should be redirected to
   Future<String> initiateOAuth(String handle);
 
-  /// Initiates the OAuth flow without a handle.
+  /// Initiates the OAuth flow without a login hint.
   ///
-  /// [service] is retained as a compatibility parameter and is ignored in
-  /// AIP-backed auth mode.
-  ///
-  /// Returns the authorization URL that the user should be redirected to
-  Future<String> initiateOAuthWithService(String service);
+  /// Returns the authorization URL that the user should be redirected to.
+  Future<String> initiateOAuthWithoutLoginHint();
 
   /// Completes the OAuth flow after receiving the callback
   ///

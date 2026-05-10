@@ -1,4 +1,4 @@
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'pref_models.freezed.dart';

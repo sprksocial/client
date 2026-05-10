@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:atproto/atproto.dart';
-import 'package:atproto_oauth/atproto_oauth.dart';
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/server/get_session.dart'
+    as server_get_session;
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
@@ -17,7 +18,7 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
 typedef AtprotoSessionFetcher =
-    Future<({String did, String handle})> Function(ATProto atproto);
+    Future<({String did, String handle})> Function(PoptartClient atproto);
 
 const String _redirectUriValue = 'sprk://oauth-callback';
 const String _clientName = 'Spark Mobile App';
@@ -67,7 +68,7 @@ class AuthRepositoryImpl implements AuthRepository {
   int _authGeneration = 0;
   AuthSnapshot? _snapshot;
   OAuthSession? _oauthSession;
-  ATProto? _atProto;
+  PoptartClient? _atProto;
   String? _did;
   String? _handle;
   String? _pdsEndpoint;
@@ -92,7 +93,7 @@ class AuthRepositoryImpl implements AuthRepository {
   String? get pdsEndpoint => _pdsEndpoint;
 
   @override
-  ATProto? get atproto => _atProto;
+  PoptartClient? get atproto => _atProto;
 
   Future<void> _initialize() async {
     try {
@@ -191,7 +192,7 @@ class AuthRepositoryImpl implements AuthRepository {
     _did = normalizedCache.did;
     _handle = normalizedCache.handle;
     _pdsEndpoint = normalizedCache.pdsEndpoint;
-    _atProto = ATProto.fromOAuthSession(
+    _atProto = PoptartClient.fromOAuthSession(
       _oauthSession!,
       service: Uri.parse(normalizedCache.pdsEndpoint).host,
     );
@@ -437,13 +438,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<String> initiateOAuthWithService(String service) async {
-    if (service.isNotEmpty) {
-      _logger.d(
-        'Ignoring initiateOAuthWithService service hint in AIP auth mode: $service',
-      );
-    }
-
+  Future<String> initiateOAuthWithoutLoginHint() async {
     return _startOAuthFlow();
   }
 
@@ -824,9 +819,11 @@ class AuthRepositoryImpl implements AuthRepository {
 }
 
 Future<({String did, String handle})> _defaultFetchSessionInfo(
-  ATProto atproto,
+  PoptartClient atproto,
 ) async {
-  final sessionResponse = await atproto.server.getSession();
+  final sessionResponse = await atproto.call(
+    server_get_session.comAtprotoServerGetSession,
+  );
   return (did: sessionResponse.data.did, handle: sessionResponse.data.handle);
 }
 

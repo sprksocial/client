@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:any_link_preview/any_link_preview.dart';
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';

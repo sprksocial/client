@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';

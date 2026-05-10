@@ -1,4 +1,4 @@
-import 'package:atproto/core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 
 /// Interface for Actor-related API endpoints

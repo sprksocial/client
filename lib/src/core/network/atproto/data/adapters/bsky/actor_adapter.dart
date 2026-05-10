@@ -1,4 +1,9 @@
-import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:poptart_lex/app/bsky/actor/get_profile.dart'
+    as bsky_actor_get_profile;
+import 'package:poptart_lex/app/bsky/actor/get_profiles.dart'
+    as bsky_actor_get_profiles;
+import 'package:poptart/poptart.dart';
+
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 /// Adapter for Bluesky actor models <-> Spark actor models
@@ -14,19 +19,25 @@ class BskyActorAdapter {
 
   /// Get a single profile from Bluesky and convert to Spark format
   Future<ProfileViewDetailed> getProfileFromBluesky(
-    bsky.Bluesky bluesky,
+    PoptartClient bluesky,
     String did,
   ) async {
-    final profile = await bluesky.actor.getProfile(actor: did);
+    final profile = await bluesky.call(
+      bsky_actor_get_profile.appBskyActorGetProfile,
+      parameters: bsky_actor_get_profile.ActorGetProfileInput(actor: did),
+    );
     return convertBskyProfileToSpark(profile.data.toJson());
   }
 
   /// Get multiple profiles from Bluesky and convert to Spark format
   Future<List<ProfileViewDetailed>> getProfilesFromBluesky(
-    bsky.Bluesky bluesky,
+    PoptartClient bluesky,
     List<String> dids,
   ) async {
-    final profiles = await bluesky.actor.getProfiles(actors: dids);
+    final profiles = await bluesky.call(
+      bsky_actor_get_profiles.appBskyActorGetProfiles,
+      parameters: bsky_actor_get_profiles.ActorGetProfilesInput(actors: dids),
+    );
     return profiles.data.profiles
         .map((p) => convertBskyProfileToSpark(p.toJson()))
         .toList();
@@ -59,7 +70,7 @@ class BskyActorAdapter {
 ///
 /// Use this instance for all actor/profile model conversions:
 /// ```dart
-/// final bluesky = Bluesky.fromSession(session);
+/// final bluesky = PoptartClient.fromOAuthSession(session);
 /// final profile = await bskyActorAdapter.getProfileFromBluesky(bluesky, did);
 /// ```
 const bskyActorAdapter = BskyActorAdapter();

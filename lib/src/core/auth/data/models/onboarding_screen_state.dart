@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:bluesky/app_bsky_actor_profile.dart';
+import 'package:poptart_lex/app/bsky/actor/profile.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'onboarding_screen_state.freezed.dart';

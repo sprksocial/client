@@ -1,4 +1,4 @@
-import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';

@@ -1,4 +1,4 @@
-import 'package:atproto/core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart'; // For PostView, Feed
 
 const int activeFeedPriority = 1;

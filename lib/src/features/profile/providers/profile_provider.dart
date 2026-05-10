@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:atproto/com_atproto_admin_defs.dart';
-import 'package:atproto/com_atproto_moderation_createreport.dart';
-import 'package:atproto/com_atproto_moderation_defs.dart';
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart_lex/com/atproto/admin/defs.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/moderation/defs.dart';
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';

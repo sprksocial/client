@@ -1,4 +1,4 @@
-import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

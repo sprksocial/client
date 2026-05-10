@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:poptart/poptart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'auth_state.freezed.dart';
@@ -11,7 +11,7 @@ abstract class AuthState with _$AuthState {
     String? did,
     String? handle,
     String? dmAccessToken,
-    ATProto? atproto,
+    PoptartClient? atproto,
     @Default(false) bool isLoading,
     String? error,
   }) = _AuthState;

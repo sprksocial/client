@@ -1,5 +1,5 @@
-import 'package:atproto/com_atproto_moderation_createreport.dart';
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

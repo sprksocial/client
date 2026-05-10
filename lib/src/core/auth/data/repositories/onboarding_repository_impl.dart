@@ -1,9 +1,13 @@
 import 'dart:typed_data';
+import 'package:poptart_lex/app/bsky/actor/get_profile.dart'
+    as bsky_actor_get_profile;
+import 'package:poptart_lex/app/bsky/graph/get_follows.dart'
+    as bsky_graph_get_follows;
+import 'package:poptart_lex/com/atproto/repo/get_record.dart'
+    as repo_get_record;
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/app/bsky/actor/profile.dart';
 
-import 'package:atproto/atproto.dart';
-import 'package:atproto/core.dart';
-import 'package:bluesky/app_bsky_actor_profile.dart';
-import 'package:bluesky/bluesky.dart' as bs;
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
@@ -26,7 +30,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   );
 
   String? get _did => _authRepository.did;
-  ATProto? get _atproto => _authRepository.atproto;
+  PoptartClient? get _atproto => _authRepository.atproto;
 
   @override
   Future<bool> hasSparkProfile() async {
@@ -68,10 +72,13 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       }
 
       final uri = AtUri.parse('at://$_did/app.bsky.actor.profile/self');
-      final response = await atproto.repo.getRecord(
-        repo: uri.hostname,
-        collection: uri.collection.toString(),
-        rkey: uri.rkey,
+      final response = await atproto.call(
+        repo_get_record.comAtprotoRepoGetRecord,
+        parameters: repo_get_record.RepoGetRecordInput(
+          repo: uri.hostname,
+          collection: uri.collection.toString(),
+          rkey: uri.rkey,
+        ),
       );
 
       return ActorProfileRecord.fromJson(response.data.value);
@@ -100,8 +107,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
         return null;
       }
 
-      final bluesky = bs.Bluesky.fromOAuthSession(oauthSession);
-      final profile = await bluesky.actor.getProfile(actor: _did!);
+      final bluesky = PoptartClient.fromOAuthSession(oauthSession);
+      final profile = await bluesky.call(
+        bsky_actor_get_profile.appBskyActorGetProfile,
+        parameters: bsky_actor_get_profile.ActorGetProfileInput(actor: _did!),
+      );
 
       return profile.data.avatar;
     } catch (e, s) {
@@ -167,15 +177,18 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       throw Exception('Not authenticated');
     }
 
-    // Use the ATProto client's OAuth session if available, otherwise anonymous
+    // Use the PoptartClient client's OAuth session if available, otherwise anonymous
     final bsky = _atproto!.oAuthSession != null
-        ? bs.Bluesky.fromOAuthSession(_atproto!.oAuthSession!)
-        : bs.Bluesky.anonymous();
+        ? PoptartClient.fromOAuthSession(_atproto!.oAuthSession!)
+        : PoptartClient.anonymous();
 
-    final response = await bsky.graph.getFollows(
-      actor: _did!,
-      limit: 100,
-      cursor: cursor,
+    final response = await bsky.call(
+      bsky_graph_get_follows.appBskyGraphGetFollows,
+      parameters: bsky_graph_get_follows.GraphGetFollowsInput(
+        actor: _did!,
+        limit: 100,
+        cursor: cursor,
+      ),
     );
 
     // Convert raw data to our structured model

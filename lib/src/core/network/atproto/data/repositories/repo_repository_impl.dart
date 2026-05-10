@@ -1,9 +1,19 @@
 import 'dart:typed_data';
-
-import 'package:atproto/com_atproto_moderation_createreport.dart';
-import 'package:atproto/com_atproto_repo_strongref.dart';
-import 'package:atproto/com_atproto_services.dart';
-import 'package:atproto/core.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/repo/create_record.dart'
+    as repo_create_record;
+import 'package:poptart_lex/com/atproto/repo/delete_record.dart'
+    as repo_delete_record;
+import 'package:poptart_lex/com/atproto/repo/get_record.dart'
+    as repo_get_record;
+import 'package:poptart_lex/com/atproto/repo/list_records.dart'
+    as repo_list_records;
+import 'package:poptart_lex/com/atproto/repo/put_record.dart'
+    as repo_put_record;
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
+import 'package:poptart_lex/com/atproto/repo/upload_blob.dart'
+    as repo_upload_blob;
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/repo_adapter.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
@@ -35,10 +45,13 @@ class RepoRepositoryImpl implements RepoRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      final result = await atproto.repo.getRecord(
-        repo: uri.hostname,
-        collection: uri.collection.toString(),
-        rkey: uri.rkey,
+      final result = await atproto.call(
+        repo_get_record.comAtprotoRepoGetRecord,
+        parameters: repo_get_record.RepoGetRecordInput(
+          repo: uri.hostname,
+          collection: uri.collection.toString(),
+          rkey: uri.rkey,
+        ),
       );
       _logger.d('Record retrieved successfully');
       return (
@@ -67,11 +80,14 @@ class RepoRepositoryImpl implements RepoRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      final result = await atproto.repo.putRecord(
-        repo: uri.hostname,
-        collection: uri.collection.toString(),
-        rkey: uri.rkey,
-        record: record.toJson(),
+      final result = await atproto.call(
+        repo_put_record.comAtprotoRepoPutRecord,
+        input: repo_put_record.RepoPutRecordInput(
+          repo: uri.hostname,
+          collection: uri.collection.toString(),
+          rkey: uri.rkey,
+          record: record.toJson(),
+        ),
       );
       _logger.d('Record edited successfully');
       return RepoStrongRef(uri: result.data.uri, cid: result.data.cid);
@@ -100,11 +116,14 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('User session DID not available');
       }
 
-      final result = await atproto.repo.createRecord(
-        repo: repoDid,
-        collection: collection,
-        record: record,
-        rkey: rkey,
+      final result = await atproto.call(
+        repo_create_record.comAtprotoRepoCreateRecord,
+        input: repo_create_record.RepoCreateRecordInput(
+          repo: repoDid,
+          collection: collection,
+          record: record,
+          rkey: rkey,
+        ),
       );
       _logger.d('Record created successfully');
       return RepoStrongRef(uri: result.data.uri, cid: result.data.cid);
@@ -124,10 +143,13 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      await atproto.repo.deleteRecord(
-        repo: uri.hostname,
-        collection: uri.collection.toString(),
-        rkey: uri.rkey,
+      await atproto.call(
+        repo_delete_record.comAtprotoRepoDeleteRecord,
+        input: repo_delete_record.RepoDeleteRecordInput(
+          repo: uri.hostname,
+          collection: uri.collection.toString(),
+          rkey: uri.rkey,
+        ),
       );
       _logger.d('Record deleted successfully');
 
@@ -136,11 +158,20 @@ class RepoRepositoryImpl implements RepoRepository {
         final blueskyUri = bskyRepoAdapter.buildBlueskyCounterpartUri(uri);
         _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
 
-        final deleted = await bskyRepoAdapter.deleteBlueskyCounterpart(
-          ({required repo, required collection, required rkey}) => atproto.repo
-              .deleteRecord(repo: repo, collection: collection, rkey: rkey),
-          uri,
-        );
+        final deleted = await bskyRepoAdapter.deleteBlueskyCounterpart(({
+          required repo,
+          required collection,
+          required rkey,
+        }) async {
+          await atproto.call(
+            repo_delete_record.comAtprotoRepoDeleteRecord,
+            input: repo_delete_record.RepoDeleteRecordInput(
+              repo: repo,
+              collection: collection,
+              rkey: rkey,
+            ),
+          );
+        }, uri);
 
         if (deleted) {
           _logger.d('Bluesky counterpart post deleted successfully');
@@ -166,7 +197,11 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.repo.uploadBlob(bytes: data);
+      final result = await atproto.post(
+        repo_upload_blob.comAtprotoRepoUploadBlob.nsid,
+        body: data,
+        to: const repo_upload_blob.RepoUploadBlobOutputConverter().fromJson,
+      );
       _logger.d('Blob uploaded successfully');
 
       return result.data.blob;
@@ -194,12 +229,15 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.repo.listRecords(
-        repo: repo,
-        collection: collection,
-        cursor: cursor,
-        limit: limit,
-        reverse: reverse,
+      final result = await atproto.call(
+        repo_list_records.comAtprotoRepoListRecords,
+        parameters: repo_list_records.RepoListRecordsInput(
+          repo: repo,
+          collection: collection,
+          cursor: cursor,
+          limit: limit ?? 50,
+          reverse: reverse ?? false,
+        ),
       );
 
       _logger.d('Records listed successfully');
@@ -215,7 +253,7 @@ class RepoRepositoryImpl implements RepoRepository {
   @override
   Future<bool> createReport({
     required ModerationCreateReportInput input,
-    ModerationService? service,
+    dynamic service,
   }) async {
     _logger.i('Creating moderation report for reason: ${input.reasonType}');
 

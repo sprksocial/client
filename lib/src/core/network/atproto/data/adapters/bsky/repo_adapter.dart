@@ -1,4 +1,4 @@
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart/poptart.dart';
 
 /// Callback type for deleting a record
 typedef DeleteRecordCallback =

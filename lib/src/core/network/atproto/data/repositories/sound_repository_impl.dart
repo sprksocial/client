@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:atproto/com_atproto_repo_strongref.dart';
-import 'package:atproto/core.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';

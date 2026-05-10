@@ -1,8 +1,8 @@
-import 'package:atproto/com_atproto_moderation_createreport.dart';
-import 'package:atproto/com_atproto_moderation_defs.dart';
-import 'package:atproto/core.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/moderation/defs.dart';
+import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:bluesky/com_atproto_repo_strongref.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';

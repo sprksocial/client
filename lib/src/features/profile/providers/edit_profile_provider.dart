@@ -1,6 +1,9 @@
 import 'dart:typed_data';
-
-import 'package:atproto/core.dart';
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/repo/get_record.dart'
+    as repo_get_record;
+import 'package:poptart_lex/com/atproto/repo/upload_blob.dart'
+    as repo_upload_blob;
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -79,8 +82,10 @@ class EditProfile extends _$EditProfile {
 
       if (state.localAvatar is Uint8List) {
         // A new avatar image was picked, upload it as a blob.
-        final respBlob = await atprotoClient.repo.uploadBlob(
-          bytes: state.localAvatar as Uint8List,
+        final respBlob = await atprotoClient.post(
+          repo_upload_blob.comAtprotoRepoUploadBlob.nsid,
+          body: state.localAvatar as Uint8List,
+          to: const repo_upload_blob.RepoUploadBlobOutputConverter().fromJson,
         );
         if (respBlob.status.code != 200) {
           throw Exception('Failed to upload avatar blob');
@@ -99,10 +104,13 @@ class EditProfile extends _$EditProfile {
         final uri = AtUri.parse(
           'at://${state.profile.did}/so.sprk.actor.profile/self',
         );
-        final recRes = await atprotoClient.repo.getRecord(
-          collection: uri.collection.toString(),
-          repo: uri.hostname,
-          rkey: uri.rkey,
+        final recRes = await atprotoClient.call(
+          repo_get_record.comAtprotoRepoGetRecord,
+          parameters: repo_get_record.RepoGetRecordInput(
+            repo: uri.hostname,
+            collection: uri.collection.toString(),
+            rkey: uri.rkey,
+          ),
         );
         final recordData = recRes.data.value;
 

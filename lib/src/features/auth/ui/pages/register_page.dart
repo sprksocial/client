@@ -30,7 +30,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     try {
       // Start the AIP OAuth flow without a login hint for account creation.
-      final authUrl = await authNotifier.initiateOAuthWithService('');
+      final authUrl = await authNotifier.initiateOAuthWithoutLoginHint();
 
       if (!mounted) return;
 

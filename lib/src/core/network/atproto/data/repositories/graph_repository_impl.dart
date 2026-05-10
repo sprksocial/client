@@ -1,6 +1,7 @@
 import 'dart:convert';
-
-import 'package:atproto/core.dart';
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/repo/list_records.dart'
+    as repo_list_records;
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
@@ -159,9 +160,12 @@ class GraphRepositoryImpl implements GraphRepository {
 
       try {
         _logger.d('Checking if already following user: $did');
-        final existingFollows = await atproto.repo.listRecords(
-          repo: sessionDid,
-          collection: collection,
+        final existingFollows = await atproto.call(
+          repo_list_records.comAtprotoRepoListRecords,
+          parameters: repo_list_records.RepoListRecordsInput(
+            repo: sessionDid,
+            collection: collection,
+          ),
         );
 
         final isAlreadyFollowing = existingFollows.data.records.any(
@@ -294,9 +298,12 @@ class GraphRepositoryImpl implements GraphRepository {
 
       try {
         _logger.d('Checking if already blocking user: $did');
-        final existingBlocks = await atproto.repo.listRecords(
-          repo: sessionDid,
-          collection: collection,
+        final existingBlocks = await atproto.call(
+          repo_list_records.comAtprotoRepoListRecords,
+          parameters: repo_list_records.RepoListRecordsInput(
+            repo: sessionDid,
+            collection: collection,
+          ),
         );
 
         final isAlreadyBlocking = existingBlocks.data.records.any(

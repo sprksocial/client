@@ -89,40 +89,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.1"
-  at_primitives:
-    dependency: transitive
-    description:
-      name: at_primitives
-      sha256: "016ffaa419b01befe6f5c6869c84d570060a5388655354a25668dbb1ad8ade3f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
-  atproto:
-    dependency: "direct main"
-    description:
-      name: atproto
-      sha256: "115944b8e4859bdaa0fe0d5162725ddf80269f14e79a33ab7ee05db972932ef9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.1"
-  atproto_core:
-    dependency: "direct main"
-    description:
-      path: "packages/atproto_core"
-      ref: oauth-client-id
-      resolved-ref: aafa5dfb0c67c4e7cbe2ea286500bf5891a9bfe6
-      url: "https://github.com/knotbin/atproto.dart.git"
-    source: git
-    version: "1.2.0"
-  atproto_oauth:
-    dependency: "direct main"
-    description:
-      path: "packages/atproto_oauth"
-      ref: oauth-client-id
-      resolved-ref: aafa5dfb0c67c4e7cbe2ea286500bf5891a9bfe6
-      url: "https://github.com/knotbin/atproto.dart.git"
-    source: git
-    version: "0.2.0"
   audio_waveforms:
     dependency: "direct main"
     description:
@@ -219,14 +185,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.5"
-  bluesky:
-    dependency: "direct main"
-    description:
-      name: bluesky
-      sha256: "21539161860842fde4f03094d2e3f117624808b606c6a6f5905bf1238683dc4f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.4.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -1119,14 +1077,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.6.4"
-  multiformats:
-    dependency: transitive
-    description:
-      name: multiformats
-      sha256: a6e85f37aa228e82b5644fc68d28f76622fe894d9191ebd1f994296325a89482
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   nanoid:
     dependency: transitive
     description:
@@ -1319,6 +1269,62 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.2"
+  poptart:
+    dependency: "direct main"
+    description:
+      name: poptart
+      sha256: "5631a6e4a1ffa25101db2aa76b82e2410941fa5fec4d4c18ea2c2c7d95b70f0b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  poptart_core:
+    dependency: transitive
+    description:
+      name: poptart_core
+      sha256: "4401f47c4e7f6d1f5142a207aa7e543408f83c43b5aaabdf6d4f60ef8f00ad84"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  poptart_lex:
+    dependency: "direct main"
+    description:
+      name: poptart_lex
+      sha256: d26ad7869e03cb70a724cac0b7f1b07eddc3cd7f36151b59e0fad3678017976f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  poptart_multiformats:
+    dependency: transitive
+    description:
+      name: poptart_multiformats
+      sha256: "37931daf50f600656942ee4bbe72727980de92d4d2b902a641486b00c75cd1ae"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  poptart_oauth:
+    dependency: transitive
+    description:
+      name: poptart_oauth
+      sha256: e268a6947833aab9368dfd67069888962fdea91a0158609b1680faee95e4f8f0
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  poptart_primitives:
+    dependency: transitive
+    description:
+      name: poptart_primitives
+      sha256: "3bb32c3269964a7c40b2e7b185b9dcbb2f7e297b78cfbe27fae141474476dd27"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
+  poptart_xrpc:
+    dependency: transitive
+    description:
+      name: poptart_xrpc
+      sha256: b54f94fab23d21666ce88a442f22c146f7ec6b4ba54ccd8857063e60cfb62d0a
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   posix:
     dependency: transitive
     description:
@@ -1980,14 +1986,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.6.1"
-  xrpc:
-    dependency: transitive
-    description:
-      name: xrpc
-      sha256: ccaaf5224d1037a196bdfd03059027961bed3980718c9ce956be39d6bce152df
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.3"
   xxh3:
     dependency: transitive
     description:

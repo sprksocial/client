@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:atproto/core.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/repo/put_record.dart'
+    as repo_put_record;
+
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:spark/src/core/config/app_config.dart';
@@ -46,7 +48,7 @@ class ActorRepositoryImpl implements ActorRepository {
         if (oauthSession == null) {
           throw Exception('No OAuth session available');
         }
-        final blueskyClient = bsky.Bluesky.fromOAuthSession(oauthSession);
+        final blueskyClient = PoptartClient.fromOAuthSession(oauthSession);
         final profile = await bskyActorAdapter.getProfileFromBluesky(
           blueskyClient,
           did,
@@ -207,11 +209,14 @@ class ActorRepositoryImpl implements ActorRepository {
       throw Exception('User DID not available');
     }
 
-    await atproto.repo.putRecord(
-      repo: did,
-      collection: 'so.sprk.actor.profile',
-      rkey: 'self',
-      record: record.toJson(),
+    await atproto.call(
+      repo_put_record.comAtprotoRepoPutRecord,
+      input: repo_put_record.RepoPutRecordInput(
+        repo: did,
+        collection: 'so.sprk.actor.profile',
+        rkey: 'self',
+        record: record.toJson(),
+      ),
     );
   }
 
@@ -271,7 +276,7 @@ class ActorRepositoryImpl implements ActorRepository {
         if (oauthSession == null) {
           throw Exception('No OAuth session available');
         }
-        final blueskyClient = bsky.Bluesky.fromOAuthSession(oauthSession);
+        final blueskyClient = PoptartClient.fromOAuthSession(oauthSession);
         final profiles = await bskyActorAdapter.getProfilesFromBluesky(
           blueskyClient,
           dids,

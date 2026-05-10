@@ -1,6 +1,6 @@
-import 'package:atproto/com_atproto_label_defs.dart';
-import 'package:atproto/com_atproto_repo_strongref.dart';
-import 'package:atproto/core.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
+import 'package:poptart/poptart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 

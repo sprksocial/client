@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:atproto/atproto.dart';
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
@@ -90,17 +90,14 @@ class Auth extends _$Auth {
     }
   }
 
-  /// Initiates the OAuth flow without a handle.
+  /// Initiates the OAuth flow without a login hint.
   ///
-  /// [service] is retained as a compatibility parameter and is ignored in
-  /// AIP-backed auth mode.
-  ///
-  /// Returns the authorization URL that the user should be redirected to
-  Future<String> initiateOAuthWithService(String service) async {
+  /// Returns the authorization URL that the user should be redirected to.
+  Future<String> initiateOAuthWithoutLoginHint() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final authUrl = await _authRepository.initiateOAuthWithService(service);
+      final authUrl = await _authRepository.initiateOAuthWithoutLoginHint();
       // Don't set isLoading to false here - we're waiting for the callback
       return authUrl;
     } catch (e, stackTrace) {
@@ -351,9 +348,9 @@ String? currentHandle(Ref ref) {
   return authState.handle;
 }
 
-/// Convenience provider for accessing the ATProto client
+/// Convenience provider for accessing the Poptart client
 @riverpod
-ATProto? atproto(Ref ref) {
+PoptartClient? atproto(Ref ref) {
   final authState = ref.watch(authProvider);
   return authState.atproto;
 }

@@ -4,13 +4,21 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:atproto/com_atproto_label_defs.dart';
-import 'package:atproto/com_atproto_repo_strongref.dart';
-import 'package:atproto/atproto.dart';
-import 'package:atproto/core.dart';
-import 'package:bluesky/app_bsky_feed_getauthorfeed.dart';
-import 'package:bluesky/app_bsky_richtext_facet.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:poptart_lex/app/bsky/feed/get_author_feed.dart'
+    as bsky_feed_get_author_feed;
+import 'package:poptart_lex/app/bsky/feed/get_posts.dart'
+    as bsky_feed_get_posts;
+import 'package:poptart_lex/app/bsky/feed/get_post_thread.dart'
+    as bsky_feed_get_post_thread;
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
+import 'package:poptart_lex/com/atproto/repo/upload_blob.dart'
+    as repo_upload_blob;
+import 'package:poptart_lex/com/atproto/server/get_service_auth.dart'
+    as server_get_service_auth;
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/app/bsky/richtext/facet.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
@@ -167,8 +175,11 @@ class FeedRepositoryImpl implements FeedRepository {
       if (oauthSession == null) {
         throw Exception('No OAuth session available');
       }
-      final blueskyClient = bsky.Bluesky.fromOAuthSession(oauthSession);
-      final posts = await blueskyClient.feed.getPosts(uris: uris);
+      final blueskyClient = PoptartClient.fromOAuthSession(oauthSession);
+      final posts = await blueskyClient.call(
+        bsky_feed_get_posts.appBskyFeedGetPosts,
+        parameters: bsky_feed_get_posts.FeedGetPostsInput(uris: uris),
+      );
 
       // Use adapter to process Bluesky posts
       return bskyFeedAdapter.processBskyPosts(
@@ -342,14 +353,17 @@ class FeedRepositoryImpl implements FeedRepository {
         if (oauthSession == null) {
           throw Exception('No OAuth session available');
         }
-        final resultBsky = await bsky.Bluesky.fromOAuthSession(oauthSession)
-            .feed
-            .getAuthorFeed(
-              actor: actorUri.hostname,
-              limit: limit,
-              cursor: cursor,
-              filter: FeedGetAuthorFeedFilter.valueOf(
-                videosOnly ? 'posts_with_video' : 'posts_with_media',
+        final resultBsky = await PoptartClient.fromOAuthSession(oauthSession)
+            .call(
+              bsky_feed_get_author_feed.appBskyFeedGetAuthorFeed,
+              parameters: bsky_feed_get_author_feed.FeedGetAuthorFeedInput(
+                actor: actorUri.hostname,
+                limit: limit,
+                cursor: cursor,
+                filter:
+                    bsky_feed_get_author_feed.FeedGetAuthorFeedFilter.valueOf(
+                      videosOnly ? 'posts_with_video' : 'posts_with_media',
+                    ),
               ),
             );
 
@@ -1089,8 +1103,11 @@ class FeedRepositoryImpl implements FeedRepository {
             _logger.e('AtProto not initialized');
             throw Exception('AtProto not initialized');
           case final atproto:
-            final response = await atproto.repo.uploadBlob(
-              bytes: processedBytes,
+            final response = await atproto.post(
+              repo_upload_blob.comAtprotoRepoUploadBlob.nsid,
+              body: processedBytes,
+              to: const repo_upload_blob.RepoUploadBlobOutputConverter()
+                  .fromJson,
             );
 
             switch (response.status.code) {
@@ -1510,16 +1527,19 @@ class FeedRepositoryImpl implements FeedRepository {
     }
   }
 
-  Future<String> _requestVideoServiceAuthToken(ATProto atproto) async {
-    final serviceTokenRes = await atproto.server.getServiceAuth(
-      aud: 'did:web:${atproto.service}',
-      lxm: 'com.atproto.repo.uploadBlob',
-      exp:
-          DateTime.now()
-              .toUtc()
-              .add(const Duration(minutes: 5))
-              .millisecondsSinceEpoch ~/
-          1000,
+  Future<String> _requestVideoServiceAuthToken(PoptartClient atproto) async {
+    final serviceTokenRes = await atproto.call(
+      server_get_service_auth.comAtprotoServerGetServiceAuth,
+      parameters: server_get_service_auth.ServerGetServiceAuthInput(
+        aud: 'did:web:${atproto.service}',
+        lxm: 'com.atproto.repo.uploadBlob',
+        exp:
+            DateTime.now()
+                .toUtc()
+                .add(const Duration(minutes: 5))
+                .millisecondsSinceEpoch ~/
+            1000,
+      ),
     );
 
     return serviceTokenRes.data.token;
@@ -1678,11 +1698,14 @@ class FeedRepositoryImpl implements FeedRepository {
         if (oauthSession == null) {
           throw Exception('No OAuth session available');
         }
-        final bluesky = bsky.Bluesky.fromOAuthSession(oauthSession);
-        final response = await bluesky.feed.getPostThread(
-          uri: uri,
-          depth: depth,
-          parentHeight: parentHeight,
+        final bluesky = PoptartClient.fromOAuthSession(oauthSession);
+        final response = await bluesky.call(
+          bsky_feed_get_post_thread.appBskyFeedGetPostThread,
+          parameters: bsky_feed_get_post_thread.FeedGetPostThreadInput(
+            uri: uri,
+            depth: depth,
+            parentHeight: parentHeight,
+          ),
         );
         // Use adapter to convert Bluesky thread to Spark thread
         return bskyFeedAdapter.convertBskyThreadToSparkThread(

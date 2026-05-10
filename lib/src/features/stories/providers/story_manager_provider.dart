@@ -1,4 +1,6 @@
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/repo/list_records.dart'
+    as repo_list_records;
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -65,11 +67,14 @@ class StoryManager extends _$StoryManager {
       String? cursor;
       final uris = <AtUri>[];
       do {
-        final result = await atproto.repo.listRecords(
-          repo: did,
-          collection: collection,
-          cursor: cursor,
-          limit: 100,
+        final result = await atproto.call(
+          repo_list_records.comAtprotoRepoListRecords,
+          parameters: repo_list_records.RepoListRecordsInput(
+            repo: did,
+            collection: collection,
+            cursor: cursor,
+            limit: 100,
+          ),
         );
         for (final record in result.data.records) {
           uris.add(record.uri);

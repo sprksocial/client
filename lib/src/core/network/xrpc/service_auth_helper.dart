@@ -1,4 +1,6 @@
 import 'package:get_it/get_it.dart';
+import 'package:poptart_lex/com/atproto/server/get_service_auth.dart'
+    as server_get_service_auth;
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -47,7 +49,9 @@ class ServiceAuthHelper {
     try {
       final atproto = _authRepository.atproto;
       if (atproto == null) {
-        throw Exception('Not authenticated - ATProto client not available');
+        throw Exception(
+          'Not authenticated - PoptartClient client not available',
+        );
       }
 
       // Calculate expiration (60 seconds from now)
@@ -58,10 +62,13 @@ class ServiceAuthHelper {
           1000;
 
       // Use official atproto API to request service auth
-      final res = await atproto.server.getServiceAuth(
-        aud: serviceDid,
-        lxm: nsid,
-        exp: exp,
+      final res = await atproto.call(
+        server_get_service_auth.comAtprotoServerGetServiceAuth,
+        parameters: server_get_service_auth.ServerGetServiceAuthInput(
+          aud: serviceDid,
+          lxm: nsid,
+          exp: exp,
+        ),
       );
 
       final token = res.data.token;

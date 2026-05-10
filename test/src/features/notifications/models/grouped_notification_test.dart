@@ -1,4 +1,4 @@
-import 'package:atproto_core/atproto_core.dart';
+import 'package:poptart/poptart.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart';

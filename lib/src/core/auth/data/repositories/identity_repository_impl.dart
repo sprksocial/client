@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:atproto/atproto.dart';
+import 'package:poptart_lex/com/atproto/identity/resolve_handle.dart'
+    as identity_resolve_handle;
+import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
@@ -243,9 +245,14 @@ class IdentityRepositoryImpl implements IdentityRepository {
   }
 
   Future<String?> _fetchAndCacheDid(String handle) async {
-    final atProto = ATProto.anonymous(service: 'public.api.bsky.app');
+    final atProto = PoptartClient.anonymous(service: 'public.api.bsky.app');
 
-    final resolveResult = await atProto.identity.resolveHandle(handle: handle);
+    final resolveResult = await atProto.call(
+      identity_resolve_handle.comAtprotoIdentityResolveHandle,
+      parameters: identity_resolve_handle.IdentityResolveHandleInput(
+        handle: handle,
+      ),
+    );
     final did = resolveResult.data.did;
 
     _handleToDidCache[handle] = did;

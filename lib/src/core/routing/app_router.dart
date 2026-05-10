@@ -1,4 +1,4 @@
-import 'package:atproto/com_atproto_repo_strongref.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';

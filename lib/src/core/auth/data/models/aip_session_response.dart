@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:atproto_core/atproto_core.dart' show restoreOAuthSession;
-import 'package:atproto_oauth/atproto_oauth.dart';
+import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/auth/data/models/auth_snapshot.dart';
 
 class AipAtprotocolSessionResponse {
