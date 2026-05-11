@@ -84,6 +84,18 @@ abstract class TrendingAudiosResponse with _$TrendingAudiosResponse {
       _$TrendingAudiosResponseFromJson(json);
 }
 
+@freezed
+abstract class SearchAudiosResponse with _$SearchAudiosResponse {
+  @JsonSerializable(explicitToJson: true)
+  const factory SearchAudiosResponse({
+    required List<AudioView> audios,
+    String? cursor,
+  }) = _SearchAudiosResponse;
+
+  factory SearchAudiosResponse.fromJson(Map<String, dynamic> json) =>
+      _$SearchAudiosResponseFromJson(json);
+}
+
 class VideoUploadResult {
   VideoUploadResult({
     required this.videoBlob,

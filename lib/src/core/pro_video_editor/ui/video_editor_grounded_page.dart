@@ -603,7 +603,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
         expand: false,
         builder: (context, scrollController) => AudioSelectionBottomSheet(
           configs: _configs,
-          audioTracks: _audioTracks,
           videoDuration: _videoMetadata.duration,
           initialSelectedTrack: _proVideoController?.audioTrack,
           onTrackSelected: (track) {

@@ -165,6 +165,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorLoadingSound => 'Error loading sound';
 
   @override
+  String get errorSearchingSounds => 'Error searching sounds';
+
+  @override
   String get errorLoadingReposts => 'Error loading reposts';
 
   @override
@@ -439,6 +442,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyNoSoundsAvailable => 'No sounds available';
 
   @override
+  String get emptyNoSoundSearchResults => 'No sounds found';
+
+  @override
   String get emptyNoPhotoLibrary =>
       'No photos or videos found in your library.';
 
@@ -550,6 +556,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get titleSelectSound => 'Select sound';
+
+  @override
+  String get hintSearchSounds => 'Search sounds';
 
   @override
   String get labelStickers => 'Stickers';

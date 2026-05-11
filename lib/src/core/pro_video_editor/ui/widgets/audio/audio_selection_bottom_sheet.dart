@@ -13,7 +13,6 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   /// Creates an [AudioSelectionBottomSheet].
   const AudioSelectionBottomSheet({
     required this.configs,
-    required this.audioTracks,
     required this.videoDuration,
     required this.onTrackSelected,
     required this.onBalanceChanged,
@@ -27,9 +26,6 @@ class AudioSelectionBottomSheet extends StatefulWidget {
 
   /// Configuration settings for the editor.
   final ProImageEditorConfigs configs;
-
-  /// Available audio tracks to choose from.
-  final List<AudioTrack> audioTracks;
 
   /// Total duration of the video.
   final Duration videoDuration;
@@ -167,7 +163,6 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
                   : AudioTrackListSection(
                       key: const ValueKey('track_list'),
                       configs: widget.configs,
-                      audioTracks: widget.audioTracks,
                       videoDuration: widget.videoDuration,
                       selectedTrack: _selectedTrack,
                       onTrackSelected: _handleTrackSelection,

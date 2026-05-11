@@ -34,4 +34,15 @@ abstract class SoundRepository {
     int limit = 50,
     String? cursor,
   });
+
+  /// Search audio records by title, artist, and metadata.
+  ///
+  /// [query] Search text.
+  /// [limit] The number of items to return (default 25, max 100).
+  /// [cursor] Pagination cursor for the next set of results.
+  Future<SearchAudiosResponse> searchAudios(
+    String query, {
+    int limit = 25,
+    String? cursor,
+  });
 }

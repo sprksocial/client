@@ -400,6 +400,12 @@ abstract class AppLocalizations {
   /// **'Error loading sound'**
   String get errorLoadingSound;
 
+  /// Error message for sound picker search
+  ///
+  /// In en, this message translates to:
+  /// **'Error searching sounds'**
+  String get errorSearchingSounds;
+
   /// Error loading reposts message
   ///
   /// In en, this message translates to:
@@ -910,6 +916,12 @@ abstract class AppLocalizations {
   /// **'No sounds available'**
   String get emptyNoSoundsAvailable;
 
+  /// Empty state for sound picker search results
+  ///
+  /// In en, this message translates to:
+  /// **'No sounds found'**
+  String get emptyNoSoundSearchResults;
+
   /// Empty state for no photos in library
   ///
   /// In en, this message translates to:
@@ -1113,6 +1125,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select sound'**
   String get titleSelectSound;
+
+  /// Placeholder for sound picker search input
+  ///
+  /// In en, this message translates to:
+  /// **'Search sounds'**
+  String get hintSearchSounds;
 
   /// Stickers label
   ///

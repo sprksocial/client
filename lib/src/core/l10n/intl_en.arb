@@ -257,6 +257,11 @@
     "description": "Error loading sound message"
   },
 
+  "errorSearchingSounds": "Error searching sounds",
+  "@errorSearchingSounds": {
+    "description": "Error message for sound picker search"
+  },
+
   "errorLoadingReposts": "Error loading reposts",
   "@errorLoadingReposts": {
     "description": "Error loading reposts message"
@@ -717,6 +722,11 @@
     "description": "Empty state for no selectable sounds"
   },
 
+  "emptyNoSoundSearchResults": "No sounds found",
+  "@emptyNoSoundSearchResults": {
+    "description": "Empty state for sound picker search results"
+  },
+
   "emptyNoPhotoLibrary": "No photos or videos found in your library.",
   "@emptyNoPhotoLibrary": {
     "description": "Empty state for no photos in library"
@@ -900,6 +910,11 @@
   "titleSelectSound": "Select sound",
   "@titleSelectSound": {
     "description": "Title for the recorder sound picker"
+  },
+
+  "hintSearchSounds": "Search sounds",
+  "@hintSearchSounds": {
+    "description": "Placeholder for sound picker search input"
   },
 
   "labelStickers": "Stickers",
