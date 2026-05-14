@@ -308,7 +308,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
   /// Extracts waveform data from a custom audio track.
   Future<void> _extractCustomAudioWaveform(AudioTrack track) async {
-    final waveformData = await _waveformExtractor.extractFromAudio(track.audio);
+    final waveformData = await _waveformExtractor.extractFromAudio(
+      track.audio,
+      preferredExtension: decodeSoundTrackAudioFileExtension(track.id),
+    );
     final authorAvatar = _decodeAuthorAvatar(track.id);
     if (mounted) {
       _videoTimelineState.setCustomAudio(
@@ -649,7 +652,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     unawaited(_videoController.pause());
     unawaited(_audioService.pause());
 
-    final customAudioTrack = parameters.customAudioTrack;
+    final customAudioTrack = parameters.audioTracks.isEmpty
+        ? null
+        : parameters.audioTracks.first;
     _selectedSoundRef = decodeSoundTrackStrongRef(customAudioTrack?.id);
     final sourceVideoPath = await _video.safeFilePath();
     final shouldCompressForUpload = await _shouldCompressForUpload(

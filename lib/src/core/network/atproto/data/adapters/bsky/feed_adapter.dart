@@ -880,6 +880,34 @@ extension BskyRecordAdapter on Record {
         details: details,
         labels: labels,
       ),
+      plyrTrack:
+          (
+            title,
+            artist,
+            fileType,
+            createdAt,
+            audioUrl,
+            album,
+            duration,
+            features,
+            imageUrl,
+            supportGate,
+            description,
+            audioBlob,
+          ) => PlyrTrackRecord(
+            title: title,
+            artist: artist,
+            fileType: fileType,
+            createdAt: createdAt,
+            audioUrl: audioUrl,
+            album: album,
+            duration: duration,
+            features: features,
+            imageUrl: imageUrl,
+            supportGate: supportGate,
+            description: description,
+            audioBlob: audioBlob,
+          ),
       bskyPost:
           (createdAt, text, facets, reply, langs, tags, selfLabels, embed) =>
               BskyPostRecord(

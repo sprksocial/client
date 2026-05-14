@@ -9,17 +9,17 @@ PODS:
     - PINCache
   - Cache (6.0.0)
   - Flutter (1.0.0)
-  - fvp (0.35.2):
+  - fvp (0.36.1):
     - Flutter
     - FlutterMacOS
-    - mdk (~> 0.35.1)
+    - mdk (~> 0.36.0)
   - GCDWebServer (3.5.4):
     - GCDWebServer/Core (= 3.5.4)
   - GCDWebServer/Core (3.5.4)
   - HLSCachingReverseProxyServer (0.1.0):
     - GCDWebServer (~> 3.5)
     - PINCache (>= 3.0.1-beta.3)
-  - mdk (0.35.1)
+  - mdk (0.36.0)
   - PINCache (3.0.4):
     - PINCache/Arc-exception-safe (= 3.0.4)
     - PINCache/Core (= 3.0.4)
@@ -69,10 +69,10 @@ SPEC CHECKSUMS:
   better_player_plus: 3d40145c650bb83dde08f0d593b21a144196769f
   Cache: 4ca7e00363fca5455f26534e5607634c820ffc2d
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  fvp: 4fe77c2b30122233a57f425dafd219ed35565809
+  fvp: f8b3b61cf8c696ecaa5608ae0d282ba710e65ae9
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   HLSCachingReverseProxyServer: 59935e1e0244ad7f3375d75b5ef46e8eb26ab181
-  mdk: 59bbe9e2ac2a052455ab1b076c245680d66cf6c0
+  mdk: 3bfb53e0bcc9643180eaa864360051f281e4c17b
   PINCache: d9a87a0ff397acffe9e2f0db972ac14680441158
   PINOperation: fb563bcc9c32c26d6c78aaff967d405aa2ee74a7
   pro_image_editor: 3dedac450f82a389877286fa9eb08852cefb04ea

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/pro_video_editor/services/audio_helper_service.dart';
+import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 
 void main() {
   group('syncedCustomAudioPosition', () {
@@ -114,6 +116,41 @@ void main() {
         ),
         isTrue,
       );
+    });
+  });
+
+  group('customAudioTempFilename', () {
+    test('uses the encoded sound audio extension', () {
+      final track = AudioTrack(
+        id: encodeSoundTrackId(
+          'at://did:plc:test/fm.plyr.track/track',
+          'cid',
+          audioFileExtension: 'm4a',
+          audioMimeType: 'audio/mp4',
+        ),
+        title: 'M4A',
+        subtitle: 'artist',
+        duration: const Duration(seconds: 9),
+        audio: EditorAudio(networkUrl: 'https://example.com/audio'),
+      );
+
+      expect(customAudioTempFilename(track), 'temp-audio.m4a');
+      expect(decodeSoundTrackAudioMimeType(track.id), 'audio/mp4');
+    });
+
+    test('falls back to mp3 for legacy track ids', () {
+      final track = AudioTrack(
+        id: encodeSoundTrackId(
+          'at://did:plc:test/so.sprk.sound.audio/track',
+          'cid',
+        ),
+        title: 'Legacy',
+        subtitle: 'artist',
+        duration: const Duration(seconds: 9),
+        audio: EditorAudio(networkUrl: 'https://example.com/audio'),
+      );
+
+      expect(customAudioTempFilename(track), 'temp-audio.mp3');
     });
   });
 }

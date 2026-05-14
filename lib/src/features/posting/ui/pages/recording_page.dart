@@ -744,7 +744,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       await _guideAudioPlayer.setReleaseMode(ReleaseMode.stop);
       if (!mounted || requestId != _guideAudioPrepareRequestId) return;
       if (_preparedGuideAudioUrl != audioUrl) {
-        await _guideAudioPlayer.setSourceUrl(audioUrl);
+        final sound = ref.read(recordingProvider).selectedSound;
+        await _guideAudioPlayer.setSourceUrl(
+          audioUrl,
+          mimeType: decodeSoundTrackAudioMimeType(sound?.id),
+        );
         if (!mounted || requestId != _guideAudioPrepareRequestId) return;
         _preparedGuideAudioUrl = audioUrl;
       }

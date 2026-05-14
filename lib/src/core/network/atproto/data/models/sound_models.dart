@@ -7,7 +7,7 @@ import 'package:spark/src/core/utils/uri_converter.dart';
 part 'sound_models.freezed.dart';
 part 'sound_models.g.dart';
 
-AudioRecord _audioRecordFromJson(dynamic json) {
+Record _soundRecordFromJson(dynamic json) {
   if (json is! Map<String, dynamic>) {
     throw Exception(
       'Expected Map<String, dynamic> but got ${json.runtimeType}',
@@ -16,16 +16,17 @@ AudioRecord _audioRecordFromJson(dynamic json) {
 
   final jsonWithType = json.containsKey(r'$type')
       ? json
-      : {...json, r'$type': 'so.sprk.sound.audio'};
+      : {
+          ...json,
+          r'$type': json.containsKey('fileType')
+              ? 'fm.plyr.track'
+              : 'so.sprk.sound.audio',
+        };
 
-  final record = Record.fromJson(jsonWithType);
-  if (record is AudioRecord) {
-    return record;
-  }
-  throw Exception('Expected AudioRecord but got ${record.runtimeType}');
+  return Record.fromJson(jsonWithType);
 }
 
-Map<String, dynamic> _audioRecordToJson(AudioRecord record) => record.toJson();
+Map<String, dynamic> _soundRecordToJson(Record record) => record.toJson();
 
 @freezed
 abstract class AudioDetails with _$AudioDetails {
@@ -43,8 +44,8 @@ abstract class AudioView with _$AudioView {
     @AtUriConverter() required AtUri uri,
     required String cid,
     required ProfileViewBasic author,
-    @JsonKey(fromJson: _audioRecordFromJson, toJson: _audioRecordToJson)
-    required AudioRecord record,
+    @JsonKey(fromJson: _soundRecordFromJson, toJson: _soundRecordToJson)
+    required Record record,
     required String title,
     @UriConverter() required Uri coverArt,
     required DateTime indexedAt,

@@ -24,8 +24,14 @@ class AudioWaveformExtractor {
   }
 
   /// Extracts waveform samples from an audio source.
-  Future<List<double>> extractFromAudio(EditorAudio audio) async {
-    final path = await _getAudioPath(audio);
+  Future<List<double>> extractFromAudio(
+    EditorAudio audio, {
+    String preferredExtension = 'mp3',
+  }) async {
+    final path = await _getAudioPath(
+      audio,
+      preferredExtension: preferredExtension,
+    );
     if (path == null) return [];
     return extractFromPath(path);
   }
@@ -67,15 +73,19 @@ class AudioWaveformExtractor {
     return null;
   }
 
-  Future<String?> _getAudioPath(EditorAudio audio) async {
+  Future<String?> _getAudioPath(
+    EditorAudio audio, {
+    required String preferredExtension,
+  }) async {
     if (audio.hasFile) return audio.file!.path;
 
+    final filename = 'temp_audio.$preferredExtension';
     if (audio.hasNetworkUrl) {
-      return _downloadToTemp(audio.networkUrl!, 'temp_audio.mp3');
+      return _downloadToTemp(audio.networkUrl!, filename);
     }
 
     if (audio.hasBytes) {
-      return _writeBytesToTemp(audio.bytes!, 'temp_audio.mp3');
+      return _writeBytesToTemp(audio.bytes!, filename);
     }
 
     return null;

@@ -2,6 +2,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:video_player/video_player.dart';
 
 const _resumeSeekTolerance = Duration(milliseconds: 250);
@@ -40,6 +41,11 @@ bool shouldSeekCustomAudioOnResume({
   if (currentPosition == null) return true;
   final delta = currentPosition - targetPosition;
   return delta.abs() > _resumeSeekTolerance;
+}
+
+String customAudioTempFilename(AudioTrack track) {
+  final extension = decodeSoundTrackAudioFileExtension(track.id);
+  return 'temp-audio.$extension';
 }
 
 /// A helper service that manages audio playback alongside video playback.
@@ -95,7 +101,10 @@ class AudioHelperService {
       return DeviceFileSource(audio.file!.path);
     }
     if (audio.hasNetworkUrl) {
-      return UrlSource(audio.networkUrl!);
+      return UrlSource(
+        audio.networkUrl!,
+        mimeType: decodeSoundTrackAudioMimeType(track.id),
+      );
     }
     return BytesSource(audio.bytes!);
   }
@@ -235,13 +244,16 @@ class AudioHelperService {
   Future<String?> safeCustomAudioPath(AudioTrack? track) async {
     final directory = await getTemporaryDirectory();
 
-    final audio = track?.audio;
-    if (audio == null) return null;
+    final effectiveTrack = track;
+    if (effectiveTrack == null) return null;
+
+    final audio = effectiveTrack.audio;
 
     if (audio.hasFile) {
       return audio.file!.path;
     } else {
-      final filePath = '${directory.path}/temp-audio.mp3';
+      final filePath =
+          '${directory.path}/${customAudioTempFilename(effectiveTrack)}';
 
       if (audio.hasNetworkUrl) {
         return (await fetchVideoToFile(audio.networkUrl!, filePath)).path;

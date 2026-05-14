@@ -73,6 +73,23 @@ abstract class Record with _$Record {
   }) = AudioRecord;
 
   @JsonSerializable(explicitToJson: true)
+  @FreezedUnionValue('fm.plyr.track')
+  const factory Record.plyrTrack({
+    required String title,
+    required String artist,
+    required String fileType,
+    required DateTime createdAt,
+    String? audioUrl,
+    String? album,
+    int? duration,
+    List<PlyrFeaturedArtist>? features,
+    String? imageUrl,
+    PlyrSupportGate? supportGate,
+    String? description,
+    Blob? audioBlob,
+  }) = PlyrTrackRecord;
+
+  @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('app.bsky.feed.post')
   const factory Record.bskyPost({
     DateTime? createdAt,
@@ -103,6 +120,28 @@ abstract class Record with _$Record {
     final regex = RegExp(r'#(\w+)');
     return regex.allMatches(text).map((match) => match.group(1)!).toList();
   }
+}
+
+@freezed
+abstract class PlyrSupportGate with _$PlyrSupportGate {
+  @JsonSerializable(explicitToJson: true)
+  const factory PlyrSupportGate({required String type}) = _PlyrSupportGate;
+
+  factory PlyrSupportGate.fromJson(Map<String, dynamic> json) =>
+      _$PlyrSupportGateFromJson(json);
+}
+
+@freezed
+abstract class PlyrFeaturedArtist with _$PlyrFeaturedArtist {
+  @JsonSerializable(explicitToJson: true)
+  const factory PlyrFeaturedArtist({
+    required String did,
+    String? handle,
+    String? displayName,
+  }) = _PlyrFeaturedArtist;
+
+  factory PlyrFeaturedArtist.fromJson(Map<String, dynamic> json) =>
+      _$PlyrFeaturedArtistFromJson(json);
 }
 
 /// Skeleton of a ReplyRef. Needs to be hydrated.
