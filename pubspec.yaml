@@ -19,6 +19,8 @@ dependencies:
   audioplayers: ^6.6.0
   auto_route: ^11.1.0
   better_player_plus: ^1.2.1
+  bluesky_poptart: ^0.1.0
+  ozone_poptart: ^0.1.0
   poptart: ^0.1.0
   poptart_lex: ^0.1.0
   cached_network_image: ^3.4.1

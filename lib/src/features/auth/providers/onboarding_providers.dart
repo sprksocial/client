@@ -1,4 +1,4 @@
-import 'package:poptart_lex/app/bsky/actor/profile.dart';
+import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:poptart/poptart.dart';
-import 'package:poptart_lex/app/bsky/feed/search_posts.dart'
+import 'package:bluesky_poptart/app/bsky/feed/search_posts.dart'
     as bsky_feed_search_posts;
 
 import 'package:get_it/get_it.dart';

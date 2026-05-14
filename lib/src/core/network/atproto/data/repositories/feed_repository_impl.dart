@@ -5,11 +5,11 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:poptart_lex/com/atproto/label/defs.dart';
-import 'package:poptart_lex/app/bsky/feed/get_author_feed.dart'
+import 'package:bluesky_poptart/app/bsky/feed/get_author_feed.dart'
     as bsky_feed_get_author_feed;
-import 'package:poptart_lex/app/bsky/feed/get_posts.dart'
+import 'package:bluesky_poptart/app/bsky/feed/get_posts.dart'
     as bsky_feed_get_posts;
-import 'package:poptart_lex/app/bsky/feed/get_post_thread.dart'
+import 'package:bluesky_poptart/app/bsky/feed/get_post_thread.dart'
     as bsky_feed_get_post_thread;
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart_lex/com/atproto/repo/upload_blob.dart'
@@ -17,7 +17,7 @@ import 'package:poptart_lex/com/atproto/repo/upload_blob.dart'
 import 'package:poptart_lex/com/atproto/server/get_service_auth.dart'
     as server_get_service_auth;
 import 'package:poptart/poptart.dart';
-import 'package:poptart_lex/app/bsky/richtext/facet.dart';
+import 'package:bluesky_poptart/app/bsky/richtext/facet.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;

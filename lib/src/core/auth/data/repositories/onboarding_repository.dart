@@ -1,4 +1,4 @@
-import 'package:poptart_lex/app/bsky/actor/profile.dart';
+import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
 import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
 
 abstract class OnboardingRepository {

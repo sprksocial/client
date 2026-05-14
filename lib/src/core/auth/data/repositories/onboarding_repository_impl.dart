@@ -1,12 +1,12 @@
 import 'dart:typed_data';
-import 'package:poptart_lex/app/bsky/actor/get_profile.dart'
+import 'package:bluesky_poptart/app/bsky/actor/get_profile.dart'
     as bsky_actor_get_profile;
-import 'package:poptart_lex/app/bsky/graph/get_follows.dart'
+import 'package:bluesky_poptart/app/bsky/graph/get_follows.dart'
     as bsky_graph_get_follows;
 import 'package:poptart_lex/com/atproto/repo/get_record.dart'
     as repo_get_record;
 import 'package:poptart/poptart.dart';
-import 'package:poptart_lex/app/bsky/actor/profile.dart';
+import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';

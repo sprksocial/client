@@ -1,6 +1,6 @@
-import 'package:poptart_lex/app/bsky/actor/get_profile.dart'
+import 'package:bluesky_poptart/app/bsky/actor/get_profile.dart'
     as bsky_actor_get_profile;
-import 'package:poptart_lex/app/bsky/actor/get_profiles.dart'
+import 'package:bluesky_poptart/app/bsky/actor/get_profiles.dart'
     as bsky_actor_get_profiles;
 import 'package:poptart/poptart.dart';
 

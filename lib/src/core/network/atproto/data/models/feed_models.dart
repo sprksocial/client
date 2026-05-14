@@ -1,6 +1,6 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart/poptart.dart';
-import 'package:poptart_lex/app/bsky/feed/get_post_thread.dart';
+import 'package:bluesky_poptart/app/bsky/feed/get_post_thread.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';

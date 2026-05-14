@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:poptart/poptart.dart';
-import 'package:poptart_lex/app/bsky/embed/images.dart';
-import 'package:poptart_lex/app/bsky/feed/defs.dart' as bsky_defs;
-import 'package:poptart_lex/app/bsky/feed/get_post_thread.dart';
-import 'package:poptart_lex/app/bsky/feed/post.dart';
-import 'package:poptart_lex/app/bsky/richtext/facet.dart';
+import 'package:bluesky_poptart/app/bsky/embed/images.dart';
+import 'package:bluesky_poptart/app/bsky/feed/defs.dart' as bsky_defs;
+import 'package:bluesky_poptart/app/bsky/feed/get_post_thread.dart';
+import 'package:bluesky_poptart/app/bsky/feed/post.dart';
+import 'package:bluesky_poptart/app/bsky/richtext/facet.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart'
     hide ReplyRef;
 import 'package:spark/src/core/utils/json_utils.dart';

@@ -185,6 +185,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
+  bluesky_poptart:
+    dependency: "direct main"
+    description:
+      name: bluesky_poptart
+      sha256: c55e2ac06fcf8f90aac18c90ef280216c48da1bbf4bac9d84b01bb69079b6b5c
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -1141,6 +1149,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  ozone_poptart:
+    dependency: "direct main"
+    description:
+      name: ozone_poptart
+      sha256: "2764e4a75d9e2119b00717e30975b3b2f3983c4c7f1079e6ee24bba40608a38b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   package_config:
     dependency: transitive
     description:
