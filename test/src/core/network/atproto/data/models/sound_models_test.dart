@@ -35,6 +35,7 @@ void main() {
           'title': "Governor's Ball Symphony",
           'artist': 'Dame',
           'fileType': 'mp3',
+          'duration': 187,
           'audioBlob': _blobJson(),
           'imageUrl': 'https://example.com/cover.jpg',
           'createdAt': '2026-05-01T12:00:00.000Z',
@@ -47,9 +48,12 @@ void main() {
       });
 
       final record = audio.localRecord;
+      final track = audioViewToAudioTrack(audio);
+
       expect(record, isA<PlyrTrackRecord>());
       expect((record as PlyrTrackRecord).artist, 'Dame');
       expect(audio.details?.artist, 'Dame');
+      expect(track?.duration, const Duration(seconds: 187));
     });
 
     test('preserves m4a file type when converting Plyr sounds to tracks', () {

@@ -22,7 +22,7 @@ AudioTrack? audioViewToAudioTrack(AudioView audio) {
     ),
     title: audio.title,
     subtitle: audio.author.handle,
-    duration: _fallbackAudioDuration,
+    duration: audioDuration(audio),
     image: EditorImage(networkUrl: audio.coverArt.toString()),
     audio: EditorAudio(networkUrl: audioUrl),
   );
@@ -120,6 +120,17 @@ String audioMimeType(AudioView audio) {
     return _normalizeAudioMimeType(record.sound.mimeType);
   }
   return 'audio/mpeg';
+}
+
+Duration audioDuration(AudioView audio) {
+  final record = audio.localRecord;
+  if (record is PlyrTrackRecord) {
+    final durationSeconds = record.duration;
+    if (durationSeconds != null && durationSeconds > 0) {
+      return Duration(seconds: durationSeconds);
+    }
+  }
+  return _fallbackAudioDuration;
 }
 
 String _normalizeAudioFileExtension(String? value, {String? mimeType}) {
