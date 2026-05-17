@@ -36,6 +36,7 @@ void main() {
           'artist': 'Dame',
           'fileType': 'mp3',
           'duration': 187,
+          'audioUrl': 'https://cdn.plyr.example/audio/governor.mp3',
           'audioBlob': _blobJson(),
           'imageUrl': 'https://example.com/cover.jpg',
           'createdAt': '2026-05-01T12:00:00.000Z',
@@ -54,6 +55,10 @@ void main() {
       expect((record as PlyrTrackRecord).artist, 'Dame');
       expect(audio.details?.artist, 'Dame');
       expect(track?.duration, const Duration(seconds: 187));
+      expect(
+        track?.audio.networkUrl,
+        'https://cdn.plyr.example/audio/governor.mp3',
+      );
     });
 
     test('preserves m4a file type when converting Plyr sounds to tracks', () {
@@ -104,6 +109,62 @@ void main() {
       expect(track, isNotNull);
       expect(decodeSoundTrackAudioFileExtension(track!.id), 'm4a');
       expect(decodeSoundTrackAudioMimeType(track.id), 'audio/mp4');
+    });
+
+    test(
+      'omits Spark media WAVE sounds because the media CDN rejects them',
+      () {
+        final audio = AudioView.fromJson({
+          'uri': 'at://did:plc:test123/so.sprk.sound.audio/wave-spark',
+          'cid': 'cid-spark-wave',
+          'author': {'did': 'did:plc:test123', 'handle': 'test.sprk.so'},
+          'record': {
+            r'$type': 'so.sprk.sound.audio',
+            'sound': _blobJson(mimeType: 'audio/vnd.wave'),
+            'title': 'Spark WAVE',
+            'createdAt': '2026-05-01T12:00:00.000Z',
+          },
+          'title': 'Spark WAVE',
+          'coverArt': 'https://example.com/spark.jpg',
+          'indexedAt': '2026-05-01T12:00:00.000Z',
+          'audio': 'https://media.sprk.so/sound/did%3Aplc%3Atest123/cid',
+        });
+
+        final track = audioViewToAudioTrack(audio);
+
+        expect(track, isNull);
+      },
+    );
+
+    test('uses direct Plyr audio URLs for WAVE tracks when available', () {
+      final audio = AudioView.fromJson({
+        'uri': 'at://did:plc:plyr123/fm.plyr.track/wave-track',
+        'cid': 'cid-plyr-wave',
+        'author': {'did': 'did:plc:plyr123', 'handle': 'artist.plyr.fm'},
+        'record': {
+          r'$type': 'fm.plyr.track',
+          'title': 'Plyr WAVE',
+          'artist': 'Dame',
+          'fileType': 'wav',
+          'audioUrl': 'https://cdn.plyr.example/audio/wave.wav',
+          'audioBlob': _blobJson(mimeType: 'audio/vnd.wave'),
+          'createdAt': '2026-05-01T12:00:00.000Z',
+        },
+        'title': 'Plyr WAVE',
+        'coverArt': 'https://example.com/cover.jpg',
+        'indexedAt': '2026-05-01T12:00:00.000Z',
+        'audio': 'https://media.sprk.so/sound/did%3Aplc%3Aplyr123/cid',
+      });
+
+      final track = audioViewToAudioTrack(audio);
+
+      expect(track, isNotNull);
+      expect(
+        track!.audio.networkUrl,
+        'https://cdn.plyr.example/audio/wave.wav',
+      );
+      expect(decodeSoundTrackAudioFileExtension(track.id), 'wav');
+      expect(decodeSoundTrackAudioMimeType(track.id), 'audio/wav');
     });
   });
 }

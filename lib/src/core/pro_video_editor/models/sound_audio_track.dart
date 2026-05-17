@@ -9,7 +9,7 @@ const _fallbackAudioDuration = Duration(seconds: 9);
 const _fallbackAudioFileExtension = 'mp3';
 
 AudioTrack? audioViewToAudioTrack(AudioView audio) {
-  final audioUrl = audio.audio;
+  final audioUrl = playableAudioUrl(audio);
   if (audioUrl == null || audioUrl.isEmpty) return null;
 
   return AudioTrack(
@@ -122,6 +122,27 @@ String audioMimeType(AudioView audio) {
   return 'audio/mpeg';
 }
 
+String? playableAudioUrl(AudioView audio) {
+  final record = audio.localRecord;
+  final mimeType = audioMimeType(audio);
+  final appViewAudioUrl = audio.audio;
+
+  if (record is PlyrTrackRecord) {
+    final directAudioUrl = record.audioUrl;
+    if (directAudioUrl != null && directAudioUrl.isNotEmpty) {
+      return directAudioUrl;
+    }
+  }
+
+  if (mimeType == 'audio/wav' &&
+      appViewAudioUrl != null &&
+      _isSparkMediaSoundUrl(appViewAudioUrl)) {
+    return null;
+  }
+
+  return appViewAudioUrl;
+}
+
 Duration audioDuration(AudioView audio) {
   final record = audio.localRecord;
   if (record is PlyrTrackRecord) {
@@ -131,6 +152,14 @@ Duration audioDuration(AudioView audio) {
     }
   }
   return _fallbackAudioDuration;
+}
+
+bool _isSparkMediaSoundUrl(String url) {
+  final uri = Uri.tryParse(url);
+  if (uri == null) return false;
+  return uri.host == 'media.sprk.so' &&
+      uri.pathSegments.isNotEmpty &&
+      uri.pathSegments.first == 'sound';
 }
 
 String _normalizeAudioFileExtension(String? value, {String? mimeType}) {
@@ -154,6 +183,8 @@ String _normalizeAudioFileExtension(String? value, {String? mimeType}) {
     'm4a' => 'm4a',
     'x-m4a' => 'm4a',
     'aac' => 'aac',
+    'vnd.wave' => 'wav',
+    'wave' => 'wav',
     'wav' => 'wav',
     'x-wav' => 'wav',
     'flac' => 'flac',
@@ -167,6 +198,9 @@ String _normalizeAudioMimeType(String? mimeType, {String? extension}) {
   if (normalizedMime != null && normalizedMime.startsWith('audio/')) {
     return switch (normalizedMime) {
       'audio/x-m4a' => 'audio/mp4',
+      'audio/vnd.wave' => 'audio/wav',
+      'audio/wave' => 'audio/wav',
+      'audio/x-wav' => 'audio/wav',
       _ => normalizedMime,
     };
   }

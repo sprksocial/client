@@ -59,6 +59,7 @@ class AudioSelectionBottomSheet extends StatefulWidget {
 class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   AudioTrack? _selectedTrack;
   bool _showEditControls = false;
+  int _trackPreviewRequestId = 0;
 
   @override
   void initState() {
@@ -75,11 +76,24 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     super.dispose();
   }
 
-  void _handleTrackSelection(AudioTrack track) {
+  Future<void> _handleTrackSelection(AudioTrack track) async {
+    final requestId = ++_trackPreviewRequestId;
     setState(() {
       _selectedTrack = track;
     });
-    widget.onTrackPlay(track);
+    try {
+      await widget.onTrackPlay(track);
+    } catch (_) {
+      if (!mounted || requestId != _trackPreviewRequestId) return;
+      setState(() {
+        if (_selectedTrack?.id == track.id) {
+          _selectedTrack = null;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).errorLoadingSound)),
+      );
+    }
   }
 
   void _handleContinue() {
