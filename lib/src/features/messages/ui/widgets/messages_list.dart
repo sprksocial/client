@@ -723,38 +723,13 @@ class _PostEmbedPreview extends StatelessWidget {
 
   // Pick a thumbnail and detect video vs image
   (String?, bool) _deriveThumb(PostView post) {
-    final mediaToCheck = post.displayMedia;
-    if (mediaToCheck == null) return (null, false);
-
-    switch (mediaToCheck) {
-      case MediaViewVideo():
-      case MediaViewBskyVideo():
-        return (post.thumbnailUrl.isNotEmpty ? post.thumbnailUrl : null, true);
-      case MediaViewImage():
-      case MediaViewImages():
-      case MediaViewBskyImages():
-        return (post.imageUrls.isNotEmpty ? post.imageUrls.first : null, false);
-      case MediaViewBskyRecordWithMedia(:final media):
-        switch (media) {
-          case MediaViewVideo():
-          case MediaViewBskyVideo():
-            return (
-              post.thumbnailUrl.isNotEmpty ? post.thumbnailUrl : null,
-              true,
-            );
-          case MediaViewImage():
-          case MediaViewImages():
-          case MediaViewBskyImages():
-            return (
-              post.imageUrls.isNotEmpty ? post.imageUrls.first : null,
-              false,
-            );
-          default:
-            return (null, false);
-        }
-      default:
-        return (null, false);
+    if (post.videoUrl.isNotEmpty) {
+      return (post.thumbnailUrl.isNotEmpty ? post.thumbnailUrl : null, true);
     }
+    if (post.imageUrls.isNotEmpty) {
+      return (post.imageUrls.first, false);
+    }
+    return (null, false);
   }
 
   Widget _embedSkeleton(BuildContext context) {

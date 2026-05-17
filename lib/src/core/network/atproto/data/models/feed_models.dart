@@ -1,80 +1,51 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:bluesky_poptart/app/bsky/feed/get_post_thread.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
-import 'package:spark/src/core/utils/uri_converter.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/sound_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
+
+import 'package:sprk_poptart/so/sprk/actor/defs.dart'
+    show $ProfileViewBasicCopyWith, ProfileViewBasic;
+import 'package:sprk_poptart/so/sprk/feed/defs.dart' as sprk_feed_defs;
+import 'package:sprk_poptart/so/sprk/feed/defs/generator_view.dart'
+    show $GeneratorViewCopyWith;
+
+import 'package:sprk_poptart/so/sprk/feed/get_feed/output.dart'
+    as sprk_get_feed;
+import 'package:sprk_poptart/so/sprk/feed/get_feed_skeleton/output.dart'
+    as sprk_get_feed_skeleton;
+import 'package:sprk_poptart/so/sprk/media/image/view.dart'
+    as sprk_media_image_view;
+import 'package:sprk_poptart/so/sprk/story/defs.dart' as sprk_story_defs;
 
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
 
-PostRecord _postRecordFromJson(dynamic json) {
-  if (json is! Map<String, dynamic>) {
-    throw Exception(
-      'Expected Map<String, dynamic> but got ${json.runtimeType}',
-    );
-  }
-  final record = Record.fromJson(json);
-  if (record is PostRecord) {
-    return record;
-  }
-  throw Exception('Expected PostRecord but got ${record.runtimeType}');
-}
-
-Map<String, dynamic> _postRecordToJson(PostRecord record) => record.toJson();
-
-StoryRecord _storyRecordFromJson(dynamic json) {
-  if (json is! Map<String, dynamic>) {
-    throw Exception(
-      'Expected Map<String, dynamic> but got ${json.runtimeType}',
-    );
-  }
-  final record = Record.fromJson(json);
-  if (record is StoryRecord) {
-    return record;
-  }
-  throw Exception('Expected StoryRecord but got ${record.runtimeType}');
-}
-
-Map<String, dynamic> _storyRecordToJson(StoryRecord record) => record.toJson();
-
-/// https://pub.dev/packages/freezed#union-types <= read this to know how to use pattern matching to know the type of the object
-@freezed
-abstract class GeneratorViewerState with _$GeneratorViewerState {
-  @JsonSerializable(explicitToJson: true)
-  const factory GeneratorViewerState({@AtUriConverter() AtUri? like}) =
-      _GeneratorViewerState;
-  const GeneratorViewerState._();
-
-  factory GeneratorViewerState.fromJson(Map<String, dynamic> json) =>
-      _$GeneratorViewerStateFromJson(json);
-}
-
-@freezed
-abstract class GeneratorView with _$GeneratorView {
-  @JsonSerializable(explicitToJson: true)
-  const factory GeneratorView({
-    @AtUriConverter() required AtUri uri,
-    required String cid,
-    required String did,
-    required ProfileViewBasic creator,
-    required String displayName,
-    required DateTime indexedAt,
-    String? description,
-    @Default([]) List<Facet> descriptionFacets,
-    @UriConverter() Uri? avatar,
-    @Default(0) int likeCount,
-    @Default(true) bool acceptsInteractions,
-    @Default([]) List<Label> labels,
-    GeneratorViewerState? viewer,
-  }) = _GeneratorView;
-  const GeneratorView._();
-
-  factory GeneratorView.fromJson(Map<String, dynamic> json) =>
-      _$GeneratorViewFromJson(json);
-}
+typedef FeedViewPost = sprk_feed_defs.FeedViewPost;
+typedef GeneratorViewerState = sprk_feed_defs.GeneratorViewerState;
+typedef GeneratorView = sprk_feed_defs.GeneratorView;
+typedef SkeletonFeedPost = sprk_feed_defs.SkeletonFeedPost;
+typedef BlockedAuthor = sprk_feed_defs.BlockedAuthor;
+typedef FeedView = sprk_get_feed.FeedGetFeedOutput;
+typedef FeedSkeleton = sprk_get_feed_skeleton.FeedGetFeedSkeletonOutput;
+typedef ReplyRef = sprk_feed_defs.ReplyRef;
+typedef ReplyRefPostReference = sprk_feed_defs.UReplyRefParent;
+typedef PostView = sprk_feed_defs.PostView;
+typedef ViewerState = sprk_feed_defs.ViewerState;
+typedef KnownInteraction = sprk_feed_defs.UViewerStateKnownInteractions;
+typedef KnownRepost = sprk_feed_defs.KnownRepost;
+typedef KnownLike = sprk_feed_defs.KnownLike;
+typedef KnownReply = sprk_feed_defs.KnownReply;
+typedef ReplyViewerState = sprk_feed_defs.ReplyViewerState;
+typedef ReplyView = sprk_feed_defs.ReplyView;
+typedef StoryView = sprk_story_defs.StoryView;
+typedef ThreadContext = sprk_feed_defs.ThreadContext;
 
 /// The feeds that are actually used in the app
 @freezed
@@ -88,17 +59,6 @@ abstract class Feed with _$Feed {
   const Feed._();
 
   factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
-}
-
-/// Skeleton of a FeedView. Needs to be hydrated.
-@freezed
-abstract class SkeletonFeedPost with _$SkeletonFeedPost {
-  @JsonSerializable(explicitToJson: true)
-  const factory SkeletonFeedPost({@AtUriConverter() required AtUri uri}) =
-      _SkeletonFeedPost;
-
-  factory SkeletonFeedPost.fromJson(Map<String, dynamic> json) =>
-      _$SkeletonFeedPostFromJson(json);
 }
 
 @freezed
@@ -115,330 +75,277 @@ sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
       _$HardcodedFeedExtraInfoFromJson(json);
 }
 
-/// GetTimeline returns a FeedViewPost array
-@Freezed(unionKey: r'$type')
-sealed class FeedViewPost with _$FeedViewPost {
-  const FeedViewPost._();
-
-  @FreezedUnionValue('so.sprk.feed.defs#feedPostView')
-  @JsonSerializable(explicitToJson: true)
-  const factory FeedViewPost.post({required PostView post, ReplyRef? reply}) =
-      FeedViewPostPost;
-
-  @FreezedUnionValue('so.sprk.feed.defs#feedReplyView')
-  @JsonSerializable(explicitToJson: true)
-  const factory FeedViewPost.reply({
-    required ReplyView reply,
-    ReplyRef? replyRef,
-  }) = FeedViewPostReply;
-
-  factory FeedViewPost.fromJson(Map<String, dynamic> json) =>
-      _$FeedViewPostFromJson(json);
-
-  PostView? get asPost => mapOrNull(post: (p) => p.post);
-  ReplyView? get asReply => mapOrNull(reply: (r) => r.reply);
-
-  ProfileViewBasic get author =>
-      map(post: (p) => p.post.author, reply: (r) => r.reply.author);
-
-  AtUri get uri => map(post: (p) => p.post.uri, reply: (r) => r.reply.uri);
-
-  String get cid => map(post: (p) => p.post.cid, reply: (r) => r.reply.cid);
-
-  MediaView? get media =>
-      map(post: (p) => p.post.displayMedia, reply: (r) => r.reply.media);
-
-  ViewerState? get viewerState => mapOrNull(post: (p) => p.post.viewer);
-  ReplyViewerState? get replyViewerState =>
-      mapOrNull(reply: (r) => r.reply.viewer);
-
-  String get displayText =>
-      map(post: (p) => p.post.displayText, reply: (r) => r.reply.displayText);
-
-  List<Facet> get displayFacets => map(
-    post: (p) => p.post.displayFacets,
-    reply: (r) => r.reply.displayFacets,
+FeedViewPost feedViewPostFromPost(PostView post, {String? feedContext}) {
+  return FeedViewPost(
+    post: sprk_feed_defs.PostView.fromJson(post.toJson()),
+    feedContext: feedContext,
   );
 }
 
-@freezed
-abstract class FeedView with _$FeedView {
-  @JsonSerializable(explicitToJson: true)
-  const factory FeedView({required List<FeedViewPost> feed, String? cursor}) =
-      _FeedView;
-  const FeedView._();
-
-  factory FeedView.fromJson(Map<String, dynamic> json) =>
-      _$FeedViewFromJson(json);
+extension FeedViewPostConvenience on FeedViewPost {
+  PostView get localPost => post;
+  PostView? get asPost => localPost;
+  ReplyView? get asReply => null;
+  ProfileViewBasic get author => post.author;
+  AtUri get uri => post.uri;
+  String get cid => post.cid;
+  sprk_feed_defs.UPostViewMedia? get media => post.media;
+  ViewerState? get viewerState => post.viewer;
+  ReplyViewerState? get replyViewerState => null;
+  String get displayText => localPost.displayText;
+  List<Facet> get displayFacets => localPost.displayFacets;
 }
 
-@freezed
-abstract class ReplyRef with _$ReplyRef {
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyRef({
-    required ReplyRefPostReference root, // post, not found or blocked
-    required ReplyRefPostReference parent, // post, not found or blocked
-    ProfileViewBasic? grandparentAuthor,
-  }) = _ReplyRef;
-  const ReplyRef._();
+extension KnownInteractionConvenience on KnownInteraction {
+  KnownRepost? get knownRepost => switch (this) {
+    sprk_feed_defs.UViewerStateKnownInteractionsKnownRepost(:final data) =>
+      data,
+    _ => null,
+  };
 
-  factory ReplyRef.fromJson(Map<String, dynamic> json) =>
-      _$ReplyRefFromJson(json);
+  KnownLike? get knownLike => switch (this) {
+    sprk_feed_defs.UViewerStateKnownInteractionsKnownLike(:final data) => data,
+    _ => null,
+  };
+
+  KnownReply? get knownReply => switch (this) {
+    sprk_feed_defs.UViewerStateKnownInteractionsKnownReply(:final data) => data,
+    _ => null,
+  };
 }
 
-/// Can be a post, a not found post, or a blocked post
-@Freezed(unionKey: r'$type')
-sealed class ReplyRefPostReference with _$ReplyRefPostReference {
-  const ReplyRefPostReference._();
-  @FreezedUnionValue('so.sprk.feed.defs#post')
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyRefPostReference.post({required PostView post}) =
-      ReplyRefPostReferencePost;
+extension ReplyViewConvenience on ReplyView {
+  String get displayText {
+    final caption = record['caption'];
+    if (caption is Map<String, dynamic>) {
+      return caption['text'] as String? ?? '';
+    }
+    return record['text'] as String? ?? '';
+  }
 
-  @FreezedUnionValue('app.bsky.feed.defs#postView')
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyRefPostReference.bskyPost({required PostView post}) =
-      ReplyRefPostReferenceBskyPost;
+  List<Facet> get displayFacets {
+    final caption = record['caption'];
+    final facets = caption is Map<String, dynamic>
+        ? caption['facets'] as List?
+        : record['facets'] as List?;
+    return facets
+            ?.whereType<Map<String, dynamic>>()
+            .map(Facet.fromJson)
+            .toList() ??
+        const [];
+  }
 
-  @FreezedUnionValue('so.sprk.feed.defs#replyView')
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyRefPostReference.reply({required ReplyView reply}) =
-      ReplyRefPostReferenceReply;
+  List<String> get imageUrls {
+    final mediaToCheck = media ?? _hydratedMediaFromRecord;
+    switch (mediaToCheck) {
+      case sprk_feed_defs.UReplyViewMediaMediaImageView(:final data):
+        return [data.fullsize]
+            .where(
+              (url) => url.startsWith('http://') || url.startsWith('https://'),
+            )
+            .toList();
+      case sprk_feed_defs.UReplyViewMediaUnknown(:final data):
+        if (data[r'$type'] == 'so.sprk.media.image#view') {
+          final image = data['image'];
+          final fullsize = image is Map<String, dynamic>
+              ? image['fullsize'] as String? ?? ''
+              : data['fullsize'] as String? ?? '';
+          return [fullsize]
+              .where(
+                (url) =>
+                    url.startsWith('http://') || url.startsWith('https://'),
+              )
+              .toList();
+        }
+        return const [];
+      case _:
+        return const [];
+    }
+  }
 
-  @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyRefPostReference.notFoundPost({
-    @AtUriConverter() required AtUri uri,
-    required bool notFound,
-  }) = ReplyRefPostReferenceNotFoundPost;
+  sprk_feed_defs.UReplyViewMedia? get hydratedMedia =>
+      media ?? _hydratedMediaFromRecord;
 
-  @FreezedUnionValue('so.sprk.feed.defs#blockedPost')
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyRefPostReference.blockedPost({
-    @AtUriConverter() required AtUri uri,
-    required bool blocked,
-    required BlockedAuthor author,
-  }) = ReplyRefPostReferenceBlockedPost;
+  sprk_feed_defs.UReplyViewMedia? get _hydratedMediaFromRecord {
+    final mediaRecord = record['media'];
+    if (mediaRecord is! Map<String, dynamic>) return null;
+    final type = mediaRecord[r'$type'] as String?;
+    if (type != 'so.sprk.media.image') return null;
 
-  factory ReplyRefPostReference.fromJson(Map<String, dynamic> json) =>
-      _$ReplyRefPostReferenceFromJson(json);
+    final imageData = mediaRecord['image'] as Map<String, dynamic>?;
+    final ref = imageData?['ref'] as Map<String, dynamic>?;
+    final cid = ref?[r'$link'] as String?;
+    if (cid == null) return null;
+
+    final alt = mediaRecord['alt'] as String? ?? '';
+    final authorDid = author.did;
+    const baseUrl = 'https://media.sprk.so/img';
+    return sprk_feed_defs.UReplyViewMedia.mediaImageView(
+      data: sprk_media_image_view.MediaImageView(
+        thumb: '$baseUrl/medium/$authorDid/$cid/webp',
+        fullsize: '$baseUrl/full/$authorDid/$cid/webp',
+        alt: alt,
+      ),
+    );
+  }
 }
 
-@freezed
-abstract class BlockedAuthor with _$BlockedAuthor {
-  @JsonSerializable(explicitToJson: true)
-  const factory BlockedAuthor({required String did, ViewerState? viewer}) =
-      _BlockedAuthor;
-  const BlockedAuthor._();
+extension StoryViewConvenience on StoryView {
+  StoryRecord? get localRecord {
+    try {
+      return StoryRecord.fromJson(record);
+    } catch (_) {
+      return null;
+    }
+  }
 
-  factory BlockedAuthor.fromJson(Map<String, dynamic> json) =>
-      _$BlockedAuthorFromJson(json);
+  List<StoryEmbedView>? get localEmbeds {
+    final storyEmbeds = embeds;
+    if (storyEmbeds == null || storyEmbeds.isEmpty) return const [];
+    return storyEmbeds
+        .map((embed) {
+          try {
+            return StoryEmbedView.fromJson(embed.toJson());
+          } catch (_) {
+            return null;
+          }
+        })
+        .whereType<StoryEmbedView>()
+        .toList();
+  }
+
+  bool get isVideoStory => videoUrl.isNotEmpty;
+
+  String get videoUrl {
+    final mediaToCheck = media;
+    switch (mediaToCheck) {
+      case sprk_story_defs.UStoryViewMediaMediaVideoView(:final data):
+        return data.playlist;
+      case sprk_story_defs.UStoryViewMediaUnknown(:final data):
+        if (data[r'$type'] == 'so.sprk.media.video#view') {
+          return data['playlist'] as String? ?? '';
+        }
+        return '';
+      case _:
+        return '';
+    }
+  }
+
+  String get imageUrl {
+    final mediaToCheck = media;
+    switch (mediaToCheck) {
+      case sprk_story_defs.UStoryViewMediaMediaImageView(:final data):
+        return data.fullsize;
+      case sprk_story_defs.UStoryViewMediaUnknown(:final data):
+        if (data[r'$type'] == 'so.sprk.media.image#view') {
+          final image = data['image'];
+          return image is Map<String, dynamic>
+              ? image['fullsize'] as String? ?? ''
+              : data['fullsize'] as String? ?? '';
+        }
+        return '';
+      case _:
+        return author.avatar?.toString() ?? '';
+    }
+  }
+
+  String get thumbnailUrl {
+    final mediaToCheck = media;
+    switch (mediaToCheck) {
+      case sprk_story_defs.UStoryViewMediaMediaVideoView(:final data):
+        return data.thumbnail ?? author.avatar?.toString() ?? '';
+      case sprk_story_defs.UStoryViewMediaMediaImageView(:final data):
+        return data.thumb;
+      case sprk_story_defs.UStoryViewMediaUnknown(:final data):
+        if (data[r'$type'] == 'so.sprk.media.image#view') {
+          final image = data['image'];
+          return image is Map<String, dynamic>
+              ? image['thumb'] as String? ?? ''
+              : data['thumb'] as String? ?? '';
+        }
+        if (data[r'$type'] == 'so.sprk.media.video#view') {
+          return data['thumbnail'] as String? ??
+              author.avatar?.toString() ??
+              '';
+        }
+        return author.avatar?.toString() ?? '';
+      case _:
+        return author.avatar?.toString() ?? '';
+    }
+  }
 }
 
-@freezed
-abstract class PostThread with _$PostThread {
-  @JsonSerializable(explicitToJson: true)
-  const factory PostThread({
-    required PostView post,
-    List<PostView>? parent,
-    List<PostView>? replies,
-  }) = _PostThread;
-  const PostThread._();
-
-  factory PostThread.fromJson(Map<String, dynamic> json) =>
-      _$PostThreadFromJson(json);
-}
-
-/// Metadata about the requesting account's relationship with the subject.
-/// Only has meaningful content for authed requests.
-@freezed
-abstract class ViewerState with _$ViewerState {
-  @JsonSerializable(explicitToJson: true)
-  const factory ViewerState({
-    @AtUriConverter() AtUri? repost,
-    @AtUriConverter() AtUri? like,
-    bool? threadMuted,
-    bool? replyDisabled,
-    bool? embeddingDisabled,
-    List<KnownInteraction>? knownInteractions,
-  }) = _ViewerState;
-  const ViewerState._();
-
-  factory ViewerState.fromJson(Map<String, dynamic> json) =>
-      _$ViewerStateFromJson(json);
-}
-
-/// Metadata about the requesting account's relationship with reply content.
-/// Only has meaningful content for authed requests.
-@freezed
-abstract class ReplyViewerState with _$ReplyViewerState {
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyViewerState({
-    @AtUriConverter() AtUri? like,
-    bool? threadMuted,
-    bool? replyDisabled,
-    bool? embeddingDisabled,
-  }) = _ReplyViewerState;
-  const ReplyViewerState._();
-
-  factory ReplyViewerState.fromJson(Map<String, dynamic> json) =>
-      _$ReplyViewerStateFromJson(json);
-}
-
-@Freezed(unionKey: r'$type')
-sealed class KnownInteraction with _$KnownInteraction {
-  const KnownInteraction._();
-
-  @FreezedUnionValue('so.sprk.feed.defs#knownRepost')
-  @JsonSerializable(explicitToJson: true)
-  const factory KnownInteraction.repost({
-    required ProfileViewBasic by,
-    required DateTime indexedAt,
-    @AtUriConverter() AtUri? uri,
-    String? cid,
-  }) = KnownRepost;
-
-  @FreezedUnionValue('so.sprk.feed.defs#knownLike')
-  @JsonSerializable(explicitToJson: true)
-  const factory KnownInteraction.like({
-    required ProfileViewBasic by,
-    required DateTime indexedAt,
-    @AtUriConverter() AtUri? uri,
-    String? cid,
-  }) = KnownLike;
-
-  @FreezedUnionValue('so.sprk.feed.defs#knownReply')
-  @JsonSerializable(explicitToJson: true)
-  const factory KnownInteraction.reply({
-    required ProfileViewBasic by,
-    required DateTime indexedAt,
-    @AtUriConverter() AtUri? uri,
-    String? cid,
-    String? text,
-  }) = KnownReply;
-
-  factory KnownInteraction.fromJson(Map<String, dynamic> json) =>
-      _$KnownInteractionFromJson(json);
-}
-
-@freezed
-abstract class PostView with _$PostView {
-  @JsonSerializable(explicitToJson: true)
-  const factory PostView({
-    @AtUriConverter() required AtUri uri,
-    required String cid,
-    required ProfileViewBasic author,
-    @JsonKey(fromJson: _postRecordFromJson, toJson: _postRecordToJson)
-    required PostRecord record,
-    required DateTime indexedAt,
-    @Default(false) bool isRepost,
-    int? likeCount,
-    int? replyCount,
-    int? repostCount,
-    List<Label>? labels,
-    ViewerState? viewer,
-    MediaView? media,
-    AudioView? sound,
-  }) = _PostView;
-  const PostView._();
-
-  factory PostView.fromJson(Map<String, dynamic> json) =>
-      _$PostViewFromJson(json);
-
+extension PostViewConvenience on PostView {
   bool get isSprk => RegExp(
     r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$',
   ).hasMatch(uri.toString());
 
-  MediaView? get displayMedia => media;
+  sprk_feed_defs.UPostViewMedia? get displayMedia => media;
 
-  String get displayText => record.caption.text;
+  PostRecord? get localRecord {
+    try {
+      final parsed = Record.fromJson(record);
+      return parsed is PostRecord ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
-  List<Facet> get displayFacets => record.caption.facets;
+  CaptionRef get caption {
+    final local = localRecord;
+    if (local != null) return local.caption;
+
+    final captionJson = record['caption'];
+    if (captionJson is Map<String, dynamic>) {
+      return CaptionRef.fromJson(captionJson);
+    }
+
+    final text = record['text'] as String? ?? '';
+    final facets = record['facets'];
+    return CaptionRef(
+      text: text,
+      facets: facets is List
+          ? facets
+                .whereType<Map<String, dynamic>>()
+                .map(Facet.fromJson)
+                .toList()
+          : const [],
+    );
+  }
+
+  String get displayText => caption.text;
+
+  List<Facet> get displayFacets => caption.facets;
+
+  List<SelfLabel>? get selfLabels => localRecord?.selfLabels;
+
+  List<String> get hashtags => localRecord?.hashtags ?? const [];
+
+  List<RepoStrongRef>? get crossposts => localRecord?.crossposts;
+
+  AudioView? get localSound {
+    final postSound = sound;
+    if (postSound == null) return null;
+    return AudioView.fromJson(postSound.toJson());
+  }
 
   /// Returns true if post has a video or image embed (content we want to show)
   bool get hasSupportedMedia {
     final mediaToCheck = displayMedia;
     if (mediaToCheck == null) return false;
-
-    switch (mediaToCheck) {
-      case MediaViewVideo():
-      case MediaViewBskyVideo():
-      case MediaViewBskyImages():
-      case MediaViewImage():
-      case MediaViewImages():
-        return true;
-      case MediaViewBskyRecordWithMedia(:final media):
-        // Check nested media in record with media
-        switch (media) {
-          case MediaViewVideo():
-          case MediaViewBskyVideo():
-          case MediaViewBskyImages():
-          case MediaViewImage():
-          case MediaViewImages():
-            return true;
-          case _:
-            return false;
-        }
-      case _:
-        return false;
-    }
-  }
-
-  /// Resolves AT Protocol blob URLs to HTTP URLs for display
-  String _resolveAtUriToHttpUrl(Uri uri, {bool isFullsize = false}) {
-    final uriString = uri.toString();
-
-    // If it's already an HTTP URL, return as is
-    if (uriString.startsWith('http://') || uriString.startsWith('https://')) {
-      return uriString;
-    }
-
-    // If it's an AT Protocol blob URL, convert to Bluesky CDN URL
-    if (uriString.startsWith('at://')) {
-      // Parse AT URI format: at://did/collection/rkey
-      final match = RegExp(
-        r'^at://([^/]+)/([^/]+)/(.+)$',
-      ).firstMatch(uriString);
-      if (match != null) {
-        final did = match.group(1)!;
-        final collection = match.group(2)!;
-        final rkey = match.group(3)!;
-
-        // For blob collections, use Bluesky's CDN
-        if (collection == 'blob') {
-          if (isFullsize) {
-            return 'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$rkey@jpeg';
-          } else {
-            return 'https://cdn.bsky.app/img/feed_thumbnail/plain/$did/$rkey@jpeg';
-          }
-        }
-      }
-    }
-
-    // Return empty string for unrecognized URI schemes (e.g., file://)
-    // to prevent invalid URLs from being passed to image loaders
-    return '';
+    return true;
   }
 
   String get videoUrl {
     final mediaToCheck = displayMedia;
     switch (mediaToCheck) {
-      case MediaViewVideo(:final playlist):
-        return playlist.toString();
-      case MediaViewBskyVideo(:final playlist):
-        // For Bluesky videos, return the AT URI as-is for blob API handling
-        return playlist.toString();
-      case MediaViewBskyRecordWithMedia(:final media):
-        // Handle nested media in record with media
-        switch (media) {
-          case MediaViewVideo(:final playlist):
-            return playlist.toString();
-          case MediaViewBskyVideo(:final playlist):
-            // For Bluesky videos, return the AT URI as-is for blob API handling
-            return playlist.toString();
-          case _:
-            return '';
+      case sprk_feed_defs.UPostViewMediaMediaVideoView(:final data):
+        return data.playlist;
+      case sprk_feed_defs.UPostViewMediaUnknown(:final data):
+        if (data[r'$type'] == 'so.sprk.media.video#view') {
+          return data['playlist'] as String? ?? '';
         }
+        return '';
       case _:
         return '';
     }
@@ -448,35 +355,27 @@ abstract class PostView with _$PostView {
     final mediaToCheck = displayMedia;
     final List<String> urls;
     switch (mediaToCheck) {
-      case MediaViewImage(:final image):
-        urls = [image.fullsize.toString()];
-      case MediaViewImages(:final images):
-        urls = images.map((img) => img.fullsize.toString()).toList();
-      case MediaViewBskyImages(:final images):
-        urls = images
-            .map(
-              (img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true),
-            )
-            .toList();
-      case MediaViewBskyRecordWithMedia(:final media):
-        // Handle nested media in record with media
-        switch (media) {
-          case MediaViewImage(:final image):
-            urls = [image.fullsize.toString()];
-          case MediaViewImages(:final images):
-            urls = images.map((img) => img.fullsize.toString()).toList();
-          case MediaViewBskyImages(:final images):
-            urls = images
-                .map(
-                  (img) =>
-                      _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true),
-                )
-                .toList();
-          case _:
-            urls = [];
+      case sprk_feed_defs.UPostViewMediaMediaImagesView(:final data):
+        urls = data.images.map((img) => img.fullsize).toList();
+      case sprk_feed_defs.UPostViewMediaUnknown(:final data):
+        if (data[r'$type'] == 'so.sprk.media.image#view') {
+          final image = data['image'];
+          urls = image is Map<String, dynamic>
+              ? [image['fullsize'] as String? ?? '']
+              : const [];
+        } else if (data[r'$type'] == 'so.sprk.media.images#view') {
+          final images = data['images'];
+          urls = images is List
+              ? images
+                    .whereType<Map<String, dynamic>>()
+                    .map((img) => img['fullsize'] as String? ?? '')
+                    .toList()
+              : const [];
+        } else {
+          urls = const [];
         }
       case _:
-        urls = [];
+        urls = const [];
     }
     // Filter out invalid URLs (must be http/https)
     return urls
@@ -487,193 +386,31 @@ abstract class PostView with _$PostView {
   String get thumbnailUrl {
     final mediaToCheck = displayMedia;
     switch (mediaToCheck) {
-      case MediaViewVideo(:final thumbnail):
-        return thumbnail.toString();
-      case MediaViewBskyVideo(:final thumbnail):
-        return _resolveAtUriToHttpUrl(thumbnail);
-      case MediaViewImage(:final image):
-        return image.thumb.toString();
-      case MediaViewImages(:final images):
-        return images.first.thumb.toString();
-      case MediaViewBskyImages(:final images):
-        return _resolveAtUriToHttpUrl(images.first.thumb);
-      case MediaViewBskyRecordWithMedia(:final media):
-        // Handle nested media in record with media
-        switch (media) {
-          case MediaViewVideo(:final thumbnail):
-            return thumbnail.toString();
-          case MediaViewBskyVideo(:final thumbnail):
-            return _resolveAtUriToHttpUrl(thumbnail);
-          case MediaViewImage(:final image):
-            return image.thumb.toString();
-          case MediaViewImages(:final images):
-            return images.first.thumb.toString();
-          case MediaViewBskyImages(:final images):
-            return _resolveAtUriToHttpUrl(images.first.thumb);
-          case _:
-            return '';
+      case sprk_feed_defs.UPostViewMediaMediaVideoView(:final data):
+        return data.thumbnail ?? '';
+      case sprk_feed_defs.UPostViewMediaMediaImagesView(:final data):
+        return data.images.isEmpty ? '' : data.images.first.thumb;
+      case sprk_feed_defs.UPostViewMediaUnknown(:final data):
+        if (data[r'$type'] == 'so.sprk.media.image#view') {
+          final image = data['image'];
+          return image is Map<String, dynamic>
+              ? image['thumb'] as String? ?? ''
+              : '';
         }
+        if (data[r'$type'] == 'so.sprk.media.images#view') {
+          final images = data['images'];
+          final firstImage = images is List && images.isNotEmpty
+              ? images.first
+              : null;
+          return firstImage is Map<String, dynamic>
+              ? firstImage['thumb'] as String? ?? ''
+              : '';
+        }
+        return '';
       case _:
         return '';
     }
   }
-}
-
-@Freezed(unionKey: r'$type')
-sealed class MediaView with _$MediaView {
-  const MediaView._();
-
-  @FreezedUnionValue('so.sprk.media.video#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.video({
-    required String cid,
-    @AtUriConverter() required Uri playlist,
-    @AtUriConverter() required Uri thumbnail,
-    String? alt,
-  }) = MediaViewVideo;
-
-  @FreezedUnionValue('so.sprk.media.image#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.image({required ViewImage image}) = MediaViewImage;
-
-  @FreezedUnionValue('so.sprk.media.images#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.images({required List<ViewImage> images}) =
-      MediaViewImages;
-
-  // Bluesky embed types
-  @FreezedUnionValue('app.bsky.embed.video#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.bskyVideo({
-    required String cid,
-    @AtUriConverter() required Uri playlist,
-    @AtUriConverter() required Uri thumbnail,
-    String? alt,
-  }) = MediaViewBskyVideo;
-
-  @FreezedUnionValue('app.bsky.embed.images#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.bskyImages({required List<ViewImage> images}) =
-      MediaViewBskyImages;
-
-  @FreezedUnionValue('app.bsky.embed.record#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.bskyRecord({required EmbedViewRecord record}) =
-      MediaViewBskyRecord;
-
-  @FreezedUnionValue('app.bsky.embed.recordWithMedia#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.bskyRecordWithMedia({
-    required EmbedViewRecord record,
-    required MediaView media,
-  }) = MediaViewBskyRecordWithMedia;
-
-  @FreezedUnionValue('app.bsky.embed.external#view')
-  @JsonSerializable(explicitToJson: true)
-  const factory MediaView.bskyExternal({required EmbedViewExternal external}) =
-      MediaViewBskyExternal;
-
-  factory MediaView.fromJson(Map<String, dynamic> json) =>
-      _$MediaViewFromJson(json);
-}
-
-@freezed
-abstract class EmbedViewExternal with _$EmbedViewExternal {
-  @JsonSerializable(explicitToJson: true)
-  const factory EmbedViewExternal({
-    required String uri,
-    @Default('') String title,
-    @Default('') String description,
-    @UriConverter() Uri? thumb,
-  }) = _EmbedViewExternal;
-  const EmbedViewExternal._();
-
-  factory EmbedViewExternal.fromJson(Map<String, dynamic> json) =>
-      _$EmbedViewExternalFromJson(json);
-}
-
-@Freezed(unionKey: r'$type')
-sealed class EmbedViewRecord with _$EmbedViewRecord {
-  const EmbedViewRecord._();
-
-  /// A full, viewable record.
-  @FreezedUnionValue('app.bsky.embed.record#viewRecord')
-  @JsonSerializable(explicitToJson: true)
-  const factory EmbedViewRecord.record({
-    @AtUriConverter() required AtUri uri,
-    required String cid,
-    required ProfileViewBasic author,
-    required dynamic value, // This is typically a PostRecord
-    required DateTime indexedAt,
-    @Default([]) List<Label> labels,
-    int? replyCount,
-    int? repostCount,
-    int? likeCount,
-    int? quoteCount,
-    @Default([]) List<MediaView> embeds,
-  }) = EmbedViewRecord_Record;
-
-  /// A placeholder for a record that could not be found.
-  @FreezedUnionValue('app.bsky.embed.record#viewNotFound')
-  @JsonSerializable(explicitToJson: true)
-  const factory EmbedViewRecord.notFound({
-    @AtUriConverter() required AtUri uri,
-    required bool notFound,
-  }) = EmbedViewRecord_NotFound;
-
-  /// A placeholder for a record that is blocked.
-  @FreezedUnionValue('app.bsky.embed.record#viewBlocked')
-  @JsonSerializable(explicitToJson: true)
-  const factory EmbedViewRecord.blocked({
-    @AtUriConverter() required AtUri uri,
-    required bool blocked,
-    required BlockedAuthor author,
-  }) = EmbedViewRecord_Blocked;
-
-  factory EmbedViewRecord.fromJson(Map<String, dynamic> json) {
-    final type = json[r'$type'] as String?;
-    // Handle unsupported record embed types by returning notFound
-    if (BskyFeedAdapter.isUnsupportedEmbedType(type)) {
-      return EmbedViewRecord.notFound(
-        uri: AtUri.parse(json['uri'] as String? ?? 'at://unknown'),
-        notFound: true,
-      );
-    }
-    // Route to appropriate subtype based on $type
-    return switch (type) {
-      'app.bsky.embed.record#viewRecord' => _$EmbedViewRecord_RecordFromJson(
-        json,
-      ),
-      'app.bsky.embed.record#viewNotFound' =>
-        _$EmbedViewRecord_NotFoundFromJson(json),
-      'app.bsky.embed.record#viewBlocked' => _$EmbedViewRecord_BlockedFromJson(
-        json,
-      ),
-      _ => EmbedViewRecord.notFound(
-        uri: AtUri.parse(json['uri'] as String? ?? 'at://unknown'),
-        notFound: true,
-      ),
-    };
-  }
-
-  Map<String, dynamic> toJson() => switch (this) {
-    EmbedViewRecord_Record() => (this as EmbedViewRecord_Record).toJson(),
-    EmbedViewRecord_NotFound() => (this as EmbedViewRecord_NotFound).toJson(),
-    EmbedViewRecord_Blocked() => (this as EmbedViewRecord_Blocked).toJson(),
-  };
-}
-
-@freezed
-abstract class FeedSkeleton with _$FeedSkeleton {
-  @JsonSerializable(explicitToJson: true)
-  const factory FeedSkeleton({
-    required List<SkeletonFeedPost> feed,
-    String? cursor,
-  }) = _FeedSkeleton;
-  const FeedSkeleton._();
-
-  factory FeedSkeleton.fromJson(Map<String, dynamic> json) =>
-      _$FeedSkeletonFromJson(json);
 }
 
 @freezed
@@ -783,22 +520,7 @@ abstract class Facet with _$Facet {
   factory Facet.fromJson(Map<String, dynamic> json) => _$FacetFromJson(json);
 }
 
-@freezed
-abstract class ViewImage with _$ViewImage {
-  @JsonSerializable(explicitToJson: true)
-  const factory ViewImage({
-    @AtUriConverter() required Uri thumb,
-    @AtUriConverter() required Uri fullsize,
-    String? alt,
-    // aspectRatio: {width: int, height: int}
-  }) = _ViewImage;
-  const ViewImage._();
-
-  factory ViewImage.fromJson(Map<String, dynamic> json) =>
-      _$ViewImageFromJson(json);
-}
-
-@Freezed(unionKey: r'$type')
+@Freezed(unionKey: r'$type', copyWith: false)
 sealed class ThreadPost with _$ThreadPost {
   const ThreadPost._();
 
@@ -846,26 +568,15 @@ sealed class ThreadPost with _$ThreadPost {
 
   List<String> get imageUrls => switch (this) {
     ThreadPostView(:final post) => post.imageUrls,
-    ThreadReplyView(:final reply) => switch (reply.hydratedMedia) {
-      // Replies/comments only support a single image (EmbedViewMediaImage)
-      MediaViewImage(:final image) => [image.fullsize.toString()],
-      MediaViewImages(:final images) =>
-        images.map((img) => img.fullsize.toString()).toList(),
-      MediaViewBskyImages(:final images) =>
-        images.map((img) => img.fullsize.toString()).toList(),
-      _ => <String>[],
-    },
+    ThreadReplyView(:final reply) => reply.imageUrls,
   };
 
   bool get isSprk => switch (this) {
     ThreadPostView(:final post) => post.isSprk,
     ThreadReplyView(:final reply) => () {
       final rec = reply.record;
-      if (rec is Map<String, dynamic>) {
-        final type = rec[r'$type'] as String?;
-        return type == 'so.sprk.feed.reply' || type == 'so.sprk.feed.post';
-      }
-      return false;
+      final type = rec[r'$type'] as String?;
+      return type == 'so.sprk.feed.reply' || type == 'so.sprk.feed.post';
     }(),
   };
 
@@ -874,7 +585,7 @@ sealed class ThreadPost with _$ThreadPost {
     ThreadReplyView(:final reply) => reply.author,
   };
 
-  MediaView? get media => switch (this) {
+  Object? get media => switch (this) {
     ThreadPostView(:final post) => post.media,
     ThreadReplyView(:final reply) => reply.hydratedMedia,
   };
@@ -895,7 +606,7 @@ sealed class ThreadPost with _$ThreadPost {
   };
 }
 
-@Freezed(unionKey: r'$type')
+@Freezed(unionKey: r'$type', copyWith: false)
 sealed class Thread with _$Thread {
   const Thread._();
 
@@ -1280,140 +991,4 @@ sealed class Thread with _$Thread {
 
     return buildWithReplies(anchorIndex);
   }
-}
-
-@freezed
-abstract class ThreadContext with _$ThreadContext {
-  @JsonSerializable(explicitToJson: true)
-  const factory ThreadContext({@AtUriConverter() AtUri? rootAuthorLike}) =
-      _ThreadContext;
-  const ThreadContext._();
-
-  factory ThreadContext.fromJson(Map<String, dynamic> json) =>
-      _$ThreadContextFromJson(json);
-}
-
-@freezed
-abstract class ReplyView with _$ReplyView {
-  @JsonSerializable(explicitToJson: true)
-  const factory ReplyView({
-    @AtUriConverter() required AtUri uri,
-    required String cid,
-    required ProfileViewBasic author,
-    required dynamic record,
-    required DateTime indexedAt,
-    MediaView? media,
-    int? replyCount,
-    int? likeCount,
-    List<Label>? labels,
-    ReplyViewerState? viewer,
-  }) = _ReplyView;
-  const ReplyView._();
-
-  factory ReplyView.fromJson(Map<String, dynamic> json) =>
-      _$ReplyViewFromJson(json);
-
-  String get displayText {
-    final rec = record;
-    if (rec is Map<String, dynamic>) {
-      final caption = rec['caption'];
-      if (caption is Map<String, dynamic>) {
-        return caption['text'] as String? ?? '';
-      }
-      return rec['text'] as String? ?? '';
-    }
-    return '';
-  }
-
-  List<Facet> get displayFacets {
-    final rec = record;
-    if (rec is Map<String, dynamic>) {
-      final caption = rec['caption'];
-      if (caption is Map<String, dynamic>) {
-        final facets = caption['facets'] as List?;
-        return facets
-                ?.map((f) => Facet.fromJson(f as Map<String, dynamic>))
-                .toList() ??
-            [];
-      }
-      final facets = rec['facets'] as List?;
-      return facets
-              ?.map((f) => Facet.fromJson(f as Map<String, dynamic>))
-              .toList() ??
-          [];
-    }
-    return [];
-  }
-
-  /// Hydrates media from the record into a view format
-  /// Necessary because API doesn't always return media field at the post level
-  MediaView? get hydratedMedia {
-    // If media is already present, use it
-    if (media != null) return media;
-
-    // Otherwise, try to hydrate from record
-    final rec = record;
-    if (rec is! Map<String, dynamic>) return null;
-
-    final mediaRecord = rec['media'];
-    if (mediaRecord is! Map<String, dynamic>) return null;
-
-    final type = mediaRecord[r'$type'] as String?;
-
-    try {
-      switch (type) {
-        case 'so.sprk.media.image':
-          // Single image - convert to view format
-          final imageData = mediaRecord['image'] as Map<String, dynamic>?;
-          if (imageData == null) return null;
-
-          // Extract the blob ref (CID)
-          final ref = imageData['ref'] as Map<String, dynamic>?;
-          final cid = ref?[r'$link'] as String?;
-          if (cid == null) return null;
-
-          final alt = mediaRecord['alt'] as String? ?? '';
-          final authorDid = author.did;
-
-          // Construct URLs using the same pattern as the server
-          const baseUrl = 'https://media.sprk.so/img';
-          final thumbUrl = '$baseUrl/medium/$authorDid/$cid/webp';
-          final fullsizeUrl = '$baseUrl/full/$authorDid/$cid/webp';
-
-          return MediaView.image(
-            image: ViewImage(
-              thumb: Uri.parse(thumbUrl),
-              fullsize: Uri.parse(fullsizeUrl),
-              alt: alt,
-            ),
-          );
-
-        default:
-          return null;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-}
-
-@freezed
-abstract class StoryView with _$StoryView {
-  @JsonSerializable(explicitToJson: true)
-  const factory StoryView({
-    required String cid,
-    @AtUriConverter() required AtUri uri,
-    required ProfileViewBasic author,
-    @JsonKey(fromJson: _storyRecordFromJson, toJson: _storyRecordToJson)
-    required StoryRecord record,
-    required DateTime indexedAt,
-    MediaView? media,
-    @JsonKey(fromJson: storyEmbedViewsFromJson, toJson: storyEmbedViewsToJson)
-    List<StoryEmbedView>? embeds,
-    // viewer eventually i think
-  }) = _StoryView;
-  const StoryView._();
-
-  factory StoryView.fromJson(Map<String, dynamic> json) =>
-      _$StoryViewFromJson(json);
 }

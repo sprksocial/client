@@ -3,7 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/feed/providers/feed_state.dart';
@@ -21,7 +22,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
     // via setActiveFeed() once preferences are loaded from the provider
     _activeFeed = Feed(
       type: 'timeline',
-      config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
+      config: makeSavedFeed(type: 'timeline', value: 'following', pinned: true),
     );
   }
 
@@ -159,82 +160,39 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
       task.status = DownloadTaskStatus.active;
       // Actual caching work - start downloading the media
-      switch (task.post.media) {
-        case MediaViewVideo():
-          await DownloadManagerImpl.controller.preCache(
-            BetterPlayerDataSource(
-              BetterPlayerDataSourceType.network,
-              task.post.videoUrl,
-              cacheConfiguration: BetterPlayerCacheConfiguration(
-                useCache: true,
-                preCacheSize: 10 * 1024 * 1024, // 10 MB
-                maxCacheSize: 500 * 1024 * 1024, // 500 MB
-                key: task.post.videoUrl,
-              ),
+      if (task.post.videoUrl.isNotEmpty) {
+        await DownloadManagerImpl.controller.preCache(
+          BetterPlayerDataSource(
+            BetterPlayerDataSourceType.network,
+            task.post.videoUrl,
+            videoFormat: BetterPlayerVideoFormat.hls,
+            videoExtension: 'm3u8',
+            placeholder: task.post.thumbnailUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    fadeInDuration: Duration.zero,
+                    imageUrl: task.post.thumbnailUrl,
+                  )
+                : null,
+            cacheConfiguration: BetterPlayerCacheConfiguration(
+              useCache: true,
+              preCacheSize: 10 * 1024 * 1024, // 10 MB
+              maxCacheSize: 500 * 1024 * 1024, // 500 MB
+              key: task.post.videoUrl,
             ),
-          );
-        case MediaViewImages():
-          for (final url in task.post.imageUrls) {
-            // Download the image and verify it's cached
-            final fileInfo = await CachedNetworkImageProvider
-                .defaultCacheManager
-                .downloadFile(url, key: url);
-            if (fileInfo.statusCode != 200) {
-              _logger.w(
-                'Image file was not properly cached after download: $url',
-              );
-            }
+          ),
+        );
+      } else if (task.post.imageUrls.isNotEmpty) {
+        for (final url in task.post.imageUrls) {
+          final fileInfo = await CachedNetworkImageProvider.defaultCacheManager
+              .downloadFile(url, key: url);
+          if (fileInfo.statusCode != 200) {
+            _logger.w(
+              'Image file was not properly cached after download: $url',
+            );
           }
-        case MediaViewBskyRecordWithMedia(:final media):
-          // Handle nested media in record with media embeds
-          switch (media) {
-            case MediaViewVideo() || MediaViewBskyVideo():
-              await DownloadManagerImpl.controller.preCache(
-                BetterPlayerDataSource(
-                  BetterPlayerDataSourceType.network,
-                  task.post.videoUrl,
-                  videoFormat: BetterPlayerVideoFormat.hls,
-                  videoExtension: 'm3u8',
-                  cacheConfiguration: BetterPlayerCacheConfiguration(
-                    useCache: true,
-                    preCacheSize: 10 * 1024 * 1024, // 10 MB
-                    maxCacheSize: 500 * 1024 * 1024, // 500 MB
-                    key: task.post.videoUrl,
-                  ),
-                ),
-              );
-            case MediaViewImage() || MediaViewImages() || MediaViewBskyImages():
-              for (final url in task.post.imageUrls) {
-                // Download the image and verify it's cached
-                await CachedNetworkImageProvider.defaultCacheManager
-                    .downloadFile(url, key: url);
-              }
-            default:
-              throw Exception('Unsupported media type: ${media.runtimeType}');
-          }
-        case MediaViewBskyVideo(:final thumbnail):
-          await DownloadManagerImpl.controller.preCache(
-            BetterPlayerDataSource(
-              BetterPlayerDataSourceType.network,
-              videoFormat: BetterPlayerVideoFormat.hls,
-              videoExtension: 'm3u8',
-              task.post.videoUrl,
-              placeholder: CachedNetworkImage(
-                fadeInDuration: Duration.zero,
-                imageUrl: thumbnail.toString(),
-              ),
-              cacheConfiguration: BetterPlayerCacheConfiguration(
-                useCache: true,
-                preCacheSize: 10 * 1024 * 1024, // 10 MB
-                maxCacheSize: 500 * 1024 * 1024, // 500 MB
-                key: task.post.videoUrl,
-              ),
-            ),
-          );
-        default:
-          throw Exception(
-            'Unsupported media type: ${task.post.media.runtimeType}',
-          );
+        }
+      } else {
+        throw Exception('Unsupported media type for ${task.post.uri}');
       }
 
       task.status = DownloadTaskStatus.completed;

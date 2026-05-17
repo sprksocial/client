@@ -102,10 +102,10 @@ class PostOverlay extends ConsumerWidget {
                                   post.author.displayName ?? post.author.handle,
                               avatarUrl: post.author.avatar?.toString(),
                               description: post.displayText,
-                              hashtags: post.record.hashtags,
+                              hashtags: post.hashtags,
                               informLabels: informLabels,
                               isSprk: post.uri.toString().contains('so.sprk'),
-                              audio: post.sound,
+                              audio: post.localSound,
                               onUsernameTap: onUsernameTap,
                             );
                           },
@@ -125,9 +125,7 @@ class PostOverlay extends ConsumerWidget {
                       shareCount: '${post.repostCount ?? 0}',
                       isLiked: isLiked,
                       profileImageUrl: post.author.avatar.toString(),
-                      isImage:
-                          post.media is MediaViewImages ||
-                          post.media is MediaViewBskyImages,
+                      isImage: post.imageUrls.length > 1,
                       onProfilePressed: onProfilePressed,
                       showBlockOption: showBlockOption,
                     ),

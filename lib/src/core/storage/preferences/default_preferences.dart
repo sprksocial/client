@@ -10,14 +10,14 @@ class DefaultPreferences {
     final labelerDid = modServiceDid;
     // Default feeds: timeline, forYou, latest
     final defaultFeeds = [
-      SavedFeed(type: 'timeline', value: 'following', pinned: true),
-      SavedFeed(
+      makeSavedFeed(type: 'timeline', value: 'following', pinned: true),
+      makeSavedFeed(
         type: 'feed',
         value:
             'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids',
         pinned: true,
       ),
-      SavedFeed(
+      makeSavedFeed(
         type: 'feed',
         value:
             'at://did:plc:cveom2iroj3mt747sd4qqnr2/so.sprk.feed.generator/discover',
@@ -27,42 +27,42 @@ class DefaultPreferences {
 
     // Default label preferences
     final defaultLabelPrefs = [
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: '!hide',
         visibility: 'hide',
       ),
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: '!no-promote',
         visibility: 'hide',
       ),
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: '!warn',
         visibility: 'warn',
       ),
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: '!no-unauthenticated',
         visibility: 'ignore',
       ),
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: 'dmca-violation',
         visibility: 'hide',
       ),
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: 'doxxing',
         visibility: 'warn',
       ),
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: 'nsfl',
         visibility: 'warn',
       ),
-      Preference.contentLabelPref(
+      contentLabelPreference(
         labelerDid: labelerDid,
         label: 'gore',
         visibility: 'warn',
@@ -74,8 +74,8 @@ class DefaultPreferences {
 
     return Preferences(
       preferences: [
-        Preference.savedFeedsPref(items: defaultFeeds),
-        Preference.labelersPref(labelers: defaultLabelers),
+        savedFeedsPreference(defaultFeeds),
+        labelersPreference(defaultLabelers),
         ...defaultLabelPrefs,
       ],
     );

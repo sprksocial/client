@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 part 'stories_by_author.g.dart';
 

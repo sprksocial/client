@@ -70,7 +70,7 @@ class SuggestedFeedsList extends ConsumerWidget {
                 final generatorView = generatorViews[index];
 
                 // Create a SavedFeed config for this generator
-                final savedFeed = SavedFeed(
+                final savedFeed = makeSavedFeed(
                   type: 'feed',
                   value: generatorView.uri.toString(),
                   pinned: false,
@@ -135,7 +135,7 @@ class SuggestedFeedsList extends ConsumerWidget {
                           (f) => f.config.id != existingFeed.config.id,
                           orElse: () => Feed(
                             type: 'timeline',
-                            config: SavedFeed(
+                            config: makeSavedFeed(
                               type: 'timeline',
                               value: 'following',
                               pinned: true,

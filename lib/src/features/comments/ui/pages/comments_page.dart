@@ -232,7 +232,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final hasCrossposts = displayPost.record.crossposts?.isNotEmpty ?? false;
+    final hasCrossposts = displayPost.crossposts?.isNotEmpty ?? false;
 
     return Column(
       children: [

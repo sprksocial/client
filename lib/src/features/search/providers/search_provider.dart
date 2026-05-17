@@ -4,7 +4,7 @@ import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -199,7 +199,7 @@ class Search extends _$Search {
         final user = updatedResults[userIndex];
 
         final updatedUser = user.copyWith(
-          viewer: ActorViewer(following: AtUri.parse(response.uri)),
+          viewer: ViewerState(following: response.uri),
         );
 
         updatedResults[userIndex] = updatedUser;
@@ -234,7 +234,7 @@ class Search extends _$Search {
       if (userIndex != -1) {
         final user = updatedResults[userIndex];
 
-        final updatedUser = user.copyWith(viewer: const ActorViewer());
+        final updatedUser = user.copyWith(viewer: const ViewerState());
 
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);

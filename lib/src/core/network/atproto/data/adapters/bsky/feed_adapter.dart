@@ -4,11 +4,14 @@ import 'package:poptart/poptart.dart';
 import 'package:bluesky_poptart/app/bsky/embed/images.dart';
 import 'package:bluesky_poptart/app/bsky/feed/defs.dart' as bsky_defs;
 import 'package:bluesky_poptart/app/bsky/feed/get_post_thread.dart';
-import 'package:bluesky_poptart/app/bsky/feed/post.dart';
+import 'package:bluesky_poptart/app/bsky/feed/post.dart' hide ReplyRef;
+import 'package:bluesky_poptart/app/bsky/feed/post/reply_ref.dart'
+    as bsky_post_reply;
 import 'package:bluesky_poptart/app/bsky/richtext/facet.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart'
-    hide ReplyRef;
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/utils/json_utils.dart';
+import 'package:sprk_poptart/so/sprk/feed/defs.dart' as sprk_feed_defs;
 
 /// Adapter for Bluesky feed models <-> Spark feed models
 ///
@@ -234,19 +237,84 @@ class BskyFeedAdapter {
   // ===========================================================================
   // Bluesky -> Spark Conversions
   // ===========================================================================
-  /// Transforms Bluesky images (multiple) to Spark single image format
-  /// For comments/replies, only the first image should be used
-  void _transformBskyImagesToSingleSparkImage(Map<String, dynamic> mediaJson) {
-    if (mediaJson[r'$type'] == 'app.bsky.embed.images#view') {
-      final images = mediaJson['images'] as List?;
-      if (images != null && images.isNotEmpty) {
-        final firstImage = images.first as Map<String, dynamic>;
-        // Transform to Spark single image format
-        mediaJson[r'$type'] = 'so.sprk.media.image#view';
-        mediaJson['image'] = firstImage;
-        mediaJson['alt'] = firstImage['alt'] ?? '';
-        mediaJson.remove('images');
-      }
+  /// Converts Bluesky app-view embeds into Spark media views.
+  ///
+  /// The rest of the app should only see `so.sprk.media.*#view` here; anything
+  /// Bluesky-specific is flattened or filtered at this adapter boundary.
+  Map<String, dynamic>? _convertBskyMediaToSparkMedia(
+    Map<String, dynamic> mediaJson, {
+    bool singleImage = false,
+  }) {
+    switch (mediaJson[r'$type']) {
+      case 'app.bsky.embed.images#view':
+        final images = mediaJson['images'] as List?;
+        if (images == null || images.isEmpty) return null;
+
+        if (singleImage) {
+          final firstImage = Map<String, dynamic>.from(
+            images.first as Map<String, dynamic>,
+          )..[r'$type'] = 'so.sprk.media.image#view';
+          return <String, dynamic>{
+            r'$type': 'so.sprk.media.image#view',
+            'image': firstImage,
+          };
+        }
+
+        final sparkImages = images
+            .whereType<Map<String, dynamic>>()
+            .map(
+              (image) =>
+                  Map<String, dynamic>.from(image)
+                    ..[r'$type'] = 'so.sprk.media.image#view',
+            )
+            .toList();
+        return <String, dynamic>{
+          r'$type': 'so.sprk.media.images#view',
+          'images': sparkImages,
+        };
+
+      case 'app.bsky.embed.video#view':
+        return <String, dynamic>{
+          ...mediaJson,
+          r'$type': 'so.sprk.media.video#view',
+          'thumbnail': mediaJson['thumbnail'] ?? '',
+        };
+
+      case 'app.bsky.embed.recordWithMedia#view':
+        final nestedMedia = mediaJson['media'];
+        if (nestedMedia is Map<String, dynamic>) {
+          return _convertBskyMediaToSparkMedia(
+            nestedMedia,
+            singleImage: singleImage,
+          );
+        }
+        return null;
+
+      case 'so.sprk.media.image#view':
+      case 'so.sprk.media.images#view':
+      case 'so.sprk.media.video#view':
+        return mediaJson;
+
+      default:
+        return null;
+    }
+  }
+
+  void _normalizeMediaField(
+    Map<String, dynamic> holder, {
+    bool singleImage = false,
+  }) {
+    final media = holder['media'];
+    if (media is! Map<String, dynamic>) return;
+
+    final normalized = _convertBskyMediaToSparkMedia(
+      media,
+      singleImage: singleImage,
+    );
+    if (normalized == null) {
+      holder.remove('media');
+    } else {
+      holder['media'] = normalized;
     }
   }
 
@@ -291,20 +359,14 @@ class BskyFeedAdapter {
           final reply = record['reply'] as Map<String, dynamic>;
           convertReplyRefJson(reply);
 
-          // Transform media for replies - only single image allowed
-          if (record.containsKey('media') && record['media'] != null) {
-            final mediaJson = record['media'] as Map<String, dynamic>;
-            _transformBskyImagesToSingleSparkImage(mediaJson);
-          }
+          _normalizeMediaField(record, singleImage: true);
+        } else {
+          _normalizeMediaField(record);
         }
       }
     }
 
-    // Also transform post-level media if this is a reply
-    if (isReply && post.containsKey('media') && post['media'] != null) {
-      final mediaJson = post['media'] as Map<String, dynamic>;
-      _transformBskyImagesToSingleSparkImage(mediaJson);
-    }
+    _normalizeMediaField(post, singleImage: isReply);
 
     if (!isNestedReply && post.containsKey('reply') && post['reply'] != null) {
       final replyRef = post['reply'] as Map<String, dynamic>;
@@ -459,7 +521,7 @@ class BskyFeedAdapter {
     return FeedPostRecord(
       text: text,
       createdAt: createdAt,
-      reply: ReplyRef(root: reply.root, parent: reply.parent),
+      reply: bsky_post_reply.ReplyRef(root: reply.root, parent: reply.parent),
       embed: embed,
       facets: facets,
     );
@@ -645,15 +707,12 @@ class BskyFeedAdapter {
 
   /// Check if a FeedViewPost has supported media
   bool _feedViewPostHasMedia(FeedViewPost feedViewPost) {
-    return feedViewPost.map(
-      post: (p) => p.post.hasSupportedMedia,
-      reply: (r) => r.reply.media != null,
-    );
+    return feedViewPost.localPost.hasSupportedMedia;
   }
 
   /// Check if a FeedViewPost is a reply
   bool _feedViewPostIsReply(FeedViewPost feedViewPost) {
-    return feedViewPost.map(post: (p) => p.reply != null, reply: (r) => true);
+    return feedViewPost.post.record['reply'] != null;
   }
 
   /// Process raw Bluesky FeedViewPost list and convert to Spark format
@@ -844,70 +903,7 @@ extension BskyRecordAdapter on Record {
         labels: labels,
         media: media,
       ),
-      story: (media, createdAt, sound, labels, tags, embeds) => StoryRecord(
-        media: media,
-        createdAt: createdAt,
-        sound: sound,
-        labels: labels,
-        tags: tags,
-        embeds: embeds,
-      ),
-      profile:
-          (
-            displayName,
-            description,
-            avatar,
-            banner,
-            selfLabels,
-            joinedViaStarterPack,
-            pinnedPost,
-            createdAt,
-          ) => ProfileRecord(
-            displayName: displayName,
-            description: description,
-            avatar: avatar,
-            banner: banner,
-            selfLabels: selfLabels,
-            joinedViaStarterPack: joinedViaStarterPack,
-            pinnedPost: pinnedPost,
-            createdAt: createdAt,
-          ),
-      audio: (sound, title, createdAt, origin, details, labels) => AudioRecord(
-        sound: sound,
-        title: title,
-        createdAt: createdAt,
-        origin: origin,
-        details: details,
-        labels: labels,
-      ),
-      plyrTrack:
-          (
-            title,
-            artist,
-            fileType,
-            createdAt,
-            audioUrl,
-            album,
-            duration,
-            features,
-            imageUrl,
-            supportGate,
-            description,
-            audioBlob,
-          ) => PlyrTrackRecord(
-            title: title,
-            artist: artist,
-            fileType: fileType,
-            createdAt: createdAt,
-            audioUrl: audioUrl,
-            album: album,
-            duration: duration,
-            features: features,
-            imageUrl: imageUrl,
-            supportGate: supportGate,
-            description: description,
-            audioBlob: audioBlob,
-          ),
+
       bskyPost:
           (createdAt, text, facets, reply, langs, tags, selfLabels, embed) =>
               BskyPostRecord(
@@ -926,37 +922,23 @@ extension BskyRecordAdapter on Record {
 
 extension BskyPostViewAdapter on PostView {
   PostView toSparkPostView() {
-    return copyWith(
-      record: record.toSparkRecord() as PostRecord,
-      likeCount: likeCount,
-      replyCount: replyCount,
-      repostCount: repostCount,
-    );
+    return this;
   }
 }
 
 extension BskyReplyViewAdapter on ReplyView {
   ReplyView toSparkReplyView() {
-    return copyWith(
-      record: record.toSparkRecord(),
-      media: media,
-      replyCount: replyCount,
-      likeCount: likeCount,
-    );
+    return this;
   }
 }
 
 extension BskyFeedViewPostAdapter on FeedViewPost {
   FeedViewPost toSparkFeedViewPost() {
-    return map(
-      post: (postVariant) => FeedViewPost.post(
-        post: postVariant.post.toSparkPostView(),
-        reply: postVariant.reply,
+    return FeedViewPost(
+      post: sprk_feed_defs.PostView.fromJson(
+        localPost.toSparkPostView().toJson(),
       ),
-      reply: (replyVariant) => FeedViewPost.reply(
-        reply: replyVariant.reply.toSparkReplyView(),
-        replyRef: replyVariant.replyRef,
-      ),
+      feedContext: feedContext,
     );
   }
 }

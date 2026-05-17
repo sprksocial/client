@@ -2,7 +2,9 @@ import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 
 /// Interface for Feed-related API endpoints
 abstract class FeedRepository {

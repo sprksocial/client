@@ -1,5 +1,9 @@
 import 'package:poptart/poptart.dart';
-import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
+import 'package:sprk_poptart/so/sprk/graph/get_blocks/output.dart';
+import 'package:sprk_poptart/so/sprk/graph/get_followers/output.dart';
+import 'package:sprk_poptart/so/sprk/graph/get_follows/output.dart';
+import 'package:sprk_poptart/so/sprk/graph/get_known_followers/output.dart';
 
 /// Interface for Graph-related API endpoints
 abstract class GraphRepository {
@@ -7,25 +11,28 @@ abstract class GraphRepository {
   ///
   /// [did] The DID to get followers for
   /// [cursor] Optional cursor for pagination
-  Future<FollowersResponse> getFollowers(String did, {String? cursor});
+  Future<GraphGetFollowersOutput> getFollowers(String did, {String? cursor});
 
   /// Get followers for a DID who are followed by the viewer
   ///
   /// [did] The DID to get known followers for
   /// [cursor] Optional cursor for pagination
-  Future<FollowersResponse> getKnownFollowers(String did, {String? cursor});
+  Future<GraphGetKnownFollowersOutput> getKnownFollowers(
+    String did, {
+    String? cursor,
+  });
 
   /// Get follows for a DID
   ///
   /// [did] The DID to get follows for
   /// [cursor] Optional cursor for pagination
-  Future<FollowsResponse> getFollows(String did, {String? cursor});
+  Future<GraphGetFollowsOutput> getFollows(String did, {String? cursor});
 
   /// Follow a user
   ///
   /// [did] The DID of the user to follow
   /// [bsky] Whether to use Bluesky follow records instead of Spark
-  Future<FollowUserResponse> followUser(String did, {bool bsky = false});
+  Future<RepoStrongRef> followUser(String did, {bool bsky = false});
 
   /// Unfollow a user
   ///
@@ -48,12 +55,12 @@ abstract class GraphRepository {
   ///
   /// [did] The DID to get blocks for
   /// [cursor] Optional cursor for pagination
-  Future<BlocksResponse> getBlocks(String did, {String? cursor});
+  Future<GraphGetBlocksOutput> getBlocks(String did, {String? cursor});
 
   /// Block a user
   ///
   /// [did] The DID of the user to block
-  Future<BlockUserResponse> blockUser(String did);
+  Future<RepoStrongRef> blockUser(String did);
 
   /// Unblock a user
   ///

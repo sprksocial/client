@@ -4,6 +4,7 @@ import 'package:poptart_lex/com/atproto/repo/list_records.dart'
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';

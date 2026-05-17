@@ -1,6 +1,7 @@
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:sprk_poptart/so/sprk/sound/defs/audio_details.dart';
 
 abstract class SoundRepository {
   /// Create a new sound record.

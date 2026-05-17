@@ -9,7 +9,7 @@ const _fallbackAudioDuration = Duration(seconds: 9);
 const _fallbackAudioFileExtension = 'mp3';
 
 AudioTrack? audioViewToAudioTrack(AudioView audio) {
-  final audioUrl = audio.audio?.toString();
+  final audioUrl = audio.audio;
   if (audioUrl == null || audioUrl.isEmpty) return null;
 
   return AudioTrack(
@@ -95,7 +95,7 @@ String decodeSoundTrackAudioMimeType(String? encoded) {
 }
 
 String audioFileExtension(AudioView audio) {
-  final record = audio.record;
+  final record = audio.localRecord;
   if (record is PlyrTrackRecord) {
     return _normalizeAudioFileExtension(
       record.fileType,
@@ -109,7 +109,7 @@ String audioFileExtension(AudioView audio) {
 }
 
 String audioMimeType(AudioView audio) {
-  final record = audio.record;
+  final record = audio.localRecord;
   if (record is PlyrTrackRecord) {
     return _normalizeAudioMimeType(
       record.audioBlob?.mimeType,

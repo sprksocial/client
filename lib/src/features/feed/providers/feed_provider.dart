@@ -184,8 +184,8 @@ class FeedNotifier extends _$FeedNotifier {
         final postLabels = <Label>[...?post.labels];
 
         // Add self-labels from the post record
-        if (post.record.selfLabels != null) {
-          for (final selfLabel in post.record.selfLabels!) {
+        if (post.selfLabels != null) {
+          for (final selfLabel in post.selfLabels!) {
             postLabels.add(
               Label(
                 uri: key,

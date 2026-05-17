@@ -9,10 +9,13 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/pages.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:sprk_poptart/so/sprk/embed/mention.dart' show EmbedMention;
 
 part 'app_router.gr.dart';
 

@@ -8,11 +8,18 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/actor_adapter.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:sprk_poptart/so/sprk/actor/get_profile.dart'
+    as sprk_get_profile;
+import 'package:sprk_poptart/so/sprk/actor/get_profiles.dart'
+    as sprk_get_profiles;
+import 'package:sprk_poptart/so/sprk/actor/profile.dart' as sprk_profile;
+import 'package:sprk_poptart/so/sprk/actor/search_actors.dart';
+import 'package:sprk_poptart/so/sprk/actor/search_actors_typeahead.dart';
 
 /// Actor-related API endpoints implementation
 class ActorRepositoryImpl implements ActorRepository {
@@ -58,21 +65,18 @@ class ActorRepositoryImpl implements ActorRepository {
       }
 
       // Use Spark API (no fallback)
-      final result = await atproto.get(
-        NSID.parse('so.sprk.actor.getProfile'),
-        parameters: {'actor': did},
+      final result = await atproto.call(
+        sprk_get_profile.soSprkActorGetProfile,
+        parameters: sprk_get_profile.ActorGetProfileInput(actor: did),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger.d('Profile retrieved successfully from Spark');
-      return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
+      return result.data;
     });
   }
 
   @override
-  Future<SearchActorsResponse> searchActors(
+  Future<ActorSearchActorsOutput> searchActors(
     String query, {
     String? cursor,
   }) async {
@@ -94,31 +98,19 @@ class ActorRepositoryImpl implements ActorRepository {
         parameters['cursor'] = cursor;
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.actor.searchActors'),
-        parameters: parameters,
+      final result = await atproto.call(
+        soSprkActorSearchActors,
+        parameters: ActorSearchActorsInput(q: query, cursor: cursor),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       _logger.d('Actor search completed successfully');
-
-      final data = result.data as Map<String, dynamic>;
-      final actorsJson = (data['actors'] as List? ?? []).cast<dynamic>();
-      final cursorNext = data['cursor'] as String?;
-
-      final actors = actorsJson
-          .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
-          .toList();
-
-      return SearchActorsResponse(actors: actors, cursor: cursorNext);
+      return result.data;
     });
   }
 
   @override
-  Future<SearchActorsTypeaheadResponse> searchActorsTypeahead(
+  Future<ActorSearchActorsTypeaheadOutput> searchActorsTypeahead(
     String query, {
     int limit = 10,
   }) async {
@@ -130,57 +122,39 @@ class ActorRepositoryImpl implements ActorRepository {
         return _searchActorsTypeaheadFromAppView(query, limit: clampedLimit);
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.actor.searchActorsTypeahead'),
-        parameters: {'q': query, 'limit': clampedLimit.toString()},
+      final result = await atproto.call(
+        soSprkActorSearchActorsTypeahead,
+        parameters: ActorSearchActorsTypeaheadInput(
+          q: query,
+          limit: clampedLimit,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       _logger.d('Actor typeahead search completed successfully');
 
-      return SearchActorsTypeaheadResponse.fromJson(
-        result.data as Map<String, dynamic>,
-      );
+      return result.data;
     });
   }
 
-  Future<SearchActorsTypeaheadResponse> _searchActorsTypeaheadFromAppView(
+  Future<ActorSearchActorsTypeaheadOutput> _searchActorsTypeaheadFromAppView(
     String query, {
     required int limit,
   }) async {
-    final uri = _appViewXrpcUri(
-      'so.sprk.actor.searchActorsTypeahead',
-      queryParameters: {'q': query, 'limit': limit.toString()},
-    );
-    final response = await http.get(uri);
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        'Actor typeahead failed with status ${response.statusCode}',
-      );
-    }
-
-    return SearchActorsTypeaheadResponse.fromJson(
-      jsonDecode(response.body) as Map<String, dynamic>,
-    );
-  }
-
-  Uri _appViewXrpcUri(
-    String nsid, {
-    required Map<String, String> queryParameters,
-  }) {
     final baseUri = Uri.parse(AppConfig.appViewUrl);
-    final basePath = baseUri.path.endsWith('/')
-        ? baseUri.path.substring(0, baseUri.path.length - 1)
-        : baseUri.path;
-
-    return baseUri.replace(
-      path: '$basePath/xrpc/$nsid',
-      queryParameters: queryParameters,
+    final client = XRPCClient(
+      protocol: baseUri.scheme == 'http' ? Protocol.http : Protocol.https,
+      service: baseUri.hasPort
+          ? '${baseUri.host}:${baseUri.port}'
+          : baseUri.host,
     );
+
+    final response = await client.call(
+      soSprkActorSearchActorsTypeahead,
+      parameters: ActorSearchActorsTypeaheadInput(q: query, limit: limit),
+    );
+
+    return response.data;
   }
 
   @override
@@ -193,7 +167,7 @@ class ActorRepositoryImpl implements ActorRepository {
       throw Exception('Not authenticated');
     }
 
-    final record = ProfileRecord(
+    final record = sprk_profile.ActorProfileRecord(
       displayName: displayName,
       description: description,
       avatar: avatar,
@@ -286,21 +260,13 @@ class ActorRepositoryImpl implements ActorRepository {
       }
 
       // Use Spark API (no fallback)
-      final result = await atproto.get(
-        NSID.parse('so.sprk.actor.getProfiles'),
-        parameters: {'actors': dids},
+      final result = await atproto.call(
+        sprk_get_profiles.soSprkActorGetProfiles,
+        parameters: sprk_get_profiles.ActorGetProfilesInput(actors: dids),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger.d('Profiles retrieved successfully from Spark');
-      return (result.data['profiles']! as List)
-          .map(
-            (json) =>
-                ProfileViewDetailed.fromJson(json as Map<String, dynamic>),
-          )
-          .toList();
+      return result.data.profiles;
     });
   }
 }

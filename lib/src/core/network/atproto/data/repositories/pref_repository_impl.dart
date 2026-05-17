@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 
@@ -7,6 +6,10 @@ import 'package:spark/src/core/network/atproto/data/repositories/pref_repository
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:sprk_poptart/so/sprk/actor/get_preferences.dart'
+    as sprk_get_preferences;
+import 'package:sprk_poptart/so/sprk/actor/put_preferences.dart'
+    as sprk_put_preferences;
 
 class PrefRepositoryImpl implements PrefRepository {
   PrefRepositoryImpl(this._client) {
@@ -32,12 +35,9 @@ class PrefRepositoryImpl implements PrefRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.actor.getPreferences'),
+      final result = await atproto.call(
+        sprk_get_preferences.soSprkActorGetPreferences,
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       if (result.status != HttpStatus.ok) {
@@ -45,7 +45,7 @@ class PrefRepositoryImpl implements PrefRepository {
         throw Exception('Failed to retrieve preferences');
       }
 
-      return Preferences.fromJson(result.data as Map<String, dynamic>);
+      return result.data;
     });
   }
 
@@ -63,9 +63,11 @@ class PrefRepositoryImpl implements PrefRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.post(
-        NSID.parse('so.sprk.actor.putPreferences'),
-        body: preferences.toJson(),
+      final result = await atproto.call(
+        sprk_put_preferences.soSprkActorPutPreferences,
+        input: sprk_put_preferences.ActorPutPreferencesInput(
+          preferences: preferences.preferences,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
       );
 

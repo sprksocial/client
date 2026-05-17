@@ -1,7 +1,9 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 /// Interface for Story-related API endpoints
 abstract class StoryRepository {

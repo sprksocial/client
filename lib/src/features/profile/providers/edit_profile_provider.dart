@@ -8,7 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';

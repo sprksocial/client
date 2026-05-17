@@ -10,7 +10,7 @@ import 'package:spark/src/core/design_system/components/molecules/profile_stats.
 import 'package:spark/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 class ProfilePageTemplate extends StatelessWidget {
   const ProfilePageTemplate({

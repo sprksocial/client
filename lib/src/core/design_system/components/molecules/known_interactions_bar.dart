@@ -23,9 +23,14 @@ class KnownInteractionsBar extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    // Filter interactions by type
-    final reposts = interactions!.whereType<KnownRepost>().toList();
-    final likes = interactions!.whereType<KnownLike>().toList();
+    final reposts = interactions!
+        .map((interaction) => interaction.knownRepost)
+        .whereType<KnownRepost>()
+        .toList();
+    final likes = interactions!
+        .map((interaction) => interaction.knownLike)
+        .whereType<KnownLike>()
+        .toList();
 
     // If no reposts or likes, don't render anything
     if (reposts.isEmpty && likes.isEmpty) {

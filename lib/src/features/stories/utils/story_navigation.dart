@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';

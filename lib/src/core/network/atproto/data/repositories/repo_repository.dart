@@ -20,6 +20,15 @@ abstract class RepoRepository {
     required Record record,
   });
 
+  /// Edit a record in the repository from serialized lexicon data
+  ///
+  /// [uri] The URI of the record to edit
+  /// [record] The serialized record data to edit
+  Future<RepoStrongRef> editRecordJson({
+    required AtUri uri,
+    required Map<String, dynamic> record,
+  });
+
   /// Create a record in the repository
   ///
   /// [collection] The NSID of the collection to create the record in

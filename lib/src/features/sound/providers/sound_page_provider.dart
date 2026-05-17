@@ -24,8 +24,13 @@ class SoundPage extends _$SoundPage {
         limit: SoundPageState.fetchLimit,
       );
 
+      final audio = response.audio;
+      if (audio == null) {
+        throw Exception('Audio not returned for URI: $audioUri');
+      }
+
       return SoundPageState(
-        audio: response.audio,
+        audio: audio,
         posts: response.posts,
         cursor: response.cursor,
         isEndOfNetwork: response.cursor == null,
@@ -84,9 +89,14 @@ class SoundPage extends _$SoundPage {
         limit: SoundPageState.fetchLimit,
       );
 
+      final audio = response.audio;
+      if (audio == null) {
+        throw Exception('Audio not returned for URI: $audioUri');
+      }
+
       state = AsyncValue.data(
         SoundPageState(
-          audio: response.audio,
+          audio: audio,
           posts: response.posts,
           cursor: response.cursor,
           isEndOfNetwork: response.cursor == null,

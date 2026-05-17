@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:sprk_poptart/so/sprk/actor/search_actors/output.dart';
+import 'package:sprk_poptart/so/sprk/actor/search_actors_typeahead/output.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/posting/models/mention.dart';
@@ -122,19 +124,19 @@ class _FakeActorRepository implements ActorRepository {
   Future<bool> isEarlySupporter(String did) async => false;
 
   @override
-  Future<SearchActorsResponse> searchActors(
+  Future<ActorSearchActorsOutput> searchActors(
     String query, {
     String? cursor,
   }) async {
-    return SearchActorsResponse(actors: const []);
+    return ActorSearchActorsOutput(actors: const []);
   }
 
   @override
-  Future<SearchActorsTypeaheadResponse> searchActorsTypeahead(
+  Future<ActorSearchActorsTypeaheadOutput> searchActorsTypeahead(
     String query, {
     int limit = 10,
   }) async {
-    return SearchActorsTypeaheadResponse(actors: const []);
+    return ActorSearchActorsTypeaheadOutput(actors: const []);
   }
 
   @override

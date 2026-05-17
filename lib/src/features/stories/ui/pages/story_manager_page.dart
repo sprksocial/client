@@ -98,11 +98,7 @@ class StoryManagerPage extends ConsumerWidget {
                     : age.inMinutes >= 1
                     ? '${age.inMinutes}m'
                     : 'now';
-                final thumbUrl = switch (story.media) {
-                  MediaViewVideo(:final thumbnail) => thumbnail.toString(),
-                  MediaViewImage(:final image) => image.thumb.toString(),
-                  _ => story.author.avatar.toString(),
-                };
+                final thumbUrl = story.thumbnailUrl;
                 return Material(
                   color: Colors.transparent,
                   child: InkWell(

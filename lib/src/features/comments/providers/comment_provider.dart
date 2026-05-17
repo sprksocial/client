@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/comments/providers/comment_state.dart';
 import 'package:spark/src/features/feed/providers/post_updates.dart';
 
@@ -42,14 +43,22 @@ class CommentNotifier extends _$CommentNotifier {
             ),
           ),
           ThreadReplyView(:final reply) => ThreadReplyView(
-            reply: reply.copyWith(
+            reply: ReplyView(
+              uri: reply.uri,
+              cid: reply.cid,
+              author: reply.author,
+              record: reply.record,
+              indexedAt: reply.indexedAt,
+              media: reply.media,
+              replyCount: reply.replyCount,
+              labels: reply.labels,
               viewer: reply.viewer?.copyWith(like: null),
               likeCount: currentLikeCount - 1,
             ),
           ),
         };
         state = state.copyWith(
-          thread: state.thread.copyWith(post: updatedPost),
+          thread: _withUpdatedPost(state.thread, updatedPost),
         );
 
         await _feedRepository.unlikePost(likeUri);
@@ -70,7 +79,15 @@ class CommentNotifier extends _$CommentNotifier {
             ),
           ),
           ThreadReplyView(:final reply) => ThreadReplyView(
-            reply: reply.copyWith(
+            reply: ReplyView(
+              uri: reply.uri,
+              cid: reply.cid,
+              author: reply.author,
+              record: reply.record,
+              indexedAt: reply.indexedAt,
+              media: reply.media,
+              replyCount: reply.replyCount,
+              labels: reply.labels,
               viewer:
                   reply.viewer?.copyWith(like: response.uri) ??
                   ReplyViewerState(like: response.uri),
@@ -79,7 +96,7 @@ class CommentNotifier extends _$CommentNotifier {
           ),
         };
         state = state.copyWith(
-          thread: state.thread.copyWith(post: updatedPost),
+          thread: _withUpdatedPost(state.thread, updatedPost),
         );
 
         ref.read(postUpdateProvider(postUri).notifier).state++;
@@ -95,5 +112,15 @@ class CommentNotifier extends _$CommentNotifier {
     if (imageUrls.isNotEmpty) {
       precacheImage(CachedNetworkImageProvider(imageUrls.first), context);
     }
+  }
+
+  ThreadViewPost _withUpdatedPost(ThreadViewPost thread, ThreadPost post) {
+    return Thread.threadViewPost(
+          post: post,
+          parent: thread.parent,
+          replies: thread.replies,
+          context: thread.context,
+        )
+        as ThreadViewPost;
   }
 }

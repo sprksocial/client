@@ -93,16 +93,14 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
     final post = thread.post;
     if (post is ThreadReplyView) {
       final record = post.reply.record;
-      if (record is Map<String, dynamic>) {
-        final reply = record['reply'] as Map<String, dynamic>?;
-        if (reply != null) {
-          final root = reply['root'] as Map<String, dynamic>?;
-          if (root != null) {
-            final uri = root['uri'] as String?;
-            final cid = root['cid'] as String?;
-            if (uri != null && cid != null) {
-              return (uri: uri, cid: cid);
-            }
+      final reply = record['reply'] as Map<String, dynamic>?;
+      if (reply != null) {
+        final root = reply['root'] as Map<String, dynamic>?;
+        if (root != null) {
+          final uri = root['uri'] as String?;
+          final cid = root['cid'] as String?;
+          if (uri != null && cid != null) {
+            return (uri: uri, cid: cid);
           }
         }
       }

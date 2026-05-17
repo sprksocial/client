@@ -123,9 +123,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
 
     final borderRadius = BorderRadius.circular(8);
 
-    // Comments only support a single image (EmbedViewMediaImage)
-    // The adapter transforms Bluesky comments to this format
-    final hasImages = commentState.thread.post.media is MediaViewImage;
+    final imageUrls = commentState.thread.post.imageUrls;
 
     return ColoredBox(
       color: widget.isHighlighted
@@ -228,11 +226,10 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
 
-                      if (commentState.thread.post.media != null &&
-                          hasImages) ...[
+                      if (imageUrls.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         ImageContent(
-                          imageUrls: commentState.thread.post.imageUrls,
+                          imageUrls: imageUrls,
                           borderRadius: borderRadius,
                           thumbnailSize: thumbnailSize,
                         ),

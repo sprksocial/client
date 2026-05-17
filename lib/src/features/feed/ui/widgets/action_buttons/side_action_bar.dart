@@ -9,6 +9,7 @@ import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';

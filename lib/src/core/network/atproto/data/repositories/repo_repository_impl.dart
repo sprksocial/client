@@ -69,6 +69,14 @@ class RepoRepositoryImpl implements RepoRepository {
     required AtUri uri,
     required Record record,
   }) async {
+    return editRecordJson(uri: uri, record: record.toJson());
+  }
+
+  @override
+  Future<RepoStrongRef> editRecordJson({
+    required AtUri uri,
+    required Map<String, dynamic> record,
+  }) async {
     _logger.d('Editing record at URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -86,7 +94,7 @@ class RepoRepositoryImpl implements RepoRepository {
           repo: uri.hostname,
           collection: uri.collection.toString(),
           rkey: uri.rkey,
-          record: record.toJson(),
+          record: record,
         ),
       );
       _logger.d('Record edited successfully');
@@ -197,10 +205,9 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.post(
-        repo_upload_blob.comAtprotoRepoUploadBlob.nsid,
-        body: data,
-        to: const repo_upload_blob.RepoUploadBlobOutputConverter().fromJson,
+      final result = await atproto.call(
+        repo_upload_blob.comAtprotoRepoUploadBlob,
+        input: data,
       );
       _logger.d('Blob uploaded successfully');
 
@@ -282,36 +289,16 @@ class RepoRepositoryImpl implements RepoRepository {
         }
       } else {
         _logger.d('Using direct API call for moderation report');
-        final endpoint = NSID.parse('com.atproto.moderation.createReport');
         final subjectData = input.subject.data;
-
-        Map<String, dynamic> body;
-        var isBskyPost = false;
-
-        if (subjectData is RepoStrongRef) {
-          // Check if this is a Bluesky post
-          isBskyPost = subjectData.uri.collection.toString().startsWith(
-            'app.bsky',
-          );
-
-          body = {
-            'subject': {
-              r'$type': 'com.atproto.repo.strongRef',
-              'uri': subjectData.uri.toString(),
-              'cid': subjectData.cid,
-            },
-            'reasonType': input.reasonType.toJson(),
-          };
-        } else {
+        if (subjectData is! RepoStrongRef) {
           _logger.e('Invalid subject data type: ${subjectData.runtimeType}');
           throw Exception('Invalid subject data');
         }
 
-        if (input.reason != null) {
-          body['reason'] = input.reason;
-        }
-
-        // Route to appropriate moderation service
+        // Check if this is a Bluesky post and route to appropriate moderation service
+        final isBskyPost = subjectData.uri.collection.toString().startsWith(
+          'app.bsky',
+        );
         final modServiceDid = isBskyPost ? _client.bskyModDid : _client.modDid;
         _logger.d(
           'Routing report to ${isBskyPost ? 'Bluesky' : 'Spark'} moderation '
@@ -321,10 +308,10 @@ class RepoRepositoryImpl implements RepoRepository {
         final headers = {'atproto-proxy': modServiceDid};
 
         try {
-          final response = await atproto.post(
-            endpoint,
+          final response = await atproto.call(
+            comAtprotoModerationCreateReport,
             headers: headers,
-            body: body,
+            input: input,
           );
 
           if (response.status != HttpStatus.ok) {

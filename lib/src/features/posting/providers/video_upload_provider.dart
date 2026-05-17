@@ -5,6 +5,8 @@ import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_write_adapters.dart';
 import 'package:spark/src/core/utils/bluesky_crosspost_text.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -205,7 +207,7 @@ Future<RepoStrongRef?> _postVideoRecord({
 
   final result = await GetIt.I<SprkRepository>().repo.createRecord(
     collection: 'so.sprk.feed.post',
-    record: postRecord.toJson(),
+    record: sprkPostRecordFromLocal(postRecord).toJson(),
   );
 
   var finalResult = result;
@@ -219,9 +221,11 @@ Future<RepoStrongRef?> _postVideoRecord({
         result.uri.rkey,
         facets,
       );
-      finalResult = await GetIt.I<SprkRepository>().repo.editRecord(
+      finalResult = await GetIt.I<SprkRepository>().repo.editRecordJson(
         uri: result.uri,
-        record: postRecord.copyWith(crossposts: [bskyResult]),
+        record: sprkPostRecordFromLocal(
+          postRecord.copyWith(crossposts: [bskyResult]),
+        ).toJson(),
       );
     } catch (e, s) {
       logger.w('Crosspost to Bluesky failed: $e', error: e, stackTrace: s);

@@ -12,6 +12,8 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_state.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/viewer_state.dart'
+    as actor_viewer;
 
 part 'profile_provider.g.dart';
 
@@ -191,7 +193,7 @@ class ProfileNotifier extends _$ProfileNotifier {
                 ? AtUri.parse(newFollowUriResult)
                 : null,
           ) ??
-          ActorViewer(
+          actor_viewer.ViewerState(
             following: newFollowUriResult != null
                 ? AtUri.parse(newFollowUriResult)
                 : null,
@@ -260,7 +262,7 @@ class ProfileNotifier extends _$ProfileNotifier {
                 ? AtUri.parse(newBlockUriResult)
                 : null,
           ) ??
-          ActorViewer(
+          actor_viewer.ViewerState(
             blocking: newBlockUriResult != null
                 ? AtUri.parse(newBlockUriResult)
                 : null,

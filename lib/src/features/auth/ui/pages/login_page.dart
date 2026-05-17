@@ -10,7 +10,7 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/app_overla
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';

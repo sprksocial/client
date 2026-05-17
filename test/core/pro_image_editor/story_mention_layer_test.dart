@@ -3,8 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/pro_image_editor/story_mention_layer.dart';
 import 'package:spark/src/core/ui/widgets/story_mention_chip.dart';
 
@@ -43,7 +42,7 @@ void main() {
 
         expect(embeds, hasLength(1));
 
-        final embed = embeds.single as StoryMentionEmbed;
+        final embed = embeds.single;
         final expectedWidth = 3000;
         final expectedHeight =
             ((200 * 1.5) * (baseSize.height / baseSize.width) / 1000 * 10000)
@@ -73,7 +72,7 @@ void main() {
         background,
         mention,
       ], canvasSize: const Size(1000, 1000));
-      final embed = embeds.single as StoryMentionEmbed;
+      final embed = embeds.single;
 
       expect(embeds, hasLength(1));
       expect(embed.did, 'did:plc:first');
@@ -96,7 +95,7 @@ void main() {
 
       expect(embeds, hasLength(1));
 
-      final embed = embeds.single as StoryMentionEmbed;
+      final embed = embeds.single;
       final renderedWidth = 200.0;
       final renderedHeight = renderedWidth * (baseSize.height / baseSize.width);
       final unclippedLeft = -450 + 500 - renderedWidth / 2;

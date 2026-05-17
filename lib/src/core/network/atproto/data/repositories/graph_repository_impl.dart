@@ -1,13 +1,22 @@
-import 'dart:convert';
+import 'package:bluesky_poptart/app/bsky/graph/follow.dart' as bsky_follow;
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/repo/list_records.dart'
     as repo_list_records;
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:get_it/get_it.dart';
-import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:sprk_poptart/so/sprk/graph/block.dart' as sprk_block;
+import 'package:sprk_poptart/so/sprk/graph/follow.dart' as sprk_follow;
+import 'package:sprk_poptart/so/sprk/graph/get_blocks.dart' as sprk_get_blocks;
+import 'package:sprk_poptart/so/sprk/graph/get_followers.dart'
+    as sprk_get_followers;
+import 'package:sprk_poptart/so/sprk/graph/get_follows.dart'
+    as sprk_get_follows;
+import 'package:sprk_poptart/so/sprk/graph/get_known_followers.dart'
+    as sprk_get_known_followers;
 
 /// Implementation of Graph-related API endpoints
 class GraphRepositoryImpl implements GraphRepository {
@@ -20,7 +29,10 @@ class GraphRepositoryImpl implements GraphRepository {
   );
 
   @override
-  Future<FollowersResponse> getFollowers(String did, {String? cursor}) async {
+  Future<sprk_get_followers.GraphGetFollowersOutput> getFollowers(
+    String did, {
+    String? cursor,
+  }) async {
     _logger.d('Getting followers for DID: $did with cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -38,17 +50,16 @@ class GraphRepositoryImpl implements GraphRepository {
         if (cursor != null) {
           params['cursor'] = cursor;
         }
-        final result = await atproto.get(
-          NSID.parse('so.sprk.graph.getFollowers'),
-          parameters: params,
+        final result = await atproto.call(
+          sprk_get_followers.soSprkGraphGetFollowers,
+          parameters: sprk_get_followers.GraphGetFollowersInput(
+            actor: did,
+            cursor: cursor,
+          ),
           headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
         );
         _logger.d('Followers retrieved successfully');
-        return FollowersResponse.fromJson(result.data as Map<String, dynamic>);
+        return result.data;
       } on FormatException catch (fe) {
         _logger.e('Error retrieving followers for DID: $did', error: fe);
         throw Exception('Failed to retrieve followers for DID: $did');
@@ -57,10 +68,8 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<FollowersResponse> getKnownFollowers(
-    String did, {
-    String? cursor,
-  }) async {
+  Future<sprk_get_known_followers.GraphGetKnownFollowersOutput>
+  getKnownFollowers(String did, {String? cursor}) async {
     _logger.d('Getting known followers for DID: $did with cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -78,17 +87,16 @@ class GraphRepositoryImpl implements GraphRepository {
         if (cursor != null) {
           params['cursor'] = cursor;
         }
-        final result = await atproto.get(
-          NSID.parse('so.sprk.graph.getKnownFollowers'),
-          parameters: params,
+        final result = await atproto.call(
+          sprk_get_known_followers.soSprkGraphGetKnownFollowers,
+          parameters: sprk_get_known_followers.GraphGetKnownFollowersInput(
+            actor: did,
+            cursor: cursor,
+          ),
           headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
         );
         _logger.d('Known followers retrieved successfully');
-        return FollowersResponse.fromJson(result.data as Map<String, dynamic>);
+        return result.data;
       } on FormatException catch (fe) {
         _logger.e('Error retrieving known followers for DID: $did', error: fe);
         throw Exception('Failed to retrieve known followers for DID: $did');
@@ -97,7 +105,10 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<FollowsResponse> getFollows(String did, {String? cursor}) async {
+  Future<sprk_get_follows.GraphGetFollowsOutput> getFollows(
+    String did, {
+    String? cursor,
+  }) async {
     _logger.d('Getting follows for DID: $did with cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -115,17 +126,16 @@ class GraphRepositoryImpl implements GraphRepository {
         if (cursor != null) {
           params['cursor'] = cursor;
         }
-        final result = await atproto.get(
-          NSID.parse('so.sprk.graph.getFollows'),
-          parameters: params,
+        final result = await atproto.call(
+          sprk_get_follows.soSprkGraphGetFollows,
+          parameters: sprk_get_follows.GraphGetFollowsInput(
+            actor: did,
+            cursor: cursor,
+          ),
           headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
         );
         _logger.d('Follows retrieved successfully');
-        return FollowsResponse.fromJson(result.data as Map<String, dynamic>);
+        return result.data;
       } on FormatException catch (fe) {
         _logger.e('Error retrieving follows for DID: $did', error: fe);
         throw Exception('Failed to retrieve follows for DID: $did');
@@ -134,7 +144,7 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<FollowUserResponse> followUser(String did, {bool bsky = false}) async {
+  Future<RepoStrongRef> followUser(String did, {bool bsky = false}) async {
     _logger.d('Following user with DID: $did, bsky: $bsky');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -177,11 +187,16 @@ class GraphRepositoryImpl implements GraphRepository {
           throw Exception('Already following this user');
         }
 
-        final followRecord = {
-          r'$type': collection,
-          'subject': did,
-          'createdAt': DateTime.now().toUtc().toIso8601String(),
-        };
+        final createdAt = DateTime.now().toUtc();
+        final followRecord = bsky
+            ? bsky_follow.GraphFollowRecord(
+                subject: did,
+                createdAt: createdAt,
+              ).toJson()
+            : sprk_follow.GraphFollowRecord(
+                subject: did,
+                createdAt: createdAt,
+              ).toJson();
 
         final result = await _client.repo.createRecord(
           collection: collection,
@@ -191,7 +206,7 @@ class GraphRepositoryImpl implements GraphRepository {
 
         _logger.i('User followed successfully with $collection: ${result.uri}');
 
-        return FollowUserResponse(uri: result.uri.toString(), cid: result.cid);
+        return result;
       } catch (e) {
         _logger.e('Error in followUser', error: e);
         rethrow;
@@ -231,13 +246,16 @@ class GraphRepositoryImpl implements GraphRepository {
         // User is not following, so follow
         final response = await followUser(did, bsky: bsky);
         _logger.i('User followed via toggle: ${response.uri}');
-        return response.uri;
+        return response.uri.toString();
       }
     });
   }
 
   @override
-  Future<BlocksResponse> getBlocks(String did, {String? cursor}) async {
+  Future<sprk_get_blocks.GraphGetBlocksOutput> getBlocks(
+    String did, {
+    String? cursor,
+  }) async {
     _logger.d('Getting blocks for DID: $did with cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -255,17 +273,13 @@ class GraphRepositoryImpl implements GraphRepository {
         if (cursor != null) {
           params['cursor'] = cursor;
         }
-        final result = await atproto.get(
-          NSID.parse('so.sprk.graph.getBlocks'),
-          parameters: params,
+        final result = await atproto.call(
+          sprk_get_blocks.soSprkGraphGetBlocks,
+          parameters: sprk_get_blocks.GraphGetBlocksInput(cursor: cursor),
           headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
         );
         _logger.d('Blocks retrieved successfully');
-        return BlocksResponse.fromJson(result.data as Map<String, dynamic>);
+        return result.data;
       } on FormatException catch (fe) {
         _logger.e('Error retrieving blocks for DID: $did', error: fe);
         throw Exception('Failed to retrieve blocks for DID: $did');
@@ -274,7 +288,7 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<BlockUserResponse> blockUser(String did) async {
+  Future<RepoStrongRef> blockUser(String did) async {
     _logger.d('Blocking user with DID: $did');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -315,11 +329,10 @@ class GraphRepositoryImpl implements GraphRepository {
           throw Exception('Already blocking this user');
         }
 
-        final blockRecord = {
-          r'$type': collection,
-          'subject': did,
-          'createdAt': DateTime.now().toUtc().toIso8601String(),
-        };
+        final blockRecord = sprk_block.GraphBlockRecord(
+          subject: did,
+          createdAt: DateTime.now().toUtc(),
+        ).toJson();
 
         final result = await _client.repo.createRecord(
           collection: collection,
@@ -329,7 +342,7 @@ class GraphRepositoryImpl implements GraphRepository {
 
         _logger.i('User blocked successfully with $collection: ${result.uri}');
 
-        return BlockUserResponse(uri: result.uri.toString(), cid: result.cid);
+        return result;
       } catch (e) {
         _logger.e('Error in blockUser', error: e);
         rethrow;
@@ -362,7 +375,7 @@ class GraphRepositoryImpl implements GraphRepository {
         // User is not blocking, so block
         final response = await blockUser(did);
         _logger.i('User blocked via toggle: ${response.uri}');
-        return response.uri;
+        return response.uri.toString();
       }
     });
   }

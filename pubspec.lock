@@ -1277,6 +1277,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  plyr_poptart:
+    dependency: "direct main"
+    description:
+      name: plyr_poptart
+      sha256: "9404131a51efd6d92ac91efbba74e54b32764d48297742b133ee7abb93488999"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   pointycastle:
     dependency: transitive
     description:
@@ -1610,6 +1618,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.2"
+  sprk_poptart:
+    dependency: "direct main"
+    description:
+      name: sprk_poptart
+      sha256: d8c37dbf559e36e49b22cabb37d2e81602a4d6749e8f37c33dcfc05d86523da8
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   sqflite:
     dependency: "direct main"
     description:

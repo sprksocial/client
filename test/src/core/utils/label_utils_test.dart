@@ -8,20 +8,19 @@ void main() {
   group('LabelUtils', () {
     group('getLabelPreferenceFromPrefs', () {
       test('maps visibility to correct blurs/severity/setting/adultOnly', () {
-        final prefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final prefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:labeler',
               label: 'porn',
               visibility: 'warn',
             ),
-            ContentLabelPref(
+            contentLabelPreference(
               labelerDid: 'did:plc:labeler',
               label: 'gore',
               visibility: 'hide',
             ),
-            ContentLabelPref(
+            contentLabelPreference(
               labelerDid: 'did:plc:labeler',
               label: 'nudity',
               visibility: 'ignore',
@@ -48,7 +47,7 @@ void main() {
       });
 
       test('returns null when label not found', () {
-        final prefs = Preferences.internal(preferences: []);
+        final prefs = Preferences(preferences: []);
         expect(
           LabelUtils.getLabelPreferenceFromPrefs(prefs, 'unknown'),
           isNull,
@@ -56,34 +55,32 @@ void main() {
       });
 
       test('returns null when contentLabelPrefs is null', () {
-        final prefs = Preferences.internal(preferences: []);
+        final prefs = Preferences(preferences: []);
         expect(LabelUtils.getLabelPreferenceFromPrefs(prefs, 'porn'), isNull);
       });
     });
 
     group('shouldShowWarning', () {
       test('returns true only when severity=alert and setting=warn', () {
-        final warnPrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final warnPrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'porn',
               visibility: 'warn',
             ),
           ],
         );
-        final hidePrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final hidePrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'porn',
               visibility: 'hide',
             ),
           ],
         );
-        final noMatchPrefs = Preferences.internal(preferences: []);
+        final noMatchPrefs = Preferences(preferences: []);
 
         final label = Label(
           src: 'did:plc:l',
@@ -101,30 +98,27 @@ void main() {
 
     group('shouldBlurContent', () {
       test('blurs on hide (content) and warn (media)', () {
-        final hidePrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final hidePrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'porn',
               visibility: 'hide',
             ),
           ],
         );
-        final warnPrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final warnPrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'sexual',
               visibility: 'warn',
             ),
           ],
         );
-        final ignorePrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final ignorePrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'nudity',
               visibility: 'ignore',
@@ -156,30 +150,27 @@ void main() {
 
     group('shouldHideContent', () {
       test('hides when setting=hide or adultOnly=true', () {
-        final hidePrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final hidePrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'gore',
               visibility: 'hide',
             ),
           ],
         );
-        final warnAdultPrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final warnAdultPrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'porn',
               visibility: 'warn',
             ),
           ],
         );
-        final warnNonAdultPrefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final warnNonAdultPrefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'gore',
               visibility: 'warn',
@@ -207,10 +198,7 @@ void main() {
           isFalse,
         );
         expect(
-          LabelUtils.shouldHideContent(
-            Preferences.internal(preferences: []),
-            [],
-          ),
+          LabelUtils.shouldHideContent(Preferences(preferences: []), []),
           isFalse,
         );
       });
@@ -218,20 +206,19 @@ void main() {
 
     group('getWarningLabels', () {
       test('returns only labels with severity=alert and setting=warn', () {
-        final prefs = Preferences.internal(
-          preferences: [],
-          contentLabelPrefs: [
-            ContentLabelPref(
+        final prefs = Preferences(
+          preferences: [
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'gore',
               visibility: 'warn',
             ),
-            ContentLabelPref(
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'porn',
               visibility: 'warn',
             ),
-            ContentLabelPref(
+            contentLabelPreference(
               labelerDid: 'did:plc:l',
               label: 'nudity',
               visibility: 'ignore',

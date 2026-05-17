@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/posting/models/mention.dart';
 import 'package:spark/src/features/posting/models/mention_text_editing_controller.dart';

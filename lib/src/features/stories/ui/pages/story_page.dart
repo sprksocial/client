@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart' as flutter_widgets show Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:video_player/video_player.dart';
@@ -129,24 +130,18 @@ class _StoryPageState extends ConsumerState<StoryPage>
   }
 
   bool _isVideoStory(StoryView story) {
-    return switch (story.media) {
-      MediaViewVideo() => true,
-      _ => false,
-    };
+    return story.isVideoStory;
   }
 
   String _getVideoUrl(StoryView story) {
-    return switch (story.media) {
-      MediaViewVideo(:final playlist) => playlist.toString(),
-      _ => '',
-    };
+    return story.videoUrl;
   }
 
   String _getImageUrl(StoryView story) {
-    return switch (story.media) {
-      MediaViewImage(:final image) => image.fullsize.toString(),
-      _ => widget.story.author.avatar.toString(),
-    };
+    final imageUrl = story.imageUrl;
+    return imageUrl.isNotEmpty
+        ? imageUrl
+        : widget.story.author.avatar.toString();
   }
 
   Future<void> _handleEmbedTap(StoryMentionEmbedView embed) async {
@@ -381,8 +376,9 @@ class _StoryPageState extends ConsumerState<StoryPage>
   }
 
   List<StoryMentionEmbedView> get _storyMentionEmbeds {
-    if (widget.story.embeds != null && widget.story.embeds!.isNotEmpty) {
-      final hydratedEmbeds = widget.story.embeds!
+    final storyEmbeds = widget.story.localEmbeds;
+    if (storyEmbeds != null && storyEmbeds.isNotEmpty) {
+      final hydratedEmbeds = storyEmbeds
           .whereType<StoryMentionEmbedView>()
           .where((embed) => _isValidMentionEmbed(embed.placement))
           .toList(growable: false);
@@ -392,17 +388,15 @@ class _StoryPageState extends ConsumerState<StoryPage>
       }
     }
 
-    final recordEmbeds = widget.story.record.embeds ?? const <StoryEmbed>[];
+    final recordEmbeds =
+        widget.story.localRecord?.localEmbeds ?? const <StoryEmbed>[];
     return recordEmbeds
         .whereType<StoryMentionEmbed>()
         .where((embed) {
           return _isValidMentionEmbed(embed.placement);
         })
         .map((embed) {
-          return StoryEmbedView.mention(
-            placement: embed.placement,
-            did: embed.did,
-          );
+          return StoryEmbedView(placement: embed.placement, did: embed.did);
         })
         .whereType<StoryMentionEmbedView>()
         .toList(growable: false);

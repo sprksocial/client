@@ -236,46 +236,16 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onDoubleTap: () => _handleDoubleTapLike(postData),
-                    child: switch (postData.media) {
-                      MediaViewVideo() => PostVideoPlayer(
-                        key: _videoPlayerKey,
-                        videoUrl: postData.videoUrl,
-                        feed: widget.feed,
-                        index: widget.index,
-                        thumbnail: postData.thumbnailUrl,
-                      ),
-                      MediaViewBskyVideo() => PostVideoPlayer(
-                        key: _videoPlayerKey,
-                        videoUrl: postData.videoUrl,
-                        feed: widget.feed,
-                        index: widget.index,
-                        thumbnail: postData.thumbnailUrl,
-                      ),
-                      MediaViewImages() ||
-                      MediaViewBskyImages() => ImageCarousel(
-                        imageUrls: postData.imageUrls,
-                        hasKnownInteractions:
-                            currentPost.viewer?.knownInteractions != null &&
-                            currentPost.viewer!.knownInteractions!.isNotEmpty,
-                      ),
-                      MediaViewBskyRecordWithMedia(:final media) =>
-                        switch (media) {
-                          MediaViewVideo() => PostVideoPlayer(
+                    child: postData.videoUrl.isNotEmpty
+                        ? PostVideoPlayer(
                             key: _videoPlayerKey,
                             videoUrl: postData.videoUrl,
                             feed: widget.feed,
                             index: widget.index,
                             thumbnail: postData.thumbnailUrl,
-                          ),
-                          MediaViewBskyVideo() => PostVideoPlayer(
-                            key: _videoPlayerKey,
-                            videoUrl: postData.videoUrl,
-                            feed: widget.feed,
-                            index: widget.index,
-                            thumbnail: postData.thumbnailUrl,
-                          ),
-                          MediaViewImages() ||
-                          MediaViewBskyImages() => ImageCarousel(
+                          )
+                        : postData.imageUrls.isNotEmpty
+                        ? ImageCarousel(
                             imageUrls: postData.imageUrls,
                             hasKnownInteractions:
                                 currentPost.viewer?.knownInteractions != null &&
@@ -283,15 +253,10 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                                     .viewer!
                                     .knownInteractions!
                                     .isNotEmpty,
-                          ),
-                          _ => const DecoratedBox(
+                          )
+                        : const DecoratedBox(
                             decoration: BoxDecoration(color: AppColors.black),
                           ),
-                        },
-                      _ => const DecoratedBox(
-                        decoration: BoxDecoration(color: AppColors.black),
-                      ),
-                    },
                   ),
                 ),
 

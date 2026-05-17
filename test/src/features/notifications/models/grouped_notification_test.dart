@@ -1,6 +1,6 @@
 import 'package:poptart/poptart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart';
 import 'package:spark/src/features/notifications/models/grouped_notification.dart';
 
@@ -15,12 +15,12 @@ Notification _makeNotification({
   return Notification(
     uri: reasonSubject ?? AtUri('at://did:plc:test/so.sprk.feed.post/test'),
     cid: 'test-cid',
-    author: ProfileViewBasic(
+    author: ProfileView(
       did: did,
       handle: '$did.handle',
-      viewer: ActorViewer(following: following),
+      viewer: ViewerState(following: following),
     ),
-    reason: reason,
+    reason: NotificationReason.valueOf(reason)!,
     record: {},
     isRead: isRead,
     indexedAt: indexedAt ?? DateTime(2026, 1, 1),

@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+
 import 'package:poptart/poptart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:spark/src/features/messages/providers/conversation_provider.dart';

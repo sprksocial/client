@@ -123,7 +123,7 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '${_formatUseCount(widget.audio.useCount)} videos',
+                        '${_formatUseCount(widget.audio.useCount ?? 0)} videos',
                         style: AppTypography.textExtraSmallMedium.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),

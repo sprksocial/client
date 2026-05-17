@@ -11,11 +11,12 @@ import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:sprk_poptart/so/sprk/graph/get_follows/output.dart'
+    as sprk_get_follows;
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
   OnboardingRepositoryImpl({
@@ -172,7 +173,9 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   }
 
   @override
-  Future<FollowsResponse> getBskyFollows({String? cursor}) async {
+  Future<sprk_get_follows.GraphGetFollowsOutput> getBskyFollows({
+    String? cursor,
+  }) async {
     if (_did == null || _atproto == null) {
       throw Exception('Not authenticated');
     }
@@ -202,7 +205,8 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
         )
         .toList();
 
-    return FollowsResponse(
+    return sprk_get_follows.GraphGetFollowsOutput(
+      subject: ProfileView.fromJson(rawData['subject'] as Map<String, dynamic>),
       follows: follows,
       cursor: rawData['cursor'] as String?,
     );

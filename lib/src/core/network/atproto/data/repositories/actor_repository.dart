@@ -1,5 +1,7 @@
 import 'package:poptart/poptart.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:sprk_poptart/so/sprk/actor/search_actors/output.dart';
+import 'package:sprk_poptart/so/sprk/actor/search_actors_typeahead/output.dart';
 
 /// Interface for Actor-related API endpoints
 abstract class ActorRepository {
@@ -21,13 +23,13 @@ abstract class ActorRepository {
   /// Search actors by query string.
   ///
   /// [query] The search query.
-  Future<SearchActorsResponse> searchActors(String query, {String? cursor});
+  Future<ActorSearchActorsOutput> searchActors(String query, {String? cursor});
 
   /// Search actor suggestions by query prefix.
   ///
   /// [query] The search query prefix.
   /// [limit] Maximum number of suggestions to return.
-  Future<SearchActorsTypeaheadResponse> searchActorsTypeahead(
+  Future<ActorSearchActorsTypeaheadOutput> searchActorsTypeahead(
     String query, {
     int limit = 10,
   });

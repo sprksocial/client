@@ -1,9 +1,11 @@
-import 'package:poptart/poptart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/di/service_locator.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart' hide ViewerState;
+import 'package:sprk_poptart/so/sprk/actor/defs/viewer_state.dart'
+    as actor_viewer;
 
 part 'user_list_provider.g.dart';
 
@@ -147,8 +149,8 @@ class UserList extends _$UserList {
         if (p.did == userDid) {
           return p.copyWith(
             viewer:
-                p.viewer?.copyWith(following: AtUri.parse(response.uri)) ??
-                ActorViewer(following: AtUri.parse(response.uri)),
+                p.viewer?.copyWith(following: response.uri) ??
+                actor_viewer.ViewerState(following: response.uri),
           );
         }
         return p;

@@ -11,8 +11,6 @@ import 'package:spark/src/core/design_system/components/molecules/profile_tab_ba
 import 'package:spark/src/core/design_system/templates/profile_page_template.dart';
 import 'package:spark/src/core/media/create_media_actions.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart'
-    as actor_models;
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
 import 'package:spark/src/core/ui/widgets/report_dialog.dart';
@@ -32,6 +30,7 @@ import 'package:spark/src/features/profile/ui/widgets/profile_grid_tab.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_likes_tab.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_reposts_tab.dart';
 import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart' as actor_defs;
 
 @RoutePage()
 class ProfilePage extends ConsumerStatefulWidget {
@@ -45,7 +44,7 @@ class ProfilePage extends ConsumerStatefulWidget {
 
   /// Optional initial profile data to show while loading.
   // Can be partially filled - only did & handle required in ProfileViewBasic.
-  final actor_models.ProfileViewBasic? initialProfile;
+  final actor_defs.ProfileViewBasic? initialProfile;
 
   /// Whether to use Bluesky API instead of Spark API.
   /// Defaults to false (Spark API).
@@ -599,7 +598,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Future<void> _openStoriesViewer(
-    actor_models.ProfileViewDetailed profile,
+    actor_defs.ProfileViewDetailed profile,
   ) async {
     if (profile.stories?.isEmpty ?? true) return;
 
@@ -618,7 +617,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
       stories.sort((a, b) => a.indexedAt.compareTo(b.indexedAt));
 
-      final authorBasic = actor_models.ProfileViewBasic(
+      final authorBasic = actor_defs.ProfileViewBasic(
         did: profile.did,
         handle: profile.handle,
         displayName: profile.displayName,

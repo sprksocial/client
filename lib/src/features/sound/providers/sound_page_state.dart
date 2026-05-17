@@ -1,5 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:sprk_poptart/so/sprk/sound/defs/audio_view.dart'
+    show $AudioViewCopyWith;
 
 part 'sound_page_state.freezed.dart';
 

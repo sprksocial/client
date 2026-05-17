@@ -5,12 +5,24 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:poptart_lex/com/atproto/label/query_labels.dart'
+    as label_query_labels;
 import 'package:bluesky_poptart/app/bsky/feed/get_author_feed.dart'
     as bsky_feed_get_author_feed;
+import 'package:bluesky_poptart/app/bsky/feed/get_feed.dart'
+    as bsky_feed_get_feed;
+import 'package:bluesky_poptart/app/bsky/feed/get_feed_generator.dart'
+    as bsky_feed_get_feed_generator;
+import 'package:bluesky_poptart/app/bsky/feed/get_feed_generators.dart'
+    as bsky_feed_get_feed_generators;
 import 'package:bluesky_poptart/app/bsky/feed/get_posts.dart'
     as bsky_feed_get_posts;
 import 'package:bluesky_poptart/app/bsky/feed/get_post_thread.dart'
     as bsky_feed_get_post_thread;
+import 'package:bluesky_poptart/app/bsky/feed/get_suggested_feeds.dart'
+    as bsky_feed_get_suggested_feeds;
+import 'package:bluesky_poptart/app/bsky/feed/like.dart' as bsky_like;
+import 'package:bluesky_poptart/app/bsky/feed/repost.dart' as bsky_repost;
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart_lex/com/atproto/repo/upload_blob.dart'
     as repo_upload_blob;
@@ -26,7 +38,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_write_adapters.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/bluesky_crosspost_text.dart';
@@ -34,6 +49,31 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/share_urls.dart';
 import 'package:spark/src/core/utils/video_upload_exception.dart';
+import 'package:sprk_poptart/so/sprk/feed/like.dart' as sprk_like;
+import 'package:sprk_poptart/so/sprk/feed/get_author_feed.dart'
+    as sprk_get_author_feed;
+import 'package:sprk_poptart/so/sprk/feed/get_actor_likes.dart'
+    as sprk_get_actor_likes;
+import 'package:sprk_poptart/so/sprk/feed/get_actor_reposts.dart'
+    as sprk_get_actor_reposts;
+import 'package:sprk_poptart/so/sprk/feed/get_crosspost_thread.dart'
+    as sprk_get_crosspost_thread;
+import 'package:sprk_poptart/so/sprk/feed/get_feed.dart' as sprk_get_feed;
+import 'package:sprk_poptart/so/sprk/feed/get_feed_generator.dart'
+    as sprk_get_feed_generator;
+import 'package:sprk_poptart/so/sprk/feed/get_feed_generators.dart'
+    as sprk_get_feed_generators;
+import 'package:sprk_poptart/so/sprk/feed/get_posts.dart' as sprk_get_posts;
+import 'package:sprk_poptart/so/sprk/feed/get_post_thread.dart'
+    as sprk_get_post_thread;
+import 'package:sprk_poptart/so/sprk/feed/get_suggested_feeds.dart'
+    as sprk_get_suggested_feeds;
+import 'package:sprk_poptart/so/sprk/feed/get_timeline.dart'
+    as sprk_get_timeline;
+import 'package:sprk_poptart/so/sprk/feed/repost.dart' as sprk_repost;
+import 'package:sprk_poptart/so/sprk/sound/defs/audio_details.dart';
+import 'package:sprk_poptart/so/sprk/feed/search_posts.dart'
+    as sprk_search_posts;
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
@@ -55,10 +95,7 @@ class FeedRepositoryImpl implements FeedRepository {
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
 
   bool _feedViewPostHasMedia(FeedViewPost feedViewPost) {
-    return feedViewPost.map(
-      post: (p) => p.post.hasSupportedMedia,
-      reply: (r) => r.reply.media != null,
-    );
+    return feedViewPost.localPost.hasSupportedMedia;
   }
 
   AtUri _getPostViewUri(PostView post) => post.uri;
@@ -202,36 +239,32 @@ class FeedRepositoryImpl implements FeedRepository {
       final headers = <String, String>{'atproto-proxy': _client.sprkDid};
       // Note: labeler header could be added here if needed for getPosts
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.feed.getPosts'),
-        parameters: {'uris': uris},
+      final result = await atproto.call(
+        sprk_get_posts.soSprkFeedGetPosts,
+        parameters: sprk_get_posts.FeedGetPostsInput(uris: uris),
         headers: headers,
-        to: (jsonMap) {
-          final posts = jsonMap['posts']! as List<dynamic>;
-          _logger.d(
-            'Raw API response for first post: '
-            '${posts.isNotEmpty ? posts[0] : "empty"}',
-          );
-          return _parseAndFilterPosts<PostView>(
-            rawPosts: posts,
-            fromJson: PostView.fromJson,
-            hasMedia: _postViewHasMedia,
-            getUri: _getPostViewUri,
-            source: 'sprk',
-          );
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
-      _logger.d('Posts retrieved successfully: ${result.data.length} posts');
-      if (result.data.isNotEmpty) {
+      final posts = result.data.toJson()['posts']! as List<dynamic>;
+      _logger.d(
+        'Raw API response for first post: '
+        '${posts.isNotEmpty ? posts[0] : "empty"}',
+      );
+      final parsedPosts = _parseAndFilterPosts<PostView>(
+        rawPosts: posts,
+        fromJson: PostView.fromJson,
+        hasMedia: _postViewHasMedia,
+        getUri: _getPostViewUri,
+        source: 'sprk',
+      );
+      _logger.d('Posts retrieved successfully: ${parsedPosts.length} posts');
+      if (parsedPosts.isNotEmpty) {
         _logger.d(
-          'First post replyCount: ${result.data.first.replyCount}, '
-          'likeCount: ${result.data.first.likeCount}',
+          'First post replyCount: ${parsedPosts.first.replyCount}, '
+          'likeCount: ${parsedPosts.first.likeCount}',
         );
       }
 
-      return result.data;
+      return parsedPosts;
     });
   }
 
@@ -284,41 +317,33 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{
-        'actor': actorUri.hostname,
-        'limit': limit,
-      };
-
-      if (videosOnly) {
-        parameters['filter'] = 'posts_with_video';
-      }
-
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
-      }
-
       try {
-        final result = await atproto.get(
-          NSID.parse('so.sprk.feed.getAuthorFeed'),
-          parameters: parameters,
+        final result = await atproto.call(
+          sprk_get_author_feed.soSprkFeedGetAuthorFeed,
+          parameters: sprk_get_author_feed.FeedGetAuthorFeedInput(
+            actor: actorUri.hostname,
+            limit: limit,
+            cursor: cursor,
+            filter: videosOnly
+                ? sprk_get_author_feed.FeedGetAuthorFeedFilter.valueOf(
+                    'posts_with_video',
+                  )
+                : null,
+          ),
           headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) {
-            final rawFeed = jsonMap['feed']! as List<dynamic>;
-            final feedPosts = _parseAndFilterPosts<FeedViewPost>(
-              rawPosts: rawFeed,
-              fromJson: FeedViewPost.fromJson,
-              hasMedia: _feedViewPostHasMedia,
-              getUri: _getFeedViewPostUri,
-              source: 'sprk author feed',
-            );
-            return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
-          },
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
+        );
+        final output = result.data;
+        final outputJson = output.toJson();
+        final rawFeed = outputJson['feed']! as List<dynamic>;
+        final feedPosts = _parseAndFilterPosts<FeedViewPost>(
+          rawPosts: rawFeed,
+          fromJson: FeedViewPost.fromJson,
+          hasMedia: _feedViewPostHasMedia,
+          getUri: _getFeedViewPostUri,
+          source: 'sprk author feed',
         );
         _logger.d('Author feed retrieved successfully from Sprk');
-        return result.data;
+        return (posts: feedPosts, cursor: output.cursor);
       } catch (e) {
         _logger.e(
           'Error getting author feed from Sprk. Trying Bsky...',
@@ -399,67 +424,51 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{'limit': limit};
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
-      }
-
       final headers = <String, String>{'atproto-proxy': _client.sprkDid};
       if (labelerDids != null && labelerDids.isNotEmpty) {
         headers['atproto-accept-labelers'] = _formatLabelerHeader(labelerDids);
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.feed.getTimeline'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_get_timeline.soSprkFeedGetTimeline,
+        parameters: sprk_get_timeline.FeedGetTimelineInput(
+          limit: limit,
+          cursor: cursor,
+        ),
         headers: headers,
-        to: (jsonMap) {
-          if (!jsonMap.containsKey('feed')) {
-            return const FeedView(feed: []);
-          }
-
-          final feedData = jsonMap['feed'] as List<dynamic>?;
-          if (feedData == null) {
-            return const FeedView(feed: []);
-          }
-
-          final feedPosts = <FeedViewPost>[];
-          for (final item in feedData) {
-            try {
-              final itemMap = item as Map<String, dynamic>;
-
-              // Response has 'post' object containing fully hydrated post view
-              final postMap = itemMap['post'] as Map<String, dynamic>?;
-              if (postMap == null) {
-                continue;
-              }
-              final postView = PostView.fromJson(postMap);
-
-              // Create FeedViewPost.post variant (not a reply)
-              final feedViewPost = FeedViewPost.post(post: postView);
-              feedPosts.add(feedViewPost);
-            } catch (e, stackTrace) {
-              _logger.w(
-                'Failed to parse timeline feed item, skipping: $e',
-                stackTrace: stackTrace,
-              );
-            }
-          }
-
-          return FeedView(
-            feed: feedPosts,
-            cursor: jsonMap['cursor'] as String?,
-          );
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
+      final output = result.data;
+      final feedData = output.toJson()['feed'] as List<dynamic>;
+
+      final feedPosts = <FeedViewPost>[];
+      for (final item in feedData) {
+        try {
+          final itemMap = item as Map<String, dynamic>;
+
+          // Response has 'post' object containing fully hydrated post view
+          final postMap = itemMap['post'] as Map<String, dynamic>?;
+          if (postMap == null) {
+            continue;
+          }
+          final postView = PostView.fromJson(postMap);
+
+          final feedViewPost = feedViewPostFromPost(postView);
+          feedPosts.add(feedViewPost);
+        } catch (e, stackTrace) {
+          _logger.w(
+            'Failed to parse timeline feed item, skipping: $e',
+            stackTrace: stackTrace,
+          );
+        }
+      }
+
+      final feedView = FeedView(feed: feedPosts, cursor: output.cursor);
 
       _logger.d(
         'Timeline feed retrieved successfully: '
-        '${result.data.feed.length} posts',
+        '${feedView.feed.length} posts',
       );
-      return result.data;
+      return feedView;
     });
   }
 
@@ -486,14 +495,6 @@ class FeedRepositoryImpl implements FeedRepository {
       final isBskyFeed =
           feedUri.collection == NSID.parse('app.bsky.feed.generator');
 
-      final parameters = <String, dynamic>{
-        'feed': feedUri.toString(),
-        'limit': limit,
-      };
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
-      }
-
       final headers = <String, String>{
         'atproto-proxy': isBskyFeed ? _client.bskyDid : _client.sprkDid,
       };
@@ -501,66 +502,59 @@ class FeedRepositoryImpl implements FeedRepository {
         headers['atproto-accept-labelers'] = _formatLabelerHeader(labelerDids);
       }
 
-      final result = await atproto.get(
-        isBskyFeed
-            ? NSID.parse('app.bsky.feed.getFeed')
-            : NSID.parse('so.sprk.feed.getFeed'),
-        parameters: parameters,
-        headers: headers,
-        to: (jsonMap) {
-          if (!jsonMap.containsKey('feed')) {
-            return const FeedView(feed: []);
-          }
-
-          final feedData = jsonMap['feed'] as List<dynamic>?;
-          if (feedData == null) {
-            return const FeedView(feed: []);
-          }
-
-          List<FeedViewPost> feedPosts;
-
-          if (isBskyFeed) {
-            // Use adapter to process Bluesky feed items
-            feedPosts = bskyFeedAdapter.processBskyFeedItems(
-              feedData: feedData,
-              onWarning: _logger.w,
+      final FeedView feedView;
+      if (isBskyFeed) {
+        final result = await atproto.call(
+          bsky_feed_get_feed.appBskyFeedGetFeed,
+          parameters: bsky_feed_get_feed.FeedGetFeedInput(
+            feed: feedUri,
+            limit: limit,
+            cursor: cursor,
+          ),
+          headers: headers,
+        );
+        final processedFeed = bskyFeedAdapter.processBskyAuthorFeed(
+          rawFeed: result.data.feed,
+          cursor: result.data.cursor,
+          onError: (message, {error, stackTrace}) => _logger.w(
+            error == null ? message : '$message: $error',
+            stackTrace: stackTrace,
+          ),
+        );
+        feedView = FeedView(
+          feed: processedFeed.posts,
+          cursor: processedFeed.cursor,
+        );
+      } else {
+        final result = await atproto.call(
+          sprk_get_feed.soSprkFeedGetFeed,
+          parameters: sprk_get_feed.FeedGetFeedInput(
+            feed: feedUri,
+            limit: limit,
+            cursor: cursor,
+          ),
+          headers: headers,
+        );
+        final output = result.data;
+        final feedData = output.feed;
+        final feedPosts = <FeedViewPost>[];
+        for (final item in feedData) {
+          try {
+            final feedViewPost = feedViewPostFromPost(item.post);
+            feedPosts.add(feedViewPost);
+          } catch (e, stackTrace) {
+            _logger.w(
+              'Failed to parse feed item, skipping: $e',
+              stackTrace: stackTrace,
             );
-          } else {
-            // Spark feeds: parse directly
-            feedPosts = <FeedViewPost>[];
-            for (final item in feedData) {
-              try {
-                final itemMap = item as Map<String, dynamic>;
-                final postMap = itemMap['post'] as Map<String, dynamic>?;
-                if (postMap == null) {
-                  continue;
-                }
-
-                final postView = PostView.fromJson(postMap);
-                final feedViewPost = FeedViewPost.post(post: postView);
-                feedPosts.add(feedViewPost);
-              } catch (e, stackTrace) {
-                _logger.w(
-                  'Failed to parse feed item, skipping: $e',
-                  stackTrace: stackTrace,
-                );
-              }
-            }
           }
+        }
 
-          return FeedView(
-            feed: feedPosts,
-            cursor: jsonMap['cursor'] as String?,
-          );
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
-      );
+        feedView = FeedView(feed: feedPosts, cursor: output.cursor);
+      }
 
-      _logger.d(
-        'Feed retrieved successfully: ${result.data.feed.length} posts',
-      );
-      return result.data;
+      _logger.d('Feed retrieved successfully: ${feedView.feed.length} posts');
+      return feedView;
     });
   }
 
@@ -583,22 +577,29 @@ class FeedRepositoryImpl implements FeedRepository {
       final headers = isBskyFeed
           ? {'atproto-proxy': _client.bskyDid}
           : {'atproto-proxy': _client.sprkDid};
-      final response = await atproto.get(
-        isBskyFeed
-            ? NSID.parse('app.bsky.feed.getFeedGenerator')
-            : NSID.parse('so.sprk.feed.getFeedGenerator'),
-        parameters: {'feed': feed.toString()},
+      if (isBskyFeed) {
+        final response = await atproto.call(
+          bsky_feed_get_feed_generator.appBskyFeedGetFeedGenerator,
+          parameters: bsky_feed_get_feed_generator.FeedGetFeedGeneratorInput(
+            feed: feed,
+          ),
+          headers: headers,
+        );
+        final jsonMap = response.data.toJson();
+        final generatorData = jsonMap.containsKey('view')
+            ? jsonMap['view']! as Map<String, dynamic>
+            : jsonMap;
+        return GeneratorView.fromJson(generatorData);
+      }
+
+      final response = await atproto.call(
+        sprk_get_feed_generator.soSprkFeedGetFeedGenerator,
+        parameters: sprk_get_feed_generator.FeedGetFeedGeneratorInput(
+          feed: feed,
+        ),
         headers: headers,
-        to: (jsonMap) {
-          final generatorData = jsonMap.containsKey('view')
-              ? jsonMap['view']! as Map<String, dynamic>
-              : jsonMap;
-          return GeneratorView.fromJson(generatorData);
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
-      return response.data;
+      return GeneratorView.fromJson(response.data.view.toJson());
     });
   }
 
@@ -625,36 +626,43 @@ class FeedRepositoryImpl implements FeedRepository {
       final headers = bluesky
           ? {'atproto-proxy': _client.bskyDid}
           : {'atproto-proxy': _client.sprkDid};
-      final feedStrings = feeds.map((feed) => feed.toString()).toList();
-      final response = await atproto.get(
-        bluesky
-            ? NSID.parse('app.bsky.feed.getFeedGenerators')
-            : NSID.parse('so.sprk.feed.getFeedGenerators'),
-        parameters: {'feeds': feedStrings},
-        headers: headers,
-        to: (jsonMap) {
-          final feedsData = jsonMap['feeds']! as List<dynamic>;
-          return feedsData
-              .map((feedData) {
-                try {
-                  final feedMap = feedData as Map<String, dynamic>;
-                  return GeneratorView.fromJson(feedMap);
-                } catch (e) {
-                  _logger.w('Failed to parse feed generator, skipping: $e');
-                  return null;
-                }
-              })
-              .whereType<GeneratorView>()
-              .toList();
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
-      );
+      final List<dynamic> feedsData;
+      if (bluesky) {
+        final response = await atproto.call(
+          bsky_feed_get_feed_generators.appBskyFeedGetFeedGenerators,
+          parameters: bsky_feed_get_feed_generators.FeedGetFeedGeneratorsInput(
+            feeds: feeds,
+          ),
+          headers: headers,
+        );
+        feedsData = response.data.toJson()['feeds']! as List<dynamic>;
+      } else {
+        final response = await atproto.call(
+          sprk_get_feed_generators.soSprkFeedGetFeedGenerators,
+          parameters: sprk_get_feed_generators.FeedGetFeedGeneratorsInput(
+            feeds: feeds,
+          ),
+          headers: headers,
+        );
+        feedsData = response.data.toJson()['feeds']! as List<dynamic>;
+      }
+      final generators = feedsData
+          .map((feedData) {
+            try {
+              final feedMap = feedData as Map<String, dynamic>;
+              return GeneratorView.fromJson(feedMap);
+            } catch (e) {
+              _logger.w('Failed to parse feed generator, skipping: $e');
+              return null;
+            }
+          })
+          .whereType<GeneratorView>()
+          .toList();
       _logger.d(
         'Feed generators retrieved successfully: '
-        '${response.data.length} generators',
+        '${generators.length} generators',
       );
-      return response.data;
+      return generators;
     });
   }
 
@@ -676,43 +684,46 @@ class FeedRepositoryImpl implements FeedRepository {
       final headers = bluesky
           ? {'atproto-proxy': _client.bskyDid}
           : {'atproto-proxy': _client.sprkDid};
-      final response = await atproto.get(
-        bluesky
-            ? NSID.parse('app.bsky.feed.getSuggestedFeeds')
-            : NSID.parse('so.sprk.feed.getSuggestedFeeds'),
-        headers: headers,
-        to: (jsonMap) {
-          final feedsData = (jsonMap['feeds'] as List<dynamic>?) ?? [];
-          return feedsData
-              .map((feedData) {
-                try {
-                  final feedMap = feedData as Map<String, dynamic>;
-                  return GeneratorView.fromJson(feedMap);
-                } catch (e) {
-                  _logger.w(
-                    'Failed to parse suggested feed generator, skipping: $e',
-                  );
-                  return null;
-                }
-              })
-              .whereType<GeneratorView>()
-              .toList();
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
-      );
+      final List<dynamic> feedsData;
+      if (bluesky) {
+        final response = await atproto.call(
+          bsky_feed_get_suggested_feeds.appBskyFeedGetSuggestedFeeds,
+          headers: headers,
+        );
+        feedsData = response.data.toJson()['feeds'] as List<dynamic>? ?? [];
+      } else {
+        final response = await atproto.call(
+          sprk_get_suggested_feeds.soSprkFeedGetSuggestedFeeds,
+          headers: headers,
+        );
+        feedsData = response.data.toJson()['feeds'] as List<dynamic>? ?? [];
+      }
+      final suggestedFeeds = feedsData
+          .map((feedData) {
+            try {
+              final feedMap = feedData as Map<String, dynamic>;
+              return GeneratorView.fromJson(feedMap);
+            } catch (e) {
+              _logger.w(
+                'Failed to parse suggested feed generator, skipping: $e',
+              );
+              return null;
+            }
+          })
+          .whereType<GeneratorView>()
+          .toList();
       _logger.d(
         'Suggested feeds retrieved successfully: '
-        '${response.data.length} generators',
+        '${suggestedFeeds.length} generators',
       );
-      return response.data;
+      return suggestedFeeds;
     });
   }
 
   @override
   Future<Feed> getFeedFromSavedFeed(SavedFeed savedFeed) async {
     return _client.executeWithRetry(() async {
-      if (savedFeed.type == 'timeline') {
+      if (savedFeed.typeValue == 'timeline') {
         return Feed(type: 'timeline', config: savedFeed);
       }
       final feedUri = AtUri(savedFeed.value);
@@ -732,7 +743,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final sprkUris = <AtUri>[];
 
       for (final savedFeed in savedFeeds) {
-        if (savedFeed.type == 'timeline') {
+        if (savedFeed.typeValue == 'timeline') {
           // Timeline feeds don't need generator views
           continue;
         }
@@ -764,7 +775,7 @@ class FeedRepositoryImpl implements FeedRepository {
       // Build feeds list preserving the original order from savedFeeds
       final feeds = <Feed>[];
       for (final savedFeed in savedFeeds) {
-        if (savedFeed.type == 'timeline') {
+        if (savedFeed.typeValue == 'timeline') {
           feeds.add(Feed(type: 'timeline', config: savedFeed));
         } else {
           final feedUri = AtUri(savedFeed.value);
@@ -805,11 +816,17 @@ class FeedRepositoryImpl implements FeedRepository {
         '$likeType',
       );
 
-      final likeRecord = {
-        r'$type': likeType,
-        'subject': {'cid': postCid, 'uri': postUri.toString()},
-        'createdAt': DateTime.now().toUtc().toIso8601String(),
-      };
+      final subject = RepoStrongRef(uri: postUri, cid: postCid);
+      final createdAt = DateTime.now().toUtc();
+      final likeRecord = isBskyPost
+          ? bsky_like.FeedLikeRecord(
+              subject: subject,
+              createdAt: createdAt,
+            ).toJson()
+          : sprk_like.FeedLikeRecord(
+              subject: subject,
+              createdAt: createdAt,
+            ).toJson();
 
       final result = await _client.repo.createRecord(
         collection: likeType,
@@ -851,11 +868,17 @@ class FeedRepositoryImpl implements FeedRepository {
         '$repostType',
       );
 
-      final repostRecord = {
-        r'$type': repostType,
-        'subject': {'cid': postCid, 'uri': postUri.toString()},
-        'createdAt': DateTime.now().toUtc().toIso8601String(),
-      };
+      final subject = RepoStrongRef(uri: postUri, cid: postCid);
+      final createdAt = DateTime.now().toUtc();
+      final repostRecord = isBskyPost
+          ? bsky_repost.FeedRepostRecord(
+              subject: subject,
+              createdAt: createdAt,
+            ).toJson()
+          : sprk_repost.FeedRepostRecord(
+              subject: subject,
+              createdAt: createdAt,
+            ).toJson();
 
       final result = await _client.repo.createRecord(
         collection: repostType,
@@ -947,7 +970,7 @@ class FeedRepositoryImpl implements FeedRepository {
         createdAt: DateTime.now().toUtc(),
         media: media,
       );
-      recordJson = sprkRecord.toJson();
+      recordJson = sprkReplyRecordFromLocal(sprkRecord).toJson();
       collection = NSID.parse('so.sprk.feed.reply');
     } else {
       // Bluesky comment - use adapter to create Bluesky-specific models
@@ -1048,7 +1071,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
     final result = await _client.repo.createRecord(
       collection: 'so.sprk.feed.post',
-      record: record.toJson(),
+      record: sprkPostRecordFromLocal(record).toJson(),
     );
 
     _logger.i('Image post created successfully: ${result.uri}');
@@ -1065,9 +1088,11 @@ class FeedRepositoryImpl implements FeedRepository {
           altTexts,
           facets,
         );
-        finalResult = await _client.repo.editRecord(
+        finalResult = await _client.repo.editRecordJson(
           uri: result.uri,
-          record: record.copyWith(crossposts: [bskyResult]),
+          record: sprkPostRecordFromLocal(
+            record.copyWith(crossposts: [bskyResult]),
+          ).toJson(),
         );
       } catch (e) {
         _logger.w('Failed to crosspost to Bluesky: $e');
@@ -1103,11 +1128,9 @@ class FeedRepositoryImpl implements FeedRepository {
             _logger.e('AtProto not initialized');
             throw Exception('AtProto not initialized');
           case final atproto:
-            final response = await atproto.post(
-              repo_upload_blob.comAtprotoRepoUploadBlob.nsid,
-              body: processedBytes,
-              to: const repo_upload_blob.RepoUploadBlobOutputConverter()
-                  .fromJson,
+            final response = await atproto.call(
+              repo_upload_blob.comAtprotoRepoUploadBlob,
+              input: processedBytes,
             );
 
             switch (response.status.code) {
@@ -1664,7 +1687,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
     final result = await _client.repo.createRecord(
       collection: 'so.sprk.feed.post',
-      record: record.toJson(),
+      record: sprkPostRecordFromLocal(record).toJson(),
     );
 
     _logger.i('Video posted successfully: ${result.uri}');
@@ -1713,22 +1736,17 @@ class FeedRepositoryImpl implements FeedRepository {
           uri: uri,
         );
       }
-      const source = 'so.sprk.feed.getPostThread';
-      final response = await atproto.get(
-        NSID.parse(source),
-        parameters: {
-          'anchor': uri.toString(),
-          'depth': depth,
-          'parentHeight': parentHeight,
-        },
+      final response = await atproto.call(
+        sprk_get_post_thread.soSprkFeedGetPostThread,
+        parameters: sprk_get_post_thread.FeedGetPostThreadInput(
+          anchor: uri,
+          depth: depth,
+          parentHeight: parentHeight,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          final threadItems = jsonMap['thread']! as List<dynamic>;
-          return Thread.fromSparkFlatList(threadItems: threadItems);
-        },
       );
-
-      return response.data;
+      final threadItems = response.data.toJson()['thread']! as List<dynamic>;
+      return Thread.fromSparkFlatList(threadItems: threadItems);
     });
   }
 
@@ -1753,7 +1771,6 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      const source = 'so.sprk.feed.getCrosspostThread';
       final threadItems = <dynamic>[];
       String? cursor;
 
@@ -1763,25 +1780,24 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       do {
-        final response = await atproto.get(
-          NSID.parse(source),
-          parameters: {
-            'anchor': anchor.toString(),
-            'depth': depth,
-            'parentHeight': parentHeight,
-            'sort': sort,
-            'limit': 100,
-            'cursor': cursor,
-          },
+        final response = await atproto.call(
+          sprk_get_crosspost_thread.soSprkFeedGetCrosspostThread,
+          parameters: sprk_get_crosspost_thread.FeedGetCrosspostThreadInput(
+            anchor: anchor,
+            depth: depth,
+            parentHeight: parentHeight,
+            sort: sprk_get_crosspost_thread.FeedGetCrosspostThreadSort.valueOf(
+              sort,
+            ),
+            limit: 100,
+            cursor: cursor,
+          ),
           headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
         );
 
         final pageItems =
-            response.data['thread'] as List<dynamic>? ?? const <dynamic>[];
+            response.data.toJson()['thread'] as List<dynamic>? ??
+            const <dynamic>[];
 
         var itemsToAppend = pageItems;
         while (threadItems.isNotEmpty &&
@@ -1791,7 +1807,7 @@ class FeedRepositoryImpl implements FeedRepository {
         }
 
         threadItems.addAll(itemsToAppend);
-        cursor = response.data['cursor'] as String?;
+        cursor = response.data.cursor;
       } while (cursor != null && cursor.isNotEmpty);
 
       return Thread.fromSparkFlatList(
@@ -1828,26 +1844,24 @@ class FeedRepositoryImpl implements FeedRepository {
           ? sources!
           : [defaultLabelerDid];
 
-      final parameters = {
-        'uriPatterns': uris,
-        'sources': labelers,
-        'limit': limit,
-        'cursor': cursor,
-      };
+      final parameters = label_query_labels.LabelQueryLabelsInput(
+        uriPatterns: uris.map((uri) => uri.toString()).toList(),
+        sources: labelers,
+        limit: limit ?? 50,
+        cursor: cursor,
+      );
 
-      final response = await atproto.get(
-        NSID.parse('com.atproto.label.queryLabels'),
+      final response = await atproto.call(
+        label_query_labels.comAtprotoLabelQueryLabels,
         headers: {'atproto-proxy': _client.modDid},
         parameters: parameters,
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
+      final responseJson = response.data.toJson();
       _logger
-        ..d('parameters: $parameters')
-        ..d('Labels retrieved: ${response.data}');
+        ..d('parameters: ${parameters.toJson()}')
+        ..d('Labels retrieved: $responseJson');
 
-      for (final label in response.data['labels']! as List<dynamic>) {
+      for (final label in responseJson['labels']! as List<dynamic>) {
         final cleanLabel = label as Map<String, Object?>
           ..remove('sig')
           ..putIfAbsent(
@@ -1857,7 +1871,7 @@ class FeedRepositoryImpl implements FeedRepository {
         labels.add(Label.fromJson(cleanLabel));
       }
 
-      return (labels: labels, cursor: response.data['cursor'] as String?);
+      return (labels: labels, cursor: responseJson['cursor'] as String?);
     });
   }
 
@@ -1885,30 +1899,25 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{
-        'q': query,
-        'limit': limit,
-        'sort': sort,
-        'cursor': cursor,
-      };
-
-      final response = await atproto.get(
-        NSID.parse('so.sprk.feed.searchPosts'),
-        parameters: parameters,
+      final response = await atproto.call(
+        sprk_search_posts.soSprkFeedSearchPosts,
+        parameters: sprk_search_posts.FeedSearchPostsInput(
+          q: query,
+          limit: limit,
+          sort: sprk_search_posts.FeedSearchPostsSort.valueOf(sort),
+          cursor: cursor,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
-      final posts = (response.data['posts']! as List<dynamic>)
+      final output = response.data;
+      final outputJson = output.toJson();
+      final posts = (outputJson['posts']! as List<dynamic>)
           .map((post) => post as Map<String, dynamic>)
           .map(PostView.fromJson)
           .toList();
 
-      final newCursor = response.data['cursor'] as String?;
-
-      return (posts: posts, cursor: newCursor);
+      return (posts: posts, cursor: output.cursor);
     });
   }
 
@@ -1940,35 +1949,29 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{'actor': actor, 'limit': limit};
-
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
-      }
-
-      final result = await atproto.get(
-        NSID.parse('so.sprk.feed.getActorReposts'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_get_actor_reposts.soSprkFeedGetActorReposts,
+        parameters: sprk_get_actor_reposts.FeedGetActorRepostsInput(
+          actor: actor,
+          limit: limit,
+          cursor: cursor,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          final rawFeed = jsonMap['feed']! as List<dynamic>;
-          final feedPosts = _parseAndFilterPosts<FeedViewPost>(
-            rawPosts: rawFeed,
-            fromJson: FeedViewPost.fromJson,
-            hasMedia: _feedViewPostHasMedia,
-            getUri: _getFeedViewPostUri,
-            source: 'sprk actor reposts',
-          );
-          return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      final output = result.data;
+      final rawFeed = output.toJson()['feed']! as List<dynamic>;
+      final feedPosts = _parseAndFilterPosts<FeedViewPost>(
+        rawPosts: rawFeed,
+        fromJson: FeedViewPost.fromJson,
+        hasMedia: _feedViewPostHasMedia,
+        getUri: _getFeedViewPostUri,
+        source: 'sprk actor reposts',
       );
       _logger.d(
         'Actor reposts retrieved successfully: '
-        '${result.data.posts.length} posts',
+        '${feedPosts.length} posts',
       );
-      return result.data;
+      return (posts: feedPosts, cursor: output.cursor);
     });
   }
 
@@ -2015,35 +2018,29 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{'actor': actor, 'limit': limit};
-
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
-      }
-
-      final result = await atproto.get(
-        NSID.parse('so.sprk.feed.getActorLikes'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_get_actor_likes.soSprkFeedGetActorLikes,
+        parameters: sprk_get_actor_likes.FeedGetActorLikesInput(
+          actor: actor,
+          limit: limit,
+          cursor: cursor,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          final rawFeed = jsonMap['feed']! as List<dynamic>;
-          final feedPosts = _parseAndFilterPosts<FeedViewPost>(
-            rawPosts: rawFeed,
-            fromJson: FeedViewPost.fromJson,
-            hasMedia: _feedViewPostHasMedia,
-            getUri: _getFeedViewPostUri,
-            source: 'sprk actor likes',
-          );
-          return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      final output = result.data;
+      final rawFeed = output.toJson()['feed']! as List<dynamic>;
+      final feedPosts = _parseAndFilterPosts<FeedViewPost>(
+        rawPosts: rawFeed,
+        fromJson: FeedViewPost.fromJson,
+        hasMedia: _feedViewPostHasMedia,
+        getUri: _getFeedViewPostUri,
+        source: 'sprk actor likes',
       );
       _logger.d(
         'Actor likes retrieved successfully: '
-        '${result.data.posts.length} posts',
+        '${feedPosts.length} posts',
       );
-      return result.data;
+      return (posts: feedPosts, cursor: output.cursor);
     });
   }
 

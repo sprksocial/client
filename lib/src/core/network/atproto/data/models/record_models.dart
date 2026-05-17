@@ -2,10 +2,21 @@ import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
+import 'package:sprk_poptart/so/sprk/embed/defs.dart' as sprk_embed_defs;
+import 'package:sprk_poptart/so/sprk/story/post.dart' as sprk_story;
+import 'package:sprk_poptart/so/sprk/sound/audio.dart' as sprk_audio;
+import 'package:plyr_poptart/fm/plyr/track.dart' as plyr_track;
 
 part 'record_models.freezed.dart';
 part 'record_models.g.dart';
+
+typedef StoryRecord = sprk_story.StoryPostRecord;
+typedef AudioRecord = sprk_audio.SoundAudioRecord;
+typedef PlyrTrackRecord = plyr_track.TrackRecord;
+typedef PlyrSupportGate = plyr_track.SupportGate;
+typedef PlyrFeaturedArtist = plyr_track.FeaturedArtist;
 
 @Freezed(unionKey: r'$type')
 abstract class Record with _$Record {
@@ -37,59 +48,6 @@ abstract class Record with _$Record {
   }) = ReplyRecord;
 
   @JsonSerializable(explicitToJson: true)
-  @FreezedUnionValue('so.sprk.story.post')
-  const factory Record.story({
-    required Media media,
-    required DateTime createdAt,
-    RepoStrongRef? sound,
-    List<SelfLabel>? labels,
-    List<String>? tags,
-    @JsonKey(fromJson: storyEmbedsFromJson, toJson: storyEmbedsToJson)
-    List<StoryEmbed>? embeds,
-  }) = StoryRecord;
-
-  @JsonSerializable(explicitToJson: true)
-  @FreezedUnionValue('so.sprk.actor.profile')
-  const factory Record.profile({
-    String? displayName,
-    String? description,
-    Blob? avatar,
-    Blob? banner,
-    List<SelfLabel>? selfLabels,
-    RepoStrongRef? joinedViaStarterPack,
-    RepoStrongRef? pinnedPost,
-    DateTime? createdAt,
-  }) = ProfileRecord;
-
-  @JsonSerializable(explicitToJson: true)
-  @FreezedUnionValue('so.sprk.sound.audio')
-  const factory Record.audio({
-    required Blob sound,
-    required String title,
-    required DateTime createdAt,
-    RepoStrongRef? origin,
-    AudioDetails? details,
-    List<SelfLabel>? labels,
-  }) = AudioRecord;
-
-  @JsonSerializable(explicitToJson: true)
-  @FreezedUnionValue('fm.plyr.track')
-  const factory Record.plyrTrack({
-    required String title,
-    required String artist,
-    required String fileType,
-    required DateTime createdAt,
-    String? audioUrl,
-    String? album,
-    int? duration,
-    List<PlyrFeaturedArtist>? features,
-    String? imageUrl,
-    PlyrSupportGate? supportGate,
-    String? description,
-    Blob? audioBlob,
-  }) = PlyrTrackRecord;
-
-  @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('app.bsky.feed.post')
   const factory Record.bskyPost({
     DateTime? createdAt,
@@ -109,8 +67,6 @@ abstract class Record with _$Record {
         return tags ?? _extractHashtags(caption.text);
       case ReplyRecord(:final caption):
         return _extractHashtags(caption.text);
-      case StoryRecord(:final tags):
-        return tags ?? [];
       default:
         return [];
     }
@@ -122,26 +78,18 @@ abstract class Record with _$Record {
   }
 }
 
-@freezed
-abstract class PlyrSupportGate with _$PlyrSupportGate {
-  @JsonSerializable(explicitToJson: true)
-  const factory PlyrSupportGate({required String type}) = _PlyrSupportGate;
-
-  factory PlyrSupportGate.fromJson(Map<String, dynamic> json) =>
-      _$PlyrSupportGateFromJson(json);
-}
-
-@freezed
-abstract class PlyrFeaturedArtist with _$PlyrFeaturedArtist {
-  @JsonSerializable(explicitToJson: true)
-  const factory PlyrFeaturedArtist({
-    required String did,
-    String? handle,
-    String? displayName,
-  }) = _PlyrFeaturedArtist;
-
-  factory PlyrFeaturedArtist.fromJson(Map<String, dynamic> json) =>
-      _$PlyrFeaturedArtistFromJson(json);
+extension StoryRecordConvenience on StoryRecord {
+  List<StoryEmbed> get localEmbeds =>
+      embeds
+          ?.map(
+            (embed) => switch (embed) {
+              sprk_embed_defs.UEmbedsEmbedMention(:final data) => data,
+              _ => null,
+            },
+          )
+          .whereType<StoryEmbed>()
+          .toList() ??
+      const [];
 }
 
 /// Skeleton of a ReplyRef. Needs to be hydrated.

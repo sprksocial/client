@@ -1,100 +1,46 @@
-import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart/poptart.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
-import 'package:spark/src/core/utils/uri_converter.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
+import 'package:sprk_poptart/so/sprk/sound/defs/audio_details.dart';
+import 'package:sprk_poptart/so/sprk/sound/defs/audio_view.dart'
+    as sprk_audio_view;
+import 'package:sprk_poptart/so/sprk/sound/get_audio_posts/output.dart'
+    as sprk_audio_posts;
+import 'package:sprk_poptart/so/sprk/sound/get_trending_audios/output.dart'
+    as sprk_trending_audios;
+import 'package:sprk_poptart/so/sprk/sound/search_audios/output.dart'
+    as sprk_search_audios;
 
-part 'sound_models.freezed.dart';
-part 'sound_models.g.dart';
+typedef AudioView = sprk_audio_view.AudioView;
+typedef AudioPostsResponse = sprk_audio_posts.SoundGetAudioPostsOutput;
+typedef TrendingAudiosResponse =
+    sprk_trending_audios.SoundGetTrendingAudiosOutput;
+typedef SearchAudiosResponse = sprk_search_audios.SoundSearchAudiosOutput;
 
-Record _soundRecordFromJson(dynamic json) {
-  if (json is! Map<String, dynamic>) {
-    throw Exception(
-      'Expected Map<String, dynamic> but got ${json.runtimeType}',
-    );
+extension AudioViewRecordParsing on AudioView {
+  Object? get localRecord {
+    final type = record[r'$type'] as String?;
+    final isPlyrTrack =
+        type == 'fm.plyr.track' ||
+        (type == null && record.containsKey('fileType'));
+    final jsonWithType = record.containsKey(r'$type')
+        ? record
+        : {
+            ...record,
+            r'$type': isPlyrTrack ? 'fm.plyr.track' : 'so.sprk.sound.audio',
+          };
+
+    try {
+      if (isPlyrTrack) {
+        return PlyrTrackRecord.fromJson(jsonWithType);
+      }
+      if (jsonWithType[r'$type'] == 'so.sprk.sound.audio') {
+        return AudioRecord.fromJson(jsonWithType);
+      }
+      return Record.fromJson(jsonWithType);
+    } catch (_) {
+      return null;
+    }
   }
-
-  final jsonWithType = json.containsKey(r'$type')
-      ? json
-      : {
-          ...json,
-          r'$type': json.containsKey('fileType')
-              ? 'fm.plyr.track'
-              : 'so.sprk.sound.audio',
-        };
-
-  return Record.fromJson(jsonWithType);
-}
-
-Map<String, dynamic> _soundRecordToJson(Record record) => record.toJson();
-
-@freezed
-abstract class AudioDetails with _$AudioDetails {
-  @JsonSerializable(explicitToJson: true)
-  const factory AudioDetails({String? artist, String? title}) = _AudioDetails;
-
-  factory AudioDetails.fromJson(Map<String, dynamic> json) =>
-      _$AudioDetailsFromJson(json);
-}
-
-@freezed
-abstract class AudioView with _$AudioView {
-  @JsonSerializable(explicitToJson: true)
-  const factory AudioView({
-    @AtUriConverter() required AtUri uri,
-    required String cid,
-    required ProfileViewBasic author,
-    @JsonKey(fromJson: _soundRecordFromJson, toJson: _soundRecordToJson)
-    required Record record,
-    required String title,
-    @UriConverter() required Uri coverArt,
-    required DateTime indexedAt,
-    @UriConverter() Uri? audio,
-    @Default(0) int useCount,
-    AudioDetails? details,
-    @Default([]) List<Label> labels,
-  }) = _AudioView;
-  const AudioView._();
-
-  factory AudioView.fromJson(Map<String, dynamic> json) =>
-      _$AudioViewFromJson(json);
-}
-
-@freezed
-abstract class AudioPostsResponse with _$AudioPostsResponse {
-  @JsonSerializable(explicitToJson: true)
-  const factory AudioPostsResponse({
-    required List<PostView> posts,
-    required AudioView audio,
-    String? cursor,
-  }) = _AudioPostsResponse;
-
-  factory AudioPostsResponse.fromJson(Map<String, dynamic> json) =>
-      _$AudioPostsResponseFromJson(json);
-}
-
-@freezed
-abstract class TrendingAudiosResponse with _$TrendingAudiosResponse {
-  @JsonSerializable(explicitToJson: true)
-  const factory TrendingAudiosResponse({
-    required List<AudioView> audios,
-    String? cursor,
-  }) = _TrendingAudiosResponse;
-
-  factory TrendingAudiosResponse.fromJson(Map<String, dynamic> json) =>
-      _$TrendingAudiosResponseFromJson(json);
-}
-
-@freezed
-abstract class SearchAudiosResponse with _$SearchAudiosResponse {
-  @JsonSerializable(explicitToJson: true)
-  const factory SearchAudiosResponse({
-    required List<AudioView> audios,
-    String? cursor,
-  }) = _SearchAudiosResponse;
-
-  factory SearchAudiosResponse.fromJson(Map<String, dynamic> json) =>
-      _$SearchAudiosResponseFromJson(json);
 }
 
 class VideoUploadResult {

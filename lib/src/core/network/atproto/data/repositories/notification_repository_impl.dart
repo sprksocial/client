@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';
@@ -8,6 +5,16 @@ import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository
 import 'package:spark/src/core/notifications/push_notification_service.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:sprk_poptart/so/sprk/notification/get_unread_count.dart'
+    as sprk_get_unread_count;
+import 'package:sprk_poptart/so/sprk/notification/list_notifications.dart'
+    as sprk_list_notifications;
+import 'package:sprk_poptart/so/sprk/notification/register_push.dart'
+    as sprk_register_push;
+import 'package:sprk_poptart/so/sprk/notification/update_seen.dart'
+    as sprk_update_seen;
+import 'package:sprk_poptart/so/sprk/notification/unregister_push.dart'
+    as sprk_unregister_push;
 
 /// Notification-related API endpoints implementation
 class NotificationRepositoryImpl implements NotificationRepository {
@@ -53,18 +60,19 @@ class NotificationRepositoryImpl implements NotificationRepository {
         parameters['reasons'] = reasons;
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.notification.listNotifications'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_list_notifications.soSprkNotificationListNotifications,
+        parameters: sprk_list_notifications.NotificationListNotificationsInput(
+          limit: limit,
+          cursor: cursor,
+          priority: priority,
+          reasons: reasons,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
-      final rawResponse = result.data as Map<String, dynamic>;
       _logger.d('Notifications retrieved successfully');
-      return ListNotificationsResponse.fromJson(rawResponse);
+      return result.data;
     });
   }
 
@@ -88,18 +96,17 @@ class NotificationRepositoryImpl implements NotificationRepository {
         parameters['priority'] = priority.toString();
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.notification.getUnreadCount'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_get_unread_count.soSprkNotificationGetUnreadCount,
+        parameters: sprk_get_unread_count.NotificationGetUnreadCountInput(
+          priority: priority,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
-      final rawResponse = result.data as Map<String, dynamic>;
+      final output = result.data;
       _logger.d('Unread count retrieved successfully');
-      return UnreadCountResponse.fromJson(rawResponse);
+      return output;
     });
   }
 
@@ -118,12 +125,9 @@ class NotificationRepositoryImpl implements NotificationRepository {
         throw Exception('AtProto not initialized');
       }
 
-      // Convert DateTime to ISO8601 string for the API
-      final body = {'seenAt': seenAt.toIso8601String()};
-
-      await atproto.post(
-        NSID.parse('so.sprk.notification.updateSeen'),
-        body: body,
+      await atproto.call(
+        sprk_update_seen.soSprkNotificationUpdateSeen,
+        input: sprk_update_seen.NotificationUpdateSeenInput(seenAt: seenAt),
         headers: {'atproto-proxy': _client.sprkDid},
       );
 
@@ -160,16 +164,22 @@ class NotificationRepositoryImpl implements NotificationRepository {
       // serviceDid needs just the DID without fragment (format validation)
       final serviceDid = _client.sprkDid.split('#').first;
 
-      final body = {
-        'serviceDid': serviceDid,
-        'token': token,
-        'platform': platform,
-        'appId': appId,
-      };
+      final input = sprk_register_push.NotificationRegisterPushInput(
+        serviceDid: serviceDid,
+        token: token,
+        platform:
+            sprk_register_push.NotificationRegisterPushPlatform.valueOf(
+              platform,
+            ) ??
+            sprk_register_push.NotificationRegisterPushPlatform.unknown(
+              data: platform,
+            ),
+        appId: appId,
+      );
 
-      await atproto.post(
-        NSID.parse('so.sprk.notification.registerPush'),
-        body: body,
+      await atproto.call(
+        sprk_register_push.soSprkNotificationRegisterPush,
+        input: input,
         headers: {'atproto-proxy': _client.sprkDid},
       );
 
@@ -199,16 +209,22 @@ class NotificationRepositoryImpl implements NotificationRepository {
       // serviceDid needs just the DID without fragment (format validation)
       final serviceDid = _client.sprkDid.split('#').first;
 
-      final body = {
-        'serviceDid': serviceDid,
-        'token': token,
-        'platform': platform,
-        'appId': appId,
-      };
+      final input = sprk_unregister_push.NotificationUnregisterPushInput(
+        serviceDid: serviceDid,
+        token: token,
+        platform:
+            sprk_unregister_push.NotificationUnregisterPushPlatform.valueOf(
+              platform,
+            ) ??
+            sprk_unregister_push.NotificationUnregisterPushPlatform.unknown(
+              data: platform,
+            ),
+        appId: appId,
+      );
 
-      await atproto.post(
-        NSID.parse('so.sprk.notification.unregisterPush'),
-        body: body,
+      await atproto.call(
+        sprk_unregister_push.soSprkNotificationUnregisterPush,
+        input: input,
         headers: {'atproto-proxy': _client.sprkDid},
       );
 

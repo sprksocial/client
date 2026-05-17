@@ -384,39 +384,15 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
             children: [
               // Main content
               Positioned.fill(
-                child: switch (postData!.media) {
-                  MediaViewVideo() => PostVideoPlayer(
-                    key: _videoPlayerKey,
-                    videoUrl: postData.videoUrl,
-                    // For standalone, we don't need feed and index
-                    thumbnail: postData.thumbnailUrl,
-                  ),
-                  MediaViewBskyVideo() => PostVideoPlayer(
-                    key: _videoPlayerKey,
-                    videoUrl: postData.videoUrl,
-                    thumbnail: postData.thumbnailUrl,
-                  ),
-                  MediaViewImages() || MediaViewBskyImages() => ImageCarousel(
-                    imageUrls: postData.imageUrls,
-                  ),
-                  MediaViewBskyRecordWithMedia(:final media) => switch (media) {
-                    MediaViewVideo() => PostVideoPlayer(
-                      key: _videoPlayerKey,
-                      videoUrl: postData.videoUrl,
-                      thumbnail: postData.thumbnailUrl,
-                    ),
-                    MediaViewBskyVideo() => PostVideoPlayer(
-                      key: _videoPlayerKey,
-                      videoUrl: postData.videoUrl,
-                      thumbnail: postData.thumbnailUrl,
-                    ),
-                    MediaViewImages() || MediaViewBskyImages() => ImageCarousel(
-                      imageUrls: postData.imageUrls,
-                    ),
-                    _ => const SizedBox.shrink(),
-                  },
-                  _ => const SizedBox.shrink(),
-                },
+                child: postData!.videoUrl.isNotEmpty
+                    ? PostVideoPlayer(
+                        key: _videoPlayerKey,
+                        videoUrl: postData.videoUrl,
+                        thumbnail: postData.thumbnailUrl,
+                      )
+                    : postData.imageUrls.isNotEmpty
+                    ? ImageCarousel(imageUrls: postData.imageUrls)
+                    : const SizedBox.shrink(),
               ),
 
               // Overlay controls

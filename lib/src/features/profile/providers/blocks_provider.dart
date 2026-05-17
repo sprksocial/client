@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/di/service_locator.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 part 'blocks_provider.g.dart';
 

@@ -1,269 +1,159 @@
 import 'package:poptart/poptart.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref_visibility.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/labeler_pref_item.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/labelers_pref.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/muted_word.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/saved_feed.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/saved_feed_type.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/saved_feeds_pref.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/union_preferences.dart';
+import 'package:sprk_poptart/so/sprk/actor/get_preferences/output.dart';
 
-part 'pref_models.freezed.dart';
-part 'pref_models.g.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref_visibility.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/feed_view_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/hidden_posts_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/interests_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/labeler_pref_item.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/labelers_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/muted_word.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/muted_word_actor_target.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/muted_word_target.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/muted_words_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/personal_details_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/saved_feed.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/saved_feed_type.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/saved_feeds_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/thread_view_pref.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/thread_view_pref_sort.dart';
+export 'package:sprk_poptart/so/sprk/actor/defs/union_preferences.dart';
+export 'package:sprk_poptart/so/sprk/actor/get_preferences/output.dart';
 
-@freezed
-abstract class Preferences with _$Preferences {
-  @JsonSerializable(explicitToJson: true)
-  factory Preferences({required List<Preference> preferences}) {
-    final contentLabelPrefs = <ContentLabelPref>[];
-    final savedFeeds = <SavedFeed>[];
-    final labelers = <LabelerPrefItem>[];
-    final hiddenPosts = <AtUri>[];
-    final mutedWords = <MutedWord>[];
-    final feedViewPrefs = <Preference>[];
-    Preference? personalDetails;
-    Preference? threadViewPref;
-    Preference? interests;
-    Preference? postInteractionSettings;
+typedef Preferences = ActorGetPreferencesOutput;
+typedef Preference = UPreferences;
 
-    for (final preference in preferences) {
-      preference.mapOrNull(
-        contentLabelPref: (pref) {
-          contentLabelPrefs.add(
-            ContentLabelPref(
-              labelerDid: pref.labelerDid,
-              label: pref.label,
-              visibility: pref.visibility,
-            ),
-          );
-        },
-        savedFeedsPref: (pref) {
-          savedFeeds.addAll(pref.items);
-        },
-        labelersPref: (pref) {
-          labelers.addAll(pref.labelers);
-        },
-        hiddenPostsPref: (pref) {
-          hiddenPosts.addAll(pref.posts);
-        },
-        mutedWordsPref: (pref) {
-          mutedWords.addAll(pref.words);
-        },
-        personalDetailsPref: (pref) {
-          personalDetails = preference;
-        },
-        feedViewPref: (pref) {
-          feedViewPrefs.add(preference);
-        },
-        threadViewPref: (pref) {
-          threadViewPref = preference;
-        },
-        interestsPref: (pref) {
-          interests = preference;
-        },
-        postInteractionSettingsPref: (pref) {
-          postInteractionSettings = preference;
-        },
-      );
-    }
+Preferences preferencesFromJson(Map<String, dynamic> json) =>
+    Preferences.fromJson(json);
 
-    return Preferences.internal(
-      preferences: preferences,
-      contentLabelPrefs: contentLabelPrefs,
-      savedFeeds: savedFeeds,
-      labelers: labelers,
-      hiddenPosts: hiddenPosts,
-      mutedWords: mutedWords,
-      feedViewPrefs: feedViewPrefs,
-      personalDetails: personalDetails,
-      threadViewPref: threadViewPref,
-      interests: interests,
-      postInteractionSettings: postInteractionSettings,
-    );
-  }
-
-  const factory Preferences.internal({
-    required List<Preference> preferences,
-    List<ContentLabelPref>? contentLabelPrefs,
-    List<SavedFeed>? savedFeeds,
-    List<LabelerPrefItem>? labelers,
-    @AtUriConverter() List<AtUri>? hiddenPosts,
-    List<MutedWord>? mutedWords,
-    List<Preference>? feedViewPrefs,
-    Preference? personalDetails,
-    Preference? threadViewPref,
-    Preference? interests,
-    Preference? postInteractionSettings,
-  }) = _Preferences;
-  const Preferences._();
-
-  factory Preferences.fromJson(Map<String, dynamic> json) {
-    // Parse the preferences list and use the custom factory constructor
-    // which extracts labelers, savedFeeds, etc.
-    final preferencesJson = json['preferences'] as List<dynamic>? ?? [];
-    final preferences = preferencesJson
-        .map((e) => Preference.fromJson(e as Map<String, dynamic>))
-        .toList();
-    return Preferences(preferences: preferences);
-  }
-
-  Map<String, dynamic> toJson() => {
-    'preferences': preferences.map((e) => e.toJson()).toList(),
-  };
-}
-
-@Freezed(unionKey: r'$type')
-abstract class Preference with _$Preference {
-  const Preference._();
-
-  @FreezedUnionValue('so.sprk.actor.defs#contentLabelPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.contentLabelPref({
-    required String labelerDid,
-    required String label,
-    required String visibility, // ["ignore", "show", "warn", "hide"]
-  }) = _ContentLabelPreference;
-  bool isContentLabelPref(Preference preference) =>
-      preference.mapOrNull(contentLabelPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#savedFeedsPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.savedFeedsPref({required List<SavedFeed> items}) =
-      _SavedFeedsPref;
-  bool isSavedFeedsPref(Preference preference) =>
-      preference.mapOrNull(savedFeedsPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#personalDetailsPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.personalDetailsPref({required DateTime? birthDate}) =
-      _PersonalDetailsPref;
-  bool isPersonalDetailsPref(Preference preference) =>
-      preference.mapOrNull(personalDetailsPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#feedViewPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.feedViewPref({
-    required String feed,
-    bool? hideReplies,
-    bool? hideRepliesByUnfollowed,
-    bool? hideRepliesByLikeCount,
-    bool? hideReposts,
-    bool? hideQuotePosts,
-  }) = _FeedViewPref;
-  bool isFeedViewPref(Preference preference) =>
-      preference.mapOrNull(feedViewPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#threadViewPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.threadViewPref({
-    String? sort, // oldest, newest, most-likes, random, hotness
-    bool? prioritizeFollowedUsers,
-  }) = _ThreadViewPref;
-  bool isThreadViewPref(Preference preference) =>
-      preference.mapOrNull(threadViewPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#interestsPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.interestsPref({required List<String> tags}) =
-      _InterestsPref;
-  bool isInterestsPref(Preference preference) =>
-      preference.mapOrNull(interestsPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#mutedWordsPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.mutedWordsPref({required List<MutedWord> words}) =
-      _MutedWordsPref;
-  bool isMutedWordsPref(Preference preference) =>
-      preference.mapOrNull(mutedWordsPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#hiddenPostsPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.hiddenPostsPref({
-    @AtUriConverter() required List<AtUri> posts,
-  }) = _HiddenPostsPref;
-  bool isHiddenPostsPref(Preference preference) =>
-      preference.mapOrNull(hiddenPostsPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#labelersPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.labelersPref({
-    required List<LabelerPrefItem> labelers,
-  }) = _LabelersPref;
-  bool isLabelersPref(Preference preference) =>
-      preference.mapOrNull(labelersPref: (pref) => pref) != null;
-
-  @FreezedUnionValue('so.sprk.actor.defs#postInteractionSettingsPref')
-  @JsonSerializable(explicitToJson: true)
-  const factory Preference.postInteractionSettingsPref({
-    required bool enabled,
-  }) = _PostInteractionSettingsPref;
-  bool isPostInteractionSettingsPref(Preference preference) =>
-      preference.mapOrNull(postInteractionSettingsPref: (pref) => pref) != null;
-
-  factory Preference.fromJson(Map<String, dynamic> json) =>
-      _$PreferenceFromJson(json);
-}
-
-@freezed
-abstract class SavedFeed with _$SavedFeed {
-  factory SavedFeed({
-    required String type,
-    required String value,
-    required bool pinned,
-    String? id,
-  }) {
-    final resolvedId = (id == null || id.isEmpty)
+SavedFeed makeSavedFeed({
+  required String type,
+  required String value,
+  required bool pinned,
+  String? id,
+}) {
+  return SavedFeed(
+    id: (id == null || id.isEmpty)
         ? DateTime.now().toUtc().toIso8601String()
-        : id;
+        : id,
+    type: SavedFeedType.valueOf(type) ?? SavedFeedType.unknown(data: type),
+    value: value,
+    pinned: pinned,
+  );
+}
 
-    return SavedFeed.internal(
-      type: type,
-      value: value,
-      pinned: pinned,
-      id: resolvedId,
-    );
+Preference savedFeedsPreference(List<SavedFeed> items) =>
+    Preference.savedFeedsPref(data: SavedFeedsPref(items: items));
+
+Preference labelersPreference(List<LabelerPrefItem> labelers) =>
+    Preference.labelersPref(data: LabelersPref(labelers: labelers));
+
+Preference contentLabelPreference({
+  required String? labelerDid,
+  required String label,
+  required String visibility,
+}) {
+  return Preference.contentLabelPref(
+    data: ContentLabelPref(
+      labelerDid: labelerDid,
+      label: label,
+      visibility:
+          ContentLabelPrefVisibility.valueOf(visibility) ??
+          ContentLabelPrefVisibility.unknown(data: visibility),
+    ),
+  );
+}
+
+extension PreferencesConvenience on Preferences {
+  List<ContentLabelPref>? get contentLabelPrefs {
+    final prefs = preferences
+        .map((preference) => preference.contentLabelPref)
+        .nonNulls
+        .toList();
+    return prefs.isEmpty ? null : prefs;
   }
 
-  const factory SavedFeed.internal({
-    required String type, // ["feed", "timeline"]
-    required String value,
-    required bool pinned,
-    required String id,
-  }) = _SavedFeed;
+  List<SavedFeed>? get savedFeeds {
+    final feeds = <SavedFeed>[];
+    for (final preference in preferences) {
+      final savedFeedsPref = preference.savedFeedsPref;
+      if (savedFeedsPref != null) {
+        feeds.addAll(savedFeedsPref.items);
+      }
+    }
+    return feeds.isEmpty ? null : feeds;
+  }
 
-  const SavedFeed._();
+  List<LabelerPrefItem>? get labelers {
+    final items = <LabelerPrefItem>[];
+    for (final preference in preferences) {
+      final labelersPref = preference.labelersPref;
+      if (labelersPref != null) {
+        items.addAll(labelersPref.labelers);
+      }
+    }
+    return items.isEmpty ? null : items;
+  }
 
-  factory SavedFeed.fromJson(Map<String, dynamic> json) =>
-      _$SavedFeedFromJson(json);
+  List<AtUri>? get hiddenPosts {
+    final posts = <AtUri>[];
+    for (final preference in preferences) {
+      final hiddenPostsPref = preference.hiddenPostsPref;
+      if (hiddenPostsPref != null) {
+        posts.addAll(hiddenPostsPref.items);
+      }
+    }
+    return posts.isEmpty ? null : posts;
+  }
+
+  List<MutedWord>? get mutedWords {
+    final words = <MutedWord>[];
+    for (final preference in preferences) {
+      final mutedWordsPref = preference.mutedWordsPref;
+      if (mutedWordsPref != null) {
+        words.addAll(mutedWordsPref.items);
+      }
+    }
+    return words.isEmpty ? null : words;
+  }
+
+  List<Preference>? get feedViewPrefs {
+    final prefs = preferences
+        .where((preference) => preference.isFeedViewPref)
+        .toList();
+    return prefs.isEmpty ? null : prefs;
+  }
+
+  Preference? get personalDetails => preferences.cast<Preference?>().firstWhere(
+    (preference) => preference?.isPersonalDetailsPref ?? false,
+    orElse: () => null,
+  );
+
+  Preference? get threadViewPref => preferences.cast<Preference?>().firstWhere(
+    (preference) => preference?.isThreadViewPref ?? false,
+    orElse: () => null,
+  );
+
+  Preference? get interests => preferences.cast<Preference?>().firstWhere(
+    (preference) => preference?.isInterestsPref ?? false,
+    orElse: () => null,
+  );
 }
 
-@freezed
-abstract class MutedWord with _$MutedWord {
-  @JsonSerializable(explicitToJson: true)
-  const factory MutedWord({
-    required String value,
-    required List<String> targets, // content, tag, String? id,
-    @Default('all') String actorTarget, // all, exclude-following
-  }) = _MutedWord;
-  const MutedWord._();
-
-  factory MutedWord.fromJson(Map<String, dynamic> json) =>
-      _$MutedWordFromJson(json);
+extension SavedFeedConvenience on SavedFeed {
+  String get typeValue => type.toJson();
 }
 
-@freezed
-abstract class LabelerPrefItem with _$LabelerPrefItem {
-  @JsonSerializable(explicitToJson: true)
-  const factory LabelerPrefItem({required String did}) = _LabelerPrefItem;
-  const LabelerPrefItem._();
-
-  factory LabelerPrefItem.fromJson(Map<String, dynamic> json) =>
-      _$LabelerPrefItemFromJson(json);
-}
-
-@freezed
-abstract class ContentLabelPref with _$ContentLabelPref {
-  @JsonSerializable(explicitToJson: true)
-  const factory ContentLabelPref({
-    required String labelerDid,
-    required String label,
-    required String visibility,
-  }) = _ContentLabelPref;
-  const ContentLabelPref._();
-
-  factory ContentLabelPref.fromJson(Map<String, dynamic> json) =>
-      _$ContentLabelPrefFromJson(json);
+extension ContentLabelPrefConvenience on ContentLabelPref {
+  String get visibilityValue => visibility.toJson();
 }

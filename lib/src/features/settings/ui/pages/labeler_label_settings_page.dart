@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -15,6 +13,8 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
+import 'package:sprk_poptart/so/sprk/labeler/get_services.dart'
+    as sprk_get_services;
 
 @RoutePage()
 class LabelerLabelSettingsPage extends ConsumerStatefulWidget {
@@ -84,22 +84,18 @@ class _LabelerLabelSettingsPageState
         if (atproto == null) {
           throw Exception('AtProto not initialized');
         }
-        final result = await atproto.get(
-          NSID.parse('so.sprk.labeler.getServices'),
-          parameters: {
-            'dids': [widget.did],
-            'detailed': true,
-          },
+        final result = await atproto.call(
+          sprk_get_services.soSprkLabelerGetServices,
+          parameters: sprk_get_services.LabelerGetServicesInput(
+            dids: [widget.did],
+            detailed: true,
+          ),
           headers: {'atproto-proxy': _sprkRepository.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) =>
-              jsonDecode(utf8.decode(uint8 as List<int>))
-                  as Map<String, dynamic>,
         );
         if (result.status != HttpStatus.ok) {
           throw Exception('Failed to retrieve labeler services');
         }
-        return result.data as Map<String, dynamic>;
+        return result.data.toJson();
       });
 
       final viewsJson = rawResponse['views'] as List<dynamic>?;

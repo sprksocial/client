@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart'; // Assuming Profile model path
+import 'package:sprk_poptart/so/sprk/actor/defs.dart'; // Assuming Profile model path
 
 part 'profile_state.freezed.dart';
 

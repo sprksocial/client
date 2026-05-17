@@ -171,10 +171,11 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
 
   Future<void> _handleTap(BuildContext context) async {
     // Navigate based on notification type
-    if (notification.reason == 'follow') {
+    final reason = notification.reasonValue;
+    if (reason == 'follow') {
       // Navigate to profile (use first author for grouped follows)
       context.router.push(ProfileRoute(did: notification.author.did));
-    } else if (notification.reason == 'reply') {
+    } else if (reason == 'reply') {
       final replyUri = notification.uri.toString();
       context.router.push(StandalonePostRoute(postUri: replyUri));
     } else if (notification.reasonSubject != null) {
@@ -201,7 +202,8 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
       var recordToCheck = notification.record;
 
       // For like/repost notifications, get text from the subject record
-      if (notification.reason == 'like' || notification.reason == 'repost') {
+      final reason = notification.reasonValue;
+      if (reason == 'like' || reason == 'repost') {
         final subject = notification.record['subject'] as Map<String, dynamic>?;
         if (subject != null) {
           recordToCheck = subject;
@@ -234,7 +236,8 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
       Map<String, dynamic>? media;
 
       // For like/repost notifications, check for subjectMedia at top level first
-      if (notification.reason == 'like' || notification.reason == 'repost') {
+      final reason = notification.reasonValue;
+      if (reason == 'like' || reason == 'repost') {
         // Backend embeds subjectMedia at top level for like/repost notifications
         media = record['subjectMedia'] as Map<String, dynamic>?;
         // Fallback: check if subject has media directly

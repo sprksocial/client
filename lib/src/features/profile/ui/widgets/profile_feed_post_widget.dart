@@ -205,34 +205,8 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onDoubleTap: () => _handleDoubleTapLike(post),
-                  child: switch (post.media) {
-                    MediaViewVideo() => PostVideoPlayer(
-                      videoUrl: post.videoUrl,
-                      thumbnail: post.thumbnailUrl,
-                      profileFeedUri: widget.index != null
-                          ? widget.profileUri.toString()
-                          : null,
-                      index: widget.index,
-                      isInitialPost: widget.isInitialPost,
-                    ),
-                    MediaViewBskyVideo() => PostVideoPlayer(
-                      videoUrl: post.videoUrl,
-                      thumbnail: post.thumbnailUrl,
-                      profileFeedUri: widget.index != null
-                          ? widget.profileUri.toString()
-                          : null,
-                      index: widget.index,
-                      isInitialPost: widget.isInitialPost,
-                    ),
-                    MediaViewImages() || MediaViewBskyImages() => ImageCarousel(
-                      imageUrls: post.imageUrls,
-                      hasKnownInteractions:
-                          post.viewer?.knownInteractions != null &&
-                          post.viewer!.knownInteractions!.isNotEmpty,
-                    ),
-                    MediaViewBskyRecordWithMedia(:final media) =>
-                      switch (media) {
-                        MediaViewVideo() => PostVideoPlayer(
+                  child: post.videoUrl.isNotEmpty
+                      ? PostVideoPlayer(
                           videoUrl: post.videoUrl,
                           thumbnail: post.thumbnailUrl,
                           profileFeedUri: widget.index != null
@@ -240,31 +214,17 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                               : null,
                           index: widget.index,
                           isInitialPost: widget.isInitialPost,
-                        ),
-                        MediaViewBskyVideo() => PostVideoPlayer(
-                          videoUrl: post.videoUrl,
-                          thumbnail: post.thumbnailUrl,
-                          profileFeedUri: widget.index != null
-                              ? widget.profileUri.toString()
-                              : null,
-                          index: widget.index,
-                          isInitialPost: widget.isInitialPost,
-                        ),
-                        MediaViewImages() ||
-                        MediaViewBskyImages() => ImageCarousel(
+                        )
+                      : post.imageUrls.isNotEmpty
+                      ? ImageCarousel(
                           imageUrls: post.imageUrls,
                           hasKnownInteractions:
                               post.viewer?.knownInteractions != null &&
                               post.viewer!.knownInteractions!.isNotEmpty,
-                        ),
-                        _ => const DecoratedBox(
+                        )
+                      : const DecoratedBox(
                           decoration: BoxDecoration(color: AppColors.black),
                         ),
-                      },
-                    _ => const DecoratedBox(
-                      decoration: BoxDecoration(color: AppColors.black),
-                    ),
-                  },
                 ),
               ),
 

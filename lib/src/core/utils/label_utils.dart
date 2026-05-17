@@ -21,10 +21,10 @@ class LabelUtils {
       );
       return LabelPreference(
         value: contentLabelPref.label,
-        blurs: _visibilityToBlurs(contentLabelPref.visibility),
-        severity: _visibilityToSeverity(contentLabelPref.visibility),
-        defaultSetting: _visibilityToSetting(contentLabelPref.visibility),
-        setting: _visibilityToSetting(contentLabelPref.visibility),
+        blurs: _visibilityToBlurs(contentLabelPref.visibilityValue),
+        severity: _visibilityToSeverity(contentLabelPref.visibilityValue),
+        defaultSetting: _visibilityToSetting(contentLabelPref.visibilityValue),
+        setting: _visibilityToSetting(contentLabelPref.visibilityValue),
         adultOnly: _isAdultOnlyLabel(value),
       );
     } catch (e) {

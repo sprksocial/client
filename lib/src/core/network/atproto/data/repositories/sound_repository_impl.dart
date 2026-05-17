@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
@@ -8,6 +6,14 @@ import 'package:spark/src/core/network/atproto/data/repositories/sound_repositor
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:sprk_poptart/so/sprk/sound/audio.dart' as sprk_audio;
+import 'package:sprk_poptart/so/sprk/sound/defs/audio_details.dart';
+import 'package:sprk_poptart/so/sprk/sound/get_audio_posts.dart'
+    as sprk_get_audio_posts;
+import 'package:sprk_poptart/so/sprk/sound/get_trending_audios.dart'
+    as sprk_get_trending_audios;
+import 'package:sprk_poptart/so/sprk/sound/search_audios.dart'
+    as sprk_search_audios;
 
 class SoundRepositoryImpl implements SoundRepository {
   SoundRepositoryImpl(this._client) {
@@ -26,7 +32,7 @@ class SoundRepositoryImpl implements SoundRepository {
   }) async {
     _logger.d('Creating sound record with title: $title');
 
-    final audioRecord = AudioRecord(
+    final audioRecord = sprk_audio.SoundAudioRecord(
       sound: sound,
       title: title,
       createdAt: DateTime.now().toUtc(),
@@ -71,21 +77,21 @@ class SoundRepositoryImpl implements SoundRepository {
         parameters['cursor'] = cursor;
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.sound.getAudioPosts'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_get_audio_posts.soSprkSoundGetAudioPosts,
+        parameters: sprk_get_audio_posts.SoundGetAudioPostsInput(
+          uri: uri,
+          limit: limit,
+          cursor: cursor,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          return AudioPostsResponse.fromJson(jsonMap);
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
+      final response = AudioPostsResponse.fromJson(result.data.toJson());
 
       _logger.d(
-        'Audio posts retrieved successfully: ${result.data.posts.length} posts',
+        'Audio posts retrieved successfully: ${response.posts.length} posts',
       );
-      return result.data;
+      return response;
     });
   }
 
@@ -111,22 +117,21 @@ class SoundRepositoryImpl implements SoundRepository {
         parameters['cursor'] = cursor;
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.sound.getTrendingAudios'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_get_trending_audios.soSprkSoundGetTrendingAudios,
+        parameters: sprk_get_trending_audios.SoundGetTrendingAudiosInput(
+          limit: limit,
+          cursor: cursor,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          return TrendingAudiosResponse.fromJson(jsonMap);
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
+      final response = TrendingAudiosResponse.fromJson(result.data.toJson());
 
       _logger.d(
         'Trending audios retrieved successfully: '
-        '${result.data.audios.length} audios',
+        '${response.audios.length} audios',
       );
-      return result.data;
+      return response;
     });
   }
 
@@ -159,22 +164,22 @@ class SoundRepositoryImpl implements SoundRepository {
         parameters['cursor'] = cursor;
       }
 
-      final result = await atproto.get(
-        NSID.parse('so.sprk.sound.searchAudios'),
-        parameters: parameters,
+      final result = await atproto.call(
+        sprk_search_audios.soSprkSoundSearchAudios,
+        parameters: sprk_search_audios.SoundSearchAudiosInput(
+          q: trimmedQuery,
+          limit: limit,
+          cursor: cursor,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          return SearchAudiosResponse.fromJson(jsonMap);
-        },
-        adaptor: (uint8) =>
-            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
+      final response = SearchAudiosResponse.fromJson(result.data.toJson());
 
       _logger.d(
         'Audio search retrieved successfully: '
-        '${result.data.audios.length} audios',
+        '${response.audios.length} audios',
       );
-      return result.data;
+      return response;
     });
   }
 }

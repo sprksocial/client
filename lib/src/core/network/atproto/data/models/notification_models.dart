@@ -1,65 +1,19 @@
-import 'package:poptart_lex/com/atproto/label/defs.dart';
-import 'package:poptart/poptart.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/notification/get_unread_count/output.dart'
+    as sprk_get_unread_count;
+import 'package:sprk_poptart/so/sprk/notification/list_notifications/notification.dart'
+    as sprk_notification;
+import 'package:sprk_poptart/so/sprk/notification/list_notifications/notification_reason.dart'
+    as sprk_notification_reason;
+import 'package:sprk_poptart/so/sprk/notification/list_notifications/output.dart'
+    as sprk_list_notifications;
 
-part 'notification_models.freezed.dart';
-part 'notification_models.g.dart';
+typedef Notification = sprk_notification.Notification;
+typedef NotificationReason = sprk_notification_reason.NotificationReason;
+typedef ListNotificationsResponse =
+    sprk_list_notifications.NotificationListNotificationsOutput;
+typedef UnreadCountResponse =
+    sprk_get_unread_count.NotificationGetUnreadCountOutput;
 
-@freezed
-abstract class Notification with _$Notification {
-  @JsonSerializable(explicitToJson: true)
-  const factory Notification({
-    @AtUriConverter() required AtUri uri,
-    required String cid,
-    required ProfileViewBasic author,
-    required String reason,
-    required Map<String, dynamic> record,
-    required bool isRead,
-    required DateTime indexedAt,
-    @JsonKey(name: r'$type') String? type,
-    @AtUriConverter() AtUri? reasonSubject,
-    @Default(null) List<Label>? labels,
-  }) = _Notification;
-  const Notification._();
-
-  factory Notification.fromJson(Map<String, dynamic> json) =>
-      _$NotificationFromJson(json);
-}
-
-@freezed
-abstract class ListNotificationsResponse with _$ListNotificationsResponse {
-  @JsonSerializable(explicitToJson: true)
-  const factory ListNotificationsResponse({
-    required List<Notification> notifications,
-    String? cursor,
-    bool? priority,
-    DateTime? seenAt,
-  }) = _ListNotificationsResponse;
-  const ListNotificationsResponse._();
-
-  factory ListNotificationsResponse.fromJson(Map<String, dynamic> json) =>
-      _$ListNotificationsResponseFromJson(json);
-}
-
-@freezed
-abstract class UnreadCountResponse with _$UnreadCountResponse {
-  @JsonSerializable(explicitToJson: true)
-  const factory UnreadCountResponse({required int count}) =
-      _UnreadCountResponse;
-  const UnreadCountResponse._();
-
-  factory UnreadCountResponse.fromJson(Map<String, dynamic> json) =>
-      _$UnreadCountResponseFromJson(json);
-}
-
-@freezed
-abstract class UpdateSeenRequest with _$UpdateSeenRequest {
-  @JsonSerializable(explicitToJson: true)
-  const factory UpdateSeenRequest({required DateTime seenAt}) =
-      _UpdateSeenRequest;
-  const UpdateSeenRequest._();
-
-  factory UpdateSeenRequest.fromJson(Map<String, dynamic> json) =>
-      _$UpdateSeenRequestFromJson(json);
+extension NotificationConvenience on Notification {
+  String get reasonValue => reason.toJson();
 }

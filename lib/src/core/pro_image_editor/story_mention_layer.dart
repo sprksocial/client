@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
 import 'package:spark/src/core/ui/widgets/story_mention_chip.dart';
 
@@ -86,7 +86,7 @@ List<StoryEmbed> extractStoryMentionEmbeds(
     }
 
     embeds.add(
-      StoryEmbed.mention(
+      StoryEmbed(
         placement: StoryEmbedPlacement(
           frame: StoryEmbedFrame(
             x: _normalize(visibleRect.left, canvasSize.width, clampMin: 0),

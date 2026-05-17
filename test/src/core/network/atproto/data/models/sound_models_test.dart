@@ -21,7 +21,7 @@ void main() {
         'audio': 'https://media.sprk.so/sound/did%3Aplc%3Atest123/cid',
       });
 
-      expect(audio.record, isA<AudioRecord>());
+      expect(audio.localRecord, isA<AudioRecord>());
       expect(audio.title, 'Original Sound');
     });
 
@@ -46,7 +46,7 @@ void main() {
         'audio': 'https://media.sprk.so/sound/did%3Aplc%3Aplyr123/cid',
       });
 
-      final record = audio.record;
+      final record = audio.localRecord;
       expect(record, isA<PlyrTrackRecord>());
       expect((record as PlyrTrackRecord).artist, 'Dame');
       expect(audio.details?.artist, 'Dame');

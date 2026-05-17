@@ -1,43 +1,38 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/record_write_adapters.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:sprk_poptart/so/sprk/story/get_stories.dart'
+    as sprk_get_stories;
+import 'package:sprk_poptart/so/sprk/story/get_timeline.dart'
+    as sprk_get_timeline;
 
 /// Implementation of Story-related API endpoints
 class StoryRepositoryImpl implements StoryRepository {
   StoryRepositoryImpl(this._client);
   final SprkRepository _client;
 
-  /// Fixes the media structure in story JSON to match the expected model format
-  /// The API sometimes returns media fields directly instead of nested in
-  /// 'image' object
+  /// Fixes story media JSON to match generated sprk_poptart view models.
   void _fixMediaStructure(Map<String, dynamic> storyJson) {
     final media = storyJson['media'];
     if (media is! Map<String, dynamic>) return;
 
     final mediaType = media[r'$type'] as String?;
 
-    // Fix so.sprk.media.image#view - it should have an 'image' field with
-    //ViewImage structure
     if (mediaType == 'so.sprk.media.image#view') {
-      // If media has thumb/fullsize directly but no 'image' field, wrap them
-      if (media.containsKey('thumb') &&
-          media.containsKey('fullsize') &&
-          !media.containsKey('image')) {
-        media['image'] = {
-          'thumb': media['thumb'],
-          'fullsize': media['fullsize'],
-          'alt': media['alt'],
-        };
-        // Remove the direct fields (optional, but cleaner)
+      final image = media['image'];
+      if (image is Map<String, dynamic>) {
+        media['thumb'] ??= image['thumb'];
+        media['fullsize'] ??= image['fullsize'];
+        media['alt'] ??= image['alt'] ?? '';
         media
-          ..remove('thumb')
-          ..remove('fullsize');
-        if (media['alt'] != null) {
-          media.remove('alt');
-        }
+          ..remove('image')
+          ..removeWhere((key, value) => value == null);
       }
     }
   }
@@ -62,71 +57,72 @@ class StoryRepositoryImpl implements StoryRepository {
         parameters['cursor'] = cursor;
       }
 
-      final response = await atproto.get(
-        NSID.parse('so.sprk.story.getTimeline'),
-        parameters: parameters,
+      final rawResponse = await atproto.call(
+        sprk_get_timeline.soSprkStoryGetTimeline,
+        parameters: sprk_get_timeline.StoryGetTimelineInput(
+          limit: limit,
+          cursor: cursor,
+        ),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          final storiesByAuthorMap = <ProfileViewBasic, List<StoryView>>{};
+      );
+      final response = (() {
+        final jsonMap = rawResponse.data.toJson();
+        final storiesByAuthorMap = <ProfileViewBasic, List<StoryView>>{};
 
-          // Handle missing or null storiesByAuthor field
-          if (!jsonMap.containsKey('storiesByAuthor') ||
-              jsonMap['storiesByAuthor'] == null) {
-            return (
-              storiesByAuthor: storiesByAuthorMap,
-              cursor: jsonMap['cursor'] as String?,
-            );
-          }
-
-          final storiesByAuthorArray =
-              (jsonMap['storiesByAuthor'] as List<dynamic>?) ?? <dynamic>[];
-
-          for (var i = 0; i < storiesByAuthorArray.length; i++) {
-            final item = storiesByAuthorArray[i];
-            try {
-              final itemMap = item as Map<String, dynamic>;
-              final author = ProfileViewBasic.fromJson(
-                itemMap['author'] as Map<String, dynamic>,
-              );
-
-              final storiesArray = itemMap['stories'] as List<dynamic>?;
-              if (storiesArray == null) {
-                continue;
-              }
-
-              final stories = <StoryView>[];
-              for (var j = 0; j < storiesArray.length; j++) {
-                final story = storiesArray[j];
-                try {
-                  // Fix the media structure if needed
-                  final storyMap = Map<String, dynamic>.from(
-                    story as Map<String, dynamic>,
-                  );
-                  _fixMediaStructure(storyMap);
-
-                  final storyView = StoryView.fromJson(storyMap);
-                  stories.add(storyView);
-                } catch (e) {
-                  // Don't rethrow - continue with other stories
-                }
-              }
-
-              if (stories.isNotEmpty) {
-                storiesByAuthorMap[author] = stories;
-              }
-            } catch (e) {
-              // Skip this author if parsing fails
-            }
-          }
-
+        // Handle missing or null storiesByAuthor field
+        if (!jsonMap.containsKey('storiesByAuthor') ||
+            jsonMap['storiesByAuthor'] == null) {
           return (
             storiesByAuthor: storiesByAuthorMap,
             cursor: jsonMap['cursor'] as String?,
           );
-        },
-      );
+        }
 
-      return response.data;
+        final timelineJson = Map<String, dynamic>.from(jsonMap);
+        final storiesByAuthorArray =
+            (timelineJson['storiesByAuthor'] as List<dynamic>?) ?? <dynamic>[];
+
+        for (final item in storiesByAuthorArray) {
+          try {
+            final itemMap = item as Map<String, dynamic>;
+            final rawStories = itemMap['stories'] as List<dynamic>?;
+            if (rawStories != null) {
+              for (final story in rawStories) {
+                if (story is Map<String, dynamic>) {
+                  _fixMediaStructure(story);
+                }
+              }
+            }
+          } catch (e) {
+            // Let generated parsing decide whether the remaining item is valid.
+          }
+        }
+
+        final output = sprk_get_timeline.StoryGetTimelineOutput.fromJson(
+          timelineJson,
+        );
+
+        for (final item in output.storiesByAuthor) {
+          try {
+            final author = ProfileViewBasic.fromJson(item.author.toJson());
+            final stories = item.stories
+                .map((story) => StoryView.fromJson(story.toJson()))
+                .toList();
+            if (stories.isNotEmpty) {
+              storiesByAuthorMap[author] = stories;
+            }
+          } catch (e) {
+            // Skip this author if parsing fails
+          }
+        }
+
+        return (
+          storiesByAuthor: storiesByAuthorMap,
+          cursor: jsonMap['cursor'] as String?,
+        );
+      })();
+
+      return response;
     });
   }
 
@@ -142,37 +138,37 @@ class StoryRepositoryImpl implements StoryRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final response = await atproto.get(
-        NSID.parse('so.sprk.story.getStories'),
-        parameters: {'uris': storyUris},
+      final rawResponse = await atproto.call(
+        sprk_get_stories.soSprkStoryGetStories,
+        parameters: sprk_get_stories.StoryGetStoriesInput(uris: storyUris),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) {
-          final storiesArray = jsonMap['stories'] as List<dynamic>?;
-          if (storiesArray == null) {
-            return <StoryView>[];
-          }
-
-          final stories = <StoryView>[];
-          for (final story in storiesArray) {
-            try {
-              // Fix the media structure if needed
-              final storyMap = Map<String, dynamic>.from(
-                story as Map<String, dynamic>,
-              );
-              _fixMediaStructure(storyMap);
-
-              final storyView = StoryView.fromJson(storyMap);
-              stories.add(storyView);
-            } catch (e) {
-              // Don't rethrow - continue with other stories
-            }
-          }
-
-          return stories;
-        },
       );
+      final response = (() {
+        final jsonMap = rawResponse.data.toJson();
+        final storiesJson = Map<String, dynamic>.from(jsonMap);
+        final storiesArray = storiesJson['stories'] as List<dynamic>?;
+        if (storiesArray == null) {
+          return <StoryView>[];
+        }
 
-      return response.data;
+        for (final story in storiesArray) {
+          try {
+            // Fix the media structure if needed
+            _fixMediaStructure(story as Map<String, dynamic>);
+          } catch (e) {
+            // Let generated parsing decide whether the remaining item is valid.
+          }
+        }
+
+        final output = sprk_get_stories.StoryGetStoriesOutput.fromJson(
+          storiesJson,
+        );
+        return output.stories
+            .map((story) => StoryView.fromJson(story.toJson()))
+            .toList();
+      })();
+
+      return response;
     });
   }
 
@@ -187,21 +183,17 @@ class StoryRepositoryImpl implements StoryRepository {
     final normalizedLabels = selfLabels == null || selfLabels.isEmpty
         ? null
         : selfLabels;
-    final normalizedTags = tags == null || tags.isEmpty ? null : tags;
     final normalizedEmbeds = embeds == null || embeds.isEmpty ? null : embeds;
-
-    final record = StoryRecord(
-      createdAt: DateTime.now().toUtc(),
-      media: media,
-      tags: normalizedTags,
-      labels: normalizedLabels,
-      sound: soundRef,
-      embeds: normalizedEmbeds,
-    );
 
     return _client.repo.createRecord(
       collection: 'so.sprk.story.post',
-      record: record.toJson(),
+      record: sprkStoryRecordFromLocal(
+        createdAt: DateTime.now().toUtc(),
+        media: media,
+        labels: normalizedLabels,
+        sound: soundRef,
+        embeds: normalizedEmbeds,
+      ).toJson(),
     );
   }
 }

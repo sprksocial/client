@@ -10,7 +10,7 @@ class GroupedNotification {
   final List<Notification> notifications;
 
   /// The reason for the notification (like, repost, follow, etc.)
-  String get reason => primaryNotification.reason;
+  String get reason => primaryNotification.reasonValue;
 
   /// The subject being acted upon (e.g., the post being liked)
   /// Null for follows
@@ -73,7 +73,7 @@ List<GroupedNotification> groupNotifications(List<Notification> notifications) {
 
   // First pass: collect all groupable notifications
   for (final notification in notifications) {
-    switch (notification.reason) {
+    switch (notification.reasonValue) {
       case 'follow':
         // Check if this is a follow-back (viewer follows the author)
         final isFollowBack = notification.author.viewer?.following != null;

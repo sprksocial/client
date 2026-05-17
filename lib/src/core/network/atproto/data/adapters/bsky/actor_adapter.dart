@@ -3,8 +3,7 @@ import 'package:bluesky_poptart/app/bsky/actor/get_profile.dart'
 import 'package:bluesky_poptart/app/bsky/actor/get_profiles.dart'
     as bsky_actor_get_profiles;
 import 'package:poptart/poptart.dart';
-
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 /// Adapter for Bluesky actor models <-> Spark actor models
 ///

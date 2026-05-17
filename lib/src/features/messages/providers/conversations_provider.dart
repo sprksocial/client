@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:spark/src/features/messages/providers/conversations._state.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 part 'conversations_provider.g.dart';
 

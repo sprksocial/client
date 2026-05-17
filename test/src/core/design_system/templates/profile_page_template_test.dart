@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/templates/profile_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 void main() {
   group('KnownFollowersSummary', () {

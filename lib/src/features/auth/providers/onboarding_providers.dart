@@ -4,8 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository_impl.dart';
-import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sprk_poptart/so/sprk/graph/get_follows/output.dart';
 
 part 'onboarding_providers.g.dart';
 
@@ -37,7 +37,7 @@ Future<ActorProfileRecord?> bskyProfile(Ref ref) async {
 
 /// Provider to get Bluesky follows
 @riverpod
-Future<FollowsResponse> bskyFollows(Ref ref, {String? cursor}) async {
+Future<GraphGetFollowsOutput> bskyFollows(Ref ref, {String? cursor}) async {
   final repository = ref.watch(onboardingRepositoryProvider);
   return repository.getBskyFollows(cursor: cursor);
 }

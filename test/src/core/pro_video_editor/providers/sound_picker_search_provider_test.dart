@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -9,6 +11,7 @@ import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_provider.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:sprk_poptart/so/sprk/sound/defs/audio_details.dart';
 
 void main() {
   late _FakeSoundRepository soundRepository;
@@ -24,17 +27,15 @@ void main() {
       uri: AtUri.parse('at://did:plc:test123/so.sprk.sound.audio/$id'),
       cid: 'cid-$id',
       author: ProfileViewBasic(did: 'did:plc:test123', handle: '$id.sprk.so'),
-      record:
-          Record.audio(
-                sound: blob,
-                title: 'Sound $id',
-                createdAt: DateTime.parse('2026-05-01T12:00:00.000Z'),
-              )
-              as AudioRecord,
+      record: AudioRecord(
+        sound: blob,
+        title: 'Sound $id',
+        createdAt: DateTime.parse('2026-05-01T12:00:00.000Z'),
+      ).toJson(),
       title: 'Sound $id',
-      coverArt: Uri.parse('https://example.com/$id.jpg'),
+      coverArt: 'https://example.com/$id.jpg',
       indexedAt: DateTime.parse('2026-05-01T12:00:00.000Z'),
-      audio: Uri.parse('https://example.com/$id.mp3'),
+      audio: 'https://example.com/$id.mp3',
     );
   }
 

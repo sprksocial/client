@@ -1,5 +1,5 @@
 import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
-import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:sprk_poptart/so/sprk/graph/get_follows/output.dart';
 
 abstract class OnboardingRepository {
   /// Checks if the current user has a Spark profile
@@ -19,7 +19,7 @@ abstract class OnboardingRepository {
   });
 
   /// Fetches the list of DIDs that the user follows on Bluesky
-  Future<FollowsResponse> getBskyFollows({String? cursor});
+  Future<GraphGetFollowsOutput> getBskyFollows({String? cursor});
 
   /// Creates a follow record in Spark for the given subject DID
   Future<void> createSparkFollow(String subject);

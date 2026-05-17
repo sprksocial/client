@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/sound/providers/sound_page_provider.dart';
 import 'package:spark/src/features/sound/ui/widgets/sound_header_card.dart';
