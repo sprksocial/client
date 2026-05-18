@@ -16,6 +16,8 @@ typedef TrendingAudiosResponse =
     sprk_trending_audios.SoundGetTrendingAudiosOutput;
 typedef SearchAudiosResponse = sprk_search_audios.SoundSearchAudiosOutput;
 
+const originalAudioTitle = 'Original Audio';
+
 extension AudioViewRecordParsing on AudioView {
   Object? get localRecord {
     final type = record[r'$type'] as String?;
@@ -40,6 +42,14 @@ extension AudioViewRecordParsing on AudioView {
     } catch (_) {
       return null;
     }
+  }
+}
+
+extension AudioViewDisplayTitle on AudioView {
+  String get displayTitle {
+    final audioTitle = title?.trim();
+    if (audioTitle != null && audioTitle.isNotEmpty) return audioTitle;
+    return originalAudioTitle;
   }
 }
 

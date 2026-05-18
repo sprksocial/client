@@ -95,7 +95,6 @@ Future<RepoStrongRef?> postProcessedVideo({
         final soundRepository = GetIt.I<SprkRepository>().sound;
         effectiveSoundRef = await soundRepository.createSound(
           sound: uploadResult.audioBlob!,
-          title: 'Original Sound',
           details: uploadResult.audioDetails,
         );
         logger.i('Sound record created: ${effectiveSoundRef.uri}');

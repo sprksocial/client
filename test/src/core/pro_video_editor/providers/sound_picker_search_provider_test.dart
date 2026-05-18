@@ -179,7 +179,7 @@ class _FakeSoundRepository implements SoundRepository {
   @override
   Future<RepoStrongRef> createSound({
     required Blob sound,
-    required String title,
+    String? title,
     AudioDetails? details,
   }) {
     throw UnimplementedError();

@@ -1105,7 +1105,7 @@ abstract class AppLocalizations {
   /// Original sound label
   ///
   /// In en, this message translates to:
-  /// **'Original Sound'**
+  /// **'Original Audio'**
   String get labelOriginalSound;
 
   /// Share label

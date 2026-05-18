@@ -7,12 +7,12 @@ abstract class SoundRepository {
   /// Create a new sound record.
   ///
   /// [sound] The audio blob to create the sound from.
-  /// [title] The title of the sound.
+  /// [title] Optional title for the sound.
   /// [details] Optional audio details (artist, title metadata).
   /// Returns a [StrongRef] to the created sound record.
   Future<RepoStrongRef> createSound({
     required Blob sound,
-    required String title,
+    String? title,
     AudioDetails? details,
   });
 

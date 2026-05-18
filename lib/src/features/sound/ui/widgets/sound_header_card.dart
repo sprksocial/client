@@ -76,7 +76,7 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        widget.audio.title,
+                        widget.audio.displayTitle,
                         style: AppTypography.textLargeBold.copyWith(
                           color: colorScheme.onSurface,
                         ),

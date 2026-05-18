@@ -890,7 +890,7 @@
     }
   },
 
-  "labelOriginalSound": "Original Sound",
+  "labelOriginalSound": "Original Audio",
   "@labelOriginalSound": {
     "description": "Original sound label"
   },

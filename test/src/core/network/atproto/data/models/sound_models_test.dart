@@ -23,6 +23,29 @@ void main() {
 
       expect(audio.localRecord, isA<AudioRecord>());
       expect(audio.title, 'Original Sound');
+      expect(audio.displayTitle, 'Original Sound');
+    });
+
+    test('uses Original Audio when a Spark audio has no title', () {
+      final audio = AudioView.fromJson({
+        'uri': 'at://did:plc:test123/so.sprk.sound.audio/spark',
+        'cid': 'cid-spark',
+        'author': {'did': 'did:plc:test123', 'handle': 'test.sprk.so'},
+        'record': {
+          r'$type': 'so.sprk.sound.audio',
+          'sound': _blobJson(),
+          'createdAt': '2026-05-01T12:00:00.000Z',
+        },
+        'coverArt': 'https://example.com/spark.jpg',
+        'indexedAt': '2026-05-01T12:00:00.000Z',
+        'audio': 'https://media.sprk.so/sound/did%3Aplc%3Atest123/cid',
+      });
+
+      final track = audioViewToAudioTrack(audio);
+
+      expect(audio.title, isNull);
+      expect(audio.displayTitle, 'Original Audio');
+      expect(track?.title, 'Original Audio');
     });
 
     test('parses public Plyr tracks as sounds', () {

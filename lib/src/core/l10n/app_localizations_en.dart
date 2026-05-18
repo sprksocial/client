@@ -549,7 +549,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get labelOriginalSound => 'Original Sound';
+  String get labelOriginalSound => 'Original Audio';
 
   @override
   String get labelShare => 'Share';

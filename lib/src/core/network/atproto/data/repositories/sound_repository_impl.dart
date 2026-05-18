@@ -27,10 +27,10 @@ class SoundRepositoryImpl implements SoundRepository {
   @override
   Future<RepoStrongRef> createSound({
     required Blob sound,
-    required String title,
+    String? title,
     AudioDetails? details,
   }) async {
-    _logger.d('Creating sound record with title: $title');
+    _logger.d('Creating sound record with title: ${title ?? '<none>'}');
 
     final audioRecord = sprk_audio.SoundAudioRecord(
       sound: sound,

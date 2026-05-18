@@ -19,18 +19,18 @@ dependencies:
   audioplayers: ^6.6.0
   auto_route: ^11.1.0
   better_player_plus: ^1.2.1
-  bluesky_poptart: ^0.1.0
-  ozone_poptart: ^0.1.0
+  bluesky_poptart: ^0.1.1
+  ozone_poptart: ^0.1.1
   plyr_poptart: ^0.1.0
   poptart: ^0.1.0
   poptart_lex: ^0.1.0
-  sprk_poptart: ^0.1.0
+  sprk_poptart: ^0.1.1
   cached_network_image: ^3.4.1
   camera: ^0.12.0+1
   collection: ^1.19.1
   crypto: ^3.0.7
-  firebase_core: ^4.8.0
-  firebase_messaging: ^16.2.1
+  firebase_core: ^4.9.0
+  firebase_messaging: ^16.2.2
   fluentui_system_icons: ^1.1.273
   flutter:
     sdk: flutter
@@ -62,7 +62,7 @@ dependencies:
   pool: ^1.5.2
   posthog_flutter: ^5.24.2
   pro_image_editor: ^12.4.4
-  pro_video_editor: ^1.16.2
+  pro_video_editor: ^1.16.3
   riverpod_annotation: ^4.0.2
   share_plus: ^13.1.0
   shared_preferences: ^2.5.5

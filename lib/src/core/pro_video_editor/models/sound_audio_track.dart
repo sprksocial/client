@@ -20,7 +20,7 @@ AudioTrack? audioViewToAudioTrack(AudioView audio) {
       audioFileExtension: audioFileExtension(audio),
       audioMimeType: audioMimeType(audio),
     ),
-    title: audio.title,
+    title: audio.displayTitle,
     subtitle: audio.author.handle,
     duration: audioDuration(audio),
     image: EditorImage(networkUrl: audio.coverArt.toString()),
