@@ -11,6 +11,10 @@ class CustomTextField extends StatelessWidget {
     this.maxLines = 1,
     this.onUndo,
     this.validator,
+    this.contentPadding,
+    this.textStyle,
+    this.hintStyle,
+    this.borderRadius,
   });
   final TextEditingController controller;
   final String hintText;
@@ -18,6 +22,10 @@ class CustomTextField extends StatelessWidget {
   final int maxLines;
   final VoidCallback? onUndo;
   final String? Function(String?)? validator;
+  final EdgeInsetsGeometry? contentPadding;
+  final TextStyle? textStyle;
+  final TextStyle? hintStyle;
+  final double? borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -28,28 +36,29 @@ class CustomTextField extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       validator: validator,
+      style: textStyle,
       decoration: InputDecoration(
         hintText: hintText,
+        hintStyle: hintStyle,
         filled: true,
         fillColor: fillColor ?? colorScheme.surface,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
+        contentPadding:
+            contentPadding ??
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(borderRadius ?? 8),
           borderSide: BorderSide(color: colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(borderRadius ?? 8),
           borderSide: BorderSide(color: colorScheme.primary),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(borderRadius ?? 8),
           borderSide: BorderSide(color: colorScheme.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(borderRadius ?? 8),
           borderSide: BorderSide(color: colorScheme.error),
         ),
         suffixIcon: onUndo != null

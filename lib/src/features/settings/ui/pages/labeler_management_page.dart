@@ -1,17 +1,17 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 @RoutePage()
 class LabelerManagementPage extends ConsumerStatefulWidget {
@@ -394,35 +394,9 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: profile.avatar != null
-                        ? CachedNetworkImage(
-                            imageUrl: profile.avatar!.toString(),
-                            width: 36,
-                            height: 36,
-                            fit: BoxFit.cover,
-                            errorWidget: (context, url, error) => Container(
-                              width: 36,
-                              height: 36,
-                              color: colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                Icons.person,
-                                size: 20,
-                                color: colorScheme.onSurface.withAlpha(178),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            width: 36,
-                            height: 36,
-                            color: colorScheme.surfaceContainerHighest,
-                            child: Icon(
-                              Icons.person,
-                              size: 20,
-                              color: colorScheme.onSurface.withAlpha(178),
-                            ),
-                          ),
+                  UserAvatar(
+                    imageUrl: profile.avatar?.toString() ?? '',
+                    size: 36,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -497,19 +471,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.person,
-              size: 20,
-              color: colorScheme.onSurface.withAlpha(178),
-            ),
-          ),
+          const UserAvatar(size: 36),
           const SizedBox(width: 10),
           Expanded(
             child: Column(

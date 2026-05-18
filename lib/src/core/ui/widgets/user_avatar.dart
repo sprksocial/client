@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
 
 /// A customizable user avatar with fallback options when no image is available
 class UserAvatar extends StatelessWidget {
@@ -29,8 +29,6 @@ class UserAvatar extends StatelessWidget {
 
     final effectiveBorderColor = borderColor ?? colorScheme.outline;
     final effectiveBackgroundColor = backgroundColor ?? colorScheme.primary;
-    final effectiveFallbackTextColor =
-        fallbackTextColor ?? colorScheme.onPrimary;
 
     // If no image URL is provided, show fallback avatar
     if (imageUrl.isEmpty) {
@@ -44,21 +42,7 @@ class UserAvatar extends StatelessWidget {
               ? Border.all(color: effectiveBorderColor, width: borderWidth)
               : null,
         ),
-        child: Center(
-          child: username.isNotEmpty
-              ? Text(
-                  username[0].toUpperCase(),
-                  style: TextStyle(
-                    color: effectiveFallbackTextColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              : Icon(
-                  FluentIcons.person_24_regular,
-                  size: size * 0.5,
-                  color: effectiveFallbackTextColor,
-                ),
-        ),
+        child: DefaultProfileAvatar(size: size),
       );
     }
 
@@ -79,39 +63,11 @@ class UserAvatar extends StatelessWidget {
         fit: BoxFit.cover,
         placeholder: (context, url) => ColoredBox(
           color: effectiveBackgroundColor,
-          child: Center(
-            child: username.isNotEmpty
-                ? Text(
-                    username[0].toUpperCase(),
-                    style: TextStyle(
-                      color: effectiveFallbackTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : Icon(
-                    FluentIcons.person_24_regular,
-                    size: size * 0.5,
-                    color: effectiveFallbackTextColor,
-                  ),
-          ),
+          child: DefaultProfileAvatar(size: size),
         ),
         errorWidget: (context, url, error) => ColoredBox(
           color: effectiveBackgroundColor,
-          child: Center(
-            child: username.isNotEmpty
-                ? Text(
-                    username[0].toUpperCase(),
-                    style: TextStyle(
-                      color: effectiveFallbackTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                : Icon(
-                    FluentIcons.person_24_regular,
-                    size: size * 0.5,
-                    color: effectiveFallbackTextColor,
-                  ),
-          ),
+          child: DefaultProfileAvatar(size: size),
         ),
       ),
     );

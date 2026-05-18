@@ -262,6 +262,138 @@ abstract class AppLocalizations {
   /// **'Complete your profile'**
   String get pageTitleCompleteProfile;
 
+  /// Current onboarding step count
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String onboardingStepCount(int current, int total);
+
+  /// Onboarding intro step title
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your profile'**
+  String get onboardingIntroStepTitle;
+
+  /// Main heading on onboarding intro step
+  ///
+  /// In en, this message translates to:
+  /// **'Let’s get your profile ready.'**
+  String get onboardingIntroTitle;
+
+  /// Intro text explaining onboarding profile setup
+  ///
+  /// In en, this message translates to:
+  /// **'Next you’ll add a profile photo, display name, and bio. It only takes a minute, and you can edit everything later.'**
+  String get onboardingIntroDescription;
+
+  /// Onboarding avatar step title
+  ///
+  /// In en, this message translates to:
+  /// **'Add a profile photo'**
+  String get onboardingAvatarStepTitle;
+
+  /// Onboarding display name step title
+  ///
+  /// In en, this message translates to:
+  /// **'Add your display name'**
+  String get onboardingNameStepTitle;
+
+  /// Onboarding bio step title
+  ///
+  /// In en, this message translates to:
+  /// **'Add a bio'**
+  String get onboardingBioStepTitle;
+
+  /// Small label on the onboarding avatar step
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo'**
+  String get onboardingAvatarEyebrow;
+
+  /// Main heading on the onboarding avatar step
+  ///
+  /// In en, this message translates to:
+  /// **'Make Spark feel like you.'**
+  String get onboardingAvatarTitle;
+
+  /// Subtitle on the onboarding avatar step
+  ///
+  /// In en, this message translates to:
+  /// **'Start with the avatar people will recognize in feeds, comments, and profiles.'**
+  String get onboardingAvatarSubtitle;
+
+  /// Message shown when Bluesky profile details autofill onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Imported from your Bluesky profile. You can change it.'**
+  String get onboardingBskyAutofill;
+
+  /// Button label to restore the Bluesky avatar during onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Use Bluesky avatar'**
+  String get onboardingUseBskyAvatar;
+
+  /// Small label on the onboarding display name step
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get onboardingNameEyebrow;
+
+  /// Main heading on the onboarding display name step
+  ///
+  /// In en, this message translates to:
+  /// **'What should people call you?'**
+  String get onboardingNameTitle;
+
+  /// Subtitle on the onboarding display name step
+  ///
+  /// In en, this message translates to:
+  /// **'Use a real name, a handle, or whatever makes your posts feel unmistakably yours.'**
+  String get onboardingNameSubtitle;
+
+  /// Hint shown above the display name field during onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'This is the name people see first, so keep it clear and easy to recognize.'**
+  String get onboardingNamePreviewHint;
+
+  /// Small label on the onboarding bio step
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get onboardingBioEyebrow;
+
+  /// Main heading on the onboarding bio step
+  ///
+  /// In en, this message translates to:
+  /// **'Write the first line of your profile.'**
+  String get onboardingBioTitle;
+
+  /// Subtitle on the onboarding bio step
+  ///
+  /// In en, this message translates to:
+  /// **'A sentence is enough. Tell people what you post, what you like, or why they should follow along.'**
+  String get onboardingBioSubtitle;
+
+  /// Tip shown under the onboarding bio field
+  ///
+  /// In en, this message translates to:
+  /// **'You can always polish this later from your profile settings.'**
+  String get onboardingBioTip;
+
+  /// Validation error when onboarding display name is too long
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name cannot exceed 64 characters'**
+  String get onboardingDisplayNameTooLong;
+
+  /// Validation error when onboarding bio is too long
+  ///
+  /// In en, this message translates to:
+  /// **'Bio cannot exceed 256 characters'**
+  String get onboardingBioTooLong;
+
   /// Labeler settings page title
   ///
   /// In en, this message translates to:

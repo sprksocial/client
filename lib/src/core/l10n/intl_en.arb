@@ -142,6 +142,124 @@
     "description": "Complete profile page title"
   },
 
+  "onboardingStepCount": "Step {current} of {total}",
+  "@onboardingStepCount": {
+    "description": "Current onboarding step count",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+
+  "onboardingIntroStepTitle": "Set up your profile",
+  "@onboardingIntroStepTitle": {
+    "description": "Onboarding intro step title"
+  },
+
+  "onboardingIntroTitle": "Let’s get your profile ready.",
+  "@onboardingIntroTitle": {
+    "description": "Main heading on onboarding intro step"
+  },
+
+  "onboardingIntroDescription": "Next you’ll add a profile photo, display name, and bio. It only takes a minute, and you can edit everything later.",
+  "@onboardingIntroDescription": {
+    "description": "Intro text explaining onboarding profile setup"
+  },
+
+  "onboardingAvatarStepTitle": "Add a profile photo",
+  "@onboardingAvatarStepTitle": {
+    "description": "Onboarding avatar step title"
+  },
+
+  "onboardingNameStepTitle": "Add your display name",
+  "@onboardingNameStepTitle": {
+    "description": "Onboarding display name step title"
+  },
+
+  "onboardingBioStepTitle": "Add a bio",
+  "@onboardingBioStepTitle": {
+    "description": "Onboarding bio step title"
+  },
+
+  "onboardingAvatarEyebrow": "Profile photo",
+  "@onboardingAvatarEyebrow": {
+    "description": "Small label on the onboarding avatar step"
+  },
+
+  "onboardingAvatarTitle": "Make Spark feel like you.",
+  "@onboardingAvatarTitle": {
+    "description": "Main heading on the onboarding avatar step"
+  },
+
+  "onboardingAvatarSubtitle": "Start with the avatar people will recognize in feeds, comments, and profiles.",
+  "@onboardingAvatarSubtitle": {
+    "description": "Subtitle on the onboarding avatar step"
+  },
+
+  "onboardingBskyAutofill": "Imported from your Bluesky profile. You can change it.",
+  "@onboardingBskyAutofill": {
+    "description": "Message shown when Bluesky profile details autofill onboarding"
+  },
+
+  "onboardingUseBskyAvatar": "Use Bluesky avatar",
+  "@onboardingUseBskyAvatar": {
+    "description": "Button label to restore the Bluesky avatar during onboarding"
+  },
+
+  "onboardingNameEyebrow": "Display name",
+  "@onboardingNameEyebrow": {
+    "description": "Small label on the onboarding display name step"
+  },
+
+  "onboardingNameTitle": "What should people call you?",
+  "@onboardingNameTitle": {
+    "description": "Main heading on the onboarding display name step"
+  },
+
+  "onboardingNameSubtitle": "Use a real name, a handle, or whatever makes your posts feel unmistakably yours.",
+  "@onboardingNameSubtitle": {
+    "description": "Subtitle on the onboarding display name step"
+  },
+
+  "onboardingNamePreviewHint": "This is the name people see first, so keep it clear and easy to recognize.",
+  "@onboardingNamePreviewHint": {
+    "description": "Hint shown above the display name field during onboarding"
+  },
+
+  "onboardingBioEyebrow": "Bio",
+  "@onboardingBioEyebrow": {
+    "description": "Small label on the onboarding bio step"
+  },
+
+  "onboardingBioTitle": "Write the first line of your profile.",
+  "@onboardingBioTitle": {
+    "description": "Main heading on the onboarding bio step"
+  },
+
+  "onboardingBioSubtitle": "A sentence is enough. Tell people what you post, what you like, or why they should follow along.",
+  "@onboardingBioSubtitle": {
+    "description": "Subtitle on the onboarding bio step"
+  },
+
+  "onboardingBioTip": "You can always polish this later from your profile settings.",
+  "@onboardingBioTip": {
+    "description": "Tip shown under the onboarding bio field"
+  },
+
+  "onboardingDisplayNameTooLong": "Display Name cannot exceed 64 characters",
+  "@onboardingDisplayNameTooLong": {
+    "description": "Validation error when onboarding display name is too long"
+  },
+
+  "onboardingBioTooLong": "Bio cannot exceed 256 characters",
+  "@onboardingBioTooLong": {
+    "description": "Validation error when onboarding bio is too long"
+  },
+
   "pageTitleLabelerSettings": "Labeler Settings",
   "@pageTitleLabelerSettings": {
     "description": "Labeler settings page title"

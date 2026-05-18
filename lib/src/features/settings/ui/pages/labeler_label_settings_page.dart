@@ -1,18 +1,18 @@
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:sprk_poptart/so/sprk/labeler/get_services.dart'
     as sprk_get_services;
 
@@ -407,18 +407,7 @@ class _LabelerLabelSettingsPageState
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.person,
-                        color: colorScheme.onSurface.withAlpha(178),
-                      ),
-                    ),
+                    const UserAvatar(size: 48),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -562,35 +551,9 @@ class _LabelerLabelSettingsPageState
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(100),
-                    child: profile.avatar != null
-                        ? CachedNetworkImage(
-                            imageUrl: profile.avatar!.toString(),
-                            width: 36,
-                            height: 36,
-                            fit: BoxFit.cover,
-                            errorWidget: (context, url, error) => Container(
-                              width: 36,
-                              height: 36,
-                              color: colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                Icons.person,
-                                size: 20,
-                                color: colorScheme.onSurface.withAlpha(178),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            width: 36,
-                            height: 36,
-                            color: colorScheme.surfaceContainerHighest,
-                            child: Icon(
-                              Icons.person,
-                              size: 20,
-                              color: colorScheme.onSurface.withAlpha(178),
-                            ),
-                          ),
+                  UserAvatar(
+                    imageUrl: profile.avatar?.toString() ?? '',
+                    size: 36,
                   ),
                   const SizedBox(width: 10),
                   Expanded(

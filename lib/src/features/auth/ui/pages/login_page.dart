@@ -10,13 +10,14 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/app_overla
 import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 @RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
@@ -763,20 +764,7 @@ class _LoginHandleSuggestionTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: colorScheme.surfaceContainerHighest,
-                backgroundImage: actor.avatar != null
-                    ? NetworkImage(actor.avatar.toString())
-                    : null,
-                child: actor.avatar == null
-                    ? Icon(
-                        FluentIcons.person_24_regular,
-                        size: 18,
-                        color: colorScheme.onSurfaceVariant,
-                      )
-                    : null,
-              ),
+              UserAvatar(imageUrl: actor.avatar?.toString() ?? '', size: 36),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(

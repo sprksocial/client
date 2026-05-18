@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/tokens/gradients.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
 
 enum StoryType { story, live, cf, create }
 
@@ -118,27 +119,12 @@ class StoryCircle extends StatelessWidget {
                                 width: _imageSize,
                                 height: _imageSize,
                                 fit: BoxFit.cover,
-                                errorWidget: (context, url, error) => Container(
-                                  width: _imageSize,
-                                  height: _imageSize,
-                                  color: const Color(0xFFD9D9D9),
-                                  child: const Icon(
-                                    Icons.person,
-                                    size: _imageSize * 0.5,
-                                    color: Colors.grey,
-                                  ),
-                                ),
+                                errorWidget: (context, url, error) =>
+                                    const DefaultProfileAvatar(
+                                      size: _imageSize,
+                                    ),
                               )
-                            : Container(
-                                width: _imageSize,
-                                height: _imageSize,
-                                color: const Color(0xFFD9D9D9),
-                                child: const Icon(
-                                  Icons.person,
-                                  size: _imageSize * 0.5,
-                                  color: Colors.grey,
-                                ),
-                              ),
+                            : const DefaultProfileAvatar(size: _imageSize),
                       ),
                     ),
                   ),

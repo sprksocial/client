@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 Future<ProfileViewBasic?> showStoryMentionPickerSheet(BuildContext context) {
   return showModalBottomSheet<ProfileViewBasic>(
@@ -165,14 +166,9 @@ class _ResultsList extends StatelessWidget {
         final actor = typeaheadState.results[index];
         return ListTile(
           contentPadding: EdgeInsets.zero,
-          leading: CircleAvatar(
-            backgroundColor: const Color(0x1AFFFFFF),
-            backgroundImage: actor.avatar != null
-                ? NetworkImage(actor.avatar.toString())
-                : null,
-            child: actor.avatar == null
-                ? const Icon(Icons.person_outline, color: Colors.white)
-                : null,
+          leading: UserAvatar(
+            imageUrl: actor.avatar?.toString() ?? '',
+            size: 40,
           ),
           title: Text(
             actor.displayName ?? actor.handle,

@@ -93,6 +93,82 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pageTitleCompleteProfile => 'Complete your profile';
 
   @override
+  String onboardingStepCount(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get onboardingIntroStepTitle => 'Set up your profile';
+
+  @override
+  String get onboardingIntroTitle => 'Let’s get your profile ready.';
+
+  @override
+  String get onboardingIntroDescription =>
+      'Next you’ll add a profile photo, display name, and bio. It only takes a minute, and you can edit everything later.';
+
+  @override
+  String get onboardingAvatarStepTitle => 'Add a profile photo';
+
+  @override
+  String get onboardingNameStepTitle => 'Add your display name';
+
+  @override
+  String get onboardingBioStepTitle => 'Add a bio';
+
+  @override
+  String get onboardingAvatarEyebrow => 'Profile photo';
+
+  @override
+  String get onboardingAvatarTitle => 'Make Spark feel like you.';
+
+  @override
+  String get onboardingAvatarSubtitle =>
+      'Start with the avatar people will recognize in feeds, comments, and profiles.';
+
+  @override
+  String get onboardingBskyAutofill =>
+      'Imported from your Bluesky profile. You can change it.';
+
+  @override
+  String get onboardingUseBskyAvatar => 'Use Bluesky avatar';
+
+  @override
+  String get onboardingNameEyebrow => 'Display name';
+
+  @override
+  String get onboardingNameTitle => 'What should people call you?';
+
+  @override
+  String get onboardingNameSubtitle =>
+      'Use a real name, a handle, or whatever makes your posts feel unmistakably yours.';
+
+  @override
+  String get onboardingNamePreviewHint =>
+      'This is the name people see first, so keep it clear and easy to recognize.';
+
+  @override
+  String get onboardingBioEyebrow => 'Bio';
+
+  @override
+  String get onboardingBioTitle => 'Write the first line of your profile.';
+
+  @override
+  String get onboardingBioSubtitle =>
+      'A sentence is enough. Tell people what you post, what you like, or why they should follow along.';
+
+  @override
+  String get onboardingBioTip =>
+      'You can always polish this later from your profile settings.';
+
+  @override
+  String get onboardingDisplayNameTooLong =>
+      'Display Name cannot exceed 64 characters';
+
+  @override
+  String get onboardingBioTooLong => 'Bio cannot exceed 256 characters';
+
+  @override
   String get pageTitleLabelerSettings => 'Labeler Settings';
 
   @override

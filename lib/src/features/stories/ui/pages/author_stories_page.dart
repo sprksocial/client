@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/features/stories/ui/pages/story_page.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 @RoutePage()
 class AuthorStoriesPage extends ConsumerStatefulWidget {
@@ -354,23 +354,9 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                               ),
                             );
                           },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                            ),
-                            child: ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: widget.author.avatar.toString(),
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) =>
-                                    const Icon(
-                                      Icons.person,
-                                      color: Colors.white,
-                                    ),
-                              ),
-                            ),
+                          child: UserAvatar(
+                            imageUrl: widget.author.avatar?.toString() ?? '',
+                            size: 40,
                           ),
                         ),
                         const SizedBox(width: 12),

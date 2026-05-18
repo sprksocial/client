@@ -7,8 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/templates/explore_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
 import 'package:spark/src/features/search/providers/post_search_provider.dart';
@@ -18,6 +18,7 @@ import 'package:spark/src/features/search/ui/pages/post_results.dart';
 import 'package:spark/src/features/search/ui/pages/user_results.dart';
 import 'package:spark/src/features/search/ui/widgets/suggested_feeds_list.dart';
 import 'package:spark/src/features/stories/providers/stories_by_author.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/features/stories/ui/widgets/stories_list.dart';
 
 /// Search page to find users
@@ -226,12 +227,9 @@ class _ActorTypeaheadSuggestions extends StatelessWidget {
         return ListTile(
           onTap: () => onSuggestionSelected(actor),
           contentPadding: const EdgeInsets.symmetric(vertical: 4),
-          leading: CircleAvatar(
-            radius: 18,
-            backgroundImage: actor.avatar != null
-                ? NetworkImage(actor.avatar.toString())
-                : null,
-            child: actor.avatar == null ? const Icon(Icons.person) : null,
+          leading: UserAvatar(
+            imageUrl: actor.avatar?.toString() ?? '',
+            size: 36,
           ),
           title: Text(actor.displayName ?? actor.handle),
           subtitle: Text('@${actor.handle}'),

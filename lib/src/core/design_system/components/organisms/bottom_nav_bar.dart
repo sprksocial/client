@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
 import 'package:spark/src/features/notifications/providers/unread_count_provider.dart';
 
 class SparkBottomNavBar extends ConsumerWidget {
@@ -247,13 +248,7 @@ class _ProfileAvatar extends StatelessWidget {
             ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0))
             : null,
       ),
-      child: image is AssetImage
-          ? Icon(
-              Icons.person,
-              size: 18,
-              color: isDark ? const Color(0xFF9E9E9E) : const Color(0xFF757575),
-            )
-          : null,
+      child: image is AssetImage ? const DefaultProfileAvatar(size: 34) : null,
     );
     return GestureDetector(onTap: onTap, child: avatar);
   }

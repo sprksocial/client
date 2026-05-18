@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/tokens/gradients.dart';
 import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
@@ -142,13 +143,7 @@ class ProfileAvatar extends StatelessWidget {
         color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
         shape: BoxShape.circle,
       ),
-      child: Center(
-        child: Icon(
-          FluentIcons.person_24_regular,
-          size: avatarSize * 0.44,
-          color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-        ),
-      ),
+      child: DefaultProfileAvatar(size: avatarSize),
     );
   }
 }
