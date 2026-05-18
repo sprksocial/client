@@ -60,6 +60,7 @@ class PostTile extends StatelessWidget {
                   imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: CachedNetworkImage(
                     fadeInDuration: Duration.zero,
+                    fadeOutDuration: Duration.zero,
                     imageUrl: thumbnailUrl,
                     fit: BoxFit.cover,
                     placeholder: (context, url) =>
@@ -73,6 +74,7 @@ class PostTile extends StatelessWidget {
               else
                 CachedNetworkImage(
                   fadeInDuration: Duration.zero,
+                  fadeOutDuration: Duration.zero,
                   imageUrl: thumbnailUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>

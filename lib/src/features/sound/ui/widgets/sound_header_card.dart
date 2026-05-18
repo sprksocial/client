@@ -265,6 +265,8 @@ class _CoverArtWithPlayerState extends State<_CoverArtWithPlayer> {
                   AppShapes.squircleRadius - 4,
                 ),
                 child: CachedNetworkImage(
+                  fadeInDuration: Duration.zero,
+                  fadeOutDuration: Duration.zero,
                   imageUrl: widget.coverArtUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => const ColoredBox(

@@ -116,6 +116,7 @@ class ProfileAvatar extends StatelessWidget {
       return ClipOval(
         child: CachedNetworkImage(
           fadeInDuration: Duration.zero,
+          fadeOutDuration: Duration.zero,
           imageUrl: avatarUrl!,
           width: avatarSize,
           height: avatarSize,

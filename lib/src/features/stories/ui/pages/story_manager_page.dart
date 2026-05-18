@@ -111,6 +111,8 @@ class StoryManagerPage extends ConsumerWidget {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: CachedNetworkImage(
+                              fadeInDuration: Duration.zero,
+                              fadeOutDuration: Duration.zero,
                               imageUrl: thumbUrl,
                               width: 56,
                               height: 56,

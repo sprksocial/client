@@ -703,6 +703,7 @@ class _AudioTrack extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               child: CachedNetworkImage(
                                 fadeInDuration: Duration.zero,
+                                fadeOutDuration: Duration.zero,
                                 imageUrl: videoTimelineState.authorAvatarUrl!,
                                 width: 24,
                                 height: 24,

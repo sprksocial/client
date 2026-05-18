@@ -170,6 +170,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
             placeholder: task.post.thumbnailUrl.isNotEmpty
                 ? CachedNetworkImage(
                     fadeInDuration: Duration.zero,
+                    fadeOutDuration: Duration.zero,
                     imageUrl: task.post.thumbnailUrl,
                   )
                 : null,

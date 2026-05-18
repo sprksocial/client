@@ -210,6 +210,8 @@ class _StoryPageState extends ConsumerState<StoryPage>
       sourceSize = const Size(1440, 2560);
 
       mediaContent = CachedNetworkImage(
+        fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
         imageUrl: imageUrl,
         fit: BoxFit.cover,
         progressIndicatorBuilder: (context, url, progress) =>

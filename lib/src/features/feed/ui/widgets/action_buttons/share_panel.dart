@@ -305,6 +305,7 @@ class _ConvoProfileChip extends StatelessWidget {
                         child: (avatarUrl != null && avatarUrl!.isNotEmpty)
                             ? CachedNetworkImage(
                                 fadeInDuration: Duration.zero,
+                                fadeOutDuration: Duration.zero,
                                 imageUrl: avatarUrl!,
                                 fit: BoxFit.cover,
                                 errorWidget: (context, url, error) =>

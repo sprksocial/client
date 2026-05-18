@@ -257,6 +257,7 @@ class _FeedAvatar extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: CachedNetworkImage(
         fadeInDuration: Duration.zero,
+        fadeOutDuration: Duration.zero,
         imageUrl: imageUrl,
         width: 36,
         height: 36,
