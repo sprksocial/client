@@ -6,8 +6,8 @@ import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -554,7 +554,11 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : LongButton(label: l10n.buttonSubmit, onPressed: _submitReport),
+              : AppButton(
+                  label: l10n.buttonSubmit,
+                  onPressed: _submitReport,
+                  size: AppButtonSize.compact,
+                ),
       ],
     );
   }

@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
-// Assuming the LongButton component is located at this path
-import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
-
-@UseCase(name: 'no_ui', type: LongButton)
-Widget buildLongButtonNoUIUseCase(BuildContext context) {
-  return LongButton(
+@UseCase(name: 'no_ui', type: AppButton)
+Widget buildAppButtonCompactNoUIUseCase(BuildContext context) {
+  return AppButton(
     label: context.knobs.string(label: 'Label', initialValue: 'Continue'),
-    onPressed: () => print('LongButton was pressed.'),
+    onPressed: () => print('AppButton was pressed.'),
+    size: AppButtonSize.compact,
   );
 }
 
-@UseCase(name: 'resizable_parent', type: LongButton)
-Widget buildLongButtonInAResizableContainerUseCase(BuildContext context) {
+@UseCase(name: 'resizable_parent', type: AppButton)
+Widget buildAppButtonCompactInAResizableContainerUseCase(BuildContext context) {
   return Center(
     child: Container(
       width: context.knobs.double.slider(
@@ -36,12 +35,13 @@ Widget buildLongButtonInAResizableContainerUseCase(BuildContext context) {
         color: Colors.grey.shade200,
       ),
       child: Center(
-        child: LongButton(
+        child: AppButton(
           label: context.knobs.string(
             label: 'Label',
             initialValue: 'Resizable Button',
           ),
           onPressed: () => print('Button in resizable container pressed.'),
+          size: AppButtonSize.compact,
         ),
       ),
     ),

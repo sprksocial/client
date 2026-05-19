@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/messages/providers/conversation_provider.dart';
@@ -218,33 +218,36 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                         ? SizedBox(
                             key: const ValueKey('selected-actions'),
                             width: double.infinity,
-                            child: LongButton(
+                            child: AppButton(
                               label: _sending
                                   ? l10n.messageSending
                                   : l10n.buttonSend,
                               onPressed: _sending
                                   ? null
                                   : _sendToSelectedConversation,
+                              size: AppButtonSize.compact,
                             ),
                           )
                         : Row(
                             key: const ValueKey('default-actions'),
                             children: [
                               Expanded(
-                                child: LongButton(
+                                child: AppButton(
                                   label: _copiedLink
                                       ? l10n.buttonCopied
                                       : l10n.buttonCopyLink,
                                   onPressed: _copyLink,
-                                  variant: LongButtonVariant.regular,
+                                  variant: AppButtonVariant.neutral,
+                                  size: AppButtonSize.compact,
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: LongButton(
+                                child: AppButton(
                                   label: l10n.buttonShare,
                                   onPressed: _shareNatively,
-                                  variant: LongButtonVariant.regular,
+                                  variant: AppButtonVariant.neutral,
+                                  size: AppButtonSize.compact,
                                 ),
                               ),
                             ],

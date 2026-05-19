@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/toggle_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class ProfileCard extends StatelessWidget {
   const ProfileCard({
@@ -72,6 +73,7 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final radius = BorderRadius.circular(AppShapes.squircleRadius);
     final borderColor = isDark ? AppColors.grey800 : AppColors.grey200;
@@ -134,12 +136,26 @@ class ProfileCard extends StatelessWidget {
                 ),
                 if (showFollowButton) ...[
                   const SizedBox(width: 8),
-                  FollowButton(
-                    isFollowing: isFollowing,
-                    isBlocking: isBlocking,
-                    onFollow: onFollow,
-                    onUnfollow: onUnfollow,
-                    onUnblock: onUnblock,
+                  ToggleButton(
+                    isSelected: isBlocking && onUnblock != null
+                        ? true
+                        : isFollowing,
+                    selectedLabel: isBlocking && onUnblock != null
+                        ? l10n.buttonUnblock
+                        : l10n.labelUnfollow,
+                    unselectedLabel: l10n.labelFollow,
+                    selectedTone: isBlocking && onUnblock != null
+                        ? ToggleButtonTone.danger
+                        : ToggleButtonTone.neutral,
+                    onChanged: (isSelected) {
+                      if (isBlocking && onUnblock != null) {
+                        onUnblock!();
+                      } else if (isSelected) {
+                        onFollow();
+                      } else {
+                        onUnfollow();
+                      }
+                    },
                   ),
                 ],
               ],

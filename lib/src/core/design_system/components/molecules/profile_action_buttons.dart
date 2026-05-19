@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/toggle_button.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -37,13 +37,24 @@ class ProfileActionButtons extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: FollowButton(
-            isFollowing: isFollowing,
-            isBlocking: isBlocking,
-            onFollow: onFollowTap ?? () {},
-            onUnfollow: onUnfollowTap ?? () {},
-            onUnblock: onUnblockTap,
-            unfollowText: l10n.labelFollowing,
+          child: ToggleButton(
+            isSelected: isBlocking && onUnblockTap != null ? true : isFollowing,
+            selectedLabel: isBlocking && onUnblockTap != null
+                ? l10n.buttonUnblock
+                : l10n.labelFollowing,
+            unselectedLabel: l10n.labelFollow,
+            selectedTone: isBlocking && onUnblockTap != null
+                ? ToggleButtonTone.danger
+                : ToggleButtonTone.neutral,
+            onChanged: (isSelected) {
+              if (isBlocking && onUnblockTap != null) {
+                onUnblockTap!();
+              } else if (isSelected) {
+                onFollowTap?.call();
+              } else {
+                onUnfollowTap?.call();
+              }
+            },
             width: double.infinity,
           ),
         ),
@@ -53,7 +64,7 @@ class ProfileActionButtons extends StatelessWidget {
   }
 }
 
-/// Edit button that matches the FollowButton's following state style
+/// Edit button that matches the ToggleButton's selected state style
 class _EditButton extends StatelessWidget {
   const _EditButton({this.onTap});
 

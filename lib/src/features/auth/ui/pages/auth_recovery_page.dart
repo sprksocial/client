@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -246,18 +246,20 @@ class _AuthRecoveryPageState extends ConsumerState<AuthRecoveryPage> {
                     const SizedBox(height: 24),
                     Opacity(
                       opacity: isLoading ? 0.5 : 1.0,
-                      child: LongButton(
+                      child: AppButton(
                         label: l10n.buttonContinueAs(
                           _handleController.text.trim(),
                         ),
                         onPressed: isLoading ? null : _initiateOAuth,
+                        size: AppButtonSize.compact,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    LongButton(
+                    AppButton(
                       label: l10n.buttonGoToGetStarted,
-                      variant: LongButtonVariant.regular,
+                      variant: AppButtonVariant.neutral,
                       onPressed: isLoading ? null : _goToGetStarted,
+                      size: AppButtonSize.compact,
                     ),
                   ],
                 ],

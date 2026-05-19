@@ -555,7 +555,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelShare => 'Share';
 
   @override
+  String get labelFollow => 'Follow';
+
+  @override
   String get labelFollowing => 'Following';
+
+  @override
+  String get labelUnfollow => 'Unfollow';
 
   @override
   String get labelPosts => 'Posts';

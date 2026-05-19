@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -196,16 +196,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               if (!_hasReceivedCallback) ...[
                 Opacity(
                   opacity: isLoading ? 0.5 : 1.0,
-                  child: LongButton(
+                  child: AppButton(
                     label: l10n.buttonGetStarted,
                     onPressed: isLoading ? null : _initiateOAuth,
+                    size: AppButtonSize.compact,
                   ),
                 ),
                 const SizedBox(height: 12),
-                LongButton(
+                AppButton(
                   label: l10n.buttonHaveAccount,
-                  variant: LongButtonVariant.regular,
+                  variant: AppButtonVariant.neutral,
                   onPressed: () => context.router.push(const LoginRoute()),
+                  size: AppButtonSize.compact,
                 ),
                 const SizedBox(height: 16),
               ],

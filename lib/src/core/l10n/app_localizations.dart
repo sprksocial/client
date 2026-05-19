@@ -1114,11 +1114,23 @@ abstract class AppLocalizations {
   /// **'Share'**
   String get labelShare;
 
+  /// Follow action label
+  ///
+  /// In en, this message translates to:
+  /// **'Follow'**
+  String get labelFollow;
+
   /// Following label
   ///
   /// In en, this message translates to:
   /// **'Following'**
   String get labelFollowing;
+
+  /// Unfollow action label
+  ///
+  /// In en, this message translates to:
+  /// **'Unfollow'**
+  String get labelUnfollow;
 
   /// Posts label
   ///

@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
@@ -114,11 +114,12 @@ class ImageReviewPageTemplate extends StatelessWidget {
                         const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
-                          child: LongButton(
+                          child: AppButton(
                             label: canAddMore
                                 ? 'Add More Images ($imagesCount/$maxImages)'
                                 : 'Image Limit Reached',
                             onPressed: canAddMore ? onAddMore : null,
+                            size: AppButtonSize.compact,
                           ),
                         ),
                       ],
@@ -161,9 +162,10 @@ class ImageReviewPageTemplate extends StatelessWidget {
                           ),
                         ),
                       )
-                    : LongButton(
+                    : AppButton(
                         label: postLabel,
                         onPressed: isOverLimit ? null : onPost,
+                        size: AppButtonSize.compact,
                       ),
               ),
             ),

@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/toggle_button.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
-@UseCase(name: 'follow_states', type: FollowButton)
-Widget buildFollowButtonFollowStatesUseCase(BuildContext context) {
-  final isFollowing = context.knobs.boolean(
-    label: 'is_following',
+@UseCase(name: 'states', type: ToggleButton)
+Widget buildToggleButtonStatesUseCase(BuildContext context) {
+  final isSelected = context.knobs.boolean(
+    label: 'is_selected',
     initialValue: false,
   );
   return Center(
-    child: FollowButton(
-      isFollowing: isFollowing,
-      onFollow: () => print('Follow pressed'),
-      onUnfollow: () => print('Unfollow pressed'),
-      followText: context.knobs.string(
-        label: 'follow_text',
+    child: ToggleButton(
+      isSelected: isSelected,
+      onChanged: (value) => print('Toggle changed to $value'),
+      unselectedLabel: context.knobs.string(
+        label: 'unselected_label',
         initialValue: 'Follow',
       ),
-      unfollowText: context.knobs.string(
-        label: 'unfollow_text',
+      selectedLabel: context.knobs.string(
+        label: 'selected_label',
         initialValue: 'Unfollow',
       ),
     ),

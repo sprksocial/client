@@ -900,9 +900,19 @@
     "description": "Share label"
   },
 
+  "labelFollow": "Follow",
+  "@labelFollow": {
+    "description": "Follow action label"
+  },
+
   "labelFollowing": "Following",
   "@labelFollowing": {
     "description": "Following label"
+  },
+
+  "labelUnfollow": "Unfollow",
+  "@labelUnfollow": {
+    "description": "Unfollow action label"
   },
 
   "labelPosts": "Posts",
