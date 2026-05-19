@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
 
@@ -83,34 +84,36 @@ class _OnboardingAvatarStepState extends State<OnboardingAvatarStep> {
               spacing: 10,
               runSpacing: 10,
               children: [
-                OutlinedButton.icon(
+                AppButton(
+                  label: l10n.buttonAdd,
                   onPressed: widget.onPickAvatar,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 14,
-                    ),
-                  ),
-                  icon: const Icon(Icons.add_a_photo_outlined),
-                  label: Text(l10n.buttonAdd),
+                  variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.compact,
+                  leading: const Icon(Icons.add_a_photo_outlined, size: 18),
                 ),
                 if (widget.hasLocalAvatar)
-                  TextButton.icon(
+                  AppButton(
+                    label: l10n.tooltipRevert,
                     onPressed: widget.onRevertAvatar,
-                    icon: const Icon(Icons.undo),
-                    label: Text(l10n.tooltipRevert),
+                    variant: AppButtonVariant.neutral,
+                    size: AppButtonSize.compact,
+                    leading: const Icon(Icons.undo, size: 18),
                   ),
                 if (widget.isAvatarActive)
-                  TextButton.icon(
+                  AppButton(
+                    label: l10n.buttonRemove,
                     onPressed: widget.onClearAvatar,
-                    icon: const Icon(Icons.close),
-                    label: Text(l10n.buttonRemove),
+                    variant: AppButtonVariant.destructive,
+                    size: AppButtonSize.compact,
+                    leading: const Icon(Icons.close, size: 18),
                   ),
                 if (!widget.isAvatarActive && widget.hasInitialAvatar)
-                  TextButton.icon(
+                  AppButton(
+                    label: l10n.onboardingUseBskyAvatar,
                     onPressed: widget.onRevertAvatar,
-                    icon: const Icon(Icons.undo),
-                    label: Text(l10n.onboardingUseBskyAvatar),
+                    variant: AppButtonVariant.neutral,
+                    size: AppButtonSize.compact,
+                    leading: const Icon(Icons.undo, size: 18),
                   ),
               ],
             ),

@@ -1,6 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/onboarding_notifier.dart';
@@ -81,7 +83,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         elevation: 0,
         centerTitle: true,
         title: Text(l10n.pageTitleCompleteProfile),
-        leading: const AutoLeadingButton(),
+        leading: AppLeadingButton(tooltip: l10n.buttonBack),
       ),
       body: onboardingStateAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -91,9 +93,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             children: [
               Text('${l10n.errorGeneric}: $err'),
               const SizedBox(height: 8),
-              ElevatedButton(
+              AppButton(
+                label: l10n.buttonRetry,
                 onPressed: notifier.reloadProfile,
-                child: Text(l10n.buttonRetry),
+                size: AppButtonSize.compact,
               ),
             ],
           ),

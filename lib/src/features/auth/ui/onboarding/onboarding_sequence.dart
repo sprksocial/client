@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/auth/ui/onboarding/onboarding_step.dart';
 
@@ -133,9 +134,12 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
                   children: [
                     if (_currentIndex > 0)
                       Expanded(
-                        child: OutlinedButton(
+                        child: AppButton(
+                          label: l10n.buttonBack,
                           onPressed: _goToPrevious,
-                          child: Text(l10n.buttonBack),
+                          variant: AppButtonVariant.neutral,
+                          size: AppButtonSize.medium,
+                          fullWidth: true,
                         ),
                       )
                     else
@@ -143,23 +147,27 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
                     const SizedBox(width: 12),
                     Expanded(
                       flex: 2,
-                      child: ElevatedButton(
+                      child: AppButton(
+                        label: _currentIndex < widget.steps.length - 1
+                            ? l10n.buttonContinue
+                            : l10n.buttonConfirm,
                         onPressed: widget.isCompleteLoading ? null : _goToNext,
-                        child:
+                        size: AppButtonSize.medium,
+                        fullWidth: true,
+                        leading:
                             widget.isCompleteLoading &&
                                 _currentIndex == widget.steps.length - 1
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
+                            ? SizedBox(
+                                width: 18,
+                                height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.55,
+                                  ),
                                 ),
                               )
-                            : Text(
-                                _currentIndex < widget.steps.length - 1
-                                    ? l10n.buttonContinue
-                                    : l10n.buttonConfirm,
-                              ),
+                            : null,
                       ),
                     ),
                   ],
