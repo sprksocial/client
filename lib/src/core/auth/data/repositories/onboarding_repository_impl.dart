@@ -43,9 +43,22 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
     final uri = AtUri.parse('at://$_did/so.sprk.actor.profile/self');
     try {
-      final response = await _repoRepository.getRecord(uri: uri);
-      _logger.i('Spark profile found: ${response.record.toJson()}');
-      return response.record.toJson().isNotEmpty;
+      final atproto = _atproto;
+      if (atproto == null) {
+        _logger.w('AtProto not initialized while checking Spark profile');
+        return false;
+      }
+
+      final response = await atproto.call(
+        repo_get_record.comAtprotoRepoGetRecord,
+        parameters: repo_get_record.RepoGetRecordInput(
+          repo: uri.hostname,
+          collection: uri.collection.toString(),
+          rkey: uri.rkey,
+        ),
+      );
+      _logger.i('Spark profile found: ${response.data.value}');
+      return response.data.value.isNotEmpty;
     } catch (e) {
       // Treat explicit "record not found" failures as no profile.
       final msg = e.toString().toLowerCase();
