@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
 
 class OnboardingAvatarStep extends StatefulWidget {
   const OnboardingAvatarStep({

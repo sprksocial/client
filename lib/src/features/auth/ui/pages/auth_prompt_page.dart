@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 @RoutePage()
 class AuthPromptPage extends StatelessWidget {

@@ -1,14 +1,12 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
+import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/design_system/templates/explore_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/widgets/user_avatar.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
 import 'package:spark/src/features/search/providers/post_search_provider.dart';
@@ -114,21 +112,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return DefaultTabController(
       length: 2,
       child: ExplorePageTemplate(
-        searchWidget: InputField.search(
-          controller: _searchController,
-          hintText: l10n.hintSearchUsersPosts,
-          onSubmitted: _onSubmitted,
-          textInputAction: TextInputAction.search,
-          leadingWidgets: const [Icon(FluentIcons.search_24_regular, size: 20)],
-          actionWidgets: _searchController.text.isNotEmpty
-              ? [
-                  GestureDetector(
-                    onTap: _searchController.clear,
-                    child: const Icon(FluentIcons.dismiss_24_regular, size: 20),
-                  ),
-                ]
-              : null,
-        ),
+        searchController: _searchController,
+        searchHintText: l10n.hintSearchUsersPosts,
+        onSearchSubmitted: _onSubmitted,
+        onClearSearch: _searchController.clear,
+        showClearSearch: _searchController.text.isNotEmpty,
         showTabs: showSubmittedResults,
         tabsWidget: TabBar(
           tabs: [

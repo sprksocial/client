@@ -153,6 +153,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
                         label: postLabel,
                         onPressed: isOverLimit ? null : onPost,
                         size: AppButtonSize.compact,
+                        fullWidth: true,
                       ),
               ),
             ),

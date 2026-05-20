@@ -8,7 +8,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';

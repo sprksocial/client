@@ -60,3 +60,4 @@ ios/Runner/GoogleService-Info.plist
 *.g.dart
 *.gr.dart
 assets/build
+test/src/core/design_system/templates/explore_page_template_test.dart

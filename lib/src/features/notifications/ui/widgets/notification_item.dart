@@ -7,8 +7,8 @@ import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart'
     as models;
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
-import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/messages/ui/pages/chat_page.dart';
 import 'package:spark/src/features/notifications/models/grouped_notification.dart';
 

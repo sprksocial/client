@@ -401,20 +401,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     } catch (_) {}
   }
 
-  // Future<void> _handleCurate() async {
-  //   // For now, this is a placeholder for curate functionality
-  //   // In the future, this could add the post to a custom feed or collection
-  //   if (mounted) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Post curated to feed!')),
-  //     );
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // Curation disabled: do not build curate destinations from feeds
-
     final currentPost = _currentPost ?? widget.post;
     final authRepository = GetIt.instance<AuthRepository>();
     final userDid = authRepository.did;
@@ -423,13 +411,11 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
     final commentCount =
         currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
-    // final isCurated = currentPost.viewer?.repost != null; // Curation disabled
 
     return SparkSideActionBar(
       onLike: _handleLike,
       onComment: _handleCommentPressed,
       onRepost: _handleRepost,
-      // onCurate: _handleCurate, // Curation disabled
       onShare: _handleShare,
       onShareLongPress: _handleShareLongPress,
       onSoundTap: currentPost.sound != null ? _handleSoundTap : null,
@@ -445,13 +431,10 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       likeCount: _likeCount.toString(),
       commentCount: commentCount.toString(),
       repostCount: _repostCount.toString(),
-      // curateCount: repostCount.toString(), // Curation disabled
       shareCount: widget.shareCount,
       isLiked: _isLiked,
       isReposted: _isReposted,
       soundCover: currentPost.sound?.coverArt.toString(),
-      // isCurated: isCurated, // Curation disabled
-      // curateDestinations: curateDestinations, // Curation disabled
     );
   }
 }

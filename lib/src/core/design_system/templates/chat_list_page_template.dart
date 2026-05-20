@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
-import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 
 class ChatListItemData {
   const ChatListItemData({

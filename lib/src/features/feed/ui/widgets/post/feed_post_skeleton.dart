@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// A skeleton loading placeholder for feed posts.
 /// Displays a shimmer animation over placeholder content that mimics

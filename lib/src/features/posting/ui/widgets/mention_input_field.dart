@@ -3,7 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
-import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/posting/models/mention.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';

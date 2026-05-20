@@ -184,39 +184,6 @@ class _FeedTagListState extends State<FeedTagList> {
       },
     );
 
-    final fadedList = widget.enableRightFade
-        ? LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth;
-              final fadeWidth = widget.rightFadeWidth.clamp(0, width);
-              return ShaderMask(
-                blendMode: BlendMode.dstIn,
-                shaderCallback: (bounds) {
-                  if (fadeWidth == 0 || width == 0) {
-                    return const LinearGradient(
-                      colors: [Colors.white, Colors.white],
-                    ).createShader(bounds);
-                  }
-
-                  final fadeStart = ((width - fadeWidth) / width).clamp(
-                    0.0,
-                    1.0,
-                  );
-                  return LinearGradient(
-                    colors: const [
-                      Colors.white,
-                      Colors.white,
-                      Colors.transparent,
-                    ],
-                    stops: [0.0, fadeStart, 1.0],
-                  ).createShader(bounds);
-                },
-                child: listView,
-              );
-            },
-          )
-        : listView;
-
-    return SizedBox(height: 30, child: fadedList);
+    return SizedBox(height: 30, child: listView);
   }
 }

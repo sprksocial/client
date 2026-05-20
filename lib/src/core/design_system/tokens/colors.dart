@@ -1,6 +1,62 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Semantic aliases for the current app color language. These replace the
+  // older core/ui/foundation color class while keeping call sites readable.
+  static const primary = primary500;
+  static const secondary = brightPurple;
+  static const accent = richPurple;
+
+  static const lightLavender = Color(0xffdcd9e2);
+  static const darkPurple = Color(0xff403848);
+  static const deepPurple = Color(0xff28232d);
+  static const richPurple = Color(0xff330072);
+  static const brightPurple = Color(0xffb20aff);
+
+  static const pink = primary500;
+  static const white = greyWhite;
+  static const black = greyBlack;
+  static const nearBlack = Color(0xff0d0a0f);
+
+  static const blue = Color(0xff0073ff);
+  static const lightBlue = Color(0xff40a9ff);
+  static const teal = Color(0xff00c9b8);
+  static const green = green500;
+  static const red = Color(0xffff3a2c);
+  static const orange = Color(0xffff7b00);
+  static const hintColor = Color(0xff808080);
+
+  static const background = white;
+  static const lightBackground = white;
+  static const cardBackground = white;
+  static const darkBackground = nearBlack;
+  static const modalBackground = nearBlack;
+
+  static const textPrimary = deepPurple;
+  static const textSecondary = darkPurple;
+  static const textLight = lightLavender;
+  static const textOnDark = white;
+  static const hintText = hintColor;
+
+  static const border = darkPurple;
+  static const divider = lightLavender;
+
+  static const success = green;
+  static const error = red;
+  static const warning = orange;
+  static const info = blue;
+
+  static const likeColor = pink;
+  static const commentColor = blue;
+  static const repostColor = green;
+  static const followColor = blue;
+  static const unreadIndicator = pink;
+
+  static const selectedIconLight = pink;
+  static const unselectedIconLight = darkPurple;
+  static const selectedIconDark = white;
+  static const unselectedIconDark = darkPurple;
+
   static const primary50 = Color(0xfffef1f8);
 
   static const primary100 = Color(0xfffee5f4);

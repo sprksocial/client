@@ -12,9 +12,8 @@ const kFeedsBarLeadingWidth = 40.0;
 
 /// Design-only template for the Feeds Bar.
 ///
-/// This template renders the tags row with a built-in leading button and
-/// a subtle top-to-bottom gradient backdrop. Implements [PreferredSizeWidget]
-/// so it can be used as an AppBar.
+/// This template renders the tags row with a built-in leading button.
+/// Implements [PreferredSizeWidget] so it can be used as an AppBar.
 ///
 /// The leading button is built-in (similar to how [AppBar] handles leading)
 /// and displays a create post icon. Use [onLeadingPressed] to handle taps.
@@ -48,64 +47,42 @@ class FeedsBarTemplate extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use a Column to let the widget size naturally based on SafeArea + content
-    // This avoids the preferredSize mismatch issue
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // Backdrop gradient - positioned to fill available space
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color.fromARGB(110, 0, 0, 0), Colors.transparent],
+    return SafeArea(
+      bottom: false,
+      left: false,
+      right: false,
+      child: SizedBox(
+        height: kFeedsBarHeight,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
+            children: [
+              SizedBox(
+                width: kFeedsBarLeadingWidth,
+                height: kFeedsBarLeadingWidth,
+                child: Tooltip(
+                  message: 'Create post',
+                  child: GestureDetector(
+                    onTap: onLeadingPressed,
+                    child: Center(child: AppIcons.addPostFilled(size: 28)),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FeedTagList(
+                  tags: tags,
+                  selectedTagId: selectedTagId,
+                  onTagTap: onTagTap,
+                  onReorder: onReorder,
+                  onLongPress: onLongPress,
+                  enableReordering: enableReordering,
+                ),
+              ),
+            ],
           ),
         ),
-        // Content with SafeArea - this determines the widget's intrinsic height
-        SafeArea(
-          bottom: false,
-          left: false,
-          right: false,
-          child: SizedBox(
-            height: kFeedsBarHeight,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Row(
-                children: [
-                  // Leading button - matches AppLeadingButton structure exactly
-                  SizedBox(
-                    width: kFeedsBarLeadingWidth,
-                    height: kFeedsBarLeadingWidth,
-                    child: Tooltip(
-                      message: 'Create post',
-                      child: GestureDetector(
-                        onTap: onLeadingPressed,
-                        child: Center(child: AppIcons.addPostFilled(size: 28)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: FeedTagList(
-                      tags: tags,
-                      selectedTagId: selectedTagId,
-                      onTagTap: onTagTap,
-                      onReorder: onReorder,
-                      onLongPress: onLongPress,
-                      enableReordering: enableReordering,
-                      enableRightFade: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

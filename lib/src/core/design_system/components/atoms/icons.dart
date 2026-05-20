@@ -417,16 +417,6 @@ class AppIcons {
         : null,
     package: 'assets',
   );
-  static Widget profileCurate({double size = 24, Color? color}) =>
-      SvgPicture.asset(
-        '$_path/profile_curate.svg',
-        width: size,
-        height: size,
-        colorFilter: color != null
-            ? ColorFilter.mode(color, BlendMode.srcIn)
-            : null,
-        package: 'assets',
-      );
   static Widget profileLiked({double size = 24, Color? color}) =>
       SvgPicture.asset(
         '$_path/profile_liked.svg',
@@ -556,16 +546,6 @@ class AppIcons {
         : null,
     package: 'assets',
   );
-  static Widget sideCurate({double size = 24, Color? color}) =>
-      SvgPicture.asset(
-        '$_path/side_curate.svg',
-        width: size,
-        height: size,
-        colorFilter: color != null
-            ? ColorFilter.mode(color, BlendMode.srcIn)
-            : null,
-        package: 'assets',
-      );
   static Widget gear({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/gear.svg',
     width: size,

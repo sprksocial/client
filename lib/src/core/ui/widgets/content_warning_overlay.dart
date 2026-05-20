@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class ContentWarningOverlay extends StatelessWidget {
   const ContentWarningOverlay({

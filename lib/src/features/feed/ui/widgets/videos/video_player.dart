@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/feed_state.dart';

@@ -20,10 +20,12 @@ class FeedTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(9));
+
     if (!selected) {
       return InteractivePressable(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: radius,
         child: Text(
           text,
           style: AppTypography.textMediumThin.copyWith(color: Colors.white70),
@@ -32,18 +34,18 @@ class FeedTag extends StatelessWidget {
     }
     return InteractivePressable(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(9),
+      borderRadius: radius,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(9),
+        borderRadius: radius,
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
           child: Container(
             height: 30,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(50),
-              borderRadius: BorderRadius.circular(9),
-              border: Border.all(color: Colors.white.withAlpha(37)),
+              color: Colors.white.withAlpha(70),
+              borderRadius: radius,
+              border: Border.all(color: Colors.white.withAlpha(55)),
             ),
             child: Center(
               child: Text(

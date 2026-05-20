@@ -160,12 +160,14 @@ class _ProcessingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(20));
+
     return Positioned.fill(
       child: ColoredBox(
         color: Colors.black.withAlpha(110),
         child: Center(
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: radius,
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
@@ -175,8 +177,8 @@ class _ProcessingOverlay extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.black.withAlpha(130),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withAlpha(35)),
+                  borderRadius: radius,
+                  border: Border.all(color: Colors.white.withAlpha(28)),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -248,22 +250,24 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(999));
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
         onPressed();
       },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: radius,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             constraints: const BoxConstraints(minHeight: 40, minWidth: 40),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: radius,
               color: Colors.black.withAlpha(90),
-              border: Border.all(color: Colors.white.withAlpha(40)),
+              border: Border.all(color: Colors.white.withAlpha(32)),
             ),
             child: Text(
               label,
@@ -399,18 +403,19 @@ class _SoundButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final effectiveLabel = label ?? l10n.buttonAddSound;
+    const radius = BorderRadius.all(Radius.circular(999));
 
     return Center(
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: radius,
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             constraints: const BoxConstraints(maxWidth: 260, minHeight: 40),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: radius,
               color: Colors.black.withAlpha(110),
-              border: Border.all(color: Colors.white.withAlpha(45)),
+              border: Border.all(color: Colors.white.withAlpha(35)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

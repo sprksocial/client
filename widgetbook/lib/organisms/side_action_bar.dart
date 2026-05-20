@@ -17,10 +17,6 @@ Widget buildSparkSideActionBarUseCase(BuildContext context) {
     label: 'repostCount',
     initialValue: '1.2k',
   );
-  final curateCount = context.knobs.string(
-    label: 'curateCount',
-    initialValue: '129',
-  );
   final shareCount = context.knobs.string(
     label: 'shareCount',
     initialValue: '98',
@@ -30,25 +26,18 @@ Widget buildSparkSideActionBarUseCase(BuildContext context) {
     label: 'isReposted',
     initialValue: false,
   );
-  final isCurated = context.knobs.boolean(
-    label: 'isCurated',
-    initialValue: false,
-  );
 
   return _ScaffoldedBackground(
     child: SparkSideActionBar(
       likeCount: likeCount,
       commentCount: commentCount,
       repostCount: repostCount,
-      curateCount: curateCount,
       shareCount: shareCount,
       isLiked: isLiked,
       isReposted: isReposted,
-      isCurated: isCurated,
       onLike: () => print('Like tapped (current: $isLiked)'),
       onComment: () => print('Comment tapped'),
       onRepost: () => print('Repost tapped (current: $isReposted)'),
-      onCurate: () => print('Curate tapped (current: $isCurated)'),
       onShare: () => print('Share tapped'),
     ),
   );
@@ -61,25 +50,18 @@ Widget buildSparkSideActionBarEmptyCountsUseCase(BuildContext context) {
     label: 'isReposted',
     initialValue: false,
   );
-  final isCurated = context.knobs.boolean(
-    label: 'isCurated',
-    initialValue: false,
-  );
 
   return _ScaffoldedBackground(
     child: SparkSideActionBar(
       likeCount: '',
       commentCount: '',
       repostCount: '',
-      curateCount: '',
       shareCount: '',
       isLiked: isLiked,
       isReposted: isReposted,
-      isCurated: isCurated,
       onLike: () => print('Like tapped'),
       onComment: () => print('Comment tapped'),
       onRepost: () => print('Repost tapped'),
-      onCurate: () => print('Curate tapped'),
       onShare: () => print('Share tapped'),
     ),
   );
@@ -93,10 +75,6 @@ Widget buildSparkSideActionBarInteractiveStatefulUseCase(BuildContext context) {
   );
   final startReposted = context.knobs.boolean(
     label: 'startReposted',
-    initialValue: false,
-  );
-  final startCurated = context.knobs.boolean(
-    label: 'startCurated',
     initialValue: false,
   );
   final likeCountStart = context.knobs.int.slider(
@@ -120,13 +98,6 @@ Widget buildSparkSideActionBarInteractiveStatefulUseCase(BuildContext context) {
     max: 5000,
     divisions: 50,
   );
-  final curateCountStart = context.knobs.int.slider(
-    label: 'curateStart',
-    initialValue: 12,
-    min: 0,
-    max: 5000,
-    divisions: 50,
-  );
   final shareCountStart = context.knobs.int.slider(
     label: 'shareStart',
     initialValue: 8,
@@ -139,21 +110,17 @@ Widget buildSparkSideActionBarInteractiveStatefulUseCase(BuildContext context) {
     builder: (ctx, setState) {
       var liked = startLiked;
       var reposted = startReposted;
-      var curated = startCurated;
       var likeCount = likeCountStart;
       var repostCount = repostCountStart;
-      var curateCount = curateCountStart;
 
       return _ScaffoldedBackground(
         child: SparkSideActionBar(
           likeCount: likeCount.toString(),
           commentCount: commentCountStart.toString(),
           repostCount: repostCount.toString(),
-          curateCount: curateCount.toString(),
           shareCount: shareCountStart.toString(),
           isLiked: liked,
           isReposted: reposted,
-          isCurated: curated,
           onLike: () {
             setState(() {
               liked = !liked;
@@ -168,13 +135,6 @@ Widget buildSparkSideActionBarInteractiveStatefulUseCase(BuildContext context) {
             });
             print('Repost toggled -> $reposted (count: $repostCount)');
           },
-          onCurate: () {
-            setState(() {
-              curated = !curated;
-              curateCount += curated ? 1 : -1;
-            });
-            print('Curate toggled -> $curated (count: $curateCount)');
-          },
           onComment: () => print('Comment tapped'),
           onShare: () => print('Share tapped'),
         ),
@@ -185,7 +145,6 @@ Widget buildSparkSideActionBarInteractiveStatefulUseCase(BuildContext context) {
 
 @UseCase(name: 'dense_spacing', type: SparkSideActionBar)
 Widget buildSparkSideActionBarDenseSpacingUseCase(BuildContext context) {
-  // This variant demonstrates how the bar might look when placed tighter to edges.
   final scale = context.knobs.double.slider(
     label: 'scale',
     initialValue: 0.85,
@@ -201,95 +160,11 @@ Widget buildSparkSideActionBarDenseSpacingUseCase(BuildContext context) {
         likeCount: '12',
         commentCount: '3',
         repostCount: '5',
-        curateCount: '4',
         shareCount: '1',
         isLiked: true,
         isReposted: false,
-        isCurated: true,
       ),
     ),
-  );
-}
-
-@UseCase(name: 'curate_popover', type: SparkSideActionBar)
-Widget buildSparkSideActionBarCuratePopoverUseCase(BuildContext context) {
-  final likeCount = context.knobs.int.slider(
-    label: 'likes',
-    initialValue: 25,
-    min: 0,
-    max: 999,
-    divisions: 50,
-  );
-  final commentCount = context.knobs.int.slider(
-    label: 'comments',
-    initialValue: 8,
-    min: 0,
-    max: 500,
-    divisions: 50,
-  );
-  final repostCount = context.knobs.int.slider(
-    label: 'reposts',
-    initialValue: 12,
-    min: 0,
-    max: 500,
-    divisions: 50,
-  );
-  final shareCount = context.knobs.int.slider(
-    label: 'shares',
-    initialValue: 2,
-    min: 0,
-    max: 500,
-    divisions: 50,
-  );
-
-  return StatefulBuilder(
-    builder: (ctx, setState) {
-      var curated = false;
-      var reposted = false;
-      var curateCount = 5;
-      return _ScaffoldedBackground(
-        child: SparkSideActionBar(
-          likeCount: likeCount.toString(),
-          commentCount: commentCount.toString(),
-          repostCount: repostCount.toString(),
-          curateCount: curateCount.toString(),
-          shareCount: shareCount.toString(),
-          isLiked: false,
-          isReposted: reposted,
-          isCurated: curated,
-          curateDestinations: [
-            CurateDestination(
-              'Feed 1',
-              onSelected: () => print('Feed 1 selected'),
-            ),
-            CurateDestination(
-              'Feed 2',
-              onSelected: () => print('Feed 2 selected'),
-            ),
-            CurateDestination(
-              'Ideas',
-              onSelected: () => print('Ideas selected'),
-            ),
-          ],
-          onRepost: () {
-            setState(() {
-              reposted = !reposted;
-            });
-            print('Reposted! $reposted');
-          },
-          onCurate: () {
-            setState(() {
-              curated = true;
-              curateCount += 1;
-            });
-            print('Curated! Total: $curateCount');
-          },
-          onComment: () => print('Comment tapped'),
-          onLike: () => print('Like tapped'),
-          onShare: () => print('Share tapped'),
-        ),
-      );
-    },
   );
 }
 
@@ -300,39 +175,25 @@ Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
     initialValue:
         'https://picsum.photos/600/1200?random=${DateTime.now().millisecond % 20}',
   );
-
   final likeCount = context.knobs.string(
     label: 'likeCount',
     initialValue: '2.4k',
   );
-
   final commentCount = context.knobs.string(
     label: 'commentCount',
     initialValue: '156',
   );
-
   final repostCount = context.knobs.string(
     label: 'repostCount',
     initialValue: '89',
   );
-
-  final curateCount = context.knobs.string(
-    label: 'curateCount',
-    initialValue: '42',
-  );
-
   final shareCount = context.knobs.string(
     label: 'shareCount',
     initialValue: '89',
   );
-
   final isLiked = context.knobs.boolean(label: 'isLiked', initialValue: true);
   final isReposted = context.knobs.boolean(
     label: 'isReposted',
-    initialValue: false,
-  );
-  final isCurated = context.knobs.boolean(
-    label: 'isCurated',
     initialValue: false,
   );
 
@@ -340,7 +201,6 @@ Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
     builder: (ctx, setState) {
       var liked = isLiked;
       var reposted = isReposted;
-      var curated = isCurated;
 
       return Scaffold(
         backgroundColor: Colors.black,
@@ -362,20 +222,6 @@ Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
                     ),
                   );
                 },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: Colors.grey.shade900,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                            : null,
-                      ),
-                    ),
-                  );
-                },
               ),
             ),
             Positioned(
@@ -385,25 +231,9 @@ Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
                 likeCount: likeCount,
                 commentCount: commentCount,
                 repostCount: repostCount,
-                curateCount: curateCount,
                 shareCount: shareCount,
                 isLiked: liked,
                 isReposted: reposted,
-                isCurated: curated,
-                curateDestinations: [
-                  CurateDestination(
-                    'Feed 1',
-                    onSelected: () => print('Feed 1 selected'),
-                  ),
-                  CurateDestination(
-                    'Feed 2',
-                    onSelected: () => print('Feed 2 selected'),
-                  ),
-                  CurateDestination(
-                    'Feed 3',
-                    onSelected: () => print('Feed 3 selected'),
-                  ),
-                ],
                 onLike: () {
                   setState(() => liked = !liked);
                   print('Like toggled: $liked');
@@ -412,10 +242,6 @@ Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
                 onRepost: () {
                   setState(() => reposted = !reposted);
                   print('Repost toggled: $reposted');
-                },
-                onCurate: () {
-                  setState(() => curated = true);
-                  print('Curated!');
                 },
                 onShare: () => print('Share tapped'),
               ),
@@ -442,15 +268,9 @@ class _ScaffoldedBackground extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(
+            const Positioned.fill(
               child: DecoratedBox(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF0E0F11), Color(0xFF050506)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
+                decoration: BoxDecoration(color: Color(0xFF050506)),
               ),
             ),
             Positioned(

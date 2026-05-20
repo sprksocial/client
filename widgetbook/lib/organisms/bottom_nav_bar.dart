@@ -32,15 +32,7 @@ Widget buildSparkBottomNavBarUseCase(BuildContext context) {
       errorBuilder: (c, e, s) => Container(color: Colors.grey.shade800),
     );
   } else {
-    background = Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF111214), Color(0xFF000000)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
-    );
+    background = const ColoredBox(color: Color(0xFF050506));
   }
 
   int selected = initialIndex;

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/ui/widgets/custom_text_field.dart';
-import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
 import 'package:spark/src/features/profile/providers/edit_profile_provider.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 

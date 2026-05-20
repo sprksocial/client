@@ -1,11 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
-import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
 import 'package:spark/src/features/notifications/providers/unread_count_provider.dart';
 
 class SparkBottomNavBar extends ConsumerWidget {
@@ -34,9 +32,6 @@ class SparkBottomNavBar extends ConsumerWidget {
         _BarBackground(
           child: Container(
             padding: EdgeInsets.only(top: 12, bottom: 12 + bottomPadding),
-            color: isDark
-                ? const Color.fromARGB(51, 0, 0, 0)
-                : const Color.fromARGB(178, 255, 255, 255),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 
@@ -101,25 +96,22 @@ class _BarBackground extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(0),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppConstants.blurBottomBar.toDouble(),
-          sigmaY: AppConstants.blurBottomBar.toDouble(),
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 2,
-              ),
-            ),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.grey900 : theme.colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? AppColors.grey700
+                : theme.colorScheme.outline.withValues(alpha: 0.35),
+            width: 0.5,
           ),
-          child: child,
         ),
       ),
+      child: child,
     );
   }
 }

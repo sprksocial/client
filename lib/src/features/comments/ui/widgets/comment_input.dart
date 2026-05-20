@@ -10,7 +10,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
-import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/comments/providers/comment_input_provider.dart';
 import 'package:spark/src/features/comments/providers/comment_input_state.dart';

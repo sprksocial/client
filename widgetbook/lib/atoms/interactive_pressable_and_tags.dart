@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/tags/feed_tag.dart';
-import 'package:spark/src/core/design_system/components/atoms/tags/hashtag.dart';
 import 'package:spark/src/core/design_system/components/atoms/tags/tag.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
@@ -69,31 +68,6 @@ Widget buildTagBasicUseCase(BuildContext context) {
           initialValue: '1.8M',
         ),
         onTap: () => print('Tag tapped'),
-      ),
-    ),
-  );
-}
-
-@UseCase(name: 'glassmorphic_tag_with_delete', type: GlassmorphicTag)
-Widget buildGlassmorphicTagWithDeleteUseCase(BuildContext context) {
-  return Center(
-    child: ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: context.knobs.double.slider(
-          label: 'max_width',
-          initialValue: 200,
-          min: 100,
-          max: 400,
-          divisions: 30,
-        ),
-      ),
-      child: GlassmorphicTag(
-        label: context.knobs.string(label: 'label', initialValue: 'hashtag'),
-        onTap: () => print('GlassmorphicTag tapped'),
-        onDeleted:
-            context.knobs.boolean(label: 'show_delete', initialValue: true)
-            ? () => print('Delete pressed')
-            : null,
       ),
     ),
   );

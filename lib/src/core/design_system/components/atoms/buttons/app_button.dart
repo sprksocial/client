@@ -67,27 +67,31 @@ class AppButton extends StatelessWidget {
       ],
     );
 
+    final button = InteractivePressable(
+      onTap: onPressed,
+      borderRadius: resolvedBorderRadius,
+      child: Container(
+        width: fullWidth ? double.infinity : null,
+        constraints: BoxConstraints(
+          minWidth: minWidth ?? resolvedSize.minWidth,
+          minHeight: minHeight ?? resolvedSize.minHeight,
+        ),
+        padding: padding ?? resolvedSize.padding,
+        decoration: BoxDecoration(
+          color: resolvedVariant.backgroundColor,
+          borderRadius: resolvedBorderRadius,
+          border: resolvedVariant.border,
+        ),
+        child: content,
+      ),
+    );
+
     return Semantics(
       button: true,
       enabled: isEnabled,
-      child: InteractivePressable(
-        onTap: onPressed,
-        borderRadius: resolvedBorderRadius,
-        child: Container(
-          width: fullWidth ? double.infinity : null,
-          constraints: BoxConstraints(
-            minWidth: minWidth ?? resolvedSize.minWidth,
-            minHeight: minHeight ?? resolvedSize.minHeight,
-          ),
-          padding: padding ?? resolvedSize.padding,
-          decoration: BoxDecoration(
-            color: resolvedVariant.backgroundColor,
-            borderRadius: resolvedBorderRadius,
-            border: resolvedVariant.border,
-          ),
-          child: content,
-        ),
-      ),
+      child: fullWidth
+          ? button
+          : Align(widthFactor: 1, heightFactor: 1, child: button),
     );
   }
 }

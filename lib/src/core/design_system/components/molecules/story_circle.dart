@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/tokens/gradients.dart';
+import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
-import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
 
 enum StoryType { story, live, cf, create }
 
@@ -21,7 +20,7 @@ class StoryCircle extends StatelessWidget {
     required this.live,
   });
 
-  /// Constructor variant for an unread story with a gradient border.
+  /// Constructor variant for an unread story with an accent border.
   factory StoryCircle.story({
     required String userName,
     required String imageUrl,
@@ -175,7 +174,7 @@ class _LiveBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          gradient: AppGradients.accent,
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(width: 2),
         ),

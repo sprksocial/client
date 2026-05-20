@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/follow_pill_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -116,7 +116,17 @@ class _InfoBarTemplateState extends State<InfoBarTemplate>
             if (widget.showFollowButton)
               Padding(
                 padding: const EdgeInsets.only(left: 8, top: 2),
-                child: FollowPillButton(onPressed: widget.onFollow ?? () {}),
+                child: AppButton(
+                  label: 'Follow',
+                  onPressed: widget.onFollow ?? () {},
+                  size: AppButtonSize.compact,
+                  minHeight: 34,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
           ],
         ),

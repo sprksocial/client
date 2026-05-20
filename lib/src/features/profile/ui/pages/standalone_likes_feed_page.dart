@@ -9,7 +9,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';

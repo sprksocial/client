@@ -11,7 +11,7 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/app_overla
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';

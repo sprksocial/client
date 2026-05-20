@@ -7,7 +7,7 @@ import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/ui/theme/theme.dart';
 
 /// A widget that displays known interactions (reposts and likes) as
-/// overlapping avatar stacks with icons in frosted glass pill containers.
+/// overlapping avatar stacks with icons in media-overlay pill containers.
 ///
 /// Shows reposts on the left with a green repost icon, and likes on the right
 /// with a pink heart icon. Only renders if there are actual interactions.
@@ -82,17 +82,19 @@ class _InteractionPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(500));
+
     return ClipRRect(
-      borderRadius: const BorderRadius.all(Radius.circular(500)),
+      borderRadius: radius,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: const BoxDecoration(
             color: Color(0x33FFFFFF),
-            borderRadius: BorderRadius.all(Radius.circular(500)),
+            borderRadius: radius,
             border: Border.fromBorderSide(
-              BorderSide(color: Color(0x25FFFFFF), width: 1),
+              BorderSide(color: Color(0x30FFFFFF), width: 1),
             ),
           ),
           child: Row(

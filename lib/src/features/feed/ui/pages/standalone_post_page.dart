@@ -11,7 +11,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/post_updates.dart';

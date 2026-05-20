@@ -226,6 +226,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                                   ? null
                                   : _sendToSelectedConversation,
                               size: AppButtonSize.compact,
+                              fullWidth: true,
                             ),
                           )
                         : Row(
@@ -239,6 +240,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                                   onPressed: _copyLink,
                                   variant: AppButtonVariant.neutral,
                                   size: AppButtonSize.compact,
+                                  fullWidth: true,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -248,6 +250,7 @@ class _SharePanelState extends ConsumerState<SharePanel> {
                                   onPressed: _shareNatively,
                                   variant: AppButtonVariant.neutral,
                                   size: AppButtonSize.compact,
+                                  fullWidth: true,
                                 ),
                               ),
                             ],

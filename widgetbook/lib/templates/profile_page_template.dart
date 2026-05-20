@@ -49,7 +49,7 @@ class _DefaultTabsDemoState extends State<_DefaultTabsDemo> {
       selectedTabIndex: _selectedTabIndex,
       onTabChanged: (index) {
         setState(() => _selectedTabIndex = index);
-        final tabNames = ['Grid', 'Curate', 'Likes', 'Tagged'];
+        final tabNames = ['Grid', 'Reposts', 'Likes', 'Tagged'];
         print('Tab changed to: ${tabNames[index]}');
       },
       contentWidget: _MockContentWidget(
@@ -358,7 +358,7 @@ class _MockContentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (type == 'empty') {
-      final tabNames = ['Grid', 'Curate', 'Likes', 'Tagged'];
+      final tabNames = ['Grid', 'Reposts', 'Likes', 'Tagged'];
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

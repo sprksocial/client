@@ -1,9 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/tokens/gradients.dart';
-import 'package:spark/src/core/ui/foundation/colors.dart';
-import 'package:spark/src/core/ui/widgets/default_profile_avatar.dart';
+import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class ProfileAvatar extends StatelessWidget {
   const ProfileAvatar({
@@ -51,7 +50,7 @@ class ProfileAvatar extends StatelessWidget {
             decoration: hasStories
                 ? const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: AppGradients.accent,
+                    color: AppColors.primary,
                   )
                 : BoxDecoration(
                     color: isDarkMode
