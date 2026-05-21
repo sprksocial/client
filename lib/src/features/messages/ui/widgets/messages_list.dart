@@ -1,89 +1,22 @@
 import 'dart:math' as math;
 
 import 'package:any_link_preview/any_link_preview.dart';
-import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/image_content.dart';
 import 'package:spark/src/core/ui/widgets/video_content.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/share_urls.dart';
+import 'package:spark/src/features/messages/providers/message_embed_provider.dart';
 import 'package:spark/src/features/messages/ui/widgets/message_bubble.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-enum _ResolvedLinkKind { none, image, video }
-
-class _MessageLinkClassifier {
-  static final Map<String, _ResolvedLinkKind> _cache = {};
-
-  static Future<_ResolvedLinkKind> classify(String url) async {
-    final cached = _cache[url];
-    if (cached != null) {
-      return cached;
-    }
-
-    final resolved = await _resolve(url);
-    _cache[url] = resolved;
-    return resolved;
-  }
-
-  static Future<_ResolvedLinkKind> _resolve(String url) async {
-    final contentType = await _fetchContentType(url);
-    if (contentType == null) {
-      return _ResolvedLinkKind.none;
-    }
-
-    if (_isImage(contentType)) {
-      return _ResolvedLinkKind.image;
-    }
-
-    if (_isVideo(contentType)) {
-      return _ResolvedLinkKind.video;
-    }
-
-    return _ResolvedLinkKind.none;
-  }
-
-  static Future<String?> _fetchContentType(String url) async {
-    try {
-      final uri = Uri.parse(url);
-      final headResponse = await http.head(uri);
-      final headContentType = headResponse.headers['content-type'];
-      if (headResponse.statusCode == 200 && headContentType != null) {
-        return headContentType;
-      }
-
-      if (headResponse.statusCode != 405 && headResponse.statusCode < 500) {
-        return headContentType;
-      }
-
-      final getResponse = await http.get(uri);
-      if (getResponse.statusCode != 200) {
-        return null;
-      }
-
-      return getResponse.headers['content-type'];
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static bool _isImage(String contentType) {
-    return contentType.startsWith('image/');
-  }
-
-  static bool _isVideo(String contentType) {
-    return contentType.startsWith('video/');
-  }
-}
 
 class MessagesList extends StatelessWidget {
   const MessagesList({
@@ -170,7 +103,7 @@ class MessagesList extends StatelessWidget {
   }
 }
 
-class _MessageListItem extends StatefulWidget {
+class _MessageListItem extends ConsumerStatefulWidget {
   const _MessageListItem({
     required this.message,
     required this.isCurrentUser,
@@ -187,10 +120,10 @@ class _MessageListItem extends StatefulWidget {
   final String? otherUserHandle;
 
   @override
-  State<_MessageListItem> createState() => _MessageListItemState();
+  ConsumerState<_MessageListItem> createState() => _MessageListItemState();
 }
 
-class _MessageListItemState extends State<_MessageListItem> {
+class _MessageListItemState extends ConsumerState<_MessageListItem> {
   late Future<List<Widget>?> _embedsFuture;
 
   @override
@@ -211,6 +144,10 @@ class _MessageListItemState extends State<_MessageListItem> {
 
   Future<List<Widget>?> _buildEmbeds() async {
     final embedsFromText = await _buildEmbedsFromText(widget.message.text);
+    if (!mounted) {
+      return null;
+    }
+
     final combinedEmbeds = <Widget>[];
 
     if (widget.message.embed != null && widget.message.embed!.isNotEmpty) {
@@ -257,12 +194,21 @@ class _MessageListItemState extends State<_MessageListItem> {
         continue;
       }
 
-      switch (await _MessageLinkClassifier.classify(link)) {
-        case _ResolvedLinkKind.image:
+      if (!mounted) {
+        return null;
+      }
+
+      final linkKind = await ref.read(messageLinkKindProvider(link).future);
+      if (!mounted) {
+        return null;
+      }
+
+      switch (linkKind) {
+        case MessageLinkKind.image:
           images.add(link);
-        case _ResolvedLinkKind.video:
+        case MessageLinkKind.video:
           videos.add(link);
-        case _ResolvedLinkKind.none:
+        case MessageLinkKind.none:
           filteredLinks.add(link);
       }
     }
@@ -299,9 +245,6 @@ class _MessageListItemState extends State<_MessageListItem> {
 
     if (filteredLinks.isNotEmpty) {
       embeds ??= [];
-      GetIt.I<LogService>()
-          .getLogger('MessagesList')
-          .i('Links found in message: $filteredLinks');
       embeds.add(
         ListView.builder(
           scrollCacheExtent: .pixels(50),
@@ -391,10 +334,10 @@ class _LinkPreview extends StatelessWidget {
       } else {
         await launchUrl(uri);
       }
-    } catch (e) {
+    } catch (error, stackTrace) {
       GetIt.I<LogService>()
-          .getLogger('_LinkPreview')
-          .e('Failed to launch URL $url: $e');
+          .getLogger('LinkPreview')
+          .w('Failed to launch $url', error: error, stackTrace: stackTrace);
     }
   }
 }
@@ -639,66 +582,37 @@ class _SprkPostThumbnail extends StatelessWidget {
   }
 
   void _navigateToPost(BuildContext context) {
-    try {
-      // Transform the URI format: insert /so.sprk.feed.post before the post ID
-      var transformedUri = postUri;
+    // Transform the URI format: insert /so.sprk.feed.post before the post ID
+    var transformedUri = postUri;
 
-      // Find the last slash and insert /so.sprk.feed.post before the post ID
-      final lastSlashIndex = postUri.lastIndexOf('/');
-      if (lastSlashIndex != -1) {
-        final beforePostId = postUri.substring(0, lastSlashIndex);
-        final postId = postUri.substring(lastSlashIndex + 1);
-        transformedUri = '$beforePostId/so.sprk.feed.post/$postId';
-      }
-
-      context.router.push(StandalonePostRoute(postUri: transformedUri));
-    } catch (e) {
-      GetIt.I<LogService>()
-          .getLogger('_SprkPostThumbnail')
-          .e('Failed to navigate to post $postUri: $e');
+    // Find the last slash and insert /so.sprk.feed.post before the post ID
+    final lastSlashIndex = postUri.lastIndexOf('/');
+    if (lastSlashIndex != -1) {
+      final beforePostId = postUri.substring(0, lastSlashIndex);
+      final postId = postUri.substring(lastSlashIndex + 1);
+      transformedUri = '$beforePostId/so.sprk.feed.post/$postId';
     }
+
+    context.router.push(StandalonePostRoute(postUri: transformedUri));
   }
 }
 
-class _PostEmbedPreview extends StatelessWidget {
+class _PostEmbedPreview extends ConsumerWidget {
   const _PostEmbedPreview({required this.atUri});
 
   final String atUri;
 
-  Future<PostView?> _hydrate() async {
-    try {
-      final repo = GetIt.I<SprkRepository>().feed;
-      final uri = AtUri.parse(atUri);
-      final isBluesky = uri.collection.toString().startsWith(
-        'app.bsky.feed.post',
-      );
-      final posts = await repo.getPosts(
-        [uri],
-        bluesky: isBluesky,
-        filter: false,
-      );
-      return posts.isNotEmpty ? posts.first : null;
-    } catch (e) {
-      GetIt.I<LogService>()
-          .getLogger('_PostEmbedPreview')
-          .e('Failed to hydrate $atUri: $e');
-      return null;
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<PostView?>(
-      future: _hydrate(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _embedSkeleton(context);
-        }
-        if (snapshot.hasError) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final post = ref.watch(messagePostEmbedProvider(atUri));
+
+    return post.when(
+      loading: () => _embedSkeleton(context),
+      error: (_, _) => _embedUnavailableIndicator(context),
+      data: (post) {
+        if (post == null) {
           return _embedUnavailableIndicator(context);
         }
-        final post = snapshot.data;
-        if (post == null) return _embedUnavailableIndicator(context);
 
         final (thumbUrl, isVideo) = _deriveThumb(post);
 
