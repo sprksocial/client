@@ -73,7 +73,6 @@ enum Setting {
 
 @freezed
 abstract class LabelPreference with _$LabelPreference {
-  @JsonSerializable(explicitToJson: true)
   factory LabelPreference({
     required String value,
     required Blurs blurs,

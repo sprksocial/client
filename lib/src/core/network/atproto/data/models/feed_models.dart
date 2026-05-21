@@ -50,7 +50,6 @@ typedef ThreadContext = sprk_feed_defs.ThreadContext;
 /// The feeds that are actually used in the app
 @freezed
 abstract class Feed with _$Feed {
-  @JsonSerializable(explicitToJson: true)
   factory Feed({
     required String type,
     required SavedFeed config,
@@ -65,7 +64,6 @@ abstract class Feed with _$Feed {
 sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
   const HardcodedFeedExtraInfo._();
 
-  @JsonSerializable(explicitToJson: true)
   const factory HardcodedFeedExtraInfo.shared({
     required ProfileViewBasic from,
     String? message,
@@ -415,7 +413,6 @@ extension PostViewConvenience on PostView {
 
 @freezed
 abstract class ImageUploadResult with _$ImageUploadResult {
-  @JsonSerializable(explicitToJson: true)
   const factory ImageUploadResult({
     required String fullsize,
     required String alt,
@@ -429,7 +426,6 @@ abstract class ImageUploadResult with _$ImageUploadResult {
 
 @freezed
 abstract class CaptionRef with _$CaptionRef {
-  @JsonSerializable(explicitToJson: true)
   const factory CaptionRef({
     required String text,
     @Default([]) List<Facet> facets,
@@ -443,7 +439,6 @@ abstract class CaptionRef with _$CaptionRef {
 /// Represents the index range for a facet in the text
 @freezed
 abstract class FacetIndex with _$FacetIndex {
-  @JsonSerializable(explicitToJson: true)
   const factory FacetIndex({
     /// Start index (inclusive)
     required int byteStart,
@@ -466,36 +461,30 @@ abstract class FacetFeature with _$FacetFeature {
   // Spark facet feature types
   /// Mention feature for referencing a user
   @FreezedUnionValue('#mention')
-  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.mention({required String did}) = MentionFeature;
 
   /// Link feature for URLs
   @FreezedUnionValue('#link')
-  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.link({@AtUriConverter() required Uri uri}) =
       LinkFeature;
 
   /// Tag feature for hashtags
   @FreezedUnionValue('#tag')
-  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.tag({required String tag}) = TagFeature;
 
   // Bluesky facet feature types
   /// Bluesky mention feature for referencing a user
   @FreezedUnionValue('app.bsky.richtext.facet#mention')
-  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.bskyMention({required String did}) =
       BskyMentionFeature;
 
   /// Bluesky link feature for URLs
   @FreezedUnionValue('app.bsky.richtext.facet#link')
-  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.bskyLink({@AtUriConverter() required AtUri uri}) =
       BskyLinkFeature;
 
   /// Bluesky tag feature for hashtags
   @FreezedUnionValue('app.bsky.richtext.facet#tag')
-  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.bskyTag({required String tag}) = BskyTagFeature;
 
   /// Create a FacetFeature from JSON
@@ -506,7 +495,6 @@ abstract class FacetFeature with _$FacetFeature {
 /// Represents a richtext facet for text formatting, mentions, links, etc.
 @freezed
 abstract class Facet with _$Facet {
-  @JsonSerializable(explicitToJson: true)
   const factory Facet({
     /// Index range for the facet in the text
     required FacetIndex index,
@@ -525,11 +513,9 @@ sealed class ThreadPost with _$ThreadPost {
   const ThreadPost._();
 
   @FreezedUnionValue('so.sprk.feed.defs#postView')
-  @JsonSerializable(explicitToJson: true)
   const factory ThreadPost.post({required PostView post}) = ThreadPostView;
 
   @FreezedUnionValue('so.sprk.feed.defs#replyView')
-  @JsonSerializable(explicitToJson: true)
   const factory ThreadPost.reply({required ReplyView reply}) = ThreadReplyView;
 
   factory ThreadPost.fromJson(Map<String, dynamic> json) =>
@@ -612,7 +598,6 @@ sealed class Thread with _$Thread {
 
   // NORMAL POST
   @FreezedUnionValue('so.sprk.feed.defs#threadViewPost')
-  @JsonSerializable(explicitToJson: true)
   const factory Thread.threadViewPost({
     required ThreadPost post,
     Thread? parent,
@@ -622,7 +607,6 @@ sealed class Thread with _$Thread {
 
   // NOT FOUND POST
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
-  @JsonSerializable(explicitToJson: true)
   const factory Thread.notFoundPost({
     @AtUriConverter() required AtUri uri,
     required bool notFound,
@@ -630,7 +614,6 @@ sealed class Thread with _$Thread {
 
   // BLOCKED POST
   @FreezedUnionValue('so.sprk.feed.defs#blockedPost')
-  @JsonSerializable(explicitToJson: true)
   const factory Thread.blockedPost({
     @AtUriConverter() required AtUri uri,
     required bool blocked,

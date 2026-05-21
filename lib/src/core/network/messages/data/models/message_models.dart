@@ -6,7 +6,6 @@ part 'message_models.g.dart';
 
 @freezed
 abstract class Embed with _$Embed {
-  @JsonSerializable(explicitToJson: true)
   const factory Embed({String? url, String? type, String? preview}) = _Embed;
   const Embed._();
 
@@ -18,7 +17,6 @@ abstract class Embed with _$Embed {
 
 @freezed
 abstract class Message with _$Message {
-  @JsonSerializable(explicitToJson: true)
   const factory Message({
     required int id,
     @JsonKey(name: 'sender_did') required String senderDid,
@@ -37,7 +35,6 @@ abstract class Message with _$Message {
 
 @freezed
 abstract class SenderView with _$SenderView {
-  @JsonSerializable(explicitToJson: true)
   const factory SenderView({required String did}) = _SenderView;
   const SenderView._();
 
@@ -47,7 +44,6 @@ abstract class SenderView with _$SenderView {
 
 @freezed
 abstract class ReactionView with _$ReactionView {
-  @JsonSerializable(explicitToJson: true)
   const factory ReactionView({
     required String value,
     required SenderView sender,
@@ -61,7 +57,6 @@ abstract class ReactionView with _$ReactionView {
 
 @freezed
 abstract class MessageView with _$MessageView {
-  @JsonSerializable(explicitToJson: true)
   const factory MessageView({
     required String id,
     required String rev,
@@ -79,7 +74,6 @@ abstract class MessageView with _$MessageView {
 
 @freezed
 abstract class DeletedMessageView with _$DeletedMessageView {
-  @JsonSerializable(explicitToJson: true)
   const factory DeletedMessageView({
     required String id,
     required String rev,
@@ -94,7 +88,6 @@ abstract class DeletedMessageView with _$DeletedMessageView {
 
 @freezed
 abstract class ConvoView with _$ConvoView {
-  @JsonSerializable(explicitToJson: true)
   const factory ConvoView({
     required String id,
     required String rev,

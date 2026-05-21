@@ -1,5 +1,4 @@
-// ignore_for_file: avoid_print
-
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -41,8 +40,12 @@ class FileOutput implements LogOutput {
       await Directory(path).create(recursive: true);
       _file = File('$path/$_fileName');
       _initialized = true;
-    } catch (e) {
-      print('Failed to initialize file logging: $e');
+    } catch (e, stackTrace) {
+      _reportFileLoggingFailure(
+        'Failed to initialize file logging',
+        e,
+        stackTrace,
+      );
     }
   }
 
@@ -87,8 +90,8 @@ class FileOutput implements LogOutput {
           mode: FileMode.append,
           flush: true, // Ensure it's written immediately
         );
-      } catch (e) {
-        print('Failed to write to log file: $e');
+      } catch (e, stackTrace) {
+        _reportFileLoggingFailure('Failed to write to log file', e, stackTrace);
       }
     });
   }
@@ -136,8 +139,22 @@ class FileOutput implements LogOutput {
 
       await _file!.rename(newFilePath);
       _file = File(oldFilePath);
-    } catch (e) {
-      print('Failed to rotate log file: $e');
+    } catch (e, stackTrace) {
+      _reportFileLoggingFailure('Failed to rotate log file', e, stackTrace);
     }
+  }
+
+  void _reportFileLoggingFailure(
+    String message,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    developer.log(
+      message,
+      name: 'FileOutput',
+      level: LogLevel.error.value * 100,
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 }
