@@ -88,7 +88,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                   _isReordering = false;
                 });
               },
-              onReorder: (oldIndex, newIndex) async {
+              onReorderItem: (oldIndex, newIndex) async {
                 // Adjust newIndex if moving down the list
                 final adjustedNewIndex = newIndex > oldIndex
                     ? newIndex - 1

@@ -112,7 +112,7 @@ class InputField extends StatelessWidget {
     }
 
     final trailingWidgets = <Widget>[
-      if (actionWidgets != null) ...actionWidgets!,
+      ...?actionWidgets,
       if (onSendMessage != null)
         IconButton(
           visualDensity: VisualDensity.compact,

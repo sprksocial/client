@@ -179,7 +179,7 @@ class _CacheablePageViewState extends State<CacheablePageView> {
               }
 
               return Viewport(
-                cacheExtent: cacheExtent,
+                scrollCacheExtent: .pixels(cacheExtent),
                 axisDirection: axisDirection,
                 offset: position,
                 slivers: <Widget>[

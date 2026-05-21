@@ -101,7 +101,7 @@ class _FeedTagListState extends State<FeedTagList> {
               _isReordering = false;
             });
           },
-          onReorder: (oldIndex, newIndex) {
+          onReorderItem: (oldIndex, newIndex) {
             final adjustedNewIndex = newIndex > oldIndex
                 ? newIndex - 1
                 : newIndex;

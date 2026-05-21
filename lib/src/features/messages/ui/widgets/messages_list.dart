@@ -136,9 +136,9 @@ class MessagesList extends StatelessWidget {
     }
 
     return ListView.builder(
+      scrollCacheExtent: .pixels(1000),
       controller: scrollController,
       padding: const EdgeInsets.all(16),
-      cacheExtent: 1000,
       reverse: true,
       itemCount: messages.length,
       itemBuilder: (context, index) {
@@ -304,8 +304,8 @@ class _MessageListItemState extends State<_MessageListItem> {
           .i('Links found in message: $filteredLinks');
       embeds.add(
         ListView.builder(
+          scrollCacheExtent: .pixels(50),
           shrinkWrap: true,
-          cacheExtent: 50,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: filteredLinks.length,
           itemBuilder: (context, index) {
