@@ -7,7 +7,7 @@
 - Generated files in use: `*.g.dart`, `*.freezed.dart`, `*.gr.dart`
 
 ## Setup
-1. Flutter `3.41.3` (stable, CI-aligned)
+1. Flutter `3.44.0` (stable, CI-aligned)
 2. `touch .env` (required before `pub get`; see `.env.example` for keys)
 3. `flutter pub get --enforce-lockfile`
 4. `dart run build_runner build --delete-conflicting-outputs`
