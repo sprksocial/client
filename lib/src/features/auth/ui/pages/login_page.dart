@@ -378,7 +378,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: AppButton(
                         label: l10n.buttonContinue,
                         onPressed: isLoading ? null : _initiateOAuth,
-                        size: AppButtonSize.compact,
+                        size: AppButtonSize.medium,
+                        fullWidth: true,
                       ),
                     ),
                   ),

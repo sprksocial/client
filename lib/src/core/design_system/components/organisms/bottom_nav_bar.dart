@@ -30,6 +30,7 @@ class SparkBottomNavBar extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _BarBackground(
+          isDark: isDark,
           child: Container(
             padding: EdgeInsets.only(top: 12, bottom: 12 + bottomPadding),
             child: Row(
@@ -92,12 +93,13 @@ class SparkBottomNavBar extends ConsumerWidget {
 }
 
 class _BarBackground extends StatelessWidget {
-  const _BarBackground({required this.child});
+  const _BarBackground({required this.child, required this.isDark});
   final Widget child;
+  final bool isDark;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return DecoratedBox(
       decoration: BoxDecoration(
