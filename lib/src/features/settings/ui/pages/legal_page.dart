@@ -81,12 +81,12 @@ class LegalPage extends StatelessWidget {
         itemBuilder: (context, index) {
           final path = _legalPaths[index];
 
-          return Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
+          return Material(
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(12),
+            clipBehavior: Clip.antiAlias,
             child: ListTile(
+              splashColor: Colors.transparent,
               title: Text(
                 _titleForPath(path, l10n),
                 style: const TextStyle(

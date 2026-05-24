@@ -122,14 +122,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
+            child: Material(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
+                splashColor: Colors.transparent,
                 title: Text(
                   l10n.pageTitleYourFeeds,
                   style: const TextStyle(
@@ -148,14 +148,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
+            child: Material(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
+                splashColor: Colors.transparent,
                 title: Text(
                   l10n.pageTitleLabelers,
                   style: const TextStyle(
@@ -175,14 +175,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
+            child: Material(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
+                splashColor: Colors.transparent,
                 title: Text(
                   l10n.pageTitleBlockedUsers,
                   style: const TextStyle(
@@ -201,14 +201,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
+            child: Material(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
+                splashColor: Colors.transparent,
                 title: const Text(
                   'Manage Account',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -224,14 +224,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
+            child: Material(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
+                splashColor: Colors.transparent,
                 title: const Text(
                   'Legal',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -247,14 +247,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
+            child: Material(
+              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
               child: ListTile(
+                splashColor: Colors.transparent,
                 title: const Text(
                   'Logout',
                   style: TextStyle(

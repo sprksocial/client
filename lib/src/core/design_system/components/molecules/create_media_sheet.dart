@@ -14,58 +14,65 @@ Future<dynamic> showCreateMediaSheet(
     context: context,
     backgroundColor: Colors.transparent,
     builder: (BuildContext context) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+      return Material(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
-        child: SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              if (onRecord != null)
-                ListTile(
-                  leading: Icon(Icons.camera_alt, color: colorScheme.onSurface),
-                  title: Text(
-                    'Record',
-                    style: TextStyle(color: colorScheme.onSurface),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SafeArea(
+            child: Wrap(
+              children: <Widget>[
+                if (onRecord != null)
+                  ListTile(
+                    splashColor: Colors.transparent,
+                    leading: Icon(
+                      Icons.camera_alt,
+                      color: colorScheme.onSurface,
+                    ),
+                    title: Text(
+                      'Record',
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onRecord();
+                    },
                   ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    onRecord();
-                  },
-                ),
-              if (onUploadVideo != null)
-                ListTile(
-                  leading: Icon(Icons.videocam, color: colorScheme.onSurface),
-                  title: Text(
-                    'Upload Video',
-                    style: TextStyle(color: colorScheme.onSurface),
+                if (onUploadVideo != null)
+                  ListTile(
+                    splashColor: Colors.transparent,
+                    leading: Icon(Icons.videocam, color: colorScheme.onSurface),
+                    title: Text(
+                      'Upload Video',
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onUploadVideo();
+                    },
                   ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    onUploadVideo();
-                  },
-                ),
-              if (onUploadImages != null)
-                ListTile(
-                  leading: Icon(
-                    Icons.photo_library,
-                    color: colorScheme.onSurface,
+                if (onUploadImages != null)
+                  ListTile(
+                    splashColor: Colors.transparent,
+                    leading: Icon(
+                      Icons.photo_library,
+                      color: colorScheme.onSurface,
+                    ),
+                    title: Text(
+                      'Upload Images',
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      onUploadImages();
+                    },
                   ),
-                  title: Text(
-                    'Upload Images',
-                    style: TextStyle(color: colorScheme.onSurface),
-                  ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    onUploadImages();
-                  },
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       );
