@@ -1,11 +1,12 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
 
 class SoundHeaderCard extends StatefulWidget {
   const SoundHeaderCard({
@@ -59,7 +60,7 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
         children: [
           // Cover Art with Play Button
           _CoverArtWithPlayer(
-            coverArtUrl: widget.audio.coverArt.toString(),
+            coverArtUrl: soundCoverArtUrl(widget.audio),
             audioUrl: widget.audio.audio?.toString(),
           ),
           const SizedBox(width: 16),
@@ -143,7 +144,7 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
 class _CoverArtWithPlayer extends StatefulWidget {
   const _CoverArtWithPlayer({required this.coverArtUrl, this.audioUrl});
 
-  final String coverArtUrl;
+  final String? coverArtUrl;
   final String? audioUrl;
 
   @override
@@ -264,26 +265,11 @@ class _CoverArtWithPlayerState extends State<_CoverArtWithPlayer> {
                 borderRadius: BorderRadius.circular(
                   AppShapes.squircleRadius - 4,
                 ),
-                child: CachedNetworkImage(
-                  fadeInDuration: Duration.zero,
-                  fadeOutDuration: Duration.zero,
+                child: SoundArtwork(
                   imageUrl: widget.coverArtUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => const ColoredBox(
-                    color: AppColors.grey700,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.primary500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => ColoredBox(
-                    color: AppColors.grey700,
-                    child: AppIcons.music(size: 32, color: AppColors.grey400),
-                  ),
+                  size: 88,
+                  borderRadius: AppShapes.squircleRadius - 4,
+                  backgroundColor: AppColors.grey700,
                 ),
               ),
             ),

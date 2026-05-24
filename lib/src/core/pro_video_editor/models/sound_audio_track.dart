@@ -11,6 +11,7 @@ const _fallbackAudioFileExtension = 'mp3';
 AudioTrack? audioViewToAudioTrack(AudioView audio) {
   final audioUrl = playableAudioUrl(audio);
   if (audioUrl == null || audioUrl.isEmpty) return null;
+  final coverArtUrl = soundCoverArtUrl(audio);
 
   return AudioTrack(
     id: encodeSoundTrackId(
@@ -23,7 +24,7 @@ AudioTrack? audioViewToAudioTrack(AudioView audio) {
     title: audio.displayTitle,
     subtitle: audio.author.handle,
     duration: audioDuration(audio),
-    image: EditorImage(networkUrl: audio.coverArt.toString()),
+    image: coverArtUrl != null ? EditorImage(networkUrl: coverArtUrl) : null,
     audio: EditorAudio(networkUrl: audioUrl),
   );
 }
@@ -152,6 +153,14 @@ Duration audioDuration(AudioView audio) {
     }
   }
   return _fallbackAudioDuration;
+}
+
+String? soundCoverArtUrl(AudioView audio) {
+  final coverArtUrl = audio.coverArt.toString().trim();
+  if (coverArtUrl.isEmpty || coverArtUrl == 'null') {
+    return null;
+  }
+  return coverArtUrl;
 }
 
 bool _isSparkMediaSoundUrl(String url) {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_edit_controls_section.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_picker_sheet_scaffold.dart';
 
 /// A bottom sheet for selecting and editing audio tracks.
 ///
@@ -136,98 +138,45 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildDragHandle(),
-          _buildHeader(),
-          Flexible(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 0.1),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
-              child: _showEditControls && _selectedTrack != null
-                  ? AudioEditControlsSection(
-                      key: const ValueKey('edit_controls'),
-                      configs: widget.configs,
-                      audioTrack: _selectedTrack!,
-                      videoDuration: widget.videoDuration,
-                      onBalanceChanged: _handleBalanceChange,
-                      onStartTimeChanged: _handleStartTimeChange,
-                      onChangeTrack: _handleChangeTrack,
-                      onConfirm: _handleConfirm,
-                    )
-                  : AudioTrackListSection(
-                      key: const ValueKey('track_list'),
-                      configs: widget.configs,
-                      videoDuration: widget.videoDuration,
-                      selectedTrack: _selectedTrack,
-                      onTrackSelected: _handleTrackSelection,
-                    ),
-            ),
-          ),
-          if (!_showEditControls) _buildContinueButton(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDragHandle() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      margin: const EdgeInsets.only(top: 12, bottom: 8),
-      width: 40,
-      height: 4,
-      decoration: BoxDecoration(
-        color: colorScheme.outlineVariant,
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
     final i18n = widget.configs.i18n.audioEditor;
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              _showEditControls ? i18n.editTrack : l10n.titleSelectSound,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+    return SoundPickerSheetScaffold(
+      title: _showEditControls ? i18n.editTrack : l10n.titleSelectSound,
+      onClose: _showEditControls ? null : () => Navigator.of(context).pop(),
+      footer: _showEditControls ? null : _buildContinueButton(),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.1),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          );
+        },
+        child: _showEditControls && _selectedTrack != null
+            ? AudioEditControlsSection(
+                key: const ValueKey('edit_controls'),
+                configs: widget.configs,
+                audioTrack: _selectedTrack!,
+                videoDuration: widget.videoDuration,
+                onBalanceChanged: _handleBalanceChange,
+                onStartTimeChanged: _handleStartTimeChange,
+                onChangeTrack: _handleChangeTrack,
+                onConfirm: _handleConfirm,
+              )
+            : AudioTrackListSection(
+                key: const ValueKey('track_list'),
+                configs: widget.configs,
+                videoDuration: widget.videoDuration,
+                selectedTrack: _selectedTrack,
+                onTrackSelected: _handleTrackSelection,
               ),
-            ),
-          ),
-          if (!_showEditControls)
-            IconButton(
-              icon: Icon(Icons.close, color: colorScheme.onSurface),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-        ],
       ),
     );
   }
@@ -239,12 +188,10 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _selectedTrack == null ? null : _handleContinue,
-            child: Text(l10n.buttonContinue),
-          ),
+        child: AppButton(
+          label: l10n.buttonContinue,
+          onPressed: _selectedTrack == null ? null : _handleContinue,
+          fullWidth: true,
         ),
       ),
     );

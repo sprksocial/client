@@ -136,6 +136,7 @@ class _StandaloneProfileFeedPageState
                     videosOnly: widget.videosOnly,
                     post: post,
                     index: index,
+                    feedIndexKey: profileAtUri.toString(),
                     isInitialPost: index == widget.initialPostIndex,
                   );
                 },

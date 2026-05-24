@@ -48,6 +48,52 @@ void main() {
       expect(track?.title, 'Original Audio');
     });
 
+    test('omits track image when a sound has no cover art', () {
+      final audio = AudioView.fromJson({
+        'uri': 'at://did:plc:test123/so.sprk.sound.audio/no-cover',
+        'cid': 'cid-spark-no-cover',
+        'author': {'did': 'did:plc:test123', 'handle': 'test.sprk.so'},
+        'record': {
+          r'$type': 'so.sprk.sound.audio',
+          'sound': _blobJson(),
+          'title': 'No Cover',
+          'createdAt': '2026-05-01T12:00:00.000Z',
+        },
+        'title': 'No Cover',
+        'coverArt': '',
+        'indexedAt': '2026-05-01T12:00:00.000Z',
+        'audio': 'https://media.sprk.so/sound/did%3Aplc%3Atest123/cid',
+      });
+
+      final track = audioViewToAudioTrack(audio);
+
+      expect(soundCoverArtUrl(audio), isNull);
+      expect(track?.image, isNull);
+    });
+
+    test('uses cover art when present', () {
+      final audio = AudioView.fromJson({
+        'uri': 'at://did:plc:test123/so.sprk.sound.audio/with-cover',
+        'cid': 'cid-spark-with-cover',
+        'author': {'did': 'did:plc:test123', 'handle': 'test.sprk.so'},
+        'record': {
+          r'$type': 'so.sprk.sound.audio',
+          'sound': _blobJson(),
+          'title': 'With Cover',
+          'createdAt': '2026-05-01T12:00:00.000Z',
+        },
+        'title': 'With Cover',
+        'coverArt': 'https://example.com/spark.jpg',
+        'indexedAt': '2026-05-01T12:00:00.000Z',
+        'audio': 'https://media.sprk.so/sound/did%3Aplc%3Atest123/cid',
+      });
+
+      final track = audioViewToAudioTrack(audio);
+
+      expect(soundCoverArtUrl(audio), 'https://example.com/spark.jpg');
+      expect(track?.image?.networkUrl, 'https://example.com/spark.jpg');
+    });
+
     test('parses public Plyr tracks as sounds', () {
       final audio = AudioView.fromJson({
         'uri': 'at://did:plc:plyr123/fm.plyr.track/track',

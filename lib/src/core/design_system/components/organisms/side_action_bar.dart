@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
 
 class SparkSideActionBar extends StatefulWidget {
   const SparkSideActionBar({
@@ -94,15 +95,10 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       ]);
     }
 
-    // Only show sound item if cover URL is valid
-    final soundCover = widget.soundCover;
-    if (soundCover != null &&
-        soundCover.isNotEmpty &&
-        (soundCover.startsWith('http://') ||
-            soundCover.startsWith('https://'))) {
+    if (widget.onSoundTap != null) {
       children.addAll([
         const SizedBox(height: 13),
-        _SoundItem(cover: soundCover, onTap: widget.onSoundTap),
+        _SoundItem(cover: widget.soundCover, onTap: widget.onSoundTap),
       ]);
     }
 
@@ -206,32 +202,24 @@ class _ActionItemState extends State<_ActionItem>
 }
 
 class _SoundItem extends StatelessWidget {
-  const _SoundItem({required this.cover, this.onTap});
+  const _SoundItem({this.cover, this.onTap});
 
-  final String cover;
+  final String? cover;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     const albumSize = 35.0;
 
-    // Don't render if cover URL is empty or invalid
-    final hasValidCover =
-        cover.isNotEmpty &&
-        (cover.startsWith('http://') || cover.startsWith('https://'));
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Container(
-        width: albumSize,
-        height: albumSize,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: hasValidCover ? null : Colors.grey[800],
-          image: hasValidCover
-              ? DecorationImage(image: NetworkImage(cover), fit: BoxFit.cover)
-              : null,
+      child: ClipOval(
+        child: SoundArtwork(
+          imageUrl: cover,
+          size: albumSize,
+          borderRadius: albumSize / 2,
+          backgroundColor: Colors.grey.shade800,
         ),
       ),
     );

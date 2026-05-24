@@ -133,6 +133,7 @@ class _StandaloneRepostsFeedPageState
                     videosOnly: false,
                     post: post,
                     index: index,
+                    feedIndexKey: 'reposts:${widget.did}',
                     isInitialPost: index == widget.initialPostIndex,
                   );
                 },

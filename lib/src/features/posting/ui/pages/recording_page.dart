@@ -14,9 +14,9 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
-import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_provider.dart';
-import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_state.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_picker_sheet_scaffold.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
@@ -797,7 +797,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      showDragHandle: true,
       builder: (context) => _RecordingSoundPickerSheet(
         initialSelectedTrack: recordingState.selectedSound,
         onTrackPreview: (track) =>
@@ -1095,7 +1094,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   }
 }
 
-class _RecordingSoundPickerSheet extends ConsumerStatefulWidget {
+class _RecordingSoundPickerSheet extends StatefulWidget {
   const _RecordingSoundPickerSheet({
     required this.onTrackPreview,
     this.initialSelectedTrack,
@@ -1105,38 +1104,18 @@ class _RecordingSoundPickerSheet extends ConsumerStatefulWidget {
   final Future<void> Function(AudioTrack track) onTrackPreview;
 
   @override
-  ConsumerState<_RecordingSoundPickerSheet> createState() =>
+  State<_RecordingSoundPickerSheet> createState() =>
       _RecordingSoundPickerSheetState();
 }
 
 class _RecordingSoundPickerSheetState
-    extends ConsumerState<_RecordingSoundPickerSheet> {
-  late final TextEditingController _searchController;
-  late final ScrollController _scrollController;
+    extends State<_RecordingSoundPickerSheet> {
   AudioTrack? _selectedTrack;
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController();
-    _scrollController = ScrollController()..addListener(_handleScroll);
     _selectedTrack = widget.initialSelectedTrack;
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_handleScroll);
-    _scrollController.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _handleScroll() {
-    if (!_scrollController.hasClients ||
-        _scrollController.position.extentAfter > 240) {
-      return;
-    }
-    ref.read(soundPickerSearchProvider.notifier).loadMore();
   }
 
   void _handleTrackTap(AudioTrack track) {
@@ -1149,146 +1128,20 @@ class _RecordingSoundPickerSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of(context).colorScheme;
-    final state = ref.watch(soundPickerSearchProvider);
-    final audioTracks = audioViewsToAudioTracks(state.audios);
-    final selectedTrack = _selectedTrack;
-    final tracks =
-        selectedTrack != null &&
-            !audioTracks.any((track) => track.id == selectedTrack.id)
-        ? [selectedTrack, ...audioTracks]
-        : audioTracks;
 
     return SafeArea(
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.62,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Text(
-                l10n.titleSelectSound,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-            _buildSearchField(context),
-            Expanded(
-              child: _buildTrackList(context, state, tracks, colorScheme),
-            ),
-          ],
+        child: SoundPickerSheetScaffold(
+          title: l10n.titleSelectSound,
+          child: AudioTrackListSection(
+            configs: const ProImageEditorConfigs(),
+            videoDuration: const Duration(seconds: 9),
+            selectedTrack: _selectedTrack,
+            onTrackSelected: _handleTrackTap,
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSearchField(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-      child: TextField(
-        controller: _searchController,
-        textInputAction: TextInputAction.search,
-        decoration: InputDecoration(
-          hintText: l10n.hintSearchSounds,
-          prefixIcon: const Icon(Icons.search_rounded),
-          suffixIcon: _searchController.text.isEmpty
-              ? null
-              : IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () {
-                    _searchController.clear();
-                    ref
-                        .read(soundPickerSearchProvider.notifier)
-                        .updateQuery('');
-                    setState(() {});
-                  },
-                ),
-        ),
-        onChanged: (value) {
-          ref.read(soundPickerSearchProvider.notifier).updateQuery(value);
-          setState(() {});
-        },
-        onSubmitted: (value) {
-          ref.read(soundPickerSearchProvider.notifier).submitQuery(value);
-        },
-      ),
-    );
-  }
-
-  Widget _buildTrackList(
-    BuildContext context,
-    SoundPickerSearchState state,
-    List<AudioTrack> tracks,
-    ColorScheme colorScheme,
-  ) {
-    final l10n = AppLocalizations.of(context);
-
-    if (state.isLoading && tracks.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (state.error != null && tracks.isEmpty) {
-      return Center(
-        child: Text(
-          state.isSearching
-              ? l10n.errorSearchingSounds
-              : l10n.errorLoadingSound,
-        ),
-      );
-    }
-    if (tracks.isEmpty) {
-      return Center(
-        child: Text(
-          state.isSearching
-              ? l10n.emptyNoSoundSearchResults
-              : l10n.emptyNoSoundsAvailable,
-          style: TextStyle(color: colorScheme.onSurfaceVariant),
-        ),
-      );
-    }
-
-    return ListView.separated(
-      controller: _scrollController,
-      itemCount: tracks.length + (state.isLoadingMore ? 1 : 0),
-      separatorBuilder: (context, index) =>
-          Divider(height: 1, color: colorScheme.outlineVariant),
-      itemBuilder: (context, index) {
-        if (index >= tracks.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final track = tracks[index];
-        final isSelected = track.id == _selectedTrack?.id;
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: track.image?.networkUrl != null
-                ? NetworkImage(track.image!.networkUrl!)
-                : null,
-            child: track.image?.networkUrl == null
-                ? const Icon(Icons.music_note_rounded)
-                : null,
-          ),
-          title: Text(
-            track.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: Text(
-            '@${track.subtitle}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          trailing: isSelected
-              ? Icon(Icons.check_circle_rounded, color: colorScheme.primary)
-              : null,
-          selected: isSelected,
-          onTap: () => _handleTrackTap(track),
-        );
-      },
     );
   }
 }

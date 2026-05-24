@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pro_image_editor/features/audio_editor/widgets/audio_track_list_tile.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_provider.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_state.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
 
 /// Displays a scrollable list of audio tracks for selection.
 class AudioTrackListSection extends ConsumerStatefulWidget {
@@ -155,10 +158,9 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
         final audioTrack = tracks[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: AudioTrackListTile(
+          child: AudioTrackSelectionTile(
             configs: widget.configs,
             audioTrack: audioTrack,
-            videoDuration: widget.videoDuration,
             isSelected: audioTrack.id == widget.selectedTrack?.id,
             onTap: () => widget.onTrackSelected(audioTrack),
           ),
@@ -191,6 +193,104 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class AudioTrackSelectionTile extends StatelessWidget {
+  const AudioTrackSelectionTile({
+    required this.configs,
+    required this.audioTrack,
+    required this.isSelected,
+    required this.onTap,
+    super.key,
+  });
+
+  final ProImageEditorConfigs configs;
+  final AudioTrack audioTrack;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final imageBackground = configs.audioEditor.style.audioTrackImageBackground;
+    final borderRadius = BorderRadius.circular(8);
+    final backgroundColor = isSelected
+        ? AppColors.primary500.withValues(alpha: 0.12)
+        : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
+    final borderColor = isSelected
+        ? AppColors.primary500.withValues(alpha: 0.75)
+        : colorScheme.outline.withValues(alpha: 0.45);
+    final titleColor = isSelected
+        ? AppColors.primary500
+        : colorScheme.onSurface;
+    final subtitleColor = colorScheme.onSurfaceVariant;
+
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      child: InteractivePressable(
+        onTap: onTap,
+        pressedScale: 0.98,
+        borderRadius: borderRadius,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: borderRadius,
+            border: Border.all(color: borderColor),
+          ),
+          child: ClipRRect(
+            borderRadius: borderRadius,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  SoundArtwork(
+                    imageUrl: audioTrack.image?.networkUrl,
+                    size: 50,
+                    borderRadius: 8,
+                    backgroundColor: imageBackground.withAlpha(80),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          audioTrack.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.textMediumBold.copyWith(
+                            color: titleColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          audioTrack.subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.textSmallMedium.copyWith(
+                            color: subtitleColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    audioTrack.formattedDuration,
+                    style: AppTypography.textSmallMedium.copyWith(
+                      color: subtitleColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

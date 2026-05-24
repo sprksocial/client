@@ -11,9 +11,10 @@ import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:spark/src/core/ui/widgets/heart_animation.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
-import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/post_media_viewer.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
-import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
@@ -24,6 +25,7 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
     super.key,
     this.post,
     this.index,
+    this.feedIndexKey,
     this.isInitialPost = false,
   });
   final AtUri postUri;
@@ -32,6 +34,7 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   final PostView? post;
 
   final int? index;
+  final String? feedIndexKey;
 
   /// Whether this is the initial post that was clicked on.
   /// Used to trigger autoplay before the provider is initialized.
@@ -43,6 +46,8 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
 }
 
 class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
+  final GlobalKey<PostMediaViewerState> _mediaViewerKey =
+      GlobalKey<PostMediaViewerState>();
   bool _isAnimatingHeart = false;
   bool _showWarningOverlay = false;
   bool _shouldBlurContent = false;
@@ -190,6 +195,18 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
         }
 
         final post = _currentPost ?? snapshot.data!;
+        final feedIndexKey =
+            widget.feedIndexKey ?? widget.profileUri.toString();
+        final profileFeedIndex = widget.index == null
+            ? null
+            : ref.watch(profileFeedIndexProvider(feedIndexKey));
+        final feedSettingsVisible = ref.watch(feedSettingsVisibilityProvider);
+        final isMediaActive =
+            !feedSettingsVisible &&
+            !_showWarningOverlay &&
+            (widget.index == null ||
+                profileFeedIndex == widget.index ||
+                (profileFeedIndex == -1 && widget.isInitialPost));
 
         final mainContent = HeartAnimation(
           isAnimating: _isAnimatingHeart,
@@ -205,22 +222,16 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onDoubleTap: () => _handleDoubleTapLike(post),
-                  child: post.videoUrl.isNotEmpty
-                      ? PostVideoPlayer(
-                          videoUrl: post.videoUrl,
-                          thumbnail: post.thumbnailUrl,
+                  child: post.videoUrl.isNotEmpty || post.imageUrls.isNotEmpty
+                      ? PostMediaViewer(
+                          key: _mediaViewerKey,
+                          post: post,
+                          isActive: isMediaActive,
                           profileFeedUri: widget.index != null
-                              ? widget.profileUri.toString()
+                              ? feedIndexKey
                               : null,
                           index: widget.index,
                           isInitialPost: widget.isInitialPost,
-                        )
-                      : post.imageUrls.isNotEmpty
-                      ? ImageCarousel(
-                          imageUrls: post.imageUrls,
-                          hasKnownInteractions:
-                              post.viewer?.knownInteractions != null &&
-                              post.viewer!.knownInteractions!.isNotEmpty,
                         )
                       : const DecoratedBox(
                           decoration: BoxDecoration(color: AppColors.black),
@@ -234,7 +245,11 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                   isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                   labels: post.labels ?? [],
                   showBlockOption: false,
+                  onMediaPauseRequested: () {
+                    _mediaViewerKey.currentState?.pauseMedia();
+                  },
                   onUsernameTap: () {
+                    _mediaViewerKey.currentState?.pauseMedia();
                     // Extract DID from the profile URI
                     final currentProfileDid = widget.profileUri.hostname;
 

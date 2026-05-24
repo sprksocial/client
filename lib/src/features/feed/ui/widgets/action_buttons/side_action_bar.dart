@@ -34,6 +34,7 @@ class SideActionBar extends ConsumerStatefulWidget {
     this.profileImageUrl,
     this.isImage = false,
     this.onProfilePressed,
+    this.onMediaPauseRequested,
     this.showBlockOption = true,
   });
   final Feed? feed;
@@ -45,6 +46,7 @@ class SideActionBar extends ConsumerStatefulWidget {
   final PostView post;
   final bool isImage;
   final VoidCallback? onProfilePressed;
+  final VoidCallback? onMediaPauseRequested;
 
   /// Whether to show the block option in the options panel.
   /// Set to false for profile feeds where blocking doesn't make sense.
@@ -262,12 +264,14 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   Future<void> _handleShareLongPress() async {
+    widget.onMediaPauseRequested?.call();
     final currentPost = _currentPost ?? widget.post;
     final shareUrl = _buildShareUrl(currentPost);
     await SharePlus.instance.share(ShareParams(uri: Uri.parse(shareUrl)));
   }
 
   void _handleShare() {
+    widget.onMediaPauseRequested?.call();
     final currentPost = _currentPost ?? widget.post;
     final originalAtUri = currentPost.uri.toString();
     final shareUrl = _buildShareUrl(currentPost);
@@ -283,6 +287,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   void _handleCommentPressed() {
+    widget.onMediaPauseRequested?.call();
     final currentPost = _currentPost ?? widget.post;
     context.router.push(
       CommentsRoute(
@@ -296,6 +301,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
   void _handleSoundTap() {
     final currentPost = _currentPost ?? widget.post;
     if (currentPost.sound != null) {
+      widget.onMediaPauseRequested?.call();
       context.router.push(
         SoundRoute(audioUri: currentPost.sound!.uri.toString()),
       );
@@ -419,15 +425,18 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       onShare: _handleShare,
       onShareLongPress: _handleShareLongPress,
       onSoundTap: currentPost.sound != null ? _handleSoundTap : null,
-      onOptions: () => OptionsPanel.show(
-        context: context,
-        onReport: isCurrentUserAuthor ? null : _handleReport,
-        onDelete: isCurrentUserAuthor ? _handleDeletePost : null,
-        onBlock: widget.showBlockOption && !isCurrentUserAuthor
-            ? _handleBlock
-            : null,
-        isBlocked: isBlocking(currentPost.author.viewer),
-      ),
+      onOptions: () {
+        widget.onMediaPauseRequested?.call();
+        OptionsPanel.show(
+          context: context,
+          onReport: isCurrentUserAuthor ? null : _handleReport,
+          onDelete: isCurrentUserAuthor ? _handleDeletePost : null,
+          onBlock: widget.showBlockOption && !isCurrentUserAuthor
+              ? _handleBlock
+              : null,
+          isBlocked: isBlocking(currentPost.author.viewer),
+        );
+      },
       likeCount: _likeCount.toString(),
       commentCount: commentCount.toString(),
       repostCount: _repostCount.toString(),

@@ -5,16 +5,19 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/image_review_page_template.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
+import 'package:spark/src/features/posting/ui/widgets/image_sound_selection_sheet.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
 @RoutePage()
@@ -40,6 +43,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   final ImagePicker _picker = ImagePicker();
   final Map<String, String> _altTexts = {};
   bool _crosspostToBsky = false;
+  AudioTrack? _selectedSoundTrack;
   late final FeedRepository _feedRepository;
 
   Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
@@ -110,6 +114,21 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     }
   }
 
+  Future<void> _selectSound() async {
+    final selectedTrack = await showModalBottomSheet<AudioTrack>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.8,
+        child: ImageSoundSelectionSheet(
+          initialSelectedTrack: _selectedSoundTrack,
+        ),
+      ),
+    );
+    if (selectedTrack == null || !mounted) return;
+    setState(() => _selectedSoundTrack = selectedTrack);
+  }
+
   Future<RepoStrongRef?> _uploadImagesAndPost() async {
     if (_isPosting) return null;
     setState(() {
@@ -145,6 +164,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
           _altTexts,
           crosspostToBsky: crosspostEnabled,
           facets: facets,
+          soundRef: decodeSoundTrackStrongRef(_selectedSoundTrack?.id),
         );
       }
       return result;
@@ -187,6 +207,10 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       imagesCount: _imageFiles.length,
       maxImages: _maxImages,
       onAddMore: _pickMoreImages,
+      selectedSoundTitle: _selectedSoundTrack?.title,
+      selectedSoundSubtitle: _selectedSoundTrack?.subtitle,
+      onAddSound: widget.storyMode ? null : _selectSound,
+      onRemoveSound: () => setState(() => _selectedSoundTrack = null),
       mentionController: _descriptionController,
       onMentionsChanged: (mentions) {
         // Mentions are automatically tracked in the controller

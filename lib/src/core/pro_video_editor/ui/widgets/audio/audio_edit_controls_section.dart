@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_waveform_selector.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
 
 /// Displays edit controls for the selected audio track.
 ///
@@ -104,24 +106,11 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
       ),
       child: Row(
         children: [
-          if (widget.audioTrack.image != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: 48,
-                height: 48,
-                color: _style.audioTrackImageBackground,
-                child: widget.audioTrack.image != null
-                    ? Image.network(
-                        widget.audioTrack.image!.networkUrl ?? '',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => _buildDefaultIcon(),
-                      )
-                    : _buildDefaultIcon(),
-              ),
-            )
-          else
-            _buildDefaultIcon(),
+          SoundArtwork(
+            imageUrl: widget.audioTrack.image?.networkUrl,
+            size: 48,
+            backgroundColor: _style.audioTrackImageBackground.withAlpha(80),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -152,19 +141,6 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDefaultIcon() {
-    final color = _style.audioTrackImageBackground;
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: color.withAlpha(80),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Icon(_configs.icons.audioTrackDefaultIcon, color: color, size: 24),
     );
   }
 
@@ -248,37 +224,20 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
       spacing: 12,
       children: [
         Expanded(
-          child: OutlinedButton.icon(
+          child: AppButton(
+            label: _i18n.editTrack,
             onPressed: widget.onChangeTrack,
-            icon: const Icon(Icons.music_note),
-            label: Text(_i18n.editTrack),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _style.buttonEditTrackColor,
-              side: BorderSide(color: _style.buttonEditTrackColor),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  _style.buttonEditTrackBorderRadius,
-                ),
-              ),
-            ),
+            variant: AppButtonVariant.secondary,
+            fullWidth: true,
+            leading: const Icon(Icons.music_note_rounded, size: 18),
           ),
         ),
         Expanded(
-          child: ElevatedButton.icon(
+          child: AppButton(
+            label: _i18n.confirmChanges,
             onPressed: widget.onConfirm,
-            icon: const Icon(Icons.check),
-            label: Text(_i18n.confirmChanges),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _style.buttonConfirmBackground,
-              foregroundColor: _style.buttonConfirmColor,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  _style.buttonConfirmBorderRadius,
-                ),
-              ),
-            ),
+            fullWidth: true,
+            leading: const Icon(Icons.check_rounded, size: 18),
           ),
         ),
       ],

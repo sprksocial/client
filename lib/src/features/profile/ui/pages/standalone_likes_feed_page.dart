@@ -131,6 +131,7 @@ class _StandaloneLikesFeedPageState
                     videosOnly: false,
                     post: post,
                     index: index,
+                    feedIndexKey: 'likes:${widget.did}',
                     isInitialPost: index == widget.initialPostIndex,
                   );
                 },

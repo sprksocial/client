@@ -38,6 +38,10 @@ class ImageReviewPageTemplate extends StatelessWidget {
     required this.crossPostValue,
     required this.onCrossPostChanged,
     super.key,
+    this.selectedSoundTitle,
+    this.selectedSoundSubtitle,
+    this.onAddSound,
+    this.onRemoveSound,
     this.descriptionController,
     this.mentionController,
     this.onMentionsChanged,
@@ -66,6 +70,10 @@ class ImageReviewPageTemplate extends StatelessWidget {
   final bool crossPostValue;
   final ValueChanged<bool> onCrossPostChanged;
   final bool showCrossPostWarning;
+  final String? selectedSoundTitle;
+  final String? selectedSoundSubtitle;
+  final VoidCallback? onAddSound;
+  final VoidCallback? onRemoveSound;
   final String postLabel;
   final VoidCallback? onPost;
   final bool isPosting;
@@ -122,6 +130,15 @@ class ImageReviewPageTemplate extends StatelessWidget {
                             size: AppButtonSize.compact,
                             fullWidth: true,
                           ),
+                        ),
+                      ],
+                      if (onAddSound != null) ...[
+                        const SizedBox(height: 20),
+                        _SoundSection(
+                          title: selectedSoundTitle,
+                          subtitle: selectedSoundSubtitle,
+                          onAddSound: onAddSound!,
+                          onRemoveSound: onRemoveSound,
                         ),
                       ],
                       const SizedBox(height: 20),
@@ -359,6 +376,69 @@ class _ImagePager extends StatelessWidget {
   }
 }
 
+class _SoundSection extends StatelessWidget {
+  const _SoundSection({
+    required this.title,
+    required this.subtitle,
+    required this.onAddSound,
+    required this.onRemoveSound,
+  });
+
+  final String? title;
+  final String? subtitle;
+  final VoidCallback onAddSound;
+  final VoidCallback? onRemoveSound;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final hasSound = title != null && title!.trim().isNotEmpty;
+
+    if (!hasSound) {
+      return SizedBox(
+        width: double.infinity,
+        child: AppButton(
+          label: l10n.buttonAddSound,
+          onPressed: onAddSound,
+          size: AppButtonSize.compact,
+          fullWidth: true,
+        ),
+      );
+    }
+
+    return Material(
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.6)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        leading: const Icon(Icons.music_note_rounded),
+        title: Text(
+          title!,
+          style: AppTypography.textMediumBold.copyWith(
+            color: colorScheme.onSurface,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: subtitle == null || subtitle!.isEmpty
+            ? null
+            : Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: IconButton(
+          tooltip: l10n.buttonRemove,
+          icon: const Icon(Icons.close_rounded),
+          onPressed: onRemoveSound,
+        ),
+        onTap: onAddSound,
+      ),
+    );
+  }
+}
+
 class _DescriptionSection extends StatelessWidget {
   const _DescriptionSection({
     this.controller,
@@ -442,11 +522,11 @@ class _CrossPostSection extends StatelessWidget {
 
     return Column(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: tileColor,
+        Material(
+          color: tileColor,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: borderColor),
+            side: BorderSide(color: borderColor),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(

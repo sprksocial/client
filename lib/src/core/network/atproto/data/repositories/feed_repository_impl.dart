@@ -1041,6 +1041,7 @@ class FeedRepositoryImpl implements FeedRepository {
     Map<String, String> altTexts, {
     bool crosspostToBsky = false,
     List<Facet> facets = const [],
+    RepoStrongRef? soundRef,
   }) async {
     if (imageFiles.isEmpty) {
       _logger.e('No images provided for image post');
@@ -1067,6 +1068,7 @@ class FeedRepositoryImpl implements FeedRepository {
       caption: CaptionRef(text: text, facets: facets),
       media: Media.images(images: uploadedImageMaps),
       createdAt: DateTime.now().toUtc(),
+      sound: soundRef,
     );
 
     final result = await _client.repo.createRecord(

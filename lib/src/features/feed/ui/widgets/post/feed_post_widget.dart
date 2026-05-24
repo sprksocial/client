@@ -12,9 +12,9 @@ import 'package:spark/src/core/ui/widgets/heart_animation.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
-import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/post_media_viewer.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
-import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
 import 'package:spark/src/features/home/providers/navigation_provider.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
@@ -31,8 +31,8 @@ class FeedPostWidget extends ConsumerStatefulWidget {
 class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   Future<PostView>? _postFuture;
   String? _lastPostUri;
-  final GlobalKey<PostVideoPlayerState> _videoPlayerKey =
-      GlobalKey<PostVideoPlayerState>();
+  final GlobalKey<PostMediaViewerState> _mediaViewerKey =
+      GlobalKey<PostMediaViewerState>();
   bool _isAnimatingHeart = false;
   bool _showWarningOverlay = false;
   bool _userDismissedWarning = false;
@@ -157,6 +157,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     // Check if we need to reload post due to state changes
     final feedState = ref.watch(feedProvider(widget.feed));
     final navigationState = ref.watch(navigationProvider);
+    final feedSettingsVisible = ref.watch(feedSettingsVisibilityProvider);
 
     // Check if user is not on feeds tab (index 0)
     final isOnFeedsTab = navigationState.currentIndex == 0;
@@ -219,6 +220,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             }
           }
 
+          final isMediaActive =
+              isOnFeedsTab &&
+              feedState.index == widget.index &&
+              !feedSettingsVisible &&
+              !_showWarningOverlay;
+
           final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,
             bottomOffset: MediaQuery.of(context).padding.bottom,
@@ -236,23 +243,15 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onDoubleTap: () => _handleDoubleTapLike(postData),
-                    child: postData.videoUrl.isNotEmpty
-                        ? PostVideoPlayer(
-                            key: _videoPlayerKey,
-                            videoUrl: postData.videoUrl,
+                    child:
+                        postData.videoUrl.isNotEmpty ||
+                            postData.imageUrls.isNotEmpty
+                        ? PostMediaViewer(
+                            key: _mediaViewerKey,
+                            post: currentPost,
+                            isActive: isMediaActive,
                             feed: widget.feed,
                             index: widget.index,
-                            thumbnail: postData.thumbnailUrl,
-                          )
-                        : postData.imageUrls.isNotEmpty
-                        ? ImageCarousel(
-                            imageUrls: postData.imageUrls,
-                            hasKnownInteractions:
-                                currentPost.viewer?.knownInteractions != null &&
-                                currentPost
-                                    .viewer!
-                                    .knownInteractions!
-                                    .isNotEmpty,
                           )
                         : const DecoratedBox(
                             decoration: BoxDecoration(color: AppColors.black),
@@ -268,10 +267,13 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         _overrideIsLiked ?? (currentPost.viewer?.like != null),
                     labels: labels,
                     onProfilePressed: () {
-                      _videoPlayerKey.currentState?.pauseVideo();
+                      _mediaViewerKey.currentState?.pauseMedia();
+                    },
+                    onMediaPauseRequested: () {
+                      _mediaViewerKey.currentState?.pauseMedia();
                     },
                     onUsernameTap: () {
-                      _videoPlayerKey.currentState?.pauseVideo();
+                      _mediaViewerKey.currentState?.pauseMedia();
                       final isBskyPost = currentPost.uri.collection
                           .toString()
                           .startsWith('app.bsky');

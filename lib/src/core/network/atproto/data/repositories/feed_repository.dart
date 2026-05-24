@@ -144,12 +144,14 @@ abstract class FeedRepository {
   /// [altTexts] Map of file paths to alt texts
   /// [crosspostToBsky] Whether to also post to Bluesky
   /// [facets] Optional list of facets for text formatting (mentions, links, etc.)
+  /// [soundRef] Optional reusable sound reference for Spark image/carousel posts.
   Future<RepoStrongRef> postImages(
     String text,
     List<XFile> imageFiles,
     Map<String, String> altTexts, {
     bool crosspostToBsky = false,
     List<Facet> facets = const [],
+    RepoStrongRef? soundRef,
   });
 
   /// Upload images to the server

@@ -59,6 +59,24 @@ void main() {
       expect(json['media']['images'].first['alt'], '');
     });
 
+    test('writes image posts with post-level sound references', () {
+      final record = PostRecord(
+        caption: const CaptionRef(text: 'image with sound'),
+        media: Media.image(image: blob('image/jpeg'), alt: 'cover'),
+        createdAt: DateTime.parse('2026-05-15T12:00:00.000Z'),
+        sound: RepoStrongRef(
+          uri: AtUri.parse('at://did:plc:sound/so.sprk.sound.audio/1'),
+          cid: 'sound-cid',
+        ),
+      );
+
+      final json = sprkPostRecordFromLocal(record).toJson();
+
+      expect(json['media'][r'$type'], 'so.sprk.media.images');
+      expect(json['sound']['uri'], 'at://did:plc:sound/so.sprk.sound.audio/1');
+      expect(json['sound']['cid'], 'sound-cid');
+    });
+
     test('omits absent optional labels, tags, and sound', () {
       final record = PostRecord(
         caption: const CaptionRef(text: 'minimal'),

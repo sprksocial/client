@@ -16,6 +16,7 @@ class PostOverlay extends ConsumerWidget {
     this.isLiked = false,
     this.onProfilePressed,
     this.onUsernameTap,
+    this.onMediaPauseRequested,
     this.labels = const [],
     this.showBlockOption = true,
   });
@@ -25,6 +26,7 @@ class PostOverlay extends ConsumerWidget {
   final bool isLiked;
   final VoidCallback? onProfilePressed;
   final VoidCallback? onUsernameTap;
+  final VoidCallback? onMediaPauseRequested;
   final List<Label> labels;
 
   /// Whether to show the block option in the options panel.
@@ -127,6 +129,7 @@ class PostOverlay extends ConsumerWidget {
                       profileImageUrl: post.author.avatar.toString(),
                       isImage: post.imageUrls.length > 1,
                       onProfilePressed: onProfilePressed,
+                      onMediaPauseRequested: onMediaPauseRequested,
                       showBlockOption: showBlockOption,
                     ),
                   ),
