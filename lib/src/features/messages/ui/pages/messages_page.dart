@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/templates/chat_list_page_template.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
-import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/messages/providers/conversations_provider.dart';
 
 @RoutePage()
@@ -85,10 +85,8 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
         );
       },
       loading: () {
-        final theme = Theme.of(context);
-        return Scaffold(
-          backgroundColor: theme.colorScheme.surface,
-          body: const Center(child: CircularProgressIndicator()),
+        return ChatListPageTemplate.loading(
+          onAddTap: () => context.router.push(const NewChatSearchRoute()),
         );
       },
       error: (error, stack) {

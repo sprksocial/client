@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class ChatListItemData {
   const ChatListItemData({
@@ -29,14 +30,29 @@ class ChatListPageTemplate extends StatelessWidget {
     required this.onItemTap,
     super.key,
     this.title = 'Chat',
+    this.loading = false,
+    this.loadingItemCount = 8,
     this.onAddTap,
     this.onSearchTap,
     this.onRefresh,
   });
 
+  const ChatListPageTemplate.loading({
+    super.key,
+    this.title = 'Chat',
+    this.loadingItemCount = 8,
+    this.onAddTap,
+    this.onSearchTap,
+    this.onRefresh,
+  }) : items = const [],
+       onItemTap = _noopItemTap,
+       loading = true;
+
   final String title;
   final List<ChatListItemData> items;
   final void Function(int index) onItemTap;
+  final bool loading;
+  final int loadingItemCount;
   final VoidCallback? onAddTap;
   final VoidCallback? onSearchTap;
   final Future<void> Function()? onRefresh;
@@ -65,24 +81,28 @@ class ChatListPageTemplate extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: onRefresh ?? () async {},
-              child: ListView.separated(
-                padding: EdgeInsets.zero,
-                itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox.shrink(),
-                itemBuilder: (context, index) => _ChatTile(
-                  data: items[index],
-                  onTap: () => onItemTap(index),
-                ),
-              ),
-            ),
+            child: loading
+                ? _ChatListSkeleton(itemCount: loadingItemCount)
+                : RefreshIndicator(
+                    onRefresh: onRefresh ?? () async {},
+                    child: ListView.separated(
+                      padding: EdgeInsets.zero,
+                      itemCount: items.length,
+                      separatorBuilder: (_, _) => const SizedBox.shrink(),
+                      itemBuilder: (context, index) => _ChatTile(
+                        data: items[index],
+                        onTap: () => onItemTap(index),
+                      ),
+                    ),
+                  ),
           ),
         ],
       ),
     );
   }
 }
+
+void _noopItemTap(int _) {}
 
 class _ChatTile extends StatelessWidget {
   const _ChatTile({required this.data, this.onTap});
@@ -152,6 +172,87 @@ class _ChatTile extends StatelessWidget {
             : AppTypography.textSmallMedium.copyWith(
                 color: onSurface.withAlpha(190),
               ),
+      ),
+    );
+  }
+}
+
+class _ChatListSkeleton extends StatelessWidget {
+  const _ChatListSkeleton({required this.itemCount});
+
+  final int itemCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Skeletonizer(
+      child: ListView.separated(
+        padding: EdgeInsets.zero,
+        itemCount: itemCount,
+        separatorBuilder: (_, _) => const SizedBox.shrink(),
+        itemBuilder: (context, index) => const _ChatTileSkeleton(),
+      ),
+    );
+  }
+}
+
+class _ChatTileSkeleton extends StatelessWidget {
+  const _ChatTileSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final skeletonColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    return ListTile(
+      horizontalTitleGap: 12,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Skeleton.leaf(
+        child: Container(
+          width: 50.45,
+          height: 50.45,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: skeletonColor,
+          ),
+        ),
+      ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Skeleton.leaf(
+              child: Container(
+                height: 17,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                  color: skeletonColor,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 44),
+          Skeleton.leaf(
+            child: Container(
+              width: 36,
+              height: 10,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: skeletonColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+      subtitle: FractionallySizedBox(
+        widthFactor: 0.72,
+        alignment: Alignment.centerLeft,
+        child: Skeleton.leaf(
+          child: Container(
+            height: 13,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              color: skeletonColor,
+            ),
+          ),
+        ),
       ),
     );
   }

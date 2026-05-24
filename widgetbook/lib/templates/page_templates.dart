@@ -39,6 +39,11 @@ Widget buildChatListPageTemplateUseCase(BuildContext context) {
   );
 }
 
+@UseCase(name: 'loading', type: ChatListPageTemplate)
+Widget buildChatListPageTemplateLoadingUseCase(BuildContext context) {
+  return const ChatListPageTemplate.loading();
+}
+
 @UseCase(name: 'default', type: ChatThreadPageTemplate)
 Widget buildChatThreadPageTemplateUseCase(BuildContext context) {
   return ChatThreadPageTemplate(
