@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
@@ -38,8 +39,10 @@ class AppOverlayBackButton extends StatelessWidget {
           height: 40,
           child: Tooltip(
             message: 'Back',
-            child: GestureDetector(
+            child: InteractivePressable(
               onTap: action,
+              semanticLabel: 'Back',
+              borderRadius: BorderRadius.circular(20),
               child: Center(
                 child: AppIcons.chevronleft(color: color, size: 28),
               ),

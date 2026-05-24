@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 
 /// A generic tab item with a bottom indicator that can wrap any widgets.
 class AppTabItem extends StatelessWidget {
@@ -26,23 +27,16 @@ class AppTabItem extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Expanded(
-      child: IconButton(
-        style: IconButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          shape: const RoundedRectangleBorder(),
-          splashFactory: NoSplash.splashFactory,
-        ),
-        onPressed: onTap,
-        icon: Container(
+      child: InteractivePressable(
+        onTap: onTap,
+        child: Container(
           padding: padding,
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
                 color: isSelected
                     ? (indicatorColor ?? theme.colorScheme.primary)
-                    : Colors.transparent,
+                    : const Color(0x00000000),
                 width: indicatorThickness,
               ),
             ),

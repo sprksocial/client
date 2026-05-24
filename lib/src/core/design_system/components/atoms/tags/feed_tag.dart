@@ -1,7 +1,8 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class FeedTag extends StatelessWidget {
@@ -28,7 +29,9 @@ class FeedTag extends StatelessWidget {
         borderRadius: radius,
         child: Text(
           text,
-          style: AppTypography.textMediumThin.copyWith(color: Colors.white70),
+          style: AppTypography.textMediumThin.copyWith(
+            color: AppColors.greyWhite.withValues(alpha: 0.7),
+          ),
         ),
       );
     }
@@ -43,15 +46,15 @@ class FeedTag extends StatelessWidget {
             height: 30,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(70),
+              color: AppColors.greyWhite.withAlpha(70),
               borderRadius: radius,
-              border: Border.all(color: Colors.white.withAlpha(55)),
+              border: Border.all(color: AppColors.greyWhite.withAlpha(55)),
             ),
             child: Center(
               child: Text(
                 text,
                 style: AppTypography.textMediumMedium.copyWith(
-                  color: Colors.white,
+                  color: AppColors.greyWhite,
                 ),
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 
 /// Design System leading button for app bars and template surfaces.
@@ -80,8 +81,10 @@ class _SparkLeadingIconButton extends StatelessWidget {
         height: 40,
         child: Tooltip(
           message: tooltip,
-          child: GestureDetector(
+          child: InteractivePressable(
             onTap: onPressed,
+            semanticLabel: tooltip,
+            borderRadius: BorderRadius.circular(20),
             child: Center(
               child: AppIcons.chevronleft(color: iconColor, size: 28),
             ),

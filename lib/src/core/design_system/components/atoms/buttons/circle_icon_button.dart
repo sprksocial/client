@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 
 /// A circular icon button component following the design system patterns.
