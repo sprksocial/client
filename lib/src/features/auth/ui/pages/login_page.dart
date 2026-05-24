@@ -51,7 +51,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   void dispose() {
-    _actorTypeaheadNotifier.clear();
     _handleController.removeListener(_onHandleChanged);
     _handleFocusNode.removeListener(_onHandleFocusChanged);
     _handleController.dispose();
