@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/features/notifications/providers/notification_provider.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/features/notifications/providers/notification_provider.dart';
 import 'package:spark/src/features/notifications/ui/widgets/notification_item.dart';
+import 'package:spark/src/features/notifications/ui/widgets/notification_list_skeleton.dart';
 
 class NotificationsList extends ConsumerStatefulWidget {
   const NotificationsList({this.priority, this.reasons, super.key});
@@ -153,7 +154,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
     final hasError = notificationState.hasError;
 
     if (isLoading && isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const NotificationListSkeleton();
     }
 
     if (hasError && isEmpty) {
