@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/story_circle.dart';
+import 'package:spark/src/core/design_system/templates/explore_loading_skeletons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
@@ -56,7 +57,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
         SizedBox(
           height: 102,
           child: storiesByAuthor.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const StoriesListSkeleton(),
             error: (error, stackTrace) => Center(
               child: Text(
                 error.toString(),

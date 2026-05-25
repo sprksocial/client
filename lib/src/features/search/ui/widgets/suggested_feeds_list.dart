@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_card.dart';
+import 'package:spark/src/core/design_system/templates/explore_loading_skeletons.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/features/search/providers/suggested_feeds_provider.dart';
@@ -29,10 +30,7 @@ class SuggestedFeedsList extends ConsumerWidget {
           ),
         ),
         suggestedFeedsAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          ),
+          loading: () => const SuggestedFeedsListSkeleton(),
           error: (error, stackTrace) => Padding(
             padding: const EdgeInsets.all(16),
             child: Center(
