@@ -47,6 +47,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     with TickerProviderStateMixin {
   BetterPlayerController? videoController;
   bool _userInteracted = false;
+  bool _showThumbnailOverlay = true;
 
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
@@ -91,6 +92,22 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(PostVideoPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      _showThumbnailOverlay = true;
+    }
+  }
+
+  void _hideThumbnailOverlay() {
+    if (!_showThumbnailOverlay || !mounted) return;
+
+    setState(() {
+      _showThumbnailOverlay = false;
+    });
+  }
+
   void _videoListener(BetterPlayerEvent event) {
     if (mounted) {
       final paused = event.betterPlayerEventType == BetterPlayerEventType.pause;
@@ -106,6 +123,15 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         _bounceController
           ..stop()
           ..value = 1.0;
+      }
+
+      final progress =
+          event.betterPlayerEventType == BetterPlayerEventType.progress;
+      final progressPosition = event.parameters?['progress'];
+      if (progress &&
+          progressPosition is Duration &&
+          progressPosition > Duration.zero) {
+        _hideThumbnailOverlay();
       }
     }
   }
@@ -172,12 +198,24 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     }
   }
 
-  void _handleNavigationPause(bool isOnFeedsTab) {
+  void _handleNavigationVisibility(
+    bool isOnFeedsTab, {
+    required bool shouldPlay,
+    required bool isFeedSettingsVisible,
+  }) {
     if (!isInitialized) return;
 
     // Always pause when not on feeds tab, regardless of user interaction
     if (!isOnFeedsTab && isPlaying) {
       videoController?.pause();
+      return;
+    }
+
+    if (isOnFeedsTab) {
+      _handleAutoPlayPause(
+        shouldPlay,
+        isFeedSettingsVisible: isFeedSettingsVisible,
+      );
     }
   }
 
@@ -245,7 +283,19 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       _lastNavigationIndex = navigationState.currentIndex;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _handleNavigationPause(isOnFeedsTab);
+          final shouldPlay = feedState != null
+              ? feedState.index == widget.index
+              : profileFeedIndex != null && widget.index != null
+              ? profileFeedIndex == widget.index ||
+                    (profileFeedIndex == -1 && widget.isInitialPost)
+              : widget.feed == null &&
+                    widget.index == null &&
+                    widget.profileFeedUri == null;
+          _handleNavigationVisibility(
+            isOnFeedsTab,
+            shouldPlay: shouldPlay,
+            isFeedSettingsVisible: feedSettingsVisible,
+          );
         }
       });
     }
@@ -320,6 +370,25 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         videoAspectRatio < 0.7;
     final fitMode = shouldFillScreen ? BoxFit.cover : BoxFit.contain;
 
+    final thumbnailOverlay = widget.thumbnail.isNotEmpty
+        ? Positioned.fill(
+            child: IgnorePointer(
+              child: Image.network(
+                widget.thumbnail,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+          )
+        : const Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: AppColors.black),
+              ),
+            ),
+          );
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -336,6 +405,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
                 )
               : BetterPlayer(controller: videoController!),
         ),
+        if (_showThumbnailOverlay) thumbnailOverlay,
         Positioned.fill(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,

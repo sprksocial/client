@@ -186,13 +186,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       );
     }
 
-    // If user is not on feeds tab, show empty container to dispose video
-    if (!isOnFeedsTab) {
-      return const DecoratedBox(
-        decoration: BoxDecoration(color: AppColors.black),
-      );
-    }
-
     return FutureBuilder<PostView>(
       future: _postFuture,
       builder: (context, snapshot) {
