@@ -22,7 +22,7 @@ dependencies:
   bluesky_poptart: ^0.1.1
   ozone_poptart: ^0.1.1
   plyr_poptart: ^0.1.0
-  poptart: ^0.1.0
+  poptart: ^0.1.1
   poptart_lex: ^0.1.0
   sprk_poptart: ^0.1.1
   cached_network_image: ^3.4.1

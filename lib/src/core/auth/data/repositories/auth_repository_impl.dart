@@ -233,6 +233,7 @@ class AuthRepositoryImpl implements AuthRepository {
     _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
       pdsSessionCache: PdsSessionCache(
         accessToken: oauthSession.accessToken,
+        tokenType: oauthSession.tokenType,
         expiresAt: oauthSession.expiresAt.toIso8601String(),
         did: did,
         handle: handle,

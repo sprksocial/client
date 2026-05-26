@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
@@ -48,10 +47,11 @@ void main() {
     await tester.tap(find.byType(InteractivePressable));
 
     final node = tester.getSemantics(find.byType(InteractivePressable));
+    final bool? isEnabled = node.flagsCollection.isEnabled.toBoolOrNull();
     expect(tapCount, 0);
-    expect(node.hasFlag(SemanticsFlag.isButton), isTrue);
-    expect(node.hasFlag(SemanticsFlag.hasEnabledState), isTrue);
-    expect(node.hasFlag(SemanticsFlag.isEnabled), isFalse);
+    expect(node.flagsCollection.isButton, isTrue);
+    expect(isEnabled, isNotNull);
+    expect(isEnabled, isFalse);
 
     semanticsHandle.dispose();
   });

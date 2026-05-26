@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/auth/data/models/aip_session_response.dart';
 
 void main() {
@@ -19,6 +20,7 @@ void main() {
 
       final cache = buildPdsSessionCacheFromAipResponse(response);
 
+      expect(cache.tokenType, 'dpop');
       expect(cache.publicKey, base64Url.encode([...xBytes, ...yBytes]));
       expect(cache.privateKey, base64Url.encode(dBytes));
     });
@@ -165,82 +167,24 @@ void main() {
       );
     });
 
-    test('rejects opaque exported access tokens with direct-PDS context', () {
+    test('restores opaque exported access tokens with response metadata', () {
       final response = _sessionResponse(
         accessToken: 'opaque-aip-access-token',
         clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
       );
 
+      final cache = buildPdsSessionCacheFromAipResponse(response);
+      final restored = restorePdsOAuthSessionFromCache(cache);
+
+      expect(restored.accessToken, 'opaque-aip-access-token');
+      expect(restored.tokenType, 'dpop');
+      expect(restored.scope, 'atproto');
+      expect(restored.expiresAt, DateTime.utc(2030, 1, 1));
+      expect(restored.sub, 'did:plc:test');
+      expect(restored.atprotoPdsEndpoint, 'pds.sprk.so');
       expect(
-        () => buildPdsSessionCacheFromAipResponse(response),
-        throwsA(
-          isA<AipExportedSessionException>().having(
-            (error) => error.message,
-            'message',
-            contains('not a JWT'),
-          ),
-        ),
-      );
-    });
-
-    test('rejects malformed exported access token JWTs with context', () {
-      final response = _sessionResponse(
-        accessToken: 'header.not-base64url.signature',
-        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
-      );
-
-      expect(
-        () => buildPdsSessionCacheFromAipResponse(response),
-        throwsA(
-          isA<AipExportedSessionException>().having(
-            (error) => error.message,
-            'message',
-            contains('malformed access_token JWT'),
-          ),
-        ),
-      );
-    });
-
-    test('rejects exported access token JWTs missing required claims', () {
-      final response = _sessionResponse(
-        accessToken: _jwtFromPayload({
-          'exp': DateTime.utc(2030, 1, 1).millisecondsSinceEpoch ~/ 1000,
-          'iat': DateTime.utc(2029, 1, 1).millisecondsSinceEpoch ~/ 1000,
-        }),
-        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
-      );
-
-      expect(
-        () => buildPdsSessionCacheFromAipResponse(response),
-        throwsA(
-          isA<AipExportedSessionException>().having(
-            (error) => error.message,
-            'message',
-            contains('missing required "sub" claim'),
-          ),
-        ),
-      );
-    });
-
-    test('rejects exported access token JWTs with invalid claim types', () {
-      final response = _sessionResponse(
-        accessToken: _jwtFromPayload({
-          'sub': 'did:plc:test',
-          'exp': '2030-01-01T00:00:00Z',
-          'iat': DateTime.utc(2029, 1, 1).millisecondsSinceEpoch ~/ 1000,
-        }),
-        clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
-      );
-
-      expect(
-        () => buildPdsSessionCacheFromAipResponse(response),
-        throwsA(
-          isA<AipExportedSessionException>().having(
-            (error) => error.message,
-            'message',
-            contains('invalid required numeric "exp" claim'),
-          ),
-        ),
+        restored.$clientId,
+        'https://auth.sprk.so/oauth-client-metadata.json',
       );
     });
   });

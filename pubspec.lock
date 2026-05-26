@@ -1305,18 +1305,18 @@ packages:
     dependency: "direct main"
     description:
       name: poptart
-      sha256: "5631a6e4a1ffa25101db2aa76b82e2410941fa5fec4d4c18ea2c2c7d95b70f0b"
+      sha256: ad5ef1b70a1bad0fc3f236646d69ec83dd1cc9b329f080af3803e6296322443c
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
+    version: "0.1.1"
   poptart_core:
     dependency: transitive
     description:
       name: poptart_core
-      sha256: "4401f47c4e7f6d1f5142a207aa7e543408f83c43b5aaabdf6d4f60ef8f00ad84"
+      sha256: "8f73d98f27bf30786131ccd3bc9d9d3855c788cfb6375c333f548ca29b2eb266"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
+    version: "0.1.1"
   poptart_lex:
     dependency: "direct main"
     description:
@@ -1337,10 +1337,10 @@ packages:
     dependency: transitive
     description:
       name: poptart_oauth
-      sha256: e268a6947833aab9368dfd67069888962fdea91a0158609b1680faee95e4f8f0
+      sha256: c772ad949f98266b328768aa6c835fe61dff3205921589f76627533077d8f35f
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
+    version: "0.1.1"
   poptart_primitives:
     dependency: transitive
     description:

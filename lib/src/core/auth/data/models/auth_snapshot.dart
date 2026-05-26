@@ -142,6 +142,7 @@ class AipGrant {
 class PdsSessionCache {
   const PdsSessionCache({
     required this.accessToken,
+    required this.tokenType,
     required this.expiresAt,
     required this.did,
     required this.handle,
@@ -157,6 +158,7 @@ class PdsSessionCache {
     final accessToken = json['accessToken'] as String;
     return PdsSessionCache(
       accessToken: accessToken,
+      tokenType: json['tokenType'] as String? ?? 'DPoP',
       expiresAt: json['expiresAt'] as String,
       did: json['did'] as String,
       handle: json['handle'] as String,
@@ -170,6 +172,7 @@ class PdsSessionCache {
   }
 
   final String accessToken;
+  final String tokenType;
   final String expiresAt;
   final String did;
   final String handle;
@@ -185,6 +188,7 @@ class PdsSessionCache {
   Map<String, dynamic> toJson() {
     return {
       'accessToken': accessToken,
+      'tokenType': tokenType,
       'expiresAt': expiresAt,
       'did': did,
       'handle': handle,
@@ -199,6 +203,7 @@ class PdsSessionCache {
 
   PdsSessionCache copyWith({
     String? accessToken,
+    String? tokenType,
     String? expiresAt,
     String? did,
     String? handle,
@@ -211,6 +216,7 @@ class PdsSessionCache {
   }) {
     return PdsSessionCache(
       accessToken: accessToken ?? this.accessToken,
+      tokenType: tokenType ?? this.tokenType,
       expiresAt: expiresAt ?? this.expiresAt,
       did: did ?? this.did,
       handle: handle ?? this.handle,

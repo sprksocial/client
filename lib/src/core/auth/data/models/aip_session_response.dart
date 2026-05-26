@@ -105,10 +105,10 @@ PdsSessionCache buildPdsSessionCacheFromAipResponse(
       'AIP-exported token is incompatible with direct-PDS mode: missing client_id.',
     );
   }
-  validateExportedAccessToken(response.accessToken);
 
   return PdsSessionCache(
     accessToken: response.accessToken,
+    tokenType: response.tokenType,
     expiresAt: response.expiresAt.toIso8601String(),
     did: response.did,
     handle: response.handle,
@@ -128,20 +128,23 @@ OAuthSession restorePdsOAuthSessionFromCache(PdsSessionCache cache) {
       'AIP-exported token is incompatible with direct-PDS mode: missing client_id.',
     );
   }
-  validateExportedAccessToken(cache.accessToken);
-
   try {
     return restoreOAuthSession(
       accessToken: cache.accessToken,
       refreshToken: '',
+      tokenType: cache.tokenType,
+      scope: cache.scope,
+      expiresAt: cache.expiresAtDateTime,
+      sub: cache.did,
       clientId: clientId,
+      pdsEndpoint: cache.pdsEndpoint,
       dPoPNonce: cache.dpopNonce,
       publicKey: normalizeDpopKeyEncoding(cache.publicKey),
       privateKey: normalizeDpopKeyEncoding(cache.privateKey),
     );
   } on FormatException catch (error) {
     throw AipExportedSessionException(
-      'AIP /api/atprotocol/session returned an access_token JWT that could '
+      'AIP /api/atprotocol/session returned an access_token that could '
       'not be restored: ${error.message}.',
     );
   }
@@ -164,79 +167,6 @@ String encodeDpopPrivateKey(String d) {
 
 String normalizeDpopKeyEncoding(String value) {
   return base64Url.normalize(value);
-}
-
-void validateExportedAccessToken(String accessToken) {
-  final parts = accessToken.split('.');
-  if (parts.length != 3 || parts.any((part) => part.isEmpty)) {
-    throw const AipExportedSessionException(
-      'AIP /api/atprotocol/session returned an access_token that is not a JWT. '
-      'Direct-PDS mode requires AIP to export the PDS-issued JWT access token, '
-      'not an opaque AIP bearer token.',
-    );
-  }
-
-  final Map<String, dynamic> payload;
-  try {
-    final decoded = json.decode(
-      utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
-    );
-    if (decoded is! Map<String, dynamic>) {
-      throw const FormatException('JWT payload is not a JSON object.');
-    }
-    payload = decoded;
-  } catch (_) {
-    throw const AipExportedSessionException(
-      'AIP /api/atprotocol/session returned a malformed access_token JWT. '
-      'Direct-PDS mode requires a decodable PDS-issued JWT access token.',
-    );
-  }
-
-  _requireStringClaim(payload, 'sub');
-  _requireNumericDateClaim(payload, 'exp');
-  _requireNumericDateClaim(payload, 'iat');
-  _requireOptionalStringClaim(payload, 'aud');
-  _requireOptionalStringClaim(payload, 'jti');
-  _requireOptionalStringClaim(payload, 'client_id');
-  _requireOptionalStringClaim(payload, 'scope');
-}
-
-void _requireStringClaim(Map<String, dynamic> payload, String claim) {
-  final value = payload[claim];
-  if (value is String && value.isNotEmpty) {
-    return;
-  }
-
-  final reason = value == null ? 'missing' : 'invalid';
-  throw AipExportedSessionException(
-    'AIP /api/atprotocol/session returned an access_token JWT with a $reason '
-    'required "$claim" claim.',
-  );
-}
-
-void _requireNumericDateClaim(Map<String, dynamic> payload, String claim) {
-  final value = payload[claim];
-  if (value is num) {
-    return;
-  }
-
-  final reason = value == null ? 'missing' : 'invalid';
-  throw AipExportedSessionException(
-    'AIP /api/atprotocol/session returned an access_token JWT with a $reason '
-    'required numeric "$claim" claim.',
-  );
-}
-
-void _requireOptionalStringClaim(Map<String, dynamic> payload, String claim) {
-  final value = payload[claim];
-  if (value == null || value is String) {
-    return;
-  }
-
-  throw AipExportedSessionException(
-    'AIP /api/atprotocol/session returned an access_token JWT with an invalid '
-    '"$claim" claim; expected a string.',
-  );
 }
 
 String? _firstNonEmpty(String? first, [String? second]) {
