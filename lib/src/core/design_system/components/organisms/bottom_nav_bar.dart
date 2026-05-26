@@ -21,6 +21,8 @@ class SparkBottomNavBar extends ConsumerWidget {
   static const _itemAnimationDuration = Duration(milliseconds: 150);
   static const _iconSwitchDuration = Duration(milliseconds: 120);
   static const _itemCurve = Curves.easeOutCubic;
+  static const _iconSize = 28.0;
+  static const _avatarSize = 30.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,7 +37,7 @@ class SparkBottomNavBar extends ConsumerWidget {
         _BarBackground(
           isDark: isDark,
           child: Container(
-            padding: EdgeInsets.only(top: 12, bottom: 12 + bottomPadding),
+            padding: EdgeInsets.only(top: 16, bottom: 8 + bottomPadding),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 
@@ -44,8 +46,14 @@ class SparkBottomNavBar extends ConsumerWidget {
                   isSelected: currentIndex == 0,
                   onTap: () => onTap(0),
                   builder: (c, selected) => selected
-                      ? AppIcons.homeFilled(color: isDark ? null : Colors.black)
-                      : AppIcons.home(color: isDark ? null : Colors.black),
+                      ? AppIcons.homeFilled(
+                          size: _iconSize,
+                          color: isDark ? null : Colors.black,
+                        )
+                      : AppIcons.home(
+                          size: _iconSize,
+                          color: isDark ? null : Colors.black,
+                        ),
                 ),
 
                 _NavIcon(
@@ -53,9 +61,13 @@ class SparkBottomNavBar extends ConsumerWidget {
                   onTap: () => onTap(1),
                   builder: (c, selected) => selected
                       ? AppIcons.exploreFilled(
+                          size: _iconSize,
                           color: isDark ? null : Colors.black,
                         )
-                      : AppIcons.explore(color: isDark ? null : Colors.black),
+                      : AppIcons.explore(
+                          size: _iconSize,
+                          color: isDark ? null : Colors.black,
+                        ),
                 ),
 
                 _NavIcon(
@@ -63,9 +75,13 @@ class SparkBottomNavBar extends ConsumerWidget {
                   onTap: () => onTap(2),
                   builder: (c, selected) => selected
                       ? AppIcons.messagesFilled(
+                          size: _iconSize,
                           color: isDark ? null : Colors.black,
                         )
-                      : AppIcons.messages(color: isDark ? null : Colors.black),
+                      : AppIcons.messages(
+                          size: _iconSize,
+                          color: isDark ? null : Colors.black,
+                        ),
                 ),
 
                 _NavIconWithBadge(
@@ -73,9 +89,13 @@ class SparkBottomNavBar extends ConsumerWidget {
                   onTap: () => onTap(3),
                   builder: (c, selected) => selected
                       ? AppIcons.likeFilled(
+                          size: _iconSize,
                           color: isDark ? Colors.white : Colors.black,
                         )
-                      : AppIcons.like(color: isDark ? null : Colors.black),
+                      : AppIcons.like(
+                          size: _iconSize,
+                          color: isDark ? null : Colors.black,
+                        ),
                   badgeCount: ref.watch(unreadCountProvider()),
                   isDark: isDark,
                 ),
@@ -375,11 +395,13 @@ class _ProfileAvatar extends StatelessWidget {
           ? Duration.zero
           : SparkBottomNavBar._itemAnimationDuration,
       curve: SparkBottomNavBar._itemCurve,
-      width: 34,
-      height: 34,
+      width: SparkBottomNavBar._avatarSize,
+      height: SparkBottomNavBar._avatarSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: isSelected ? Border.all(color: Colors.white) : null,
+        border: isSelected
+            ? Border.all(color: isDark ? Colors.white : Colors.black)
+            : null,
         image: image is AssetImage
             ? null
             : DecorationImage(image: image, fit: BoxFit.cover),
@@ -387,7 +409,9 @@ class _ProfileAvatar extends StatelessWidget {
             ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0))
             : null,
       ),
-      child: image is AssetImage ? const DefaultProfileAvatar(size: 34) : null,
+      child: image is AssetImage
+          ? const DefaultProfileAvatar(size: SparkBottomNavBar._avatarSize)
+          : null,
     );
     return _BottomNavTapTarget(
       onTap: onTap,
