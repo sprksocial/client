@@ -8,3 +8,4 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "build/**"
+    - "widgetbook/build/**"
