@@ -45,10 +45,12 @@ class LoggerFactory {
 
   /// Set the global minimum log level
   ///
-  /// This will affect all loggers created after this call.
-  /// Existing loggers will not be affected.
+  /// This affects both existing loggers and loggers created after this call.
   static void setGlobalLogLevel(LogLevel level) {
     _globalMinLevel = level;
+    for (final logger in _loggers.values) {
+      logger.setMinLevel(level);
+    }
   }
 
   /// Add a new default output

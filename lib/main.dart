@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -47,7 +48,9 @@ void main() async {
 
 /// Setup logging framework based on environment
 void _setupLogging() {
-  sl<LogService>().setGlobalLogLevel(LogLevel.warning);
+  sl<LogService>().setGlobalLogLevel(
+    kDebugMode ? LogLevel.debug : LogLevel.warning,
+  );
 }
 
 /// Initialize auth repository and wait for it to be ready

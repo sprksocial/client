@@ -15,7 +15,7 @@ class SparkLogger {
        _includeStackTrace = includeStackTrace;
 
   /// The minimum log level that will be output
-  final LogLevel _minLevel;
+  LogLevel _minLevel;
 
   /// List of log outputs
   final List<LogOutput> _outputs;
@@ -93,5 +93,10 @@ class SparkLogger {
   /// Remove all outputs
   void clearOutputs() {
     _outputs.clear();
+  }
+
+  /// Update the minimum level for this logger.
+  void setMinLevel(LogLevel level) {
+    _minLevel = level;
   }
 }
