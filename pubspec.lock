@@ -181,10 +181,10 @@ packages:
     dependency: "direct main"
     description:
       name: better_player_plus
-      sha256: "133e212e68ce830d0fa72da02efe597571a9915b526927fa3b427c70dea64613"
+      sha256: c480b7c740c42f03de51c945b2f2518ae8abf6f4635d4465360100b826c170e9
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "1.3.0"
   bluesky_poptart:
     dependency: "direct main"
     description:

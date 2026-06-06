@@ -18,7 +18,7 @@ dependencies:
   audio_waveforms: ^2.0.2
   audioplayers: ^6.6.0
   auto_route: ^11.1.0
-  better_player_plus: ^1.2.1
+  better_player_plus: ^1.3.0
   bluesky_poptart: ^0.1.1
   ozone_poptart: ^0.1.1
   plyr_poptart: ^0.1.0
