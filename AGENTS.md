@@ -39,6 +39,13 @@
 - Use GetIt (`GetIt.I` / `sl`) for DI-managed services
 - Never hand-edit generated files; regenerate instead
 
+## Maintainability bar
+- Prefer changes that remove concepts, branches, helpers, or state rather than rearranging complexity
+- Keep logic in its owning layer; do not scatter feature checks through shared widgets or repositories
+- Treat ad-hoc conditionals, nullable modes, casts, `dynamic`, silent fallbacks, and pass-through wrappers as design smells unless they reflect a real external boundary
+- Reuse existing shared seams and canonical helpers before adding feature-local variants; for repeated UI/loading/motion behavior, check shared templates, design-system components, and Widgetbook patterns first
+- Watch file and widget growth; if a change pushes a file toward 1k lines or mixes responsibilities, split a focused helper/subcomponent before adding more flow logic
+
 ## Localization (l10n)
 - All user-facing strings must go through `intl_en.arb` (`lib/src/core/l10n/intl_en.arb`), never hardcoded in widgets
 - Access: `AppLocalizations.of(context).someKey`
