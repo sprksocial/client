@@ -271,6 +271,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         uploadResult: uploadResult,
         description: description,
         altText: _videoAltText,
+        aspectRatio: _videoAspectRatio,
         storyMode: widget.storyMode,
         soundRef: widget.soundRef,
         crosspostToBsky: !widget.storyMode && _crosspostToBsky,
@@ -325,13 +326,29 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
+  MediaAspectRatio? get _videoAspectRatio {
+    final player = _player;
+    if (player == null) return null;
+
+    final size = player.value.size;
+    return MediaAspectRatio.fromDimensions(
+      width: size.width,
+      height: size.height,
+    );
+  }
+
+  double get _previewAspectRatio {
+    final metadataAspectRatio = _videoAspectRatio?.value;
+    if (metadataAspectRatio != null) return metadataAspectRatio;
+
+    final rawAspectRatio = _player?.value.aspectRatio;
+    return rawAspectRatio != null && rawAspectRatio > 0 ? rawAspectRatio : 1.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final rawAspectRatio = _player?.value.aspectRatio;
-    final ar = rawAspectRatio != null && rawAspectRatio > 0
-        ? rawAspectRatio
-        : 1.0;
+    final ar = _previewAspectRatio;
     final textLength = _descriptionController.text.runes.length;
     final isOverLimit = textLength > AppConstants.postDescriptionMaxChars;
     final uploadStatusLabel = _uploadStatusLabel(l10n);

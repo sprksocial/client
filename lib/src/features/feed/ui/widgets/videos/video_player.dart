@@ -6,10 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/features/feed/ui/widgets/videos/feed_video_better_player_layout.dart';
+import 'package:spark/src/features/feed/ui/widgets/videos/video_frame.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
 import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
 import 'package:spark/src/features/home/providers/navigation_provider.dart';
@@ -20,6 +21,7 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
     required this.videoUrl,
     required this.thumbnail,
     super.key,
+    this.videoAspectRatio,
     this.feed,
     this.index,
     this.profileFeedUri,
@@ -28,6 +30,7 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
 
   final String videoUrl;
   final String thumbnail;
+  final double? videoAspectRatio;
   final Feed? feed;
   final int? index;
 
@@ -56,9 +59,24 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
   int? _lastFeedIndex;
   bool? _lastFeedSettingsVisible;
   bool _wasPlayingWhenMenuOpened = false;
+  Size? _playerVideoSize;
+  double? _lastAppliedPlayerAspectRatio;
+  BoxFit? _lastAppliedPlayerFit;
 
   bool get isPlaying => videoController?.isPlaying() ?? false;
   bool get isInitialized => videoController?.isVideoInitialized() ?? false;
+  double? get _knownVideoAspectRatio =>
+      (widget.videoAspectRatio != null && widget.videoAspectRatio! > 0)
+      ? widget.videoAspectRatio!
+      : null;
+  double? get _resolvedVideoAspectRatio =>
+      feedVideoAspectRatioFromSize(_playerVideoSize) ?? _knownVideoAspectRatio;
+  BoxFit get _resolvedVideoFit =>
+      feedVideoFitForAspectRatio(_resolvedVideoAspectRatio);
+  Size? get _resolvedVideoFrameSize => feedVideoFrameSize(
+    videoSize: _playerVideoSize,
+    aspectRatio: _resolvedVideoAspectRatio,
+  );
 
   @override
   void initState() {
@@ -88,6 +106,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
   @override
   void dispose() {
     _bounceController.dispose();
+    videoController?.videoPlayerController?.removeListener(_videoValueListener);
     videoController?.dispose();
     super.dispose();
   }
@@ -97,6 +116,9 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.videoUrl != widget.videoUrl) {
       _showThumbnailOverlay = true;
+    }
+    if (oldWidget.videoAspectRatio != widget.videoAspectRatio) {
+      _syncPlayerLayout();
     }
   }
 
@@ -156,22 +178,30 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         ),
       );
       final videoControllerTemp = BetterPlayerController(
-        const BetterPlayerConfiguration(
-          controlsConfiguration: BetterPlayerControlsConfiguration(
-            showControls: false,
-          ),
-          looping: true,
-          fit: BoxFit.contain,
-          expandToFill: false,
-          allowedScreenSleep: false,
+        feedVideoBetterPlayerConfiguration(
+          aspectRatio: _knownVideoAspectRatio,
+          fit: feedVideoFitForAspectRatio(_knownVideoAspectRatio),
         ),
       );
       await videoControllerTemp.setupDataSource(dataSource);
       videoControllerTemp.addEventsListener(_videoListener);
-      if (!mounted) return;
+      if (!mounted) {
+        videoControllerTemp.dispose();
+        return;
+      }
+      final playerVideoSize =
+          videoControllerTemp.videoPlayerController?.value.size;
+      _syncPlayerLayout(
+        controller: videoControllerTemp,
+        videoSize: playerVideoSize,
+      );
       setState(() {
         videoController = videoControllerTemp;
+        _playerVideoSize = playerVideoSize;
       });
+      videoControllerTemp.videoPlayerController?.addListener(
+        _videoValueListener,
+      );
     } catch (e) {
       if (!mounted) return;
     }
@@ -195,6 +225,43 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       videoController?.play();
     } else if (!shouldPlay && isPlaying) {
       videoController?.pause();
+    }
+  }
+
+  void _videoValueListener() {
+    if (!mounted) return;
+    final controller = videoController;
+    if (controller == null) return;
+    final videoSize = controller.videoPlayerController?.value.size;
+    _syncPlayerLayout(controller: controller, videoSize: videoSize);
+
+    if (_playerVideoSize == videoSize) return;
+    setState(() {
+      _playerVideoSize = videoSize;
+    });
+  }
+
+  void _syncPlayerLayout({
+    BetterPlayerController? controller,
+    Size? videoSize,
+  }) {
+    final effectiveController = controller ?? videoController;
+    if (effectiveController == null) return;
+
+    final aspectRatio =
+        feedVideoAspectRatioFromSize(videoSize ?? _playerVideoSize) ??
+        _knownVideoAspectRatio;
+    final fit = feedVideoFitForAspectRatio(aspectRatio);
+
+    if (_lastAppliedPlayerAspectRatio != aspectRatio ||
+        _lastAppliedPlayerFit != fit) {
+      applyFeedVideoBetterPlayerLayout(
+        effectiveController,
+        aspectRatio: aspectRatio,
+        fit: fit,
+      );
+      _lastAppliedPlayerAspectRatio = aspectRatio;
+      _lastAppliedPlayerFit = fit;
     }
   }
 
@@ -256,16 +323,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
   Widget build(BuildContext context) {
     if (!isInitialized) {
       // Show thumbnail while video is initializing
-      return widget.thumbnail.isNotEmpty
-          ? Image.network(
-              widget.thumbnail,
-              fit: BoxFit.contain,
-              width: double.infinity,
-              height: double.infinity,
-            )
-          : const DecoratedBox(
-              decoration: BoxDecoration(color: AppColors.black),
-            );
+      return FeedVideoThumbnailFrame(
+        thumbnail: widget.thumbnail,
+        videoAspectRatio: _knownVideoAspectRatio,
+      );
     }
 
     final navigationState = ref.watch(navigationProvider);
@@ -360,50 +421,28 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       }
     });
 
-    final videoAspectRatio =
-        videoController?.videoPlayerController?.value.aspectRatio;
-    final videoSize = videoController?.videoPlayerController?.value.size;
+    final resolvedAspectRatio = _resolvedVideoAspectRatio;
+    final fitMode = _resolvedVideoFit;
+    final frameSize = _resolvedVideoFrameSize;
 
-    final shouldFillScreen =
-        videoAspectRatio != null &&
-        videoAspectRatio > 0.5 &&
-        videoAspectRatio < 0.7;
-    final fitMode = shouldFillScreen ? BoxFit.cover : BoxFit.contain;
-
-    final thumbnailOverlay = widget.thumbnail.isNotEmpty
-        ? Positioned.fill(
-            child: IgnorePointer(
-              child: Image.network(
-                widget.thumbnail,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                height: double.infinity,
-              ),
-            ),
-          )
-        : const Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: AppColors.black),
-              ),
-            ),
-          );
+    final thumbnailOverlay = Positioned.fill(
+      child: IgnorePointer(
+        child: FeedVideoThumbnailFrame(
+          thumbnail: widget.thumbnail,
+          videoAspectRatio: resolvedAspectRatio,
+        ),
+      ),
+    );
 
     return Stack(
       alignment: Alignment.center,
       children: [
         Positioned.fill(
-          child:
-              videoSize != null && videoSize.width > 0 && videoSize.height > 0
-              ? FittedBox(
-                  fit: fitMode,
-                  child: SizedBox(
-                    width: videoSize.width,
-                    height: videoSize.height,
-                    child: BetterPlayer(controller: videoController!),
-                  ),
-                )
-              : BetterPlayer(controller: videoController!),
+          child: FeedVideoFrame(
+            fit: fitMode,
+            frameSize: frameSize,
+            child: BetterPlayer(controller: videoController!),
+          ),
         ),
         if (_showThumbnailOverlay) thumbnailOverlay,
         Positioned.fill(

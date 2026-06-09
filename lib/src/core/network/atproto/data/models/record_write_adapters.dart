@@ -10,6 +10,8 @@ import 'package:sprk_poptart/so/sprk/embed/defs.dart' as sprk_embed_defs;
 
 import 'package:sprk_poptart/so/sprk/media/image.dart' as sprk_image;
 import 'package:sprk_poptart/so/sprk/media/images.dart' as sprk_images;
+import 'package:sprk_poptart/so/sprk/media/defs/aspect_ratio.dart'
+    as sprk_media_defs;
 import 'package:sprk_poptart/so/sprk/media/video.dart' as sprk_video;
 import 'package:sprk_poptart/so/sprk/richtext/facet.dart' as sprk_facet;
 import 'package:sprk_poptart/so/sprk/story/post.dart' as sprk_story;
@@ -79,9 +81,13 @@ List<sprk_facet.RichtextFacet>? _sprkFacets(List<local.Facet> facets) {
 
 sprk_post.UFeedPostMedia _sprkPostMedia(local.Media media) {
   return switch (media) {
-    local.MediaVideo(:final video, :final alt) =>
+    local.MediaVideo(:final video, :final alt, :final aspectRatio) =>
       sprk_post.UFeedPostMedia.mediaVideo(
-        data: sprk_video.MediaVideo(video: video, alt: alt),
+        data: sprk_video.MediaVideo(
+          video: video,
+          alt: alt,
+          aspectRatio: _sprkAspectRatio(aspectRatio),
+        ),
       ),
     local.MediaImages(:final images) => sprk_post.UFeedPostMedia.mediaImages(
       data: sprk_images.MediaImages(
@@ -114,9 +120,13 @@ sprk_story.UStoryPostMedia _sprkStoryMedia(local.Media media) {
       sprk_story.UStoryPostMedia.mediaImage(
         data: sprk_image.MediaImage(image: image, alt: alt ?? ''),
       ),
-    local.MediaVideo(:final video, :final alt) =>
+    local.MediaVideo(:final video, :final alt, :final aspectRatio) =>
       sprk_story.UStoryPostMedia.mediaVideo(
-        data: sprk_video.MediaVideo(video: video, alt: alt),
+        data: sprk_video.MediaVideo(
+          video: video,
+          alt: alt,
+          aspectRatio: _sprkAspectRatio(aspectRatio),
+        ),
       ),
     _ => sprk_story.UStoryPostMedia.unknown(data: media.toJson()),
   };
@@ -124,6 +134,16 @@ sprk_story.UStoryPostMedia _sprkStoryMedia(local.Media media) {
 
 sprk_image.MediaImage _sprkMediaImage(local.Image image) {
   return sprk_image.MediaImage(image: image.image, alt: image.alt ?? '');
+}
+
+sprk_media_defs.AspectRatio? _sprkAspectRatio(
+  local.MediaAspectRatio? aspectRatio,
+) {
+  if (aspectRatio == null) return null;
+  return sprk_media_defs.AspectRatio(
+    width: aspectRatio.width,
+    height: aspectRatio.height,
+  );
 }
 
 sprk_post.UFeedPostLabels? _sprkPostLabels(List<SelfLabel>? labels) {

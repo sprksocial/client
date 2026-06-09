@@ -1675,12 +1675,13 @@ class FeedRepositoryImpl implements FeedRepository {
     List<String>? langs,
     List<SelfLabel>? selfLabels,
     List<Facet> facets = const [],
+    MediaAspectRatio? aspectRatio,
   }) async {
     _logger.d('Posting video with description: $text');
 
     final record = PostRecord(
       caption: CaptionRef(text: text, facets: facets),
-      media: Media.video(video: blob, alt: alt),
+      media: Media.video(video: blob, alt: alt, aspectRatio: aspectRatio),
       createdAt: DateTime.now().toUtc(),
       langs: langs,
       selfLabels: selfLabels,

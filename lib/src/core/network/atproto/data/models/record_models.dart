@@ -109,7 +109,11 @@ sealed class Media with _$Media {
 
   // Spark media types (new schema)
   @FreezedUnionValue('so.sprk.media.video')
-  const factory Media.video({required Blob video, String? alt}) = MediaVideo;
+  const factory Media.video({
+    required Blob video,
+    String? alt,
+    MediaAspectRatio? aspectRatio,
+  }) = MediaVideo;
 
   @FreezedUnionValue('so.sprk.media.image')
   const factory Media.image({required Blob image, String? alt}) = MediaImage;
@@ -141,6 +145,72 @@ sealed class Media with _$Media {
       MediaBskyExternal;
 
   factory Media.fromJson(Map<String, dynamic> json) => _$MediaFromJson(json);
+}
+
+final class MediaAspectRatio {
+  const MediaAspectRatio({required this.width, required this.height});
+
+  factory MediaAspectRatio.fromJson(Map<String, dynamic> json) {
+    return MediaAspectRatio(
+      width: (json['width'] as num).toInt(),
+      height: (json['height'] as num).toInt(),
+    );
+  }
+
+  static MediaAspectRatio? fromDimensions({
+    required num? width,
+    required num? height,
+  }) {
+    if (width == null || height == null || width <= 0 || height <= 0) {
+      return null;
+    }
+
+    final normalizedWidth = width.round();
+    final normalizedHeight = height.round();
+    if (normalizedWidth <= 0 || normalizedHeight <= 0) return null;
+
+    final divisor = _greatestCommonDivisor(normalizedWidth, normalizedHeight);
+    return MediaAspectRatio(
+      width: normalizedWidth ~/ divisor,
+      height: normalizedHeight ~/ divisor,
+    );
+  }
+
+  final int width;
+  final int height;
+
+  double? get value {
+    if (width <= 0 || height <= 0) return null;
+    return width / height;
+  }
+
+  Map<String, dynamic> toJson() => {'width': width, 'height': height};
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is MediaAspectRatio &&
+            runtimeType == other.runtimeType &&
+            width == other.width &&
+            height == other.height;
+  }
+
+  @override
+  int get hashCode => Object.hash(width, height);
+
+  @override
+  String toString() => 'MediaAspectRatio(width: $width, height: $height)';
+
+  static int _greatestCommonDivisor(int a, int b) {
+    var x = a.abs();
+    var y = b.abs();
+    while (y != 0) {
+      final next = x % y;
+      x = y;
+      y = next;
+    }
+    return x == 0 ? 1 : x;
+  }
 }
 
 @freezed

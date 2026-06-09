@@ -9,6 +9,7 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/app_overla
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_video_aspect_ratio.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
@@ -389,6 +390,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                         key: _videoPlayerKey,
                         videoUrl: postData.videoUrl,
                         thumbnail: postData.thumbnailUrl,
+                        videoAspectRatio: postData.videoAspectRatio,
                       )
                     : postData.imageUrls.isNotEmpty
                     ? ImageCarousel(imageUrls: postData.imageUrls)

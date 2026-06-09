@@ -182,6 +182,7 @@ abstract class FeedRepository {
   /// [langs] The languages of the video
   /// [selfLabels] The self labels of the video
   /// [facets] Optional list of facets for text formatting (mentions, links, etc.)
+  /// [aspectRatio] Optional media aspect ratio hint for feed rendering.
   Future<RepoStrongRef> postVideo(
     Blob blob, {
     String text = '',
@@ -190,6 +191,7 @@ abstract class FeedRepository {
     List<String>? langs,
     List<SelfLabel>? selfLabels,
     List<Facet> facets = const [],
+    MediaAspectRatio? aspectRatio,
   });
 
   /// Get the thread for a post

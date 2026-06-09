@@ -48,6 +48,7 @@ Future<RepoStrongRef?> postVideo(
   String description = '',
   String altText = '',
   String? videoPath,
+  MediaAspectRatio? aspectRatio,
   bool crosspostToBsky = false,
   RepoStrongRef? soundRef,
   List<Facet> facets = const [],
@@ -59,6 +60,7 @@ Future<RepoStrongRef?> postVideo(
       blob: blob,
       description: description,
       altText: altText,
+      aspectRatio: aspectRatio,
       crosspostToBsky: crosspostToBsky,
       soundRef: soundRef,
       facets: facets,
@@ -73,6 +75,7 @@ Future<RepoStrongRef?> postProcessedVideo({
   required VideoUploadResult uploadResult,
   String description = '',
   String altText = '',
+  MediaAspectRatio? aspectRatio,
   bool crosspostToBsky = false,
   bool storyMode = false,
   RepoStrongRef? soundRef,
@@ -111,7 +114,7 @@ Future<RepoStrongRef?> postProcessedVideo({
       try {
         final storyRepository = GetIt.I<StoryRepository>();
         final res = await storyRepository.postStory(
-          Media.video(video: videoBlob),
+          Media.video(video: videoBlob, aspectRatio: aspectRatio),
           soundRef: effectiveSoundRef,
           embeds: storyEmbeds,
         );
@@ -128,6 +131,7 @@ Future<RepoStrongRef?> postProcessedVideo({
       blob: videoBlob,
       description: description,
       altText: altText,
+      aspectRatio: aspectRatio,
       crosspostToBsky: crosspostToBsky,
       soundRef: effectiveSoundRef,
       facets: facets,
@@ -151,6 +155,7 @@ Future<RepoStrongRef?> processAndPostVideo(
   required String videoPath,
   String description = '',
   String altText = '',
+  MediaAspectRatio? aspectRatio,
   bool crosspostToBsky = false,
   bool storyMode = false,
   RepoStrongRef? soundRef,
@@ -172,6 +177,7 @@ Future<RepoStrongRef?> processAndPostVideo(
     uploadResult: uploadResult,
     description: description,
     altText: altText,
+    aspectRatio: aspectRatio,
     crosspostToBsky: crosspostToBsky,
     storyMode: storyMode,
     soundRef: soundRef,
@@ -185,6 +191,7 @@ Future<RepoStrongRef?> _postVideoRecord({
   required Blob blob,
   required String description,
   required String altText,
+  required MediaAspectRatio? aspectRatio,
   required bool crosspostToBsky,
   required RepoStrongRef? soundRef,
   required List<Facet> facets,
@@ -199,7 +206,7 @@ Future<RepoStrongRef?> _postVideoRecord({
       text: description.isNotEmpty ? description : '',
       facets: facets,
     ),
-    media: Media.video(video: blob, alt: altText),
+    media: Media.video(video: blob, alt: altText, aspectRatio: aspectRatio),
     createdAt: DateTime.now().toUtc(),
     sound: soundRef,
   );

@@ -7,6 +7,8 @@ import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_write_adapters.dart';
 
 void main() {
+  const videoAspectRatio = MediaAspectRatio(width: 9, height: 16);
+
   Blob blob(String mimeType) {
     return Blob.fromJson({
       r'$type': 'blob',
@@ -16,11 +18,32 @@ void main() {
     });
   }
 
+  group('MediaAspectRatio', () {
+    test('normalizes video dimensions', () {
+      expect(
+        MediaAspectRatio.fromDimensions(width: 1080, height: 1920),
+        videoAspectRatio,
+      );
+    });
+
+    test('rejects missing or invalid dimensions', () {
+      expect(MediaAspectRatio.fromDimensions(width: 0, height: 1920), isNull);
+      expect(
+        MediaAspectRatio.fromDimensions(width: null, height: 1920),
+        isNull,
+      );
+    });
+  });
+
   group('sprkPostRecordFromLocal', () {
     test('writes video posts with generated Spark media and label unions', () {
       final record = PostRecord(
         caption: const CaptionRef(text: 'hello #spark'),
-        media: Media.video(video: blob('video/mp4'), alt: 'a clip'),
+        media: Media.video(
+          video: blob('video/mp4'),
+          alt: 'a clip',
+          aspectRatio: videoAspectRatio,
+        ),
         createdAt: DateTime.parse('2026-05-15T12:00:00.000Z'),
         selfLabels: const [SelfLabel(val: 'porn')],
         tags: const ['spark'],
@@ -36,6 +59,8 @@ void main() {
       expect(json['caption'][r'$type'], 'so.sprk.feed.post#captionRef');
       expect(json['media'][r'$type'], 'so.sprk.media.video');
       expect(json['media']['alt'], 'a clip');
+      expect(json['media']['aspectRatio']['width'], 9);
+      expect(json['media']['aspectRatio']['height'], 16);
       expect(json['labels'][r'$type'], 'com.atproto.label.defs#selfLabels');
       expect(json['labels']['values'], [
         {r'$type': 'com.atproto.label.defs#selfLabel', 'val': 'porn'},
@@ -124,7 +149,11 @@ void main() {
   group('sprkStoryRecordFromLocal', () {
     test('writes story media, labels, sound, and mention embeds', () {
       final json = sprkStoryRecordFromLocal(
-        media: Media.video(video: blob('video/mp4'), alt: 'story clip'),
+        media: Media.video(
+          video: blob('video/mp4'),
+          alt: 'story clip',
+          aspectRatio: videoAspectRatio,
+        ),
         createdAt: DateTime.parse('2026-05-15T12:00:00.000Z'),
         labels: const [SelfLabel(val: 'nudity')],
         sound: RepoStrongRef(
@@ -147,6 +176,8 @@ void main() {
       expect(json[r'$type'], 'so.sprk.story.post');
       expect(json['media'][r'$type'], 'so.sprk.media.video');
       expect(json['media']['alt'], 'story clip');
+      expect(json['media']['aspectRatio']['width'], 9);
+      expect(json['media']['aspectRatio']['height'], 16);
       expect(json['labels'][r'$type'], 'com.atproto.label.defs#selfLabels');
       expect(json['sound']['cid'], 'sound-cid');
       expect(json['tags'], isNull);
