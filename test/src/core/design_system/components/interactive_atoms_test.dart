@@ -115,6 +115,46 @@ void main() {
     expect(tapCount, 1);
   });
 
+  testWidgets('AppTabItem keeps selected indicator outside press feedback', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 300,
+            child: Row(
+              children: [
+                AppTabItem(
+                  activeChild: const Text('Selected'),
+                  inactiveChild: const Text('Unselected'),
+                  isSelected: true,
+                  onTap: () {},
+                  indicatorColor: Colors.red,
+                  indicatorWidth: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final indicatorFinder = find.byWidgetPredicate(
+      (widget) => widget is ColoredBox && widget.color == Colors.red,
+    );
+
+    expect(indicatorFinder, findsOneWidget);
+    expect(tester.getSize(indicatorFinder), const Size(24, 2));
+    expect(
+      find.ancestor(
+        of: indicatorFinder,
+        matching: find.byType(InteractivePressable),
+      ),
+      findsNothing,
+    );
+  });
+
   testWidgets('ToggleButton calls onChanged with inverse selected value', (
     tester,
   ) async {

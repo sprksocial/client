@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/tab_item.dart';
 
+const double _profileTabIndicatorWidth = 24;
+
 class ProfileTabItem extends StatelessWidget {
   const ProfileTabItem({
     required this.icon,
@@ -24,6 +26,7 @@ class ProfileTabItem extends StatelessWidget {
       isSelected: isSelected,
       onTap: onTap,
       indicatorColor: theme.colorScheme.primary,
+      indicatorWidth: _profileTabIndicatorWidth,
     );
   }
 }

@@ -10,6 +10,7 @@ class AppTabItem extends StatelessWidget {
     required this.onTap,
     this.indicatorColor,
     this.indicatorThickness = 2,
+    this.indicatorWidth,
     this.padding = const EdgeInsets.symmetric(vertical: 12),
     super.key,
   });
@@ -20,6 +21,7 @@ class AppTabItem extends StatelessWidget {
   final VoidCallback onTap;
   final Color? indicatorColor;
   final double indicatorThickness;
+  final double? indicatorWidth;
   final EdgeInsetsGeometry padding;
 
   @override
@@ -27,22 +29,50 @@ class AppTabItem extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Expanded(
-      child: InteractivePressable(
-        onTap: onTap,
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected
-                    ? (indicatorColor ?? theme.colorScheme.primary)
-                    : const Color(0x00000000),
-                width: indicatorThickness,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          InteractivePressable(
+            onTap: onTap,
+            overlayColor: Colors.transparent,
+            child: SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: padding,
+                child: Center(child: isSelected ? activeChild : inactiveChild),
               ),
             ),
           ),
-          child: isSelected ? activeChild : inactiveChild,
-        ),
+          if (indicatorWidth == null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                child: ColoredBox(
+                  color: isSelected
+                      ? (indicatorColor ?? theme.colorScheme.primary)
+                      : Colors.transparent,
+                  child: SizedBox(height: indicatorThickness),
+                ),
+              ),
+            )
+          else
+            Positioned(
+              bottom: 0,
+              child: IgnorePointer(
+                child: ColoredBox(
+                  color: isSelected
+                      ? (indicatorColor ?? theme.colorScheme.primary)
+                      : Colors.transparent,
+                  child: SizedBox(
+                    width: indicatorWidth,
+                    height: indicatorThickness,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
