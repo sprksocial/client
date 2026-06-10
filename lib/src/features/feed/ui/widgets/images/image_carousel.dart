@@ -71,7 +71,13 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
   Future<void> _preloadAllImages() async {
     // Preload all images in parallel
     await Future.wait(
-      _imageProviders.map((provider) => precacheImage(provider, context)),
+      _imageProviders.map((provider) async {
+        try {
+          await precacheImage(provider, context);
+        } catch (_) {
+          // Visible image loading owns the fallback UI; preload is best-effort.
+        }
+      }),
     );
     // Rebuild to show loaded images
     if (mounted) {
@@ -117,7 +123,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
           if (frame != null) {
             return child;
           }
-          return const SizedBox.shrink();
+          return const _ImageLoadingIndicator();
         },
         errorBuilder: (context, error, stackTrace) =>
             const Center(child: Icon(FluentIcons.error_circle_24_regular)),
@@ -196,6 +202,20 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ImageLoadingIndicator extends StatelessWidget {
+  const _ImageLoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: SizedBox.square(
+        dimension: 28,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+      ),
     );
   }
 }
