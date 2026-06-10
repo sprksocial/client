@@ -51,6 +51,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
   BetterPlayerController? videoController;
   bool _userInteracted = false;
   bool _showThumbnailOverlay = true;
+  bool _showPlayButton = false;
 
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
@@ -99,6 +100,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       videoController?.pause();
       setState(() {
         _userInteracted = true;
+        _showPlayButton = true;
       });
     }
   }
@@ -116,6 +118,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.videoUrl != widget.videoUrl) {
       _showThumbnailOverlay = true;
+      _showPlayButton = false;
     }
     if (oldWidget.videoAspectRatio != widget.videoAspectRatio) {
       _syncPlayerLayout();
@@ -145,6 +148,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         _bounceController
           ..stop()
           ..value = 1.0;
+        if (_showPlayButton) {
+          setState(() {
+            _showPlayButton = false;
+          });
+        }
       }
 
       final progress =
@@ -451,31 +459,38 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
             onTap: () {
               _userInteracted = true;
               if (isPlaying) {
+                setState(() {
+                  _showPlayButton = true;
+                });
                 videoController?.pause();
               } else {
+                setState(() {
+                  _showPlayButton = false;
+                });
                 videoController?.play();
               }
             },
             child: Container(color: Colors.transparent),
           ),
         ),
-        Center(
-          child: IgnorePointer(
-            child: AnimatedBuilder(
-              animation: _bounceAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: isPlaying ? 0.0 : _bounceAnimation.value,
-                  child: SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: AppIcons.play(),
-                  ),
-                );
-              },
+        if (_showPlayButton)
+          Center(
+            child: IgnorePointer(
+              child: AnimatedBuilder(
+                animation: _bounceAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: isPlaying ? 0.0 : _bounceAnimation.value,
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: AppIcons.play(),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-        ),
         if (videoController != null)
           Positioned(
             bottom: 0,
