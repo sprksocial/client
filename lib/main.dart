@@ -13,37 +13,52 @@ import 'package:spark/src/core/utils/logging/riverpod_logger.dart';
 import 'package:spark/src/sprk_app.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+  binding.deferFirstFrame();
+  var didAllowFirstFrame = false;
 
-  await dotenv.load();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  void allowFirstFrame() {
+    if (didAllowFirstFrame) {
+      return;
+    }
+    didAllowFirstFrame = true;
+    binding.allowFirstFrame();
+  }
 
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
+  try {
+    await dotenv.load();
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
-  fvp.registerWith();
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
 
-  await initServiceLocator();
+    fvp.registerWith();
 
-  // Setup logging for production/debug
-  _setupLogging();
+    await initServiceLocator();
 
-  // Initialize auth repository
-  await _initializeAuth();
+    // Setup logging for production/debug
+    _setupLogging();
 
-  // Create a ProviderContainer with the Riverpod logger
-  final container = riverpod.ProviderContainer(
-    observers: [SparkRiverpodLogger()],
-  );
-  runApp(
-    riverpod.UncontrolledProviderScope(
-      container: container,
-      child: const SprkApp(),
-    ),
-  );
+    // Initialize auth repository
+    await _initializeAuth();
+
+    // Create a ProviderContainer with the Riverpod logger
+    final container = riverpod.ProviderContainer(
+      observers: [SparkRiverpodLogger()],
+    );
+    runApp(
+      riverpod.UncontrolledProviderScope(
+        container: container,
+        child: SprkApp(onFirstRouteReady: allowFirstFrame),
+      ),
+    );
+  } catch (_) {
+    allowFirstFrame();
+    rethrow;
+  }
 }
 
 /// Setup logging framework based on environment

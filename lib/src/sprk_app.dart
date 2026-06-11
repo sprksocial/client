@@ -13,7 +13,9 @@ import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 class SprkApp extends ConsumerStatefulWidget {
-  const SprkApp({super.key});
+  const SprkApp({required this.onFirstRouteReady, super.key});
+
+  final VoidCallback onFirstRouteReady;
 
   @override
   ConsumerState<SprkApp> createState() => _SprkAppState();
@@ -22,10 +24,12 @@ class SprkApp extends ConsumerStatefulWidget {
 class _SprkAppState extends ConsumerState<SprkApp> {
   final _appRouter = AppRouter();
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SprkApp');
+  bool _didReleaseFirstFrame = false;
 
   @override
   void initState() {
     super.initState();
+    _appRouter.addListener(_releaseFirstFrameWhenRouteIsReady);
     // Register AppRouter globally for push notification navigation
     if (!GetIt.instance.isRegistered<AppRouter>()) {
       GetIt.instance.registerSingleton<AppRouter>(_appRouter);
@@ -36,6 +40,24 @@ class _SprkAppState extends ConsumerState<SprkApp> {
     // to avoid modifying providers during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
+    });
+  }
+
+  @override
+  void dispose() {
+    _appRouter.removeListener(_releaseFirstFrameWhenRouteIsReady);
+    super.dispose();
+  }
+
+  void _releaseFirstFrameWhenRouteIsReady() {
+    if (_didReleaseFirstFrame || !_appRouter.hasEntries) {
+      return;
+    }
+
+    _didReleaseFirstFrame = true;
+    _appRouter.removeListener(_releaseFirstFrameWhenRouteIsReady);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onFirstRouteReady();
     });
   }
 
@@ -89,6 +111,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
         return supportedLocales.first;
       },
       routerConfig: _appRouter.config(
+        placeholder: (_) => const ColoredBox(color: Colors.black),
         navigatorObservers: () => [
           PosthogObserver(nameExtractor: _postHogScreenName),
         ],
