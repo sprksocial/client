@@ -2,46 +2,20 @@ PODS:
   - audio_waveforms (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - fvp (0.36.1):
-    - Flutter
-    - FlutterMacOS
-    - mdk (~> 0.36.0)
-  - mdk (0.36.0)
-  - pro_image_editor (12.0.8):
-    - Flutter
-  - pro_video_editor (0.0.1):
-    - Flutter
 
 DEPENDENCIES:
   - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
   - Flutter (from `Flutter`)
-  - fvp (from `.symlinks/plugins/fvp/darwin`)
-  - pro_image_editor (from `.symlinks/plugins/pro_image_editor/ios`)
-  - pro_video_editor (from `.symlinks/plugins/pro_video_editor/ios`)
-
-SPEC REPOS:
-  trunk:
-    - mdk
 
 EXTERNAL SOURCES:
   audio_waveforms:
     :path: ".symlinks/plugins/audio_waveforms/ios"
   Flutter:
     :path: Flutter
-  fvp:
-    :path: ".symlinks/plugins/fvp/darwin"
-  pro_image_editor:
-    :path: ".symlinks/plugins/pro_image_editor/ios"
-  pro_video_editor:
-    :path: ".symlinks/plugins/pro_video_editor/ios"
 
 SPEC CHECKSUMS:
   audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  fvp: f8b3b61cf8c696ecaa5608ae0d282ba710e65ae9
-  mdk: 3bfb53e0bcc9643180eaa864360051f281e4c17b
-  pro_image_editor: 3dedac450f82a389877286fa9eb08852cefb04ea
-  pro_video_editor: 44ef9a6d48dbd757ed428cf35396dd05f35c7830
 
 PODFILE CHECKSUM: e716c32704b29904c5fe233535ab45faecf8c549
 
