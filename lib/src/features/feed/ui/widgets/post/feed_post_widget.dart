@@ -243,8 +243,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                             key: _mediaViewerKey,
                             post: currentPost,
                             isActive: isMediaActive,
-                            feed: widget.feed,
-                            index: widget.index,
                           )
                         : const DecoratedBox(
                             decoration: BoxDecoration(color: AppColors.black),

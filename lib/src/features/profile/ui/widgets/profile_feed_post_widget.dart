@@ -227,11 +227,6 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                           key: _mediaViewerKey,
                           post: post,
                           isActive: isMediaActive,
-                          profileFeedUri: widget.index != null
-                              ? feedIndexKey
-                              : null,
-                          index: widget.index,
-                          isInitialPost: widget.isInitialPost,
                         )
                       : const DecoratedBox(
                           decoration: BoxDecoration(color: AppColors.black),

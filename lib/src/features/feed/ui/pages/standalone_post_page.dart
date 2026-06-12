@@ -390,6 +390,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                         key: _videoPlayerKey,
                         videoUrl: postData.videoUrl,
                         thumbnail: postData.thumbnailUrl,
+                        isActive: true,
                         videoAspectRatio: postData.videoAspectRatio,
                       )
                     : postData.imageUrls.isNotEmpty

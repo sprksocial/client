@@ -14,18 +14,10 @@ class PostMediaViewer extends StatefulWidget {
     required this.post,
     required this.isActive,
     super.key,
-    this.feed,
-    this.index,
-    this.profileFeedUri,
-    this.isInitialPost = false,
   });
 
   final PostView post;
   final bool isActive;
-  final Feed? feed;
-  final int? index;
-  final String? profileFeedUri;
-  final bool isInitialPost;
 
   @override
   State<PostMediaViewer> createState() => PostMediaViewerState();
@@ -57,11 +49,8 @@ class PostMediaViewerState extends State<PostMediaViewer> {
         key: _videoPlayerKey,
         videoUrl: post.videoUrl,
         thumbnail: post.thumbnailUrl,
+        isActive: widget.isActive,
         videoAspectRatio: post.videoAspectRatio,
-        feed: widget.feed,
-        index: widget.index,
-        profileFeedUri: widget.profileFeedUri,
-        isInitialPost: widget.isInitialPost,
       );
     }
 

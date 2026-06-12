@@ -2,64 +2,42 @@ import 'dart:async';
 
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/utils/logging/logging.dart';
-import 'package:spark/src/features/feed/providers/feed_provider.dart';
-import 'package:spark/src/features/feed/providers/feed_state.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/feed_video_better_player_layout.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_frame.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
-import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
-import 'package:spark/src/features/home/providers/navigation_provider.dart';
-import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';
 
-class PostVideoPlayer extends ConsumerStatefulWidget {
+class PostVideoPlayer extends StatefulWidget {
   const PostVideoPlayer({
     required this.videoUrl,
     required this.thumbnail,
+    required this.isActive,
     super.key,
     this.videoAspectRatio,
-    this.feed,
-    this.index,
-    this.profileFeedUri,
-    this.isInitialPost = false,
   });
 
   final String videoUrl;
   final String thumbnail;
+  final bool isActive;
   final double? videoAspectRatio;
-  final Feed? feed;
-  final int? index;
-
-  /// The profile URI for standalone profile feed visibility tracking.
-  /// When [index] provided, uses profile feed index provider not feed provider
-  final String? profileFeedUri;
-
-  /// Whether this is the initial post that was clicked on.
-  /// Used to trigger autoplay before the provider is fully initialized.
-  final bool isInitialPost;
 
   @override
-  ConsumerState<PostVideoPlayer> createState() => PostVideoPlayerState();
+  State<PostVideoPlayer> createState() => PostVideoPlayerState();
 }
 
-class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
+class PostVideoPlayerState extends State<PostVideoPlayer>
     with TickerProviderStateMixin {
   BetterPlayerController? videoController;
   bool _userInteracted = false;
   bool _showThumbnailOverlay = true;
   bool _showPlayButton = false;
+  AppLifecycleListener? _appLifecycleListener;
+  bool _isAppInForeground = true;
+  bool _shouldResumeWhenEligible = false;
 
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
 
-  int? _lastNavigationIndex;
-  int? _lastFeedIndex;
-  bool? _lastFeedSettingsVisible;
-  bool _wasPlayingWhenMenuOpened = false;
   Size? _playerVideoSize;
   double? _lastAppliedPlayerAspectRatio;
   BoxFit? _lastAppliedPlayerFit;
@@ -78,6 +56,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     videoSize: _playerVideoSize,
     aspectRatio: _resolvedVideoAspectRatio,
   );
+  bool get _isPlaybackEligible => widget.isActive && _isAppInForeground;
 
   @override
   void initState() {
@@ -89,10 +68,14 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     _bounceAnimation = Tween<double>(begin: 1, end: 1.3).animate(
       CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
     );
+    _appLifecycleListener = AppLifecycleListener(
+      onInactive: _pauseForLifecycle,
+      onHide: _pauseForLifecycle,
+      onPause: _pauseForLifecycle,
+      onShow: _resumeAfterLifecyclePause,
+      onResume: _resumeAfterLifecyclePause,
+    );
     initVideoPlayer();
-    GetIt.I<LogService>()
-        .getLogger('PostVideoPlayer')
-        .i('Initialized PostVideoPlayer with video URL: ${widget.videoUrl}');
   }
 
   void pauseVideo() {
@@ -107,6 +90,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
 
   @override
   void dispose() {
+    _appLifecycleListener?.dispose();
     _bounceController.dispose();
     videoController?.videoPlayerController?.removeListener(_videoValueListener);
     videoController?.dispose();
@@ -122,6 +106,9 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     }
     if (oldWidget.videoAspectRatio != widget.videoAspectRatio) {
       _syncPlayerLayout();
+    }
+    if (oldWidget.isActive != widget.isActive) {
+      _syncPlaybackWithEligibility();
     }
   }
 
@@ -210,30 +197,55 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
       videoControllerTemp.videoPlayerController?.addListener(
         _videoValueListener,
       );
+      _syncPlaybackWithEligibility();
     } catch (e) {
       if (!mounted) return;
     }
   }
 
-  void _handleAutoPlayPause(
-    bool shouldPlay, {
-    bool isFeedSettingsVisible = false,
-  }) {
-    if (_userInteracted) return;
+  void _syncPlaybackWithEligibility() {
+    if (!isInitialized) return;
 
-    // Don't play if feed settings menu is open
-    if (isFeedSettingsVisible) {
+    if (!_isPlaybackEligible) {
+      _shouldResumeWhenEligible = _shouldResumeWhenEligible || isPlaying;
       if (isPlaying) {
         videoController?.pause();
       }
       return;
     }
 
-    if (shouldPlay && !isPlaying) {
+    if (_shouldResumeWhenEligible) {
+      _shouldResumeWhenEligible = false;
+      if (!isPlaying) {
+        videoController?.play();
+      }
+      return;
+    }
+
+    if (!_userInteracted && !isPlaying) {
       videoController?.play();
-    } else if (!shouldPlay && isPlaying) {
+    }
+  }
+
+  void _pauseForLifecycle() {
+    _isAppInForeground = false;
+    _shouldResumeWhenEligible =
+        _shouldResumeWhenEligible ||
+        isPlaying ||
+        (!_userInteracted && widget.isActive);
+    if (isPlaying) {
       videoController?.pause();
     }
+  }
+
+  void _resumeAfterLifecyclePause() {
+    _isAppInForeground = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncPlaybackWithEligibility();
+      }
+    });
   }
 
   void _videoValueListener() {
@@ -273,60 +285,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
     }
   }
 
-  void _handleNavigationVisibility(
-    bool isOnFeedsTab, {
-    required bool shouldPlay,
-    required bool isFeedSettingsVisible,
-  }) {
-    if (!isInitialized) return;
-
-    // Always pause when not on feeds tab, regardless of user interaction
-    if (!isOnFeedsTab && isPlaying) {
-      videoController?.pause();
-      return;
-    }
-
-    if (isOnFeedsTab) {
-      _handleAutoPlayPause(
-        shouldPlay,
-        isFeedSettingsVisible: isFeedSettingsVisible,
-      );
-    }
-  }
-
-  void _handleFeedSettingsVisibility(
-    bool isFeedSettingsVisible,
-    bool isOnFeedsTab,
-    FeedState? feedState,
-  ) {
-    if (!isInitialized) return;
-
-    // Pause videos when feed settings menu is open
-    if (isFeedSettingsVisible && isPlaying) {
-      _wasPlayingWhenMenuOpened = true;
-      videoController?.pause();
-    }
-    // Resume videos when feed settings menu closes
-    // Resume if it was playing when menu opened or if auto-play conditions met
-    else if (!isFeedSettingsVisible) {
-      final wasPlaying = _wasPlayingWhenMenuOpened;
-      _wasPlayingWhenMenuOpened = false;
-
-      if (wasPlaying && !isPlaying) {
-        // Resume if it was playing when menu opened
-        videoController?.play();
-      } else if (!_userInteracted) {
-        // Otherwise, check auto-play conditions
-        final shouldPlay =
-            isOnFeedsTab &&
-            (feedState == null || feedState.index == widget.index);
-        if (shouldPlay && !isPlaying) {
-          videoController?.play();
-        }
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (!isInitialized) {
@@ -336,98 +294,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer>
         videoAspectRatio: _knownVideoAspectRatio,
       );
     }
-
-    final navigationState = ref.watch(navigationProvider);
-    final isOnFeedsTab = navigationState.currentIndex == 0;
-    final feedSettingsVisible = ref.watch(feedSettingsVisibilityProvider);
-
-    final feedState = widget.feed != null
-        ? ref.watch(feedProvider(widget.feed!))
-        : null;
-    final profileFeedIndex = widget.profileFeedUri != null
-        ? ref.watch(profileFeedIndexProvider(widget.profileFeedUri!))
-        : null;
-
-    if (_lastNavigationIndex != navigationState.currentIndex) {
-      _lastNavigationIndex = navigationState.currentIndex;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          final shouldPlay = feedState != null
-              ? feedState.index == widget.index
-              : profileFeedIndex != null && widget.index != null
-              ? profileFeedIndex == widget.index ||
-                    (profileFeedIndex == -1 && widget.isInitialPost)
-              : widget.feed == null &&
-                    widget.index == null &&
-                    widget.profileFeedUri == null;
-          _handleNavigationVisibility(
-            isOnFeedsTab,
-            shouldPlay: shouldPlay,
-            isFeedSettingsVisible: feedSettingsVisible,
-          );
-        }
-      });
-    }
-
-    // Handle feed settings visibility changes
-    if (_lastFeedSettingsVisible != feedSettingsVisible) {
-      _lastFeedSettingsVisible = feedSettingsVisible;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _handleFeedSettingsVisibility(
-            feedSettingsVisible,
-            isOnFeedsTab,
-            feedState,
-          );
-        }
-      });
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (feedState != null && _lastFeedIndex != feedState.index) {
-        _lastFeedIndex = feedState.index;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && !_userInteracted) {
-            final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
-            _handleAutoPlayPause(
-              shouldPlay,
-              isFeedSettingsVisible: feedSettingsVisible,
-            );
-          }
-        });
-      } else if (profileFeedIndex != null && widget.index != null) {
-        // Profile feed visibility check
-        if (profileFeedIndex == -1) {
-          // Provider not initialized, use isInitialPost for initial autoplay
-          if (widget.isInitialPost && _lastFeedIndex == null) {
-            _lastFeedIndex = -1; // Mark as handled
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && !_userInteracted) {
-                _handleAutoPlayPause(
-                  true,
-                  isFeedSettingsVisible: feedSettingsVisible,
-                );
-              }
-            });
-          }
-        } else if (_lastFeedIndex != profileFeedIndex) {
-          _lastFeedIndex = profileFeedIndex;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted && !_userInteracted) {
-              final shouldPlay = profileFeedIndex == widget.index;
-              _handleAutoPlayPause(
-                shouldPlay,
-                isFeedSettingsVisible: feedSettingsVisible,
-              );
-            }
-          });
-        }
-      } else if (widget.feed == null &&
-          widget.index == null &&
-          widget.profileFeedUri == null) {
-        // True standalone mode (no feed tracking at all)
-        _handleAutoPlayPause(true, isFeedSettingsVisible: feedSettingsVisible);
-      }
-    });
 
     final resolvedAspectRatio = _resolvedVideoAspectRatio;
     final fitMode = _resolvedVideoFit;

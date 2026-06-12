@@ -19,6 +19,8 @@ BetterPlayerConfiguration feedVideoBetterPlayerConfiguration({
     fit: fit,
     expandToFill: false,
     allowedScreenSleep: false,
+    // Spark owns feed/profile visibility and app-lifecycle playback policy.
+    handleLifecycle: false,
   );
 }
 
