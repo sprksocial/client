@@ -7,6 +7,16 @@ import 'package:spark/src/features/feed/ui/widgets/videos/feed_video_better_play
 import 'package:spark/src/features/feed/ui/widgets/videos/video_frame.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
 
+bool hasRenderableFeedVideoPlaybackFrame(VideoPlayerValue value) {
+  final size = value.size;
+  return value.initialized &&
+      value.isPlaying &&
+      value.position > Duration.zero &&
+      size != null &&
+      size.width > 0 &&
+      size.height > 0;
+}
+
 class PostVideoPlayer extends StatefulWidget {
   const PostVideoPlayer({
     required this.videoUrl,
@@ -112,14 +122,6 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     }
   }
 
-  void _hideThumbnailOverlay() {
-    if (!_showThumbnailOverlay || !mounted) return;
-
-    setState(() {
-      _showThumbnailOverlay = false;
-    });
-  }
-
   void _videoListener(BetterPlayerEvent event) {
     if (mounted) {
       final paused = event.betterPlayerEventType == BetterPlayerEventType.pause;
@@ -140,15 +142,6 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
             _showPlayButton = false;
           });
         }
-      }
-
-      final progress =
-          event.betterPlayerEventType == BetterPlayerEventType.progress;
-      final progressPosition = event.parameters?['progress'];
-      if (progress &&
-          progressPosition is Duration &&
-          progressPosition > Duration.zero) {
-        _hideThumbnailOverlay();
       }
     }
   }
@@ -252,12 +245,24 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     if (!mounted) return;
     final controller = videoController;
     if (controller == null) return;
-    final videoSize = controller.videoPlayerController?.value.size;
+    final videoValue = controller.videoPlayerController?.value;
+    if (videoValue == null) return;
+    final videoSize = videoValue.size;
     _syncPlayerLayout(controller: controller, videoSize: videoSize);
 
-    if (_playerVideoSize == videoSize) return;
+    final shouldHideThumbnail =
+        _showThumbnailOverlay &&
+        hasRenderableFeedVideoPlaybackFrame(videoValue);
+    final shouldUpdateVideoSize = _playerVideoSize != videoSize;
+    if (!shouldHideThumbnail && !shouldUpdateVideoSize) return;
+
     setState(() {
-      _playerVideoSize = videoSize;
+      if (shouldHideThumbnail) {
+        _showThumbnailOverlay = false;
+      }
+      if (shouldUpdateVideoSize) {
+        _playerVideoSize = videoSize;
+      }
     });
   }
 
