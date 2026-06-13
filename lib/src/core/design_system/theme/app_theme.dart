@@ -12,6 +12,11 @@ class AppTheme {
       fontFamily: 'SN Pro',
       brightness: Brightness.light,
       colorScheme: AppColorScheme.light,
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColorScheme.light.primary,
+        selectionColor: AppColorScheme.light.primary.withAlpha(80),
+        selectionHandleColor: AppColorScheme.light.primary,
+      ),
       scaffoldBackgroundColor: AppColors.greyWhite,
       appBarTheme: AppBarTheme(
         elevation: 0,
@@ -94,6 +99,11 @@ class AppTheme {
       fontFamily: 'SN Pro',
       brightness: Brightness.dark,
       colorScheme: AppColorScheme.dark,
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColorScheme.dark.primary,
+        selectionColor: AppColorScheme.dark.primary.withAlpha(80),
+        selectionHandleColor: AppColorScheme.dark.primary,
+      ),
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
       focusColor: Colors.transparent,
