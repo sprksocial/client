@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:poptart/poptart.dart';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +15,7 @@ import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/post_updates.dart';
+import 'package:spark/src/features/feed/navigation/standalone_post_navigation_resolver.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
@@ -23,16 +23,21 @@ import 'package:spark/src/features/settings/providers/preferences_provider.dart'
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
-  const StandalonePostPage({required this.postUri, super.key});
+  const StandalonePostPage({
+    required this.postUri,
+    super.key,
+    this.highlightedReplyUri,
+  });
 
   final String postUri;
+  final String? highlightedReplyUri;
 
   @override
   ConsumerState<StandalonePostPage> createState() => _StandalonePostPageState();
 }
 
 class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
-  Future<_ResolvedStandalonePost>? _postFuture;
+  Future<ResolvedStandalonePost>? _postFuture;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey =
       GlobalKey<PostVideoPlayerState>();
   bool _showWarningOverlay = false;
@@ -91,19 +96,20 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
     );
   }
 
-  void _openHighlightedReplyIfNeeded(_ResolvedStandalonePost resolvedPost) {
-    final targetReplyUri = resolvedPost.targetReplyUri;
-    if (targetReplyUri == null || _hasOpenedHighlightedReply) return;
+  void _openHighlightedReplyIfNeeded(ResolvedStandalonePost resolvedPost) {
+    if (resolvedPost.highlightedReplyUri == null ||
+        _hasOpenedHighlightedReply) {
+      return;
+    }
 
     _hasOpenedHighlightedReply = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pushHighlightedReplyRoute(resolvedPost, targetReplyUri);
+      _pushHighlightedReplyRoute(resolvedPost);
     });
   }
 
   Future<void> _pushHighlightedReplyRoute(
-    _ResolvedStandalonePost resolvedPost,
-    String targetReplyUri, {
+    ResolvedStandalonePost resolvedPost, {
     int attempt = 0,
   }) async {
     if (!mounted) return;
@@ -112,225 +118,48 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
     final isCurrentRoute = route?.isCurrent ?? false;
     if (!isCurrentRoute && attempt < 10) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
-      return _pushHighlightedReplyRoute(
-        resolvedPost,
-        targetReplyUri,
-        attempt: attempt + 1,
-      );
+      return _pushHighlightedReplyRoute(resolvedPost, attempt: attempt + 1);
     }
 
     if (!mounted) return;
-
-    final initialChildren = _buildInitialCommentChildren(
-      resolvedPost,
-      targetReplyUri,
-    );
 
     context.router.push(
       CommentsRoute(
         postUri: resolvedPost.post.uri.toString(),
         isSprk: resolvedPost.post.isSprk,
         post: resolvedPost.post,
-        highlightedReplyUri: targetReplyUri,
-        children: initialChildren,
+        highlightedReplyUri: resolvedPost.highlightedReplyUri,
+        children: _buildInitialCommentChildren(resolvedPost),
       ),
     );
   }
 
   List<PageRouteInfo>? _buildInitialCommentChildren(
-    _ResolvedStandalonePost resolvedPost,
-    String targetReplyUri,
+    ResolvedStandalonePost resolvedPost,
   ) {
-    final parentUris = resolvedPost.replyChainUris;
-    if (parentUris.isEmpty) {
+    final parentReplyUris = resolvedPost.parentReplyUris;
+    if (parentReplyUris.isEmpty) {
       return null;
     }
 
     return [
       const CommentsListRoute(),
-      for (var i = 0; i < parentUris.length; i++)
+      for (var i = 0; i < parentReplyUris.length; i++)
         RepliesRoute(
-          postUri: parentUris[i],
-          highlightedReplyUri: i == parentUris.length - 1
-              ? targetReplyUri
+          postUri: parentReplyUris[i],
+          highlightedReplyUri: i == parentReplyUris.length - 1
+              ? resolvedPost.highlightedReplyUri
               : null,
         ),
     ];
   }
 
-  Future<_ResolvedStandalonePost> _loadResolvedPost() async {
+  Future<ResolvedStandalonePost> _loadResolvedPost() {
     final feedRepository = GetIt.instance<SprkRepository>().feed;
-    final uri = AtUri.parse(widget.postUri);
-
-    try {
-      final thread = await feedRepository.getThread(
-        uri,
-        depth: 1,
-        parentHeight: 50,
-        bluesky: _isBlueskyPost(uri),
-      );
-
-      if (thread case ThreadViewPost()) {
-        return _resolveThreadNavigation(thread);
-      }
-    } catch (_) {
-      // Fallback below preserves existing "open the anchor directly" behavior.
-    }
-
-    final post = await _loadPostWithFallback(uri);
-    return _ResolvedStandalonePost(post: post);
-  }
-
-  Future<_ResolvedStandalonePost> _resolveThreadNavigation(
-    ThreadViewPost thread,
-  ) async {
-    final anchorThread = _findThreadByUri(thread, widget.postUri) ?? thread;
-    final rawReplyPath = _findReplyPath(thread, widget.postUri);
-    final replyPath =
-        rawReplyPath != null &&
-            rawReplyPath.length == 1 &&
-            rawReplyPath.first.post.uri.toString() == widget.postUri &&
-            rawReplyPath.first.parent is ThreadViewPost
-        ? null
-        : rawReplyPath;
-    final rootThread = replyPath?.first ?? _findRootThread(anchorThread);
-    final displayPost = await _getDisplayPost(rootThread);
-    final anchorIsReply =
-        (replyPath != null && replyPath.length > 1) ||
-        anchorThread.parent is ThreadViewPost ||
-        anchorThread.post is ThreadReplyView;
-
-    return _ResolvedStandalonePost(
-      post: displayPost,
-      targetReplyUri: anchorIsReply ? widget.postUri : null,
-      replyChainUris: anchorIsReply
-          ? (replyPath != null
-                ? _collectReplyChainUrisFromPath(replyPath)
-                : _collectIntermediateReplyUris(anchorThread))
-          : const <String>[],
+    return StandalonePostNavigationResolver(feedRepository).resolve(
+      postUri: widget.postUri,
+      highlightedReplyUri: widget.highlightedReplyUri,
     );
-  }
-
-  ThreadViewPost? _findThreadByUri(
-    ThreadViewPost thread,
-    String targetUri, {
-    Set<String>? visited,
-  }) {
-    final seen = visited ?? <String>{};
-    final currentUri = thread.post.uri.toString();
-    if (!seen.add(currentUri)) return null;
-    if (currentUri == targetUri) return thread;
-
-    if (thread.parent case ThreadViewPost parentThread) {
-      final match = _findThreadByUri(parentThread, targetUri, visited: seen);
-      if (match != null) {
-        return match;
-      }
-    }
-
-    final replies = thread.replies;
-    if (replies != null) {
-      for (final reply in replies) {
-        if (reply is! ThreadViewPost) continue;
-        final match = _findThreadByUri(reply, targetUri, visited: seen);
-        if (match != null) {
-          return match;
-        }
-      }
-    }
-
-    return null;
-  }
-
-  List<ThreadViewPost>? _findReplyPath(
-    ThreadViewPost thread,
-    String targetUri, {
-    Set<String>? visited,
-  }) {
-    final seen = visited ?? <String>{};
-    final currentUri = thread.post.uri.toString();
-    if (!seen.add(currentUri)) return null;
-    if (currentUri == targetUri) return [thread];
-
-    final replies = thread.replies;
-    if (replies == null) return null;
-
-    for (final reply in replies) {
-      if (reply is! ThreadViewPost) continue;
-      final childPath = _findReplyPath(reply, targetUri, visited: {...seen});
-      if (childPath != null) {
-        return [thread, ...childPath];
-      }
-    }
-
-    return null;
-  }
-
-  ThreadViewPost _findRootThread(ThreadViewPost thread) {
-    var current = thread;
-    while (true) {
-      final parentThread = current.parent;
-      if (parentThread is! ThreadViewPost) {
-        return current;
-      }
-      current = parentThread;
-    }
-  }
-
-  List<String> _collectIntermediateReplyUris(ThreadViewPost anchorThread) {
-    final replyUris = <String>[];
-    var current = anchorThread.parent;
-
-    while (current is ThreadViewPost) {
-      final currentPost = current.post;
-      if (current.parent is ThreadViewPost && currentPost is ThreadReplyView) {
-        final reply = currentPost.reply;
-        replyUris.add(reply.uri.toString());
-      }
-      current = current.parent;
-    }
-
-    return replyUris.reversed.toList(growable: false);
-  }
-
-  List<String> _collectReplyChainUrisFromPath(List<ThreadViewPost> replyPath) {
-    if (replyPath.length < 3) return const <String>[];
-    return replyPath
-        .sublist(1, replyPath.length - 1)
-        .map((thread) => thread.post.uri.toString())
-        .toList(growable: false);
-  }
-
-  Future<PostView> _getDisplayPost(ThreadViewPost rootThread) async {
-    if (rootThread.post case ThreadPostView(:final post)) {
-      return post;
-    }
-
-    return _loadPostWithFallback(rootThread.post.uri);
-  }
-
-  Future<PostView> _loadPostWithFallback(AtUri uri) async {
-    final feedRepository = GetIt.instance<SprkRepository>().feed;
-    const maxRetries = 3;
-    const delay = Duration(seconds: 2);
-
-    for (var i = 0; i < maxRetries; i++) {
-      final networkPost = await feedRepository.getPosts([
-        uri,
-      ], bluesky: _isBlueskyPost(uri));
-      if (networkPost.isNotEmpty) {
-        return networkPost.first;
-      }
-      if (i < maxRetries - 1) {
-        await Future.delayed(delay);
-      }
-    }
-
-    throw Exception('Failed to load post after $maxRetries attempts');
-  }
-
-  bool _isBlueskyPost(AtUri uri) {
-    return uri.collection.toString().startsWith('app.bsky.feed.post');
   }
 
   void _checkContentWarning(PostView postData) {
@@ -371,7 +200,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return FutureBuilder<_ResolvedStandalonePost>(
+    return FutureBuilder<ResolvedStandalonePost>(
       future: _postFuture,
       builder: (context, snapshot) {
         final resolvedPost = snapshot.data;
@@ -486,18 +315,6 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       },
     );
   }
-}
-
-class _ResolvedStandalonePost {
-  const _ResolvedStandalonePost({
-    required this.post,
-    this.targetReplyUri,
-    this.replyChainUris = const <String>[],
-  });
-
-  final PostView post;
-  final String? targetReplyUri;
-  final List<String> replyChainUris;
 }
 
 class _CommentBar extends StatelessWidget {

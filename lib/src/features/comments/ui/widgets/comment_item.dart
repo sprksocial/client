@@ -20,25 +20,61 @@ import 'package:spark/src/features/comments/providers/comment_provider.dart';
 import 'package:spark/src/features/comments/providers/comment_state.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
 
-class CommentItem extends ConsumerStatefulWidget {
+class CommentItem extends ConsumerWidget {
   const CommentItem({
     required this.thread,
     required this.mainPostUri,
     super.key,
     this.isHighlighted = false,
   });
+
   final ThreadViewPost thread;
   final AtUri mainPostUri;
   final bool isHighlighted;
 
   @override
-  ConsumerState<CommentItem> createState() => _CommentItemState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final commentState = ref.watch(commentProvider(thread));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CommentBody(
+          thread: thread,
+          mainPostUri: mainPostUri,
+          isHighlighted: isHighlighted,
+        ),
+
+        if (commentState.thread.post.replyCount != null &&
+            commentState.thread.post.replyCount! > 0)
+          _RepliesSection(commentState),
+
+        Container(height: 0.5, color: Theme.of(context).colorScheme.surface),
+      ],
+    );
+  }
 }
 
-class _CommentItemState extends ConsumerState<CommentItem> {
+class CommentBody extends ConsumerStatefulWidget {
+  const CommentBody({
+    required this.thread,
+    required this.mainPostUri,
+    super.key,
+    this.isHighlighted = false,
+  });
+
+  final ThreadViewPost thread;
+  final AtUri mainPostUri;
+  final bool isHighlighted;
+
+  @override
+  ConsumerState<CommentBody> createState() => _CommentBodyState();
+}
+
+class _CommentBodyState extends ConsumerState<CommentBody> {
   late CommentState commentState;
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'CommentItem',
+    'CommentBody',
   );
 
   @override
@@ -139,7 +175,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
               children: [
                 GestureDetector(
                   onTap: _navigateToProfile,
-                  child: _Avatar(widget: widget),
+                  child: _Avatar(thread: widget.thread),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -239,7 +275,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                       _ActionButtons(
                         ref: ref,
                         commentState: commentState,
-                        widget: widget,
+                        thread: widget.thread,
                         secondaryTextColor: Theme.of(
                           context,
                         ).textTheme.bodyMedium!.color!,
@@ -250,12 +286,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
               ],
             ),
           ),
-
-          if (commentState.thread.post.replyCount != null &&
-              commentState.thread.post.replyCount! > 0)
-            _RepliesSection(commentState),
-
-          Container(height: 0.5, color: Theme.of(context).colorScheme.surface),
         ],
       ),
     );
@@ -313,19 +343,19 @@ class _ActionButtons extends StatelessWidget {
   const _ActionButtons({
     required this.ref,
     required this.commentState,
-    required this.widget,
+    required this.thread,
     required this.secondaryTextColor,
   });
 
   final WidgetRef ref;
   final CommentState commentState;
-  final CommentItem widget;
+  final ThreadViewPost thread;
   final Color secondaryTextColor;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final notifier = ref.read(commentProvider(widget.thread).notifier);
+    final notifier = ref.read(commentProvider(thread).notifier);
     return Row(
       children: [
         TextButton(
@@ -374,15 +404,15 @@ class _ActionButtons extends StatelessWidget {
 }
 
 class _Avatar extends StatelessWidget {
-  const _Avatar({required this.widget});
+  const _Avatar({required this.thread});
 
-  final CommentItem widget;
+  final ThreadViewPost thread;
 
   @override
   Widget build(BuildContext context) {
     return UserAvatar(
-      imageUrl: widget.thread.post.author.avatar.toString(),
-      username: widget.thread.post.author.handle,
+      imageUrl: thread.post.author.avatar.toString(),
+      username: thread.post.author.handle,
       size: 36,
     );
   }

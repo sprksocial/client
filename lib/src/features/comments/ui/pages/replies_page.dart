@@ -8,6 +8,7 @@ import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
 import 'package:spark/src/features/comments/ui/widgets/comment_input.dart';
 import 'package:spark/src/features/comments/ui/widgets/comment_item.dart';
+import 'package:spark/src/features/comments/ui/widgets/highlighted_reply_scroll.dart';
 
 @RoutePage()
 class RepliesPage extends ConsumerStatefulWidget {
@@ -64,27 +65,14 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
     }
   }
 
-  void _scrollToHighlightedReply(List<dynamic> replies) {
+  void _scrollToHighlightedReplyIfNeeded(List<ThreadViewPost> replies) {
     if (_hasScrolledToHighlighted || widget.highlightedReplyUri == null) return;
-    _hasScrolledToHighlighted = true;
 
-    int? highlightedIndex;
-    for (var i = 0; i < replies.length; i++) {
-      final reply = replies[i] as ThreadViewPost;
-      if (reply.post.uri.toString() == widget.highlightedReplyUri) {
-        highlightedIndex = i;
-        break;
-      }
-    }
-
-    if (highlightedIndex != null && _scrollController.hasClients) {
-      final estimatedOffset = highlightedIndex * 100.0;
-      _scrollController.animateTo(
-        estimatedOffset.clamp(0, _scrollController.position.maxScrollExtent),
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOut,
-      );
-    }
+    _hasScrolledToHighlighted = scrollToHighlightedThreadReply(
+      scrollController: _scrollController,
+      replies: replies,
+      highlightedReplyUri: widget.highlightedReplyUri!,
+    );
   }
 
   /// Extracts the thread root URI and CID from the reply record.
@@ -132,44 +120,50 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
       body: state.when(
         data: (data) {
           final threadRoot = _getThreadRoot(data.thread);
+          final replies = threadViewPostReplies(data.thread.replies);
           if (widget.highlightedReplyUri != null &&
               !_hasScrolledToHighlighted) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _scrollToHighlightedReply(data.thread.replies ?? const []);
+              _scrollToHighlightedReplyIfNeeded(replies);
             });
           }
 
           return SafeArea(
             child: Column(
               children: [
-                if (data.thread.parent is ThreadViewPost)
-                  CommentItem(
-                    key: ValueKey(
-                      'comment-'
-                      '${(data.thread.parent! as ThreadViewPost).post.uri}',
-                    ),
-                    thread: data.thread.parent! as ThreadViewPost,
+                _ReplyAnchor(
+                  child: CommentBody(
+                    key: ValueKey('comment-${data.thread.post.uri}'),
+                    thread: data.thread,
                     mainPostUri: AtUri.parse(widget.postUri),
+                    isHighlighted:
+                        widget.highlightedReplyUri ==
+                        data.thread.post.uri.toString(),
                   ),
+                ),
                 Expanded(
                   child: ListView.builder(
                     controller: _scrollController,
                     padding: EdgeInsets.only(
+                      top: 8,
                       bottom: 16 + (keyboardHeight > 0 ? 0 : 80),
                     ),
-                    itemCount: data.thread.replies?.length ?? 0,
+                    itemCount: replies.length,
                     itemBuilder: (context, index) {
-                      final comment =
-                          data.thread.replies![index] as ThreadViewPost;
+                      final comment = replies[index];
                       final isHighlighted =
                           widget.highlightedReplyUri != null &&
                           comment.post.uri.toString() ==
                               widget.highlightedReplyUri;
-                      return CommentItem(
-                        key: ValueKey('comment-${comment.post.cid}'),
-                        thread: comment,
-                        mainPostUri: AtUri.parse(widget.postUri),
-                        isHighlighted: isHighlighted,
+                      return _ThreadedReplyItem(
+                        isFirst: index == 0,
+                        isLast: index == replies.length - 1,
+                        child: CommentItem(
+                          key: ValueKey('comment-${comment.post.cid}'),
+                          thread: comment,
+                          mainPostUri: AtUri.parse(widget.postUri),
+                          isHighlighted: isHighlighted,
+                        ),
                       );
                     },
                   ),
@@ -192,5 +186,117 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );
+  }
+}
+
+class _ReplyAnchor extends StatelessWidget {
+  const _ReplyAnchor({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.28),
+        border: Border(
+          bottom: BorderSide(
+            color: colorScheme.outline.withValues(alpha: 0.16),
+          ),
+        ),
+      ),
+      child: Padding(padding: const EdgeInsets.only(bottom: 4), child: child),
+    );
+  }
+}
+
+class _ThreadedReplyItem extends StatelessWidget {
+  const _ThreadedReplyItem({
+    required this.child,
+    required this.isFirst,
+    required this.isLast,
+  });
+
+  final Widget child;
+  final bool isFirst;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Stack(
+      children: [
+        Positioned(
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: 56,
+          child: CustomPaint(
+            painter: _ThreadIndicatorPainter(
+              color: colorScheme.outline.withValues(alpha: 0.22),
+              isFirst: isFirst,
+              isLast: isLast,
+            ),
+          ),
+        ),
+        Padding(padding: const EdgeInsets.only(left: 56), child: child),
+      ],
+    );
+  }
+}
+
+class _ThreadIndicatorPainter extends CustomPainter {
+  const _ThreadIndicatorPainter({
+    required this.color,
+    required this.isFirst,
+    required this.isLast,
+  });
+
+  final Color color;
+  final bool isFirst;
+  final bool isLast;
+
+  static const double _trunkX = 16;
+  static const double _branchStartY = 8;
+  static const double _avatarCenterY = 30;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final trunkBottom = isLast ? _branchStartY : size.height;
+    canvas.drawLine(
+      Offset(_trunkX, isFirst ? 0 : -1),
+      Offset(_trunkX, trunkBottom),
+      paint,
+    );
+
+    final branch = Path()
+      ..moveTo(_trunkX, _branchStartY)
+      ..cubicTo(
+        _trunkX,
+        _branchStartY + 14,
+        _trunkX + 10,
+        _avatarCenterY,
+        _trunkX + 30,
+        _avatarCenterY,
+      );
+
+    canvas.drawPath(branch, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ThreadIndicatorPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.isFirst != isFirst ||
+        oldDelegate.isLast != isLast;
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart'
     as models;
+import 'package:spark/src/core/notifications/notification_navigation.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
@@ -176,8 +177,16 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
       // Navigate to profile (use first author for grouped follows)
       context.router.push(ProfileRoute(did: notification.author.did));
     } else if (reason == 'reply') {
-      final replyUri = notification.uri.toString();
-      context.router.push(StandalonePostRoute(postUri: replyUri));
+      final target = replyNotificationTarget(
+        replyUri: notification.uri.toString(),
+        reasonSubject: notification.reasonSubject?.toString(),
+      );
+      context.router.push(
+        StandalonePostRoute(
+          postUri: target.postUri,
+          highlightedReplyUri: target.highlightedReplyUri,
+        ),
+      );
     } else if (notification.reasonSubject != null) {
       // Navigate to the post/thread
       final reasonSubjectStr = notification.reasonSubject!.toString();

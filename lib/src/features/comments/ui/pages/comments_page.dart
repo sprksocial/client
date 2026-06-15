@@ -9,6 +9,7 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
 import 'package:spark/src/features/comments/ui/widgets/comment_input.dart';
 import 'package:spark/src/features/comments/ui/widgets/comment_item.dart';
+import 'package:spark/src/features/comments/ui/widgets/highlighted_reply_scroll.dart';
 
 @RoutePage()
 class CommentsPage extends ConsumerStatefulWidget {
@@ -190,29 +191,14 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
     }
   }
 
-  void _scrollToHighlightedReply(List<dynamic> replies) {
+  void _scrollToHighlightedReplyIfNeeded(List<ThreadViewPost> replies) {
     if (_hasScrolledToHighlighted || _highlightedReplyUri == null) return;
-    _hasScrolledToHighlighted = true;
 
-    // Find the index of the highlighted reply
-    int? highlightedIndex;
-    for (var i = 0; i < replies.length; i++) {
-      final reply = replies[i] as ThreadViewPost;
-      if (reply.post.uri.toString() == _highlightedReplyUri) {
-        highlightedIndex = i;
-        break;
-      }
-    }
-
-    if (highlightedIndex != null && _scrollController.hasClients) {
-      // Estimate scroll position (assuming ~100 pixels per item)
-      final estimatedOffset = highlightedIndex * 100.0;
-      _scrollController.animateTo(
-        estimatedOffset.clamp(0, _scrollController.position.maxScrollExtent),
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeOut,
-      );
-    }
+    _hasScrolledToHighlighted = scrollToHighlightedThreadReply(
+      scrollController: _scrollController,
+      replies: replies,
+      highlightedReplyUri: _highlightedReplyUri!,
+    );
   }
 
   @override
@@ -272,22 +258,23 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
         Expanded(
           child: asyncState.when(
             data: (data) {
-              if (data.thread.replies == null || data.thread.replies!.isEmpty) {
+              final replies = threadViewPostReplies(data.thread.replies);
+              if (replies.isEmpty) {
                 return Center(child: Text(l10n.emptyNoComments));
               }
 
               if (_highlightedReplyUri != null && !_hasScrolledToHighlighted) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToHighlightedReply(data.thread.replies!);
+                  _scrollToHighlightedReplyIfNeeded(replies);
                 });
               }
 
               return ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.only(bottom: 16),
-                itemCount: data.thread.replies?.length ?? 0,
+                itemCount: replies.length,
                 itemBuilder: (context, index) {
-                  final comment = data.thread.replies![index] as ThreadViewPost;
+                  final comment = replies[index];
                   final isHighlighted =
                       _highlightedReplyUri != null &&
                       comment.post.uri.toString() == _highlightedReplyUri;

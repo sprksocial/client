@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/firebase_options.dart';
+import 'package:spark/src/core/notifications/notification_navigation.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -88,10 +89,13 @@ class PushNotificationService {
   /// Handles notification tap when app is in background or foreground
   void _handleNotificationTap(RemoteMessage message) {
     final data = message.data;
-    final reason = data['reason'] as String?;
-    final author = data['author'] as String?;
-    final recordUri = data['recordUri'] as String?;
-    final reasonSubject = data['reasonSubject'] as String?;
+    final reason = notificationPayloadString(data['reason']);
+    final author = notificationPayloadString(data['author']);
+    final recordUri = notificationRecordUri(data);
+    final reasonSubject = notificationPayloadString(data['reasonSubject']);
+    final replyTarget = reason == 'reply'
+        ? replyNotificationTargetFromPayload(data)
+        : null;
 
     if (!GetIt.instance.isRegistered<AppRouter>()) {
       _pendingNotification = message;
@@ -103,8 +107,13 @@ class PushNotificationService {
     if (reason == 'follow' && author != null) {
       // Navigate to profile for follow notifications
       router.push(ProfileRoute(did: author));
-    } else if (reason == 'reply' && recordUri != null) {
-      router.push(StandalonePostRoute(postUri: recordUri));
+    } else if (replyTarget != null) {
+      router.push(
+        StandalonePostRoute(
+          postUri: replyTarget.postUri,
+          highlightedReplyUri: replyTarget.highlightedReplyUri,
+        ),
+      );
     } else if (reasonSubject != null) {
       // For likes/reposts, navigate to the subject (the post being liked/reposted)
       router.push(StandalonePostRoute(postUri: reasonSubject));
