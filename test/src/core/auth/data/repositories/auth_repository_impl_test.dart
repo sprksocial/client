@@ -878,7 +878,7 @@ void main() {
     );
 
     test(
-      'initiateOAuthWithoutLoginHint omits login_hint in AIP mode',
+      'initiateOAuthWithoutLoginHint sends blank login_hint in AIP mode',
       () async {
         final storage = _InMemoryStorage();
         final client = MockClient((request) async {
@@ -910,10 +910,10 @@ void main() {
         await repository.initializationComplete;
         final authUrl = await repository.initiateOAuthWithoutLoginHint();
 
-        expect(
-          Uri.parse(authUrl).queryParameters.containsKey('login_hint'),
-          isFalse,
-        );
+        final authUri = Uri.parse(authUrl);
+
+        expect(authUri.queryParameters.containsKey('login_hint'), isTrue);
+        expect(authUri.queryParameters['login_hint'], isEmpty);
       },
     );
   });

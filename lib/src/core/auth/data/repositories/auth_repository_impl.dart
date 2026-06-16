@@ -440,7 +440,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<String> initiateOAuthWithoutLoginHint() async {
-    return _startOAuthFlow();
+    return _startOAuthFlow(loginHint: '');
   }
 
   Future<String> _startOAuthFlow({String? loginHint}) async {
@@ -462,7 +462,7 @@ class AuthRepositoryImpl implements AuthRepository {
         state: state,
       );
 
-      if (loginHint != null && loginHint.isNotEmpty) {
+      if (loginHint != null) {
         authorizationUri = authorizationUri.replace(
           queryParameters: {
             ...authorizationUri.queryParameters,
