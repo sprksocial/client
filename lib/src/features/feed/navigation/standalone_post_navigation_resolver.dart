@@ -3,6 +3,9 @@ import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 
+const _navigationThreadDepth = 6;
+const _navigationParentHeight = 50;
+
 class ResolvedStandalonePost {
   const ResolvedStandalonePost({
     required this.post,
@@ -32,12 +35,12 @@ class StandalonePostNavigationResolver {
     String? highlightedReplyUri,
   }) async {
     final anchors = [
+      _NavigationAnchor(uri: postUri, targetReplyUri: highlightedReplyUri),
       if (highlightedReplyUri != null && highlightedReplyUri != postUri)
         _NavigationAnchor(
           uri: highlightedReplyUri,
           targetReplyUri: highlightedReplyUri,
         ),
-      _NavigationAnchor(uri: postUri, targetReplyUri: highlightedReplyUri),
     ];
 
     for (final anchor in anchors) {
@@ -72,8 +75,8 @@ class StandalonePostNavigationResolver {
   Future<Thread> _loadThread(AtUri uri) {
     return _feedRepository.getThread(
       uri,
-      depth: 1,
-      parentHeight: 50,
+      depth: _navigationThreadDepth,
+      parentHeight: _navigationParentHeight,
       bluesky: _isBlueskyPost(uri),
     );
   }
@@ -126,9 +129,15 @@ class StandalonePostNavigationResolver {
   }) {
     if (!anchorIsReply) return const <String>[];
 
-    final replyUris = replyPath != null
+    final replyPathUris = replyPath != null
         ? _collectReplyChainUrisFromPath(replyPath)
-        : _collectIntermediateReplyUris(anchorThread);
+        : const <String>[];
+    final parentChainUris = _collectIntermediateReplyUris(anchorThread);
+    // Thread APIs can return the target as a shallow reply while preserving
+    // richer parent links; route with whichever ancestry source is deeper.
+    final replyUris = parentChainUris.length > replyPathUris.length
+        ? parentChainUris
+        : replyPathUris;
 
     if (parentReplyUri == null) return replyUris;
     if (replyUris.isNotEmpty && replyUris.last == parentReplyUri) {
@@ -209,10 +218,8 @@ class StandalonePostNavigationResolver {
     var current = anchorThread.parent;
 
     while (current is ThreadViewPost) {
-      final currentPost = current.post;
-      if (current.parent is ThreadViewPost && currentPost is ThreadReplyView) {
-        final reply = currentPost.reply;
-        replyUris.add(reply.uri.toString());
+      if (current.parent is ThreadViewPost) {
+        replyUris.add(current.post.uri.toString());
       }
       current = current.parent;
     }

@@ -5,13 +5,17 @@ import 'package:spark/src/core/network/atproto/data/repositories/feed_repository
 import 'package:spark/src/features/feed/navigation/standalone_post_navigation_resolver.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
-void main() {
-  const rootPostUri = 'at://did:plc:author/so.sprk.feed.post/root';
-  const directReplyUri = 'at://did:plc:author/so.sprk.feed.reply/direct';
-  const parentReplyUri = 'at://did:plc:author/so.sprk.feed.reply/parent';
-  const childReplyUri = 'at://did:plc:author/so.sprk.feed.reply/child';
-  const fallbackPostUri = 'at://did:plc:author/so.sprk.feed.post/fallback';
+const rootPostUri = 'at://did:plc:author/so.sprk.feed.post/root';
+const directReplyUri = 'at://did:plc:author/so.sprk.feed.reply/direct';
+const parentReplyUri = 'at://did:plc:author/so.sprk.feed.reply/parent';
+const childReplyUri = 'at://did:plc:author/so.sprk.feed.reply/child';
+const fallbackPostUri = 'at://did:plc:author/so.sprk.feed.post/fallback';
+const bskyRootPostUri = 'at://did:plc:author/app.bsky.feed.post/root';
+const bskyDirectReplyUri = 'at://did:plc:author/app.bsky.feed.post/direct';
+const bskyParentReplyUri = 'at://did:plc:author/app.bsky.feed.post/parent';
+const bskyChildReplyUri = 'at://did:plc:author/app.bsky.feed.post/child';
 
+void main() {
   late _FakeFeedRepository feedRepository;
   late StandalonePostNavigationResolver resolver;
 
@@ -63,7 +67,7 @@ void main() {
   });
 
   test(
-    'uses highlighted reply as the anchor when notification subject is parent',
+    'uses notification subject as the anchor for highlighted replies',
     () async {
       final rootPost = _post(rootPostUri);
       final rootThread = _threadPost(rootPost);
@@ -82,7 +86,115 @@ void main() {
       expect(resolved.post.uri.toString(), rootPostUri);
       expect(resolved.highlightedReplyUri, childReplyUri);
       expect(resolved.parentReplyUris, [parentReplyUri]);
-      expect(feedRepository.threadRequests, [childReplyUri]);
+      expect(feedRepository.threadRequests.map((request) => request.uri), [
+        parentReplyUri,
+      ]);
+    },
+  );
+
+  test(
+    'loads enough reply depth to route nested reply notifications',
+    () async {
+      final rootPost = _post(rootPostUri);
+      final shallowThread = _rootThreadWithDirectReply(rootPost);
+      final nestedThread = _rootThreadWithReplyChain(rootPost);
+      feedRepository.threadBuilders[parentReplyUri] = (request) {
+        return request.depth >= 3 ? nestedThread : shallowThread;
+      };
+
+      final resolved = await resolver.resolve(
+        postUri: parentReplyUri,
+        highlightedReplyUri: childReplyUri,
+      );
+
+      expect(resolved.post.uri.toString(), rootPostUri);
+      expect(resolved.highlightedReplyUri, childReplyUri);
+      expect(resolved.parentReplyUris, [directReplyUri, parentReplyUri]);
+      expect(feedRepository.threadRequests.single.depth, 6);
+    },
+  );
+
+  test(
+    'uses Bluesky post-view parent chains for nested reply notifications',
+    () async {
+      final rootThread = _threadPost(_bskyPost(bskyRootPostUri));
+      final directThread = _threadPost(
+        _bskyPost(bskyDirectReplyUri),
+        parent: rootThread,
+      );
+      final parentThread = _threadPost(
+        _bskyPost(bskyParentReplyUri),
+        parent: directThread,
+      );
+      feedRepository.threads[bskyParentReplyUri] = parentThread;
+      feedRepository.threads[bskyChildReplyUri] = _threadPost(
+        _bskyPost(bskyChildReplyUri),
+        parent: parentThread,
+      );
+
+      final resolved = await resolver.resolve(
+        postUri: bskyParentReplyUri,
+        highlightedReplyUri: bskyChildReplyUri,
+      );
+
+      expect(resolved.post.uri.toString(), bskyRootPostUri);
+      expect(resolved.highlightedReplyUri, bskyChildReplyUri);
+      expect(resolved.parentReplyUris, [
+        bskyDirectReplyUri,
+        bskyParentReplyUri,
+      ]);
+      expect(feedRepository.threadRequests.single.bluesky, isTrue);
+    },
+  );
+
+  test(
+    'prefers target parent chain when the reply appears shallow in replies',
+    () async {
+      final rootPost = _post(rootPostUri);
+      final rootThread = _threadPost(rootPost);
+      final directThread = _threadReply(directReplyUri, parent: rootThread);
+      final parentThread = _threadReply(parentReplyUri, parent: directThread);
+      final childThread = _threadReply(childReplyUri, parent: parentThread);
+      feedRepository.threads[childReplyUri] = _threadPost(
+        rootPost,
+        replies: [childThread],
+      );
+
+      final resolved = await resolver.resolve(
+        postUri: parentReplyUri,
+        highlightedReplyUri: childReplyUri,
+      );
+
+      expect(resolved.post.uri.toString(), rootPostUri);
+      expect(resolved.highlightedReplyUri, childReplyUri);
+      expect(resolved.parentReplyUris, [directReplyUri, parentReplyUri]);
+    },
+  );
+
+  test(
+    'uses notification subject before the highlighted reply fallback',
+    () async {
+      final rootPost = _post(rootPostUri);
+      final rootThread = _threadPost(rootPost);
+      final directThread = _threadReply(directReplyUri, parent: rootThread);
+      final parentThread = _threadReply(parentReplyUri, parent: directThread);
+      feedRepository.threads[childReplyUri] = _threadPost(
+        rootPost,
+        replies: [_threadReply(childReplyUri, parent: rootThread)],
+      );
+      feedRepository.threads[parentReplyUri] = parentThread;
+
+      final resolved = await resolver.resolve(
+        postUri: parentReplyUri,
+        highlightedReplyUri: childReplyUri,
+      );
+
+      expect(resolved.post.uri.toString(), rootPostUri);
+      expect(resolved.highlightedReplyUri, childReplyUri);
+      expect(resolved.parentReplyUris, [directReplyUri, parentReplyUri]);
+      expect(feedRepository.threadRequests.map((request) => request.uri), [
+        parentReplyUri,
+      ]);
     },
   );
 
@@ -110,15 +222,17 @@ final _author = ProfileViewBasic(
 );
 final _indexedAt = DateTime.parse('2026-06-01T12:00:00.000Z');
 
-PostView _post(String uri) {
+PostView _post(String uri, {String recordType = 'so.sprk.feed.post'}) {
   return PostView(
     uri: AtUri.parse(uri),
     cid: 'cid-${AtUri.parse(uri).rkey}',
     author: _author,
-    record: const {r'$type': 'so.sprk.feed.post', 'text': 'root post'},
+    record: {r'$type': recordType, 'text': 'root post'},
     indexedAt: _indexedAt,
   );
 }
+
+PostView _bskyPost(String uri) => _post(uri, recordType: 'app.bsky.feed.post');
 
 ReplyView _reply(String uri) {
   return ReplyView(
@@ -130,24 +244,68 @@ ReplyView _reply(String uri) {
   );
 }
 
-ThreadViewPost _threadPost(PostView post, {List<Thread>? replies}) {
+ThreadViewPost _threadPost(
+  PostView post, {
+  Thread? parent,
+  List<Thread>? replies,
+}) {
   return ThreadViewPost(
     post: ThreadPost.post(post: post),
+    parent: parent,
     replies: replies,
   );
 }
 
-ThreadViewPost _threadReply(String uri, {required ThreadViewPost parent}) {
+ThreadViewPost _threadReply(
+  String uri, {
+  required ThreadViewPost parent,
+  List<Thread>? replies,
+}) {
   return ThreadViewPost(
     post: ThreadPost.reply(reply: _reply(uri)),
     parent: parent,
+    replies: replies,
   );
 }
 
+ThreadViewPost _rootThreadWithDirectReply(PostView rootPost) {
+  final rootThread = _threadPost(rootPost);
+  final directThread = _threadReply(directReplyUri, parent: rootThread);
+  return _threadPost(rootPost, replies: [directThread]);
+}
+
+ThreadViewPost _rootThreadWithReplyChain(PostView rootPost) {
+  final rootThread = _threadPost(rootPost);
+  final directThread = _threadReply(directReplyUri, parent: rootThread);
+  final parentThread = _threadReply(parentReplyUri, parent: directThread);
+  final childThread = _threadReply(childReplyUri, parent: parentThread);
+  final parentWithChild = _threadReply(
+    parentReplyUri,
+    parent: directThread,
+    replies: [childThread],
+  );
+  final directWithParent = _threadReply(
+    directReplyUri,
+    parent: rootThread,
+    replies: [parentWithChild],
+  );
+  return _threadPost(rootPost, replies: [directWithParent]);
+}
+
+typedef _ThreadRequest = ({
+  String uri,
+  int depth,
+  int parentHeight,
+  bool bluesky,
+});
+
+typedef _ThreadBuilder = Thread Function(_ThreadRequest request);
+
 class _FakeFeedRepository implements FeedRepository {
   final threads = <String, Thread>{};
+  final threadBuilders = <String, _ThreadBuilder>{};
   final posts = <String, PostView>{};
-  final threadRequests = <String>[];
+  final threadRequests = <_ThreadRequest>[];
   final postRequests = <List<String>>[];
 
   @override
@@ -158,8 +316,15 @@ class _FakeFeedRepository implements FeedRepository {
     bool bluesky = false,
   }) async {
     final uriString = uri.toString();
-    threadRequests.add(uriString);
-    final thread = threads[uriString];
+    final request = (
+      uri: uriString,
+      depth: depth,
+      parentHeight: parentHeight,
+      bluesky: bluesky,
+    );
+    threadRequests.add(request);
+    final thread =
+        threadBuilders[uriString]?.call(request) ?? threads[uriString];
     if (thread == null) {
       throw StateError('No thread for $uriString');
     }
