@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/media/media_playback_suspension_provider.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_video_aspect_ratio.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
@@ -9,7 +11,7 @@ import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/static_media_sound_player.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
 
-class PostMediaViewer extends StatefulWidget {
+class PostMediaViewer extends ConsumerStatefulWidget {
   const PostMediaViewer({
     required this.post,
     required this.isActive,
@@ -20,10 +22,10 @@ class PostMediaViewer extends StatefulWidget {
   final bool isActive;
 
   @override
-  State<PostMediaViewer> createState() => PostMediaViewerState();
+  ConsumerState<PostMediaViewer> createState() => PostMediaViewerState();
 }
 
-class PostMediaViewerState extends State<PostMediaViewer> {
+class PostMediaViewerState extends ConsumerState<PostMediaViewer> {
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey =
       GlobalKey<PostVideoPlayerState>();
   final StaticMediaSoundController _staticSoundController =
@@ -43,13 +45,15 @@ class PostMediaViewerState extends State<PostMediaViewer> {
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
+    final mediaPlaybackSuspended = ref.watch(mediaPlaybackSuspendedProvider);
+    final isMediaActive = widget.isActive && !mediaPlaybackSuspended;
 
     if (post.videoUrl.isNotEmpty) {
       return PostVideoPlayer(
         key: _videoPlayerKey,
         videoUrl: post.videoUrl,
         thumbnail: post.thumbnailUrl,
-        isActive: widget.isActive,
+        isActive: isMediaActive,
         videoAspectRatio: post.videoAspectRatio,
       );
     }
@@ -59,7 +63,7 @@ class PostMediaViewerState extends State<PostMediaViewer> {
       return StaticMediaSoundPlayer(
         audioUrl: sound == null ? null : playableAudioUrl(sound),
         mimeType: sound == null ? null : audioMimeType(sound),
-        shouldPlay: widget.isActive,
+        shouldPlay: isMediaActive,
         controller: _staticSoundController,
         child: ImageCarousel(
           imageUrls: post.imageUrls,

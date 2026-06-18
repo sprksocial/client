@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/media/media_playback_suspension_provider.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -52,37 +54,48 @@ class CreateMediaActions {
       if (pickedVideo == null) return;
       if (!context.mounted) return;
 
-      final editorVideo = EditorVideo.file(File(pickedVideo.path));
-      final repository = GetIt.I<ProVideoEditorRepository>();
-      VideoEditorResult? result;
-      if (storyMode) {
-        if (!context.mounted) return;
-        result = await repository.openStoryVideoEditor(context, editorVideo);
-      } else {
-        if (!context.mounted) return;
-        result = await repository.openVideoEditor(context, editorVideo);
-      }
-
-      if (result != null && context.mounted) {
+      final mediaPlaybackContainer = ProviderScope.containerOf(
+        context,
+        listen: false,
+      );
+      final mediaPlaybackSuspension = suspendMediaPlayback(
+        mediaPlaybackContainer,
+      );
+      try {
+        final editorVideo = EditorVideo.file(File(pickedVideo.path));
+        final repository = GetIt.I<ProVideoEditorRepository>();
+        VideoEditorResult? result;
         if (storyMode) {
-          // For stories, post directly
-          await context.router.push(
-            StoryPostRoute(
-              videoPath: result.video.path,
-              soundRef: result.soundRef,
-              embeds: result.embeds,
-            ),
-          );
+          if (!context.mounted) return;
+          result = await repository.openStoryVideoEditor(context, editorVideo);
         } else {
-          // For posts, go to review
-          await context.router.push(
-            VideoReviewRoute(
-              videoPath: result.video.path,
-              storyMode: storyMode,
-              soundRef: result.soundRef,
-            ),
-          );
+          if (!context.mounted) return;
+          result = await repository.openVideoEditor(context, editorVideo);
         }
+
+        if (result != null && context.mounted) {
+          if (storyMode) {
+            // For stories, post directly
+            await context.router.push(
+              StoryPostRoute(
+                videoPath: result.video.path,
+                soundRef: result.soundRef,
+                embeds: result.embeds,
+              ),
+            );
+          } else {
+            // For posts, go to review
+            await context.router.push(
+              VideoReviewRoute(
+                videoPath: result.video.path,
+                storyMode: storyMode,
+                soundRef: result.soundRef,
+              ),
+            );
+          }
+        }
+      } finally {
+        mediaPlaybackSuspension.release();
       }
     };
   }
