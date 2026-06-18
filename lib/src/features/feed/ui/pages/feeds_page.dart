@@ -1,11 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/features/feed/providers/feed_provider.dart';
-import 'package:spark/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/feed/ui/pages/feed_page.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/feeds_bar.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
@@ -103,29 +102,6 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     final feeds = settings.feeds.where((feed) => feed.config.pinned).toList();
     final activeFeed = settings.activeFeed;
 
-    // Feed providers are watched at MainPage level, but we still need to watch
-    // them here for the debug overlay to update properly
-    final feedStates = <Feed, FeedState>{};
-    for (final feed in feeds) {
-      feedStates[feed] = ref.watch(feedProvider(feed));
-    }
-
-    // Initialize feeds that haven't been loaded yet
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      for (final feed in feeds) {
-        final state = feedStates[feed]!;
-        final notifier = ref.read(feedProvider(feed).notifier);
-
-        // Only load if the feed is empty and not already loading and active
-        if (state.length == 0 &&
-            !state.loadingFirstLoad &&
-            !state.isEndOfNetworkFeed &&
-            feed == activeFeed) {
-          notifier.loadAndUpdateFirstLoad();
-        }
-      }
-    });
-
     // Check if we need to initialize or update the page controller
     final needsInitialization = !_isInitialized;
     final activeFeedChanged = _lastActiveFeed != activeFeed;
@@ -165,7 +141,8 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
           ? FeedsBar(pageController: _pageController!)
           : null,
       body: _pageController != null && feeds.isNotEmpty
-          ? PageView.builder(
+          ? CacheablePageView.builder(
+              cachePageExtent: 1,
               controller: _pageController,
               itemCount: feeds.length,
               onPageChanged: (index) {

@@ -214,6 +214,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
           }
 
           final isMediaActive =
+              feedState.active &&
               isOnFeedsTab &&
               feedState.index == widget.index &&
               !feedSettingsVisible &&

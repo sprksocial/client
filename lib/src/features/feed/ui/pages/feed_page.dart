@@ -189,11 +189,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
               itemBuilder: (context, index) {
                 // Handle end of feed
                 if (index == state.length) {
-                  return shouldBeActive
-                      ? const NoMorePosts()
-                      : const DecoratedBox(
-                          decoration: BoxDecoration(color: AppColors.black),
-                        );
+                  return const NoMorePosts();
                 }
                 // Handle last item with loading indicator
                 else if (index == state.length - 1 &&
@@ -216,11 +212,8 @@ class _FeedPageState extends ConsumerState<FeedPage>
                         ),
                       ],
                     );
-                  } else {
-                    return const DecoratedBox(
-                      decoration: BoxDecoration(color: AppColors.black),
-                    );
                   }
+                  return FeedPostWidget(index: index, feed: widget.feed);
                 }
                 // Handle empty state
                 else if (state.length == 0 && !state.loadingFirstLoad) {
@@ -230,14 +223,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
                           decoration: BoxDecoration(color: AppColors.black),
                         );
                 } else {
-                  if (shouldBeActive) {
-                    return FeedPostWidget(index: index, feed: widget.feed);
-                  } else {
-                    // SizedBox to maintain scroll position but hide content
-                    return const DecoratedBox(
-                      decoration: BoxDecoration(color: AppColors.black),
-                    );
-                  }
+                  return FeedPostWidget(index: index, feed: widget.feed);
                 }
               },
             ),
