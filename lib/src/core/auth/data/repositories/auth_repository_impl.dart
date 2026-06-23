@@ -29,8 +29,29 @@ const Duration _refreshLeeway = Duration(minutes: 5);
 const String _randomCharset =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
 
+String _buildServiceDid(String serviceUrl, String serviceId) {
+  final uri = Uri.parse(serviceUrl);
+  return 'did:web:${uri.host}#$serviceId';
+}
+
 List<String> _buildAipScopes() {
-  return const <String>['atproto', 'transition:generic'];
+  final sprkAppViewDid = _buildServiceDid(AppConfig.appViewUrl, 'sprk_appview');
+  final bskyAppViewDid = _buildServiceDid(
+    AppConfig.bskyAppViewUrl,
+    'bsky_appview',
+  );
+  return <String>[
+    'atproto',
+    'include:so.sprk.authFullApp?aud=$sprkAppViewDid',
+    'include:app.bsky.authViewAll?aud=$bskyAppViewDid',
+    'include:app.bsky.authCreatePosts?aud=$bskyAppViewDid',
+    'include:app.bsky.authDeleteContent?aud=$bskyAppViewDid',
+    'blob:*/*',
+    'repo:app.bsky.feed.like',
+    'repo:app.bsky.feed.repost',
+    'repo:app.bsky.graph.follow',
+    'rpc:com.atproto.moderation.createReport?aud=*',
+  ];
 }
 
 String _buildAipScope() => _buildAipScopes().join(' ');
