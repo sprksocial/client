@@ -68,8 +68,7 @@ List<GroupedNotification> groupNotifications(List<Notification> notifications) {
 
   final result = <GroupedNotification>[];
   final followGroups = <String, List<Notification>>{};
-  final likeGroups = <String, List<Notification>>{};
-  final repostGroups = <String, List<Notification>>{};
+  final reactionGroups = <String, List<Notification>>{};
 
   // First pass: collect all groupable notifications
   for (final notification in notifications) {
@@ -85,19 +84,14 @@ List<GroupedNotification> groupNotifications(List<Notification> notifications) {
           followGroups.putIfAbsent('follows', () => []).add(notification);
         }
       case 'like':
-        // Group likes by reasonSubject (the post/reply being liked)
-        if (notification.reasonSubject != null) {
-          final key = notification.reasonSubject.toString();
-          likeGroups.putIfAbsent(key, () => []).add(notification);
-        } else {
-          // No subject, don't group
-          result.add(GroupedNotification.single(notification));
-        }
+      case 'like-via-repost':
       case 'repost':
-        // Group reposts by reasonSubject
+      case 'repost-via-repost':
+        // Group reactions by exact reason and subject.
         if (notification.reasonSubject != null) {
-          final key = notification.reasonSubject.toString();
-          repostGroups.putIfAbsent(key, () => []).add(notification);
+          final key =
+              '${notification.reasonValue}:${notification.reasonSubject}';
+          reactionGroups.putIfAbsent(key, () => []).add(notification);
         } else {
           result.add(GroupedNotification.single(notification));
         }
@@ -123,26 +117,14 @@ List<GroupedNotification> groupNotifications(List<Notification> notifications) {
     );
   }
 
-  // Add like groups
-  for (final entry in likeGroups.entries) {
-    final likes = entry.value
+  // Add reaction groups
+  for (final entry in reactionGroups.entries) {
+    final reactions = entry.value
       ..sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
     allGroups.add(
       GroupedNotification(
-        primaryNotification: likes.first,
-        notifications: likes,
-      ),
-    );
-  }
-
-  // Add repost groups
-  for (final entry in repostGroups.entries) {
-    final reposts = entry.value
-      ..sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
-    allGroups.add(
-      GroupedNotification(
-        primaryNotification: reposts.first,
-        notifications: reposts,
+        primaryNotification: reactions.first,
+        notifications: reactions,
       ),
     );
   }

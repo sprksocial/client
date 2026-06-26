@@ -90,12 +90,16 @@ class PushNotificationService {
   void _handleNotificationTap(RemoteMessage message) {
     final data = message.data;
     final reason = notificationPayloadString(data['reason']);
-    final author = notificationPayloadString(data['author']);
     final recordUri = notificationRecordUri(data);
-    final reasonSubject = notificationPayloadString(data['reasonSubject']);
+    final authorDid = notificationRecordAuthorDid(recordUri);
     final replyTarget = reason == 'reply'
         ? replyNotificationTargetFromPayload(data)
         : null;
+    final postRouteUri = notificationPostRouteUri(
+      reason: reason,
+      recordUri: recordUri,
+      payload: data,
+    );
 
     if (!GetIt.instance.isRegistered<AppRouter>()) {
       _pendingNotification = message;
@@ -104,9 +108,9 @@ class PushNotificationService {
 
     final router = GetIt.instance<AppRouter>();
 
-    if (reason == 'follow' && author != null) {
+    if (reason == 'follow' && authorDid != null) {
       // Navigate to profile for follow notifications
-      router.push(ProfileRoute(did: author));
+      router.push(ProfileRoute(did: authorDid));
     } else if (replyTarget != null) {
       router.push(
         StandalonePostRoute(
@@ -114,15 +118,8 @@ class PushNotificationService {
           highlightedReplyUri: replyTarget.highlightedReplyUri,
         ),
       );
-    } else if (reasonSubject != null) {
-      // For likes/reposts, navigate to the subject (the post being liked/reposted)
-      router.push(StandalonePostRoute(postUri: reasonSubject));
-    } else if (recordUri != null) {
-      // For mentions and other record notifications, navigate to the record itself
-      router.push(StandalonePostRoute(postUri: recordUri));
-    } else if (author != null) {
-      // Fallback to author profile
-      router.push(ProfileRoute(did: author));
+    } else if (postRouteUri != null) {
+      router.push(StandalonePostRoute(postUri: postRouteUri));
     }
   }
 

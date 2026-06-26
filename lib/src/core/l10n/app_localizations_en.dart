@@ -702,6 +702,105 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyNoNotifications => 'No notifications';
 
   @override
+  String notificationLikedPost(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count others liked your post',
+      one: 'and 1 other liked your post',
+      zero: 'liked your post',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notificationLikedReply(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count others liked your reply',
+      one: 'and 1 other liked your reply',
+      zero: 'liked your reply',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notificationLikedRepost(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count others liked your repost',
+      one: 'and 1 other liked your repost',
+      zero: 'liked your repost',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notificationRepostedPost(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count others reposted your post',
+      one: 'and 1 other reposted your post',
+      zero: 'reposted your post',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notificationRepostedReply(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count others reposted your reply',
+      one: 'and 1 other reposted your reply',
+      zero: 'reposted your reply',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notificationRepostedRepost(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count others reposted your repost',
+      one: 'and 1 other reposted your repost',
+      zero: 'reposted your repost',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notificationFollowed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'and $count others followed you',
+      one: 'and 1 other followed you',
+      zero: 'followed you',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notificationFollowedBack => 'followed you back';
+
+  @override
+  String get notificationMentioned => 'mentioned you';
+
+  @override
+  String get notificationRepliedPost => 'replied to your post';
+
+  @override
+  String get notificationRepliedReply => 'replied to your reply';
+
+  @override
+  String get notificationNotified => 'notified you';
+
+  @override
   String get messageAllCaughtUp => 'You\'re all caught up!';
 
   @override

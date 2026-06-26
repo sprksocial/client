@@ -1145,6 +1145,101 @@
     "description": "Empty state for no notifications"
   },
 
+  "notificationLikedPost": "{count, plural, =0{liked your post} =1{and 1 other liked your post} other{and {count} others liked your post}}",
+  "@notificationLikedPost": {
+    "description": "Notification action text for likes on the viewer's post",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "notificationLikedReply": "{count, plural, =0{liked your reply} =1{and 1 other liked your reply} other{and {count} others liked your reply}}",
+  "@notificationLikedReply": {
+    "description": "Notification action text for likes on the viewer's reply",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "notificationLikedRepost": "{count, plural, =0{liked your repost} =1{and 1 other liked your repost} other{and {count} others liked your repost}}",
+  "@notificationLikedRepost": {
+    "description": "Notification action text when someone liked content through the viewer's repost",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "notificationRepostedPost": "{count, plural, =0{reposted your post} =1{and 1 other reposted your post} other{and {count} others reposted your post}}",
+  "@notificationRepostedPost": {
+    "description": "Notification action text for reposts of the viewer's post",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "notificationRepostedReply": "{count, plural, =0{reposted your reply} =1{and 1 other reposted your reply} other{and {count} others reposted your reply}}",
+  "@notificationRepostedReply": {
+    "description": "Notification action text for reposts of the viewer's reply",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "notificationRepostedRepost": "{count, plural, =0{reposted your repost} =1{and 1 other reposted your repost} other{and {count} others reposted your repost}}",
+  "@notificationRepostedRepost": {
+    "description": "Notification action text when someone reposted content through the viewer's repost",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "notificationFollowed": "{count, plural, =0{followed you} =1{and 1 other followed you} other{and {count} others followed you}}",
+  "@notificationFollowed": {
+    "description": "Notification action text for follows",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "notificationFollowedBack": "followed you back",
+  "@notificationFollowedBack": {
+    "description": "Notification action text for a follow-back"
+  },
+
+  "notificationMentioned": "mentioned you",
+  "@notificationMentioned": {
+    "description": "Notification action text for mentions"
+  },
+
+  "notificationRepliedPost": "replied to your post",
+  "@notificationRepliedPost": {
+    "description": "Notification action text for replies to the viewer's post"
+  },
+
+  "notificationRepliedReply": "replied to your reply",
+  "@notificationRepliedReply": {
+    "description": "Notification action text for replies to the viewer's reply"
+  },
+
+  "notificationNotified": "notified you",
+  "@notificationNotified": {
+    "description": "Fallback notification action text"
+  },
+
   "messageAllCaughtUp": "You''re all caught up!",
   "@messageAllCaughtUp": {
     "description": "Message when all notifications are read"

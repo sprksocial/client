@@ -1390,6 +1390,78 @@ abstract class AppLocalizations {
   /// **'No notifications'**
   String get emptyNoNotifications;
 
+  /// Notification action text for likes on the viewer's post
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{liked your post} =1{and 1 other liked your post} other{and {count} others liked your post}}'**
+  String notificationLikedPost(int count);
+
+  /// Notification action text for likes on the viewer's reply
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{liked your reply} =1{and 1 other liked your reply} other{and {count} others liked your reply}}'**
+  String notificationLikedReply(int count);
+
+  /// Notification action text when someone liked content through the viewer's repost
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{liked your repost} =1{and 1 other liked your repost} other{and {count} others liked your repost}}'**
+  String notificationLikedRepost(int count);
+
+  /// Notification action text for reposts of the viewer's post
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{reposted your post} =1{and 1 other reposted your post} other{and {count} others reposted your post}}'**
+  String notificationRepostedPost(int count);
+
+  /// Notification action text for reposts of the viewer's reply
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{reposted your reply} =1{and 1 other reposted your reply} other{and {count} others reposted your reply}}'**
+  String notificationRepostedReply(int count);
+
+  /// Notification action text when someone reposted content through the viewer's repost
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{reposted your repost} =1{and 1 other reposted your repost} other{and {count} others reposted your repost}}'**
+  String notificationRepostedRepost(int count);
+
+  /// Notification action text for follows
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{followed you} =1{and 1 other followed you} other{and {count} others followed you}}'**
+  String notificationFollowed(int count);
+
+  /// Notification action text for a follow-back
+  ///
+  /// In en, this message translates to:
+  /// **'followed you back'**
+  String get notificationFollowedBack;
+
+  /// Notification action text for mentions
+  ///
+  /// In en, this message translates to:
+  /// **'mentioned you'**
+  String get notificationMentioned;
+
+  /// Notification action text for replies to the viewer's post
+  ///
+  /// In en, this message translates to:
+  /// **'replied to your post'**
+  String get notificationRepliedPost;
+
+  /// Notification action text for replies to the viewer's reply
+  ///
+  /// In en, this message translates to:
+  /// **'replied to your reply'**
+  String get notificationRepliedReply;
+
+  /// Fallback notification action text
+  ///
+  /// In en, this message translates to:
+  /// **'notified you'**
+  String get notificationNotified;
+
   /// Message when all notifications are read
   ///
   /// In en, this message translates to:

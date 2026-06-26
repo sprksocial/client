@@ -142,6 +142,68 @@ void main() {
       expect(results.first.actorCount, 2);
     });
 
+    test('groups likes via repost by reasonSubject', () {
+      final subject = AtUri('at://did:plc:author/so.sprk.feed.repost/123');
+      final results = groupNotifications([
+        _makeNotification(
+          did: 'did:plc:alice',
+          reason: 'like-via-repost',
+          reasonSubject: subject,
+        ),
+        _makeNotification(
+          did: 'did:plc:bob',
+          reason: 'like-via-repost',
+          reasonSubject: subject,
+        ),
+      ]);
+
+      expect(results, hasLength(1));
+      expect(results.first.reason, 'like-via-repost');
+      expect(results.first.actorCount, 2);
+    });
+
+    test('groups reposts via repost by reasonSubject', () {
+      final subject = AtUri('at://did:plc:author/so.sprk.feed.repost/123');
+      final results = groupNotifications([
+        _makeNotification(
+          did: 'did:plc:alice',
+          reason: 'repost-via-repost',
+          reasonSubject: subject,
+        ),
+        _makeNotification(
+          did: 'did:plc:bob',
+          reason: 'repost-via-repost',
+          reasonSubject: subject,
+        ),
+      ]);
+
+      expect(results, hasLength(1));
+      expect(results.first.reason, 'repost-via-repost');
+      expect(results.first.actorCount, 2);
+    });
+
+    test('does not merge different reaction reasons for the same subject', () {
+      final subject = AtUri('at://did:plc:author/so.sprk.feed.repost/123');
+      final results = groupNotifications([
+        _makeNotification(
+          did: 'did:plc:alice',
+          reason: 'like-via-repost',
+          reasonSubject: subject,
+        ),
+        _makeNotification(
+          did: 'did:plc:bob',
+          reason: 'repost-via-repost',
+          reasonSubject: subject,
+        ),
+      ]);
+
+      expect(results, hasLength(2));
+      expect(
+        results.map((result) => result.reason),
+        containsAll(['like-via-repost', 'repost-via-repost']),
+      );
+    });
+
     test('does not group replies', () {
       final results = groupNotifications([
         _makeNotification(did: 'did:plc:alice', reason: 'reply'),

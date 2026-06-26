@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart'
     as models;
 import 'package:spark/src/core/notifications/notification_navigation.dart';
@@ -93,7 +94,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
   }
 
   Widget _getReasonIcon(String reason, Color color) {
-    switch (reason) {
+    switch (_baseReason(reason)) {
       case 'like':
         return AppIcons.likeFilled(color: color);
       case 'repost':
@@ -109,7 +110,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
   }
 
   Color _getReasonColor(String reason) {
-    switch (reason) {
+    switch (_baseReason(reason)) {
       case 'like':
         return AppColors.likeColor;
       case 'repost':
@@ -124,49 +125,47 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     }
   }
 
-  String _getReasonText(String reason, int othersCount) {
-    final hasOthers = othersCount > 0;
-    final othersText = hasOthers ? ' and $othersCount others' : '';
-
+  String _getReasonText(AppLocalizations l10n, String reason, int othersCount) {
     switch (reason) {
       case 'like':
-        // Check if reasonSubject is a reply or post
         if (notification.reasonSubject != null) {
           final collection = notification.reasonSubject!.collection.toString();
           if (collection.contains('reply')) {
-            return '$othersText liked your reply';
+            return l10n.notificationLikedReply(othersCount);
           }
         }
-        return '$othersText liked your post';
+        return l10n.notificationLikedPost(othersCount);
+      case 'like-via-repost':
+        return l10n.notificationLikedRepost(othersCount);
       case 'repost':
-        // Check if reasonSubject is a reply or post
         if (notification.reasonSubject != null) {
           final collection = notification.reasonSubject!.collection.toString();
           if (collection.contains('reply')) {
-            return '$othersText reposted your reply';
+            return l10n.notificationRepostedReply(othersCount);
           }
         }
-        return '$othersText reposted your post';
+        return l10n.notificationRepostedPost(othersCount);
+      case 'repost-via-repost':
+        return l10n.notificationRepostedRepost(othersCount);
       case 'follow':
         // Check if this is a follow-back (viewer follows the author)
         final isFollowBack = notification.author.viewer?.following != null;
         if (isFollowBack) {
-          return 'followed you back';
+          return l10n.notificationFollowedBack;
         }
-        return '$othersText followed you';
+        return l10n.notificationFollowed(othersCount);
       case 'mention':
-        return 'mentioned you';
+        return l10n.notificationMentioned;
       case 'reply':
-        // Check if reasonSubject is a reply or post
         if (notification.reasonSubject != null) {
           final collection = notification.reasonSubject!.collection.toString();
           if (collection.contains('reply')) {
-            return 'replied to your reply';
+            return l10n.notificationRepliedReply;
           }
         }
-        return 'replied to your post';
+        return l10n.notificationRepliedPost;
       default:
-        return 'notified you';
+        return l10n.notificationNotified;
     }
   }
 
@@ -187,17 +186,15 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
           highlightedReplyUri: target.highlightedReplyUri,
         ),
       );
-    } else if (notification.reasonSubject != null) {
-      // Navigate to the post/thread
-      final reasonSubjectStr = notification.reasonSubject!.toString();
-      context.router.push(StandalonePostRoute(postUri: reasonSubjectStr));
     } else {
-      final collectionStr = notification.uri.collection.toString();
-      if (collectionStr.startsWith('so.sprk.feed.post') ||
-          collectionStr.startsWith('app.bsky.feed.post')) {
-        // Navigate to the post
-        final uriStr = notification.uri.toString();
-        context.router.push(StandalonePostRoute(postUri: uriStr));
+      final postUri = notificationPostRouteUri(
+        reason: reason,
+        reasonSubject: notification.reasonSubject?.toString(),
+        recordUri: notification.uri.toString(),
+        record: notification.record,
+      );
+      if (postUri != null) {
+        context.router.push(StandalonePostRoute(postUri: postUri));
         return;
       }
       // Fallback to author profile
@@ -212,7 +209,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
 
       // For like/repost notifications, get text from the subject record
       final reason = notification.reasonValue;
-      if (reason == 'like' || reason == 'repost') {
+      if (_isSubjectReaction(reason)) {
         final subject = notification.record['subject'] as Map<String, dynamic>?;
         if (subject != null) {
           recordToCheck = subject;
@@ -246,7 +243,7 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
 
       // For like/repost notifications, check for subjectMedia at top level first
       final reason = notification.reasonValue;
-      if (reason == 'like' || reason == 'repost') {
+      if (_isSubjectReaction(reason)) {
         // Backend embeds subjectMedia at top level for like/repost notifications
         media = record['subjectMedia'] as Map<String, dynamic>?;
         // Fallback: check if subject has media directly
@@ -353,6 +350,21 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
       // Ignore errors when extracting media
     }
     return null;
+  }
+
+  String _baseReason(String reason) {
+    return switch (reason) {
+      'like-via-repost' => 'like',
+      'repost-via-repost' => 'repost',
+      _ => reason,
+    };
+  }
+
+  bool _isSubjectReaction(String reason) {
+    return reason == 'like' ||
+        reason == 'like-via-repost' ||
+        reason == 'repost' ||
+        reason == 'repost-via-repost';
   }
 
   String _formatTimeAgoShort(Duration difference) {
@@ -463,7 +475,11 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     final othersCount = widget.groupedNotification.othersCount;
     final reasonColor = _getReasonColor(reason);
     final reasonIcon = _getReasonIcon(reason, reasonColor);
-    final reasonText = _getReasonText(reason, othersCount);
+    final reasonText = _getReasonText(
+      AppLocalizations.of(context),
+      reason,
+      othersCount,
+    );
     final contentPreview = _getContentPreview();
     final mediaUrl = _getMediaUrl();
     final now = DateTime.now();
