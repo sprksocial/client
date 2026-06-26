@@ -35,7 +35,7 @@ class AppConfig {
 
   /// Base URL for the messages service (chat service).
   static String get messagesServiceUrl =>
-      _getStringValue('MESSAGES_SERVICE_URL', 'https://chat.sprk.so');
+      _getStringValue('MESSAGES_SERVICE_URL', 'https://api.sprk.chat');
 
   /// Base URL for the AIP OAuth server.
   static String get aipBaseUrl =>
@@ -43,7 +43,7 @@ class AppConfig {
 
   /// Service DID for the chat service (used for service auth).
   static String get chatServiceDid =>
-      _getStringValue('CHAT_SERVICE_DID', 'did:web:chat.sprk.so');
+      _getStringValue('CHAT_SERVICE_DID', 'did:web:api.sprk.chat#sprk_chat');
 
   /// Whether new user registrations are disabled.
   static bool get signupsDisabled => _getBoolValue('SIGNUPS_DISABLED', false);

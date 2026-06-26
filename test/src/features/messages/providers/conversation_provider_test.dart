@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
+import 'package:sprk_poptart/chat/sprk/actor/defs.dart';
 
 import 'package:poptart/poptart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,14 +57,17 @@ void main() {
         id: 'convo-1',
         rev: 'rev-1',
         members: [me, other],
-        lastMessage: initialMessage,
+        lastMessage: ChatMessageView.message(data: initialMessage),
       );
       messagesRepository.getMessagesResponses.add((
-        messages: [initialMessage],
+        messages: [ChatMessageView.message(data: initialMessage)],
         cursor: 'cursor-1',
       ));
       messagesRepository.getMessagesResponses.add((
-        messages: [initialMessage, inboundMessage],
+        messages: [
+          ChatMessageView.message(data: initialMessage),
+          ChatMessageView.message(data: inboundMessage),
+        ],
         cursor: 'cursor-1',
       ));
 
@@ -96,6 +99,135 @@ void main() {
       ]);
       expect(state.convo.lastMessage?.id, '3');
     });
+
+    test('preserves deleted messages when polling updates arrive', () async {
+      final me = ProfileViewBasic(did: 'did:me', handle: 'me.test');
+      final other = ProfileViewBasic(did: 'did:other', handle: 'other.test');
+      final initialMessage = _message(
+        id: '1',
+        text: 'initial',
+        senderDid: other.did,
+        sentAt: '2026-04-11T10:00:00.000Z',
+      );
+      final deletedMessage = DeletedMessageView(
+        id: '2',
+        rev: 'rev-2',
+        sender: SenderView(did: other.did),
+        sentAt: '2026-04-11T10:00:01.000Z',
+      );
+
+      messagesRepository.conversation = ConvoView(
+        id: 'convo-1',
+        rev: 'rev-1',
+        members: [me, other],
+        lastMessage: ChatMessageView.message(data: initialMessage),
+      );
+      messagesRepository.getMessagesResponses.add((
+        messages: [ChatMessageView.message(data: initialMessage)],
+        cursor: 'cursor-1',
+      ));
+      messagesRepository.getMessagesResponses.add((
+        messages: [
+          ChatMessageView.message(data: initialMessage),
+          ChatMessageView.deleted(data: deletedMessage),
+        ],
+        cursor: 'cursor-1',
+      ));
+
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await container.read(conversationProvider('convo-1').future);
+      final notifier = container.read(conversationProvider('convo-1').notifier);
+
+      await notifier.checkForNewMessages();
+      await notifier.markReadUpToLatest();
+
+      final state = container.read(conversationProvider('convo-1')).value;
+      expect(state, isNotNull);
+      expect(state!.messages.map((message) => message.id).toList(), ['1', '2']);
+      expect(
+        state.messages.last,
+        isA<ChatMessageViewDeleted>().having(
+          (message) => message.id,
+          'id',
+          '2',
+        ),
+      );
+      expect(messagesRepository.readUpdates, [('convo-1', '2')]);
+    });
+
+    test(
+      'preserves unsupported messages when polling updates arrive',
+      () async {
+        final me = ProfileViewBasic(did: 'did:me', handle: 'me.test');
+        final other = ProfileViewBasic(did: 'did:other', handle: 'other.test');
+        final initialMessage = _message(
+          id: '1',
+          text: 'initial',
+          senderDid: other.did,
+          sentAt: '2026-04-11T10:00:00.000Z',
+        );
+        final unsupportedMessage = UnsupportedMessageView(
+          id: '2',
+          rev: 'rev-2',
+          sender: SenderView(did: other.did),
+          sentAt: '2026-04-11T10:00:01.000Z',
+          raw: const {
+            r'$type': 'chat.sprk.convo.defs#futureMessageView',
+            'id': '2',
+            'rev': 'rev-2',
+            'sender': {'did': 'did:other'},
+            'sentAt': '2026-04-11T10:00:01.000Z',
+          },
+        );
+
+        messagesRepository.conversation = ConvoView(
+          id: 'convo-1',
+          rev: 'rev-1',
+          members: [me, other],
+          lastMessage: ChatMessageView.message(data: initialMessage),
+        );
+        messagesRepository.getMessagesResponses.add((
+          messages: [ChatMessageView.message(data: initialMessage)],
+          cursor: 'cursor-1',
+        ));
+        messagesRepository.getMessagesResponses.add((
+          messages: [
+            ChatMessageView.message(data: initialMessage),
+            ChatMessageView.unsupported(data: unsupportedMessage),
+          ],
+          cursor: 'cursor-1',
+        ));
+
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await container.read(conversationProvider('convo-1').future);
+        final notifier = container.read(
+          conversationProvider('convo-1').notifier,
+        );
+
+        await notifier.checkForNewMessages();
+        await notifier.markReadUpToLatest();
+
+        final state = container.read(conversationProvider('convo-1')).value;
+        expect(state, isNotNull);
+        expect(state!.messages.map((message) => message.id).toList(), [
+          '1',
+          '2',
+        ]);
+        expect(
+          state.messages.last,
+          isA<ChatMessageViewUnsupported>().having(
+            (message) => message.id,
+            'id',
+            '2',
+          ),
+        );
+        expect(messagesRepository.readUpdates, [('convo-1', '2')]);
+      },
+    );
   });
 }
 
@@ -117,9 +249,10 @@ MessageView _message({
 
 class _FakeMessagesRepository implements MessagesRepository {
   late ConvoView conversation;
-  final Queue<({List<MessageView> messages, String? cursor})>
+  final Queue<({List<ChatMessageView> messages, String? cursor})>
   getMessagesResponses =
-      Queue<({List<MessageView> messages, String? cursor})>();
+      Queue<({List<ChatMessageView> messages, String? cursor})>();
+  final List<(String convoId, String messageId)> readUpdates = [];
   Future<MessageView> Function({
     required String convoId,
     required String text,
@@ -145,7 +278,7 @@ class _FakeMessagesRepository implements MessagesRepository {
   }
 
   @override
-  Future<({List<MessageView> messages, String? cursor})> getMessages(
+  Future<({List<ChatMessageView> messages, String? cursor})> getMessages(
     String convoId, {
     int? limit,
     String? cursor,
@@ -176,7 +309,6 @@ class _FakeMessagesRepository implements MessagesRepository {
   Future<MessageView> sendMessage(
     String convoId, {
     required String text,
-    List<dynamic>? facets,
     String? embed,
   }) {
     final handler = sendMessageHandler;
@@ -187,8 +319,9 @@ class _FakeMessagesRepository implements MessagesRepository {
   }
 
   @override
-  Future<ConvoView> updateRead(String convoId, String messageId) {
-    throw UnimplementedError();
+  Future<ConvoView> updateRead(String convoId, String messageId) async {
+    readUpdates.add((convoId, messageId));
+    return conversation;
   }
 }
 

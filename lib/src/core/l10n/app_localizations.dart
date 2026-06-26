@@ -904,6 +904,18 @@ abstract class AppLocalizations {
   /// **'Failed to load messages'**
   String get errorLoadingMessages;
 
+  /// Deleted chat message tombstone
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get messageDeleted;
+
+  /// Unsupported chat message tombstone
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported message'**
+  String get messageUnsupported;
+
   /// Error loading conversations message
   ///
   /// In en, this message translates to:

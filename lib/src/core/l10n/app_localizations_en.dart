@@ -436,6 +436,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorLoadingMessages => 'Failed to load messages';
 
   @override
+  String get messageDeleted => 'Message deleted';
+
+  @override
+  String get messageUnsupported => 'Unsupported message';
+
+  @override
   String get errorLoadingConversations => 'Failed to load conversations';
 
   @override

@@ -30,7 +30,7 @@ abstract class MessagesRepository {
   /// [convoId] The conversation ID
   /// [limit] Optional limit for number of messages to fetch
   /// [cursor] Optional cursor for pagination (message ID for older messages)
-  Future<({List<MessageView> messages, String? cursor})> getMessages(
+  Future<({List<ChatMessageView> messages, String? cursor})> getMessages(
     String convoId, {
     int? limit,
     String? cursor,
@@ -40,12 +40,10 @@ abstract class MessagesRepository {
   ///
   /// [convoId] The conversation ID
   /// [text] The message text
-  /// [facets] Optional facets (currently ignored by server)
   /// [embed] Optional embed (at:// URI string)
   Future<MessageView> sendMessage(
     String convoId, {
     required String text,
-    List<dynamic>? facets,
     String? embed,
   });
 

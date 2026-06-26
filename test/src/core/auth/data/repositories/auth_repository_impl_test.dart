@@ -8,6 +8,7 @@ import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:spark/src/core/auth/data/models/account.dart';
 import 'package:spark/src/core/auth/data/models/aip_session_response.dart';
 import 'package:spark/src/core/auth/data/models/auth_snapshot.dart';
+import 'package:spark/src/core/auth/data/repositories/aip_scope_policy.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:spark/src/core/storage/preferences/local_storage_interface.dart';
 import 'package:spark/src/core/storage/preferences/storage_constants.dart';
@@ -47,6 +48,55 @@ void main() {
       expect(repository.isAuthenticated, isTrue);
       expect(repository.did, 'did:plc:test');
       expect(networkCalls, 0);
+    });
+
+    test('startup with stale cached PDS scope refreshes via AIP', () async {
+      final storage = _InMemoryStorage();
+      await _storeSnapshot(
+        storage,
+        AuthSnapshot(
+          aipClientRegistration: const AipClientRegistration(
+            clientId: 'client-1',
+          ),
+          aipGrant: AipGrant(
+            credentialsJson: oauth2.Credentials(
+              'aip-access',
+              expiration: DateTime.utc(2030, 1, 1),
+              scopes: _currentAipScopes,
+            ).toJson(),
+          ),
+          pdsSessionCache: _pdsSessionCache(
+            accessToken: _pdsJwt(clientId: 'client-1'),
+            expiresAt: DateTime.utc(2030, 1, 1),
+            scopes: const ['atproto'],
+          ),
+        ),
+      );
+
+      var sessionCalls = 0;
+      final client = MockClient((request) async {
+        if (request.url.path == '/api/atprotocol/session') {
+          sessionCalls += 1;
+          expect(request.headers['authorization'], 'Bearer aip-access');
+          return http.Response(
+            json.encode(_sessionResponseBody(_pdsJwt(clientId: 'client-1'))),
+            200,
+          );
+        }
+
+        return http.Response('unexpected request', 500);
+      });
+
+      final repository = AuthRepositoryImpl(
+        secureStorage: storage,
+        httpClient: client,
+        logger: SparkLogger(name: 'AuthRepositoryTest'),
+      );
+
+      await repository.initializationComplete;
+
+      expect(repository.isAuthenticated, isTrue);
+      expect(sessionCalls, 1);
     });
 
     test(
@@ -100,6 +150,7 @@ void main() {
             credentialsJson: oauth2.Credentials(
               'aip-access',
               expiration: DateTime.utc(2030, 1, 1),
+              scopes: _currentAipScopes,
             ).toJson(),
           ),
           pdsSessionCache: _pdsSessionCache(
@@ -151,6 +202,7 @@ void main() {
             credentialsJson: oauth2.Credentials(
               'aip-access',
               expiration: DateTime.utc(2030, 1, 1),
+              scopes: _currentAipScopes,
             ).toJson(),
           ),
           pdsSessionCache: _pdsSessionCache(
@@ -197,6 +249,7 @@ void main() {
                 refreshToken: 'refresh-1',
                 tokenEndpoint: Uri.parse('https://auth.sprk.so/oauth/token'),
                 expiration: DateTime.utc(2020, 1, 1),
+                scopes: _currentAipScopes,
               ).toJson(),
             ),
             pdsSessionCache: _pdsSessionCache(
@@ -275,6 +328,7 @@ void main() {
               refreshToken: 'refresh-1',
               tokenEndpoint: Uri.parse('https://auth.sprk.so/oauth/token'),
               expiration: DateTime.utc(2020, 1, 1),
+              scopes: _currentAipScopes,
             ).toJson(),
           ),
           pdsSessionCache: _pdsSessionCache(
@@ -326,6 +380,7 @@ void main() {
               refreshToken: 'refresh-1',
               tokenEndpoint: Uri.parse('https://auth.sprk.so/oauth/token'),
               expiration: DateTime.utc(2020, 1, 1),
+              scopes: _currentAipScopes,
             ).toJson(),
           ),
           pdsSessionCache: _pdsSessionCache(
@@ -407,6 +462,7 @@ void main() {
               refreshToken: 'refresh-1',
               tokenEndpoint: Uri.parse('https://auth.sprk.so/oauth/token'),
               expiration: DateTime.utc(2020, 1, 1),
+              scopes: _currentAipScopes,
             ).toJson(),
           ),
           pdsSessionCache: _pdsSessionCache(
@@ -493,6 +549,7 @@ void main() {
             credentialsJson: oauth2.Credentials(
               'aip-access',
               expiration: DateTime.utc(2030, 1, 1),
+              scopes: _currentAipScopes,
             ).toJson(),
           ),
           pdsSessionCache: _pdsSessionCache(
@@ -551,6 +608,7 @@ void main() {
             credentialsJson: oauth2.Credentials(
               'aip-access',
               expiration: DateTime.utc(2030, 1, 1),
+              scopes: _currentAipScopes,
             ).toJson(),
           ),
           pdsSessionCache: _pdsSessionCache(
@@ -603,6 +661,7 @@ void main() {
               credentialsJson: oauth2.Credentials(
                 'aip-access',
                 expiration: DateTime.utc(2030, 1, 1),
+                scopes: _currentAipScopes,
               ).toJson(),
             ),
             pdsSessionCache: _pdsSessionCache(
@@ -663,7 +722,7 @@ void main() {
               );
               expect(
                 registrationBody['scope'] as String,
-                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
               );
               return http.Response(
                 json.encode({
@@ -711,7 +770,7 @@ void main() {
         expect(authUri.queryParameters['state'], isNotEmpty);
         expect(
           authUri.queryParameters['scope'],
-          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
         );
 
         final callbackUrl = Uri.parse(_redirectUri)
@@ -842,7 +901,7 @@ void main() {
                   json.decode(request.body) as Map<String, dynamic>;
               expect(
                 registrationBody['scope'] as String,
-                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
               );
               return http.Response(
                 json.encode({
@@ -869,7 +928,7 @@ void main() {
         expect(registrationCalls, 1);
         expect(
           authUri.queryParameters['scope'],
-          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
         );
 
         final savedSnapshot = AuthSnapshot.fromJsonString(
@@ -878,7 +937,7 @@ void main() {
         expect(savedSnapshot.aipClientRegistration?.clientId, 'client-2');
         expect(
           savedSnapshot.aipClientRegistration?.scope,
-          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
         );
       },
     );
@@ -927,6 +986,8 @@ void main() {
 
 const String _redirectUri = 'sprk://oauth-callback';
 
+List<String> get _currentAipScopes => AipScopePolicy.current().scopes;
+
 Future<void> _storeSnapshot(
   _InMemoryStorage storage,
   AuthSnapshot snapshot,
@@ -937,23 +998,27 @@ Future<void> _storeSnapshot(
 PdsSessionCache _pdsSessionCache({
   required String accessToken,
   required DateTime expiresAt,
+  List<String>? scopes,
 }) {
   return buildPdsSessionCacheFromAipResponse(
     AipAtprotocolSessionResponse.fromJson(
-      _sessionResponseBody(accessToken)
+      _sessionResponseBody(accessToken, scopes: scopes)
         ..['expires_at'] = expiresAt.millisecondsSinceEpoch ~/ 1000,
     ),
     clientId: 'https://auth.sprk.so/oauth-client-metadata.json',
   );
 }
 
-Map<String, dynamic> _sessionResponseBody(String accessToken) {
+Map<String, dynamic> _sessionResponseBody(
+  String accessToken, {
+  List<String>? scopes,
+}) {
   return {
     'did': 'did:plc:test',
     'handle': 'test.sprk.so',
     'access_token': accessToken,
     'token_type': 'dpop',
-    'scopes': ['atproto'],
+    'scopes': scopes ?? _currentAipScopes,
     'pds_endpoint': 'https://pds.sprk.so',
     'dpop_key': 'did:key:test',
     'dpop_jwk': {

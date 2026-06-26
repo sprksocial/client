@@ -27,7 +27,7 @@ flutter build ios --config-only --release
 cat > .env << EOL
 VIDEO_SERVICE_URL=https://video.sprk.so
 SPRK_APPVIEW_URL=https://api.sprk.so
-MESSAGES_SERVICE_URL=https://chat.sprk.so
+MESSAGES_SERVICE_URL=https://api.sprk.chat
 SHOWCASES_LICENSE_FLUTTER=$SHOWCASES_LICENSE_FLUTTER
 EOL
 

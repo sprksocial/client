@@ -705,6 +705,16 @@
     "description": "Error loading messages message"
   },
 
+  "messageDeleted": "Message deleted",
+  "@messageDeleted": {
+    "description": "Deleted chat message tombstone"
+  },
+
+  "messageUnsupported": "Unsupported message",
+  "@messageUnsupported": {
+    "description": "Unsupported chat message tombstone"
+  },
+
   "errorLoadingConversations": "Failed to load conversations",
   "@errorLoadingConversations": {
     "description": "Error loading conversations message"

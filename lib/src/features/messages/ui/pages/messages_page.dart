@@ -8,6 +8,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/messages/providers/conversations_provider.dart';
+import 'package:spark/src/features/messages/utils/chat_message_presentation.dart';
 
 @RoutePage()
 class MessagesPage extends ConsumerStatefulWidget {
@@ -33,20 +34,18 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           final convo = tuple.$2;
           final last = convo.lastMessage;
           final ts = _formatTime(last?.sentAt);
-          final text = (last?.text ?? '').trim();
-          String preview;
-          if (text.isNotEmpty) {
-            preview = text;
-          } else if (last?.embed != null && last!.embed!.isNotEmpty) {
-            final senderDid = last.sender.did;
-            final senderProfile = convo.members.firstWhere(
-              (m) => m.did == senderDid,
-              orElse: () => profile,
-            );
-            preview = 'Post by @${senderProfile.handle}';
-          } else {
-            preview = '';
-          }
+          final preview =
+              last?.previewText(
+                l10n: l10n,
+                embedPreview: (sender) {
+                  final senderProfile = convo.members.firstWhere(
+                    (m) => m.did == sender.did,
+                    orElse: () => profile,
+                  );
+                  return 'Post by @${senderProfile.handle}';
+                },
+              ) ??
+              '';
           return ChatListItemData(
             avatarUrl: profile.avatar?.toString(),
             displayName: profile.displayName ?? profile.handle,

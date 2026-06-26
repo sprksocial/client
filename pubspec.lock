@@ -1614,10 +1614,10 @@ packages:
     dependency: "direct main"
     description:
       name: sprk_poptart
-      sha256: b2f5f70832f37f1345b80aa900b3416bdc30d788fe21df242b0062dd59ed588b
+      sha256: "142f8e397749520aff31cf1f3f4fcfd65465372d0fe5a17040a165fed2deff11"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   sqflite:
     dependency: "direct main"
     description:

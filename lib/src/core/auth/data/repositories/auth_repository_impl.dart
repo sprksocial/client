@@ -11,6 +11,7 @@ import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:spark/src/core/auth/data/models/aip_session_response.dart';
 import 'package:spark/src/core/auth/data/models/auth_snapshot.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
+import 'package:spark/src/core/auth/data/repositories/aip_scope_policy.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/storage/storage.dart';
@@ -29,37 +30,6 @@ const Duration _refreshLeeway = Duration(minutes: 5);
 const String _randomCharset =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
 
-String _buildServiceDid(String serviceUrl, String serviceId) {
-  final uri = Uri.parse(serviceUrl);
-  return 'did:web:${uri.host}#$serviceId';
-}
-
-List<String> _buildAipScopes() {
-  final sprkAppViewDid = _buildServiceDid(AppConfig.appViewUrl, 'sprk_appview');
-  final bskyAppViewDid = _buildServiceDid(
-    AppConfig.bskyAppViewUrl,
-    'bsky_appview',
-  );
-  return <String>[
-    'atproto',
-    'include:so.sprk.authFullApp?aud=$sprkAppViewDid',
-    'include:app.bsky.authViewAll?aud=$bskyAppViewDid',
-    'include:app.bsky.authCreatePosts?aud=$bskyAppViewDid',
-    'include:app.bsky.authDeleteContent?aud=$bskyAppViewDid',
-    'blob:*/*',
-    'repo:app.bsky.feed.like',
-    'repo:app.bsky.feed.repost',
-    'repo:app.bsky.graph.follow',
-    'rpc:com.atproto.moderation.createReport?aud=*',
-  ];
-}
-
-String _buildAipScope() => _buildAipScopes().join(' ');
-
-bool _registrationScopeMatches(AipClientRegistration registration) {
-  return registration.scope == _buildAipScope();
-}
-
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     LocalStorageInterface? secureStorage,
@@ -72,6 +42,7 @@ class AuthRepositoryImpl implements AuthRepository {
        _logger = logger ?? _buildLogger(),
        _now = now ?? DateTime.now,
        _fetchSessionInfo = fetchSessionInfo ?? _defaultFetchSessionInfo,
+       _scopePolicy = AipScopePolicy.current(),
        _aipBaseUri = _normalizeBaseUri(AppConfig.aipBaseUrl) {
     _initialize();
   }
@@ -81,8 +52,8 @@ class AuthRepositoryImpl implements AuthRepository {
   final SparkLogger _logger;
   final DateTime Function() _now;
   final AtprotoSessionFetcher _fetchSessionInfo;
+  final AipScopePolicy _scopePolicy;
   final Uri _aipBaseUri;
-  final List<String> _aipScopes = _buildAipScopes();
   final Completer<void> _initCompleter = Completer<void>();
 
   Future<bool>? _refreshInFlight;
@@ -141,7 +112,9 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     final cachedSession = snapshot.pdsSessionCache;
-    if (cachedSession != null && _isFresh(cachedSession.expiresAtDateTime)) {
+    if (cachedSession != null &&
+        _isFresh(cachedSession.expiresAtDateTime) &&
+        _scopePolicy.grantedScopeStringSatisfies(cachedSession.scope)) {
       try {
         _applyCachedPdsSession(cachedSession);
         return;
@@ -373,7 +346,7 @@ class AuthRepositoryImpl implements AuthRepository {
     final existing = _snapshot?.aipClientRegistration;
     if (existing != null &&
         !_registrationNeedsRefresh(existing) &&
-        _registrationScopeMatches(existing)) {
+        _scopePolicy.registrationScopeMatches(existing.scope)) {
       return existing;
     }
 
@@ -387,7 +360,7 @@ class AuthRepositoryImpl implements AuthRepository {
         'response_types': ['code'],
         'grant_types': ['authorization_code', 'refresh_token'],
         'token_endpoint_auth_method': 'client_secret_post',
-        'scope': _buildAipScope(),
+        'scope': _scopePolicy.scope,
         'software_id': _softwareId,
         'software_version': _softwareVersion,
       }),
@@ -401,7 +374,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     final registration = _AipClientRegistrationResponse.fromJson(
       _decodeJsonObject(response.body),
-    ).toStoredRegistration(scope: _buildAipScope());
+    ).toStoredRegistration(scope: _scopePolicy.scope);
 
     final previousClientId = existing?.clientId;
     _snapshot = (_snapshot ?? const AuthSnapshot()).copyWith(
@@ -479,7 +452,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       var authorizationUri = grant.getAuthorizationUrl(
         redirectUri,
-        scopes: _aipScopes,
+        scopes: _scopePolicy.scopes,
         state: state,
       );
 
@@ -543,7 +516,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       grant.getAuthorizationUrl(
         Uri.parse(context.redirectUri),
-        scopes: _aipScopes,
+        scopes: _scopePolicy.scopes,
         state: context.state,
       );
 
@@ -596,6 +569,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     final credentials = await _loadAipCredentials();
     if (credentials == null) {
+      return null;
+    }
+
+    if (!_scopePolicy.grantedScopesSatisfy(credentials.scopes)) {
       return null;
     }
 

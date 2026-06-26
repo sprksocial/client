@@ -24,7 +24,7 @@ dependencies:
   plyr_poptart: ^0.1.0
   poptart: ^0.1.1
   poptart_lex: ^0.1.0
-  sprk_poptart: ^0.1.1
+  sprk_poptart: ^0.1.2
   cached_network_image: ^3.4.1
   camera: ^0.12.0+1
   collection: ^1.19.1

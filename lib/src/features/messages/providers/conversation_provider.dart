@@ -13,10 +13,10 @@ class Conversation extends _$Conversation {
 
   ConversationState _mergeMessagesIntoState(
     ConversationState current,
-    Iterable<MessageView> incoming, {
+    Iterable<ChatMessageView> incoming, {
     String? cursor,
   }) {
-    final mergedById = <String, MessageView>{
+    final mergedById = <String, ChatMessageView>{
       for (final message in current.messages) message.id: message,
     };
 
@@ -81,7 +81,11 @@ class Conversation extends _$Conversation {
     }
 
     final latestState = state.value ?? current;
-    state = AsyncValue.data(_mergeMessagesIntoState(latestState, [sent]));
+    state = AsyncValue.data(
+      _mergeMessagesIntoState(latestState, [
+        ChatMessageView.message(data: sent),
+      ]),
+    );
 
     return sent;
   }

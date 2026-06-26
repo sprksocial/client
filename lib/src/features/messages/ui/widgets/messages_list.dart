@@ -9,13 +9,16 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/image_content.dart';
 import 'package:spark/src/core/ui/widgets/video_content.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/share_urls.dart';
 import 'package:spark/src/features/messages/providers/message_embed_provider.dart';
+import 'package:spark/src/features/messages/utils/chat_message_presentation.dart';
 import 'package:spark/src/features/messages/ui/widgets/message_bubble.dart';
+import 'package:spark/src/features/messages/ui/widgets/sender_avatar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MessagesList extends StatelessWidget {
@@ -28,7 +31,7 @@ class MessagesList extends StatelessWidget {
     super.key,
   });
 
-  final List<MessageView> messages;
+  final List<ChatMessageView> messages;
   final ScrollController scrollController;
   final String? currentUserDid;
   final String? otherUserHandle;
@@ -113,7 +116,7 @@ class _MessageListItem extends ConsumerStatefulWidget {
     super.key,
   });
 
-  final MessageView message;
+  final ChatMessageView message;
   final bool isCurrentUser;
   final bool showAvatar;
   final String? otherUserAvatar;
@@ -135,23 +138,24 @@ class _MessageListItemState extends ConsumerState<_MessageListItem> {
   @override
   void didUpdateWidget(covariant _MessageListItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.message.id != widget.message.id ||
-        oldWidget.message.text != widget.message.text ||
-        oldWidget.message.embed != widget.message.embed) {
+    if (_shouldRebuildEmbeds(oldWidget.message, widget.message)) {
       _embedsFuture = _buildEmbeds();
     }
   }
 
   Future<List<Widget>?> _buildEmbeds() async {
-    final embedsFromText = await _buildEmbedsFromText(widget.message.text);
+    final message = widget.message.textMessage;
+    if (message == null) return null;
+
+    final embedsFromText = await _buildEmbedsFromText(message.text);
     if (!mounted) {
       return null;
     }
 
     final combinedEmbeds = <Widget>[];
 
-    if (widget.message.embed != null && widget.message.embed!.isNotEmpty) {
-      combinedEmbeds.add(_PostEmbedPreview(atUri: widget.message.embed!));
+    if (message.embed != null && message.embed!.isNotEmpty) {
+      combinedEmbeds.add(_PostEmbedPreview(atUri: message.embed!));
     }
 
     if (embedsFromText != null && embedsFromText.isNotEmpty) {
@@ -266,18 +270,112 @@ class _MessageListItemState extends ConsumerState<_MessageListItem> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Widget>?>(
-      future: _embedsFuture,
-      builder: (context, snapshot) {
-        return MessageBubble(
-          message: widget.message,
-          isCurrentUser: widget.isCurrentUser,
-          showAvatar: widget.showAvatar,
-          otherUserAvatar: widget.otherUserAvatar,
-          otherUserHandle: widget.otherUserHandle,
-          embeds: snapshot.data,
-        );
-      },
+    final message = widget.message.textMessage;
+    if (message != null) {
+      return FutureBuilder<List<Widget>?>(
+        future: _embedsFuture,
+        builder: (context, snapshot) {
+          return MessageBubble(
+            message: message,
+            isCurrentUser: widget.isCurrentUser,
+            showAvatar: widget.showAvatar,
+            otherUserAvatar: widget.otherUserAvatar,
+            otherUserHandle: widget.otherUserHandle,
+            embeds: snapshot.data,
+          );
+        },
+      );
+    }
+
+    final systemLabel = widget.message.systemLabel(
+      AppLocalizations.of(context),
+    );
+    if (systemLabel == null) {
+      return const SizedBox.shrink();
+    }
+
+    return _SystemMessageBubble(
+      text: systemLabel,
+      isCurrentUser: widget.isCurrentUser,
+      showAvatar: widget.showAvatar,
+      otherUserAvatar: widget.otherUserAvatar,
+      otherUserHandle: widget.otherUserHandle,
+    );
+  }
+
+  bool _shouldRebuildEmbeds(
+    ChatMessageView oldMessage,
+    ChatMessageView message,
+  ) {
+    final oldTextMessage = oldMessage.textMessage;
+    final textMessage = message.textMessage;
+    if (oldTextMessage == null || textMessage == null) {
+      return oldMessage.id != message.id ||
+          oldTextMessage != null ||
+          textMessage != null;
+    }
+
+    return oldTextMessage.id != textMessage.id ||
+        oldTextMessage.text != textMessage.text ||
+        oldTextMessage.embed != textMessage.embed;
+  }
+}
+
+class _SystemMessageBubble extends StatelessWidget {
+  const _SystemMessageBubble({
+    required this.text,
+    required this.isCurrentUser,
+    required this.showAvatar,
+    required this.otherUserAvatar,
+    required this.otherUserHandle,
+  });
+
+  final String text;
+  final bool isCurrentUser;
+  final bool showAvatar;
+  final String? otherUserAvatar;
+  final String? otherUserHandle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: isCurrentUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isCurrentUser && showAvatar) ...[
+            SenderAvatar(
+              isCurrentUser: false,
+              otherUserAvatar: otherUserAvatar,
+              otherUserHandle: otherUserHandle,
+            ),
+            const SizedBox(width: 8),
+          ] else if (!isCurrentUser) ...[
+            const SizedBox(width: 40),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                text,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
