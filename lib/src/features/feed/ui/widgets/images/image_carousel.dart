@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/ui/widgets/elastic_pinch_zoom.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/moderate_page_scroll_physics.dart';
 
 class ImageCarousel extends ConsumerStatefulWidget {
@@ -110,23 +111,25 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
   Widget _buildImage(int index) {
     return DecoratedBox(
       decoration: const BoxDecoration(color: AppColors.black),
-      child: Image(
-        image: _imageProviders[index],
-        fit: BoxFit.contain,
-        height: double.infinity,
-        width: double.infinity,
-        gaplessPlayback: true,
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          if (wasSynchronouslyLoaded) {
-            return child;
-          }
-          if (frame != null) {
-            return child;
-          }
-          return const _ImageLoadingIndicator();
-        },
-        errorBuilder: (context, error, stackTrace) =>
-            const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+      child: ElasticPinchZoom(
+        child: Image(
+          image: _imageProviders[index],
+          fit: BoxFit.contain,
+          height: double.infinity,
+          width: double.infinity,
+          gaplessPlayback: true,
+          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+            if (wasSynchronouslyLoaded) {
+              return child;
+            }
+            if (frame != null) {
+              return child;
+            }
+            return const _ImageLoadingIndicator();
+          },
+          errorBuilder: (context, error, stackTrace) =>
+              const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+        ),
       ),
     );
   }
