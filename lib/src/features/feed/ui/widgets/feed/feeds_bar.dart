@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_tag_list.dart';
 import 'package:spark/src/core/design_system/templates/feeds_bar_template.dart';
@@ -25,21 +24,6 @@ class FeedsBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
 }
 
 class _FeedsBarState extends ConsumerState<FeedsBar> {
-  void _showCreateMenu(BuildContext context) {
-    showCreateMediaSheet(
-      context,
-      onRecord: CreateMediaActions.onRecord(context, storyMode: false),
-      onUploadVideo: CreateMediaActions.onUploadVideo(
-        context,
-        storyMode: false,
-      ),
-      onUploadImages: CreateMediaActions.onUploadImages(
-        context,
-        storyMode: false,
-      ),
-    );
-  }
-
   void _showFeedOptionsSheet(BuildContext context, Feed feed) {
     final isTimeline =
         feed.type == 'timeline' && feed.config.value == 'following';
@@ -194,7 +178,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
     return FeedsBarTemplate(
       tags: tags,
       selectedTagId: settings.activeFeed.config.id,
-      onLeadingPressed: () => _showCreateMenu(context),
+      onLeadingPressed: CreateMediaActions.onRecord(context, storyMode: false),
       onTagTap: (tagId) {
         final feed = pinnedFeeds.firstWhere((f) => f.config.id == tagId);
 

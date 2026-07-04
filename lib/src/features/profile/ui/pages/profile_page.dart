@@ -6,7 +6,6 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/identity_repository.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
-import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_tab_bar.dart';
 import 'package:spark/src/core/design_system/templates/profile_page_template.dart';
 import 'package:spark/src/core/media/create_media_actions.dart';
@@ -170,21 +169,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  void _showCreateMenu(BuildContext context) {
-    showCreateMediaSheet(
-      context,
-      onRecord: CreateMediaActions.onRecord(context, storyMode: false),
-      onUploadVideo: CreateMediaActions.onUploadVideo(
-        context,
-        storyMode: false,
-      ),
-      onUploadImages: CreateMediaActions.onUploadImages(
-        context,
-        storyMode: false,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final profileStateAsync = ref.watch(
@@ -338,7 +322,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     constraints: const BoxConstraints(),
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
-                    onPressed: () => _showCreateMenu(context),
+                    onPressed: CreateMediaActions.onRecord(
+                      context,
+                      storyMode: false,
+                    ),
                     icon: AppIcons.addPostFilled(size: 28),
                   ),
                 )

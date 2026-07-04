@@ -174,5 +174,36 @@ void main() {
         );
       },
     );
+
+    test('auto-dispose deletes temporary segment files', () async {
+      final container = ProviderContainer();
+
+      final subscription = container.listen(
+        recordingProvider,
+        (previous, next) {},
+      );
+
+      final tempDir = await Directory.systemTemp.createTemp(
+        'recording-provider-test',
+      );
+      addTearDown(() async {
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      });
+
+      final segmentFile = File('${tempDir.path}/segment.mp4')
+        ..writeAsStringSync('segment');
+
+      container
+          .read(recordingProvider.notifier)
+          .addSegment(XFile(segmentFile.path));
+
+      subscription.close();
+      container.dispose();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(await segmentFile.exists(), isFalse);
+    });
   });
 }

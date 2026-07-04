@@ -11,6 +11,7 @@ part 'recording_provider.g.dart';
 @riverpod
 class Recording extends _$Recording {
   Timer? _timer;
+  final List<String> _segmentPaths = [];
 
   @override
   RecordingState build() {
@@ -55,8 +56,9 @@ class Recording extends _$Recording {
   }
 
   void addSegment(XFile file) {
+    _segmentPaths.add(file.path);
     state = state.copyWith(
-      segmentPaths: [...state.segmentPaths, file.path],
+      segmentPaths: List.unmodifiable(_segmentPaths),
       error: null,
     );
   }
@@ -96,11 +98,20 @@ class Recording extends _$Recording {
     stopTimer();
 
     final keepSet = keepPaths.toSet();
-    final pathsToDelete = state.segmentPaths.where(
-      (path) => !keepSet.contains(path),
-    );
+    final pathsToDelete = _segmentPaths
+        .where((path) => !keepSet.contains(path))
+        .toList();
 
-    for (final path in pathsToDelete) {
+    await _deleteTemporaryFiles(pathsToDelete);
+    _segmentPaths.clear();
+
+    if (!ref.mounted) return;
+
+    state = const RecordingState();
+  }
+
+  Future<void> _deleteTemporaryFiles(Iterable<String> paths) async {
+    for (final path in paths) {
       try {
         final file = File(path);
         if (await file.exists()) {
@@ -110,12 +121,11 @@ class Recording extends _$Recording {
         // Best-effort cleanup for temporary session files.
       }
     }
-
-    state = const RecordingState();
   }
 
   void reset() {
     stopTimer();
+    _segmentPaths.clear();
     state = const RecordingState();
   }
 
@@ -125,6 +135,9 @@ class Recording extends _$Recording {
   }
 
   void _dispose() {
+    final pathsToDelete = List<String>.of(_segmentPaths);
+    _segmentPaths.clear();
     stopTimer();
+    unawaited(_deleteTemporaryFiles(pathsToDelete));
   }
 }

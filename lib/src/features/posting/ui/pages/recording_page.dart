@@ -65,14 +65,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   int _guideAudioPrepareRequestId = 0;
   int _soundPickerSessionId = 0;
 
-  // Store notifier reference for safe disposal
-  Recording? _recordingNotifier;
-
   @override
   void initState() {
     super.initState();
     _logger = GetIt.instance<LogService>().getLogger('RecordingPage');
-    _recordingNotifier = ref.read(recordingProvider.notifier);
     _guideAudioPlayer = AudioPlayer();
     unawaited(
       _guideAudioPlayer.setAudioContext(
@@ -1085,11 +1081,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   void dispose() {
     _soundPickerSessionId++;
     unawaited(_guideAudioPlayer.dispose());
-    // Defer modifying provider to avoid modifying while finalizing widget tree
-    final notifier = _recordingNotifier;
-    if (notifier != null) {
-      unawaited(notifier.discardSession());
-    }
     super.dispose();
   }
 }
