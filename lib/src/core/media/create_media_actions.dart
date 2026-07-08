@@ -29,12 +29,23 @@ class CreateMediaActions {
   }) {
     return () async {
       if (!context.mounted) return;
-      await context.router.push(
-        RecordingRoute(
-          storyMode: storyMode,
-          captureMode: storyMode ? CaptureMode.hybrid : CaptureMode.videoOnly,
-        ),
+      final mediaPlaybackContainer = ProviderScope.containerOf(
+        context,
+        listen: false,
       );
+      final mediaPlaybackSuspension = suspendMediaPlayback(
+        mediaPlaybackContainer,
+      );
+      try {
+        await context.router.push(
+          RecordingRoute(
+            storyMode: storyMode,
+            captureMode: storyMode ? CaptureMode.hybrid : CaptureMode.videoOnly,
+          ),
+        );
+      } finally {
+        mediaPlaybackSuspension.release();
+      }
     };
   }
 

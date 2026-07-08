@@ -43,6 +43,15 @@ class AppIcons {
             : null,
         package: 'assets',
       );
+  static Widget arrowFlip({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/arrow_flip.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null
+        ? ColorFilter.mode(color, BlendMode.srcIn)
+        : null,
+    package: 'assets',
+  );
   static Widget at({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/at.svg',
     width: size,

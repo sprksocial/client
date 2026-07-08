@@ -965,8 +965,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             availableLensDirections.contains(CameraLensDirection.front) &&
             availableLensDirections.contains(CameraLensDirection.back) &&
             !_isStartingRecording &&
-            !recordingState.isRecording &&
-            !recordingState.hasSegments &&
             !cameraState.isFlipping;
         final aspectRatio = cameraState.controller!.value.aspectRatio;
         final canFinalizeSession =
@@ -986,57 +984,42 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             ? null
             : _handleTap;
 
-        return Stack(
-          children: [
-            RecordingPageTemplate(
-              cameraPreview: RepaintBoundary(
-                child: CameraPreview(cameraState.controller!),
-              ),
-              aspectRatio: aspectRatio,
-              isRecording: recordingState.isRecording,
-              elapsedDuration: recordingState.elapsedDuration,
-              maxDuration: recordingState.maxDuration,
-              onBack: () {
-                if (_isStartingRecording || recordingState.isRecording) {
-                  return;
-                }
-                context.router.pop();
-              },
-              onFlipCamera: canFlipCamera ? _handleFlipCamera : null,
-              canFlipCamera: canFlipCamera,
-              captureMode: widget.captureMode,
-              isProcessing: _isFinalizingRecordingSession,
-              processingLabel: AppLocalizations.of(
-                context,
-              ).messageProcessingVideo,
-              doneLabel: AppLocalizations.of(context).buttonDone,
-              onDone: canFinalizeSession ? _finalizeRecordingSession : null,
-              onTap: onTap,
-              onRecordStart: _isProcessing ? null : _handleRecordStart,
-              onRecordStop: _isProcessing ? null : _handleRecordStop,
-              onOpenLibrary:
-                  _isProcessing ||
-                      _isStartingRecording ||
-                      recordingState.isRecording ||
-                      recordingState.hasSegments
-                  ? null
-                  : _openMediaLibraryPicker,
-              soundLabel: recordingState.selectedSound?.title,
-              onSelectSound: canChangeSound ? _showSoundPicker : null,
-              onClearSound: canChangeSound && recordingState.hasSelectedSound
-                  ? _clearSelectedSound
-                  : null,
-            ),
-            if (cameraState.isFlipping)
-              const Positioned.fill(
-                child: ColoredBox(
-                  color: Colors.black,
-                  child: Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  ),
-                ),
-              ),
-          ],
+        return RecordingPageTemplate(
+          cameraPreview: RepaintBoundary(
+            child: CameraPreview(cameraState.controller!),
+          ),
+          aspectRatio: aspectRatio,
+          isRecording: recordingState.isRecording,
+          elapsedDuration: recordingState.elapsedDuration,
+          maxDuration: recordingState.maxDuration,
+          onBack: () {
+            if (_isStartingRecording || recordingState.isRecording) {
+              return;
+            }
+            context.router.pop();
+          },
+          onFlipCamera: canFlipCamera ? _handleFlipCamera : null,
+          canFlipCamera: canFlipCamera,
+          captureMode: widget.captureMode,
+          isProcessing: _isFinalizingRecordingSession,
+          processingLabel: AppLocalizations.of(context).messageProcessingVideo,
+          doneLabel: AppLocalizations.of(context).buttonDone,
+          onDone: canFinalizeSession ? _finalizeRecordingSession : null,
+          onTap: onTap,
+          onRecordStart: _isProcessing ? null : _handleRecordStart,
+          onRecordStop: _isProcessing ? null : _handleRecordStop,
+          onOpenLibrary:
+              _isProcessing ||
+                  _isStartingRecording ||
+                  recordingState.isRecording ||
+                  recordingState.hasSegments
+              ? null
+              : _openMediaLibraryPicker,
+          soundLabel: recordingState.selectedSound?.title,
+          onSelectSound: canChangeSound ? _showSoundPicker : null,
+          onClearSound: canChangeSound && recordingState.hasSelectedSound
+              ? _clearSelectedSound
+              : null,
         );
       },
       loading: () => const Scaffold(

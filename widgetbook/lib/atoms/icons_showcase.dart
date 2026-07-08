@@ -24,6 +24,7 @@ Widget buildAppIconsGridUseCase(BuildContext context) {
     AppIcons.bookmarkFilled(size: size, color: color),
     AppIcons.camera(size: size, color: color),
     AppIcons.arrowRight(size: size, color: color),
+    AppIcons.arrowFlip(size: size, color: color),
     AppIcons.pin(size: size, color: color),
     AppIcons.music(size: size, color: color),
     AppIcons.folderMini(size: size, color: color),

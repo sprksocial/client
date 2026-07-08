@@ -14,6 +14,7 @@ part 'camera_provider.g.dart';
 class Camera extends _$Camera {
   late final SparkLogger _logger;
   AppLifecycleListener? _lifecycleListener;
+  bool _isFlippingCamera = false;
 
   // Track if camera was disposed due to app lifecycle (not user navigation)
   bool _wasDisposedByLifecycle = false;
@@ -116,8 +117,6 @@ class Camera extends _$Camera {
     await controller.initialize();
 
     if (controller.value.isInitialized) {
-      // Pre-initialize audio session on iOS to eliminate recording start lag
-      await controller.prepareForVideoRecording();
       _logger.i('Camera controller successfully initialized');
       return controller;
     } else {
@@ -149,6 +148,11 @@ class Camera extends _$Camera {
   }
 
   Future<void> flipCamera() async {
+    if (_isFlippingCamera) {
+      _logger.d('Ignoring camera flip - already flipping');
+      return;
+    }
+
     final currentState = state.value;
     if (currentState == null) {
       _logger.w('Cannot flip camera - no current state');
@@ -195,56 +199,56 @@ class Camera extends _$Camera {
 
     _logger.d('Flipping camera');
     final newCamera = currentState.cameras[newIndex];
-    final oldController = currentState.controller;
-
-    // Detach preview first, then dispose old controller.
+    final controller = currentState.controller;
+    _isFlippingCamera = true;
     state = AsyncValue.data(
-      currentState.copyWith(
-        controller: null,
-        isInitialized: false,
-        isFlipping: true,
-        error: null,
-      ),
+      currentState.copyWith(isFlipping: true, error: null),
     );
-
-    await _waitForPreviewDetach();
-    if (!ref.mounted) return;
 
     try {
       _logger.d('Switching to camera: ${newCamera.name}');
 
-      await oldController?.dispose();
-      if (!ref.mounted) return;
+      if (controller == null) {
+        final newController = await _createCameraController(newCamera);
+        if (!ref.mounted) {
+          await newController.dispose();
+          return;
+        }
 
-      final newController = await _createCameraController(newCamera);
-      if (!ref.mounted) {
-        await newController.dispose();
-        return;
+        state = AsyncValue.data(
+          currentState.copyWith(
+            controller: newController,
+            selectedCameraIndex: newIndex,
+            isInitialized: true,
+            isFlipping: false,
+            error: null,
+          ),
+        );
+      } else {
+        await controller.setDescription(newCamera);
+        if (!ref.mounted) return;
+
+        state = AsyncValue.data(
+          currentState.copyWith(
+            controller: controller,
+            selectedCameraIndex: newIndex,
+            isInitialized: true,
+            isFlipping: false,
+            error: null,
+          ),
+        );
       }
-
-      state = AsyncValue.data(
-        currentState.copyWith(
-          controller: newController,
-          selectedCameraIndex: newIndex,
-          isInitialized: true,
-          isFlipping: false,
-          error: null,
-        ),
-      );
 
       _logger.i('Camera flipped successfully to ${newCamera.name}');
     } catch (e, stackTrace) {
       _logger.e('Error flipping camera', error: e, stackTrace: stackTrace);
       if (ref.mounted) {
         state = AsyncValue.data(
-          currentState.copyWith(
-            controller: null,
-            isInitialized: false,
-            isFlipping: false,
-            error: e.toString(),
-          ),
+          currentState.copyWith(isFlipping: false, error: e.toString()),
         );
       }
+    } finally {
+      _isFlippingCamera = false;
     }
   }
 
@@ -295,7 +299,10 @@ class Camera extends _$Camera {
     state = AsyncValue.data(currentState.copyWith(isRecording: true));
 
     try {
-      await currentState.controller!.startVideoRecording();
+      await currentState.controller!.prepareForVideoRecording();
+      await currentState.controller!.startVideoRecording(
+        enablePersistentRecording: true,
+      );
       _logger.i('Video recording started successfully');
       return true;
     } catch (e, stackTrace) {
