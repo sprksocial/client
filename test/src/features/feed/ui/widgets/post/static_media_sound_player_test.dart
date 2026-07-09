@@ -1,6 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/media/media_playback_gate.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/static_media_sound_player.dart';
 
 void main() {
@@ -128,6 +131,46 @@ void main() {
         'play:https://example.com/audio:audio/mpeg',
         'play:https://example.com/audio:audio/mp4',
       ]);
+    });
+
+    testWidgets('pauses and resumes with app focus', (tester) async {
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      final player = _FakeStaticMediaAudioPlayer();
+      final controller = StaticMediaSoundController(audioPlayer: player);
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MediaPlaybackGate(
+            isActive: true,
+            builder: (context, shouldPlay) {
+              return StaticMediaSoundPlayer(
+                audioUrl: 'https://example.com/a.mp3',
+                shouldPlay: shouldPlay,
+                controller: controller,
+                child: const SizedBox.shrink(),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pump();
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      await tester.pump();
+
+      expect(player.calls, [
+        'play:https://example.com/a.mp3:',
+        'pause',
+        'resume',
+      ]);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     });
   });
 }

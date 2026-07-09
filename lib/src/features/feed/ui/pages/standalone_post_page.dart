@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/media/media_playback_gate.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_video_aspect_ratio.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -215,12 +216,17 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
               // Main content
               Positioned.fill(
                 child: postData!.videoUrl.isNotEmpty
-                    ? PostVideoPlayer(
-                        key: _videoPlayerKey,
-                        videoUrl: postData.videoUrl,
-                        thumbnail: postData.thumbnailUrl,
+                    ? MediaPlaybackGate(
                         isActive: true,
-                        videoAspectRatio: postData.videoAspectRatio,
+                        builder: (context, shouldPlay) {
+                          return PostVideoPlayer(
+                            key: _videoPlayerKey,
+                            videoUrl: postData.videoUrl,
+                            thumbnail: postData.thumbnailUrl,
+                            isActive: shouldPlay,
+                            videoAspectRatio: postData.videoAspectRatio,
+                          );
+                        },
                       )
                     : postData.imageUrls.isNotEmpty
                     ? ImageCarousel(imageUrls: postData.imageUrls)

@@ -41,8 +41,6 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
   bool _userInteracted = false;
   bool _showThumbnailOverlay = true;
   bool _showPlayButton = false;
-  AppLifecycleListener? _appLifecycleListener;
-  bool _isAppInForeground = true;
   bool _shouldResumeWhenEligible = false;
 
   late AnimationController _bounceController;
@@ -66,7 +64,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     videoSize: _playerVideoSize,
     aspectRatio: _resolvedVideoAspectRatio,
   );
-  bool get _isPlaybackEligible => widget.isActive && _isAppInForeground;
+  bool get _isPlaybackEligible => widget.isActive;
 
   @override
   void initState() {
@@ -77,13 +75,6 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     );
     _bounceAnimation = Tween<double>(begin: 1, end: 1.3).animate(
       CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut),
-    );
-    _appLifecycleListener = AppLifecycleListener(
-      onInactive: _pauseForLifecycle,
-      onHide: _pauseForLifecycle,
-      onPause: _pauseForLifecycle,
-      onShow: _resumeAfterLifecyclePause,
-      onResume: _resumeAfterLifecyclePause,
     );
     initVideoPlayer();
   }
@@ -100,7 +91,6 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
 
   @override
   void dispose() {
-    _appLifecycleListener?.dispose();
     _bounceController.dispose();
     videoController?.videoPlayerController?.removeListener(_videoValueListener);
     videoController?.dispose();
@@ -218,27 +208,6 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     if (!_userInteracted && !isPlaying) {
       videoController?.play();
     }
-  }
-
-  void _pauseForLifecycle() {
-    _isAppInForeground = false;
-    _shouldResumeWhenEligible =
-        _shouldResumeWhenEligible ||
-        isPlaying ||
-        (!_userInteracted && widget.isActive);
-    if (isPlaying) {
-      videoController?.pause();
-    }
-  }
-
-  void _resumeAfterLifecyclePause() {
-    _isAppInForeground = true;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _syncPlaybackWithEligibility();
-      }
-    });
   }
 
   void _videoValueListener() {
