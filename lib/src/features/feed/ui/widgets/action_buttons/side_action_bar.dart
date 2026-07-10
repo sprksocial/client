@@ -32,9 +32,6 @@ class SideActionBar extends ConsumerStatefulWidget {
     this.commentCount = '0',
     this.shareCount = '0',
     this.isLiked = false,
-    this.profileImageUrl,
-    this.isImage = false,
-    this.onProfilePressed,
     this.onMediaPauseRequested,
     this.showBlockOption = true,
   });
@@ -43,10 +40,7 @@ class SideActionBar extends ConsumerStatefulWidget {
   final String commentCount;
   final String shareCount;
   final bool isLiked;
-  final String? profileImageUrl;
   final PostView post;
-  final bool isImage;
-  final VoidCallback? onProfilePressed;
   final VoidCallback? onMediaPauseRequested;
 
   /// Whether to show the block option in the options panel.

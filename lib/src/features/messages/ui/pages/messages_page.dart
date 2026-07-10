@@ -19,6 +19,10 @@ class MessagesPage extends ConsumerStatefulWidget {
 }
 
 class _MessagesPageState extends ConsumerState<MessagesPage> {
+  void _openNewChat() {
+    context.router.push(const NewChatSearchRoute());
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -78,16 +82,11 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
               ),
             );
           },
-          onAddTap: () => context.router.push(const NewChatSearchRoute()),
-          onSearchTap: () {},
+          onAddTap: _openNewChat,
           onRefresh: refreshAndInvalidate,
         );
       },
-      loading: () {
-        return ChatListPageTemplate.loading(
-          onAddTap: () => context.router.push(const NewChatSearchRoute()),
-        );
-      },
+      loading: () => ChatListPageTemplate.loading(onAddTap: _openNewChat),
       error: (error, stack) {
         final theme = Theme.of(context);
         return Center(

@@ -50,8 +50,6 @@ class BlocksListView extends ConsumerWidget {
             description: user.description,
             isFollowing: false,
             isBlocking: true,
-            onFollow: () {},
-            onUnfollow: () {},
             onUnblock: () {
               ref.read(blocksProvider(did: did).notifier).unblockUser(user.did);
             },

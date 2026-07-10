@@ -12,8 +12,7 @@ class ProfileActionButtons extends StatelessWidget {
     this.isFollowing = false,
     this.isBlocking = false,
     this.onEditTap,
-    this.onFollowTap,
-    this.onUnfollowTap,
+    this.onFollowingChanged,
     this.onUnblockTap,
   });
 
@@ -21,8 +20,7 @@ class ProfileActionButtons extends StatelessWidget {
   final bool isFollowing;
   final bool isBlocking;
   final VoidCallback? onEditTap;
-  final VoidCallback? onFollowTap;
-  final VoidCallback? onUnfollowTap;
+  final ValueChanged<bool>? onFollowingChanged;
   final VoidCallback? onUnblockTap;
 
   @override
@@ -49,10 +47,8 @@ class ProfileActionButtons extends StatelessWidget {
             onChanged: (isSelected) {
               if (isBlocking && onUnblockTap != null) {
                 onUnblockTap!();
-              } else if (isSelected) {
-                onFollowTap?.call();
               } else {
-                onUnfollowTap?.call();
+                onFollowingChanged?.call(isSelected);
               }
             },
             width: double.infinity,

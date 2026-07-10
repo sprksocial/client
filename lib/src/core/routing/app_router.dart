@@ -164,17 +164,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: RecordingRoute.page, path: '/recording'),
 
     // Stories pages
-    AutoRoute(
-      page: AllStoriesRoute.page,
-      path: '/stories',
-      children: [
-        AutoRoute(
-          page: AuthorStoriesRoute.page,
-          path: 'author',
-          children: [AutoRoute(page: StoryRoute.page, path: 'story')],
-        ),
-      ],
-    ),
+    AutoRoute(page: AllStoriesRoute.page, path: '/stories'),
 
     // Story Manager
     AutoRoute(page: StoryManagerRoute.page, path: '/story-manager'),

@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
@@ -7,16 +8,12 @@ import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
+import 'package:spark/src/core/routing/app_router.dart';
 
 class SoundHeaderCard extends StatefulWidget {
-  const SoundHeaderCard({
-    required this.audio,
-    required this.onAuthorTap,
-    super.key,
-  });
+  const SoundHeaderCard({required this.audio, super.key});
 
   final AudioView audio;
-  final VoidCallback onAuthorTap;
 
   @override
   State<SoundHeaderCard> createState() => _SoundHeaderCardState();
@@ -92,7 +89,12 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
 
                 // Author
                 GestureDetector(
-                  onTap: widget.onAuthorTap,
+                  onTap: () => context.router.push(
+                    ProfileRoute(
+                      did: widget.audio.author.did,
+                      initialProfile: widget.audio.author,
+                    ),
+                  ),
                   child: Text(
                     '@${widget.audio.author.handle}',
                     style: AppTypography.textSmallThin.copyWith(

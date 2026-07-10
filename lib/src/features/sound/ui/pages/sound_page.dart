@@ -86,17 +86,7 @@ class _SoundPageState extends ConsumerState<SoundPage> {
             controller: _scrollController,
             slivers: [
               // Header Card
-              SliverToBoxAdapter(
-                child: SoundHeaderCard(
-                  audio: state.audio,
-                  onAuthorTap: () => context.router.push(
-                    ProfileRoute(
-                      did: state.audio.author.did,
-                      initialProfile: state.audio.author,
-                    ),
-                  ),
-                ),
-              ),
+              SliverToBoxAdapter(child: SoundHeaderCard(audio: state.audio)),
 
               // Posts Grid
               if (state.posts.isEmpty)

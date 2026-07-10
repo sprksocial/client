@@ -33,7 +33,6 @@ class ChatListPageTemplate extends StatelessWidget {
     this.loading = false,
     this.loadingItemCount = 8,
     this.onAddTap,
-    this.onSearchTap,
     this.onRefresh,
   });
 
@@ -42,7 +41,6 @@ class ChatListPageTemplate extends StatelessWidget {
     this.title = 'Chat',
     this.loadingItemCount = 8,
     this.onAddTap,
-    this.onSearchTap,
     this.onRefresh,
   }) : items = const [],
        onItemTap = _noopItemTap,
@@ -54,7 +52,6 @@ class ChatListPageTemplate extends StatelessWidget {
   final bool loading;
   final int loadingItemCount;
   final VoidCallback? onAddTap;
-  final VoidCallback? onSearchTap;
   final Future<void> Function()? onRefresh;
 
   @override

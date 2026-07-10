@@ -141,39 +141,50 @@ class ProfileNotifier extends _$ProfileNotifier {
     return authRepository.isAuthenticated && authRepository.did == profileDid;
   }
 
-  Future<String?> toggleFollow() async {
+  Future<void> setFollowing({required bool following}) async {
     final currentData = state.asData!.value;
     final profile = currentData.profile;
 
     if (profile == null) {
-      logger.w('Cannot toggle follow, profile not loaded.');
-      throw Exception('Profile not loaded, cannot toggle follow.');
+      logger.w('Cannot update follow state, profile not loaded.');
+      throw Exception('Profile not loaded, cannot update follow state.');
     }
     if (!authRepository.isAuthenticated) {
       logger.i(
         'User not authenticated, showing auth prompt for follow action.',
       );
       state = AsyncData(currentData.copyWith(showAuthPrompt: true));
-      return null;
+      return;
+    }
+
+    final currentFollowUri = profile.viewer?.following;
+    if ((currentFollowUri != null) == following) {
+      return;
     }
 
     logger.d(
-      'Toggling follow for profile: ${profile.did}, '
-      'current follow URI: ${profile.viewer?.following ?? 'none'}',
+      'Setting follow state for profile ${profile.did} to $following, '
+      'current follow URI: ${currentFollowUri ?? 'none'}',
     );
     final originalStateValue = currentData;
 
     try {
-      final newFollowUriResult = await sprkRepository.graph.toggleFollow(
-        profile.did,
-        profile.viewer?.following,
-        bsky: bsky,
-      );
+      final AtUri? newFollowUri;
+      if (following) {
+        final followRef = await sprkRepository.graph.followUser(
+          profile.did,
+          bsky: bsky,
+        );
+        newFollowUri = followRef.uri;
+      } else {
+        await sprkRepository.graph.unfollowUser(currentFollowUri!);
+        newFollowUri = null;
+      }
 
-      if (newFollowUriResult != null) {
+      if (following) {
         logger.i(
           'Successfully followed ${profile.did}. '
-          'New follow URI: $newFollowUriResult',
+          'New follow URI: $newFollowUri',
         );
       } else {
         logger.i('Successfully unfollowed ${profile.did}.');
@@ -183,21 +194,13 @@ class ProfileNotifier extends _$ProfileNotifier {
       final currentFollowersCount = profile.followersCount ?? 0;
 
       // Update follower count: increment on follow, decrement on unfollow
-      final newFollowersCount = newFollowUriResult != null
+      final newFollowersCount = following
           ? currentFollowersCount + 1
           : (currentFollowersCount > 0 ? currentFollowersCount - 1 : 0);
 
       final optimisticViewer =
-          profile.viewer?.copyWith(
-            following: newFollowUriResult != null
-                ? AtUri.parse(newFollowUriResult)
-                : null,
-          ) ??
-          actor_viewer.ViewerState(
-            following: newFollowUriResult != null
-                ? AtUri.parse(newFollowUriResult)
-                : null,
-          );
+          profile.viewer?.copyWith(following: newFollowUri) ??
+          actor_viewer.ViewerState(following: newFollowUri);
 
       final optimisticProfile = profile.copyWith(
         viewer: optimisticViewer,
@@ -207,16 +210,14 @@ class ProfileNotifier extends _$ProfileNotifier {
       state = AsyncData(
         originalStateValue.copyWith(profile: optimisticProfile),
       );
-
-      return newFollowUriResult;
     } catch (e, s) {
       logger.e(
-        'Error toggling follow for ${profile.did}',
+        'Error updating follow state for ${profile.did}',
         error: e,
         stackTrace: s,
       );
       state = AsyncData(originalStateValue);
-      throw Exception('Failed to toggle follow: $e');
+      throw Exception('Failed to update follow state: $e');
     }
   }
 

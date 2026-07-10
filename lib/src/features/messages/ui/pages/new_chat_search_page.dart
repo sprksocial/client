@@ -246,8 +246,6 @@ class _UserResultsState extends ConsumerState<_UserResults> {
             userHandle: '@${actor.handle}',
             description: actor.description ?? '',
             isFollowing: false,
-            onFollow: () {},
-            onUnfollow: () {},
             showFollowButton: false, // Not relevant when starting a chat
             onTap: () => _startChat(actor),
           ),

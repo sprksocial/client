@@ -339,21 +339,26 @@ class Settings extends _$Settings {
     }
   }
 
-  /// Likes a feed generator
-  Future<void> likeFeed(Feed feed) async {
-    if (feed.view != null) {
+  /// Updates whether the current user likes a feed generator.
+  Future<void> setFeedLiked(Feed feed, {required bool liked}) async {
+    final generator = feed.view;
+    if (generator == null || (generator.viewer?.like != null) == liked) {
+      return;
+    }
+
+    if (liked) {
       final likeRef = await feedRepository.likePost(
-        feed.view!.cid,
-        feed.view!.uri,
+        generator.cid,
+        generator.uri,
       );
 
       // Update the feed with the like information
       final updatedFeed = Feed(
         type: feed.type,
         config: feed.config,
-        view: feed.view?.copyWith(
+        view: generator.copyWith(
           viewer:
-              feed.view!.viewer?.copyWith(like: likeRef.uri) ??
+              generator.viewer?.copyWith(like: likeRef.uri) ??
               GeneratorViewerState(like: likeRef.uri),
         ),
       );
@@ -370,35 +375,29 @@ class Settings extends _$Settings {
       }
 
       state = state.copyWith(feeds: updatedFeeds, likedFeeds: likedFeeds);
+      return;
     }
-  }
 
-  /// Unlikes a feed generator
-  Future<void> unlikeFeed(Feed feed) async {
-    if (feed.view?.viewer?.like != null) {
-      await feedRepository.unlikePost(feed.view!.viewer!.like!);
+    await feedRepository.unlikePost(generator.viewer!.like!);
 
-      // Update the feed to remove like information
-      final updatedFeed = Feed(
-        type: feed.type,
-        config: feed.config,
-        view: feed.view?.copyWith(
-          viewer: feed.view!.viewer?.copyWith(like: null),
-        ),
-      );
+    // Update the feed to remove like information
+    final updatedFeed = Feed(
+      type: feed.type,
+      config: feed.config,
+      view: generator.copyWith(viewer: generator.viewer!.copyWith(like: null)),
+    );
 
-      // Update feeds list
-      final updatedFeeds = state.feeds
-          .map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f)
-          .toList();
+    // Update feeds list
+    final updatedFeeds = state.feeds
+        .map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f)
+        .toList();
 
-      // Remove from liked feeds
-      final likedFeeds = state.likedFeeds
-          .where((f) => f.config.id != updatedFeed.config.id)
-          .toList();
+    // Remove from liked feeds
+    final likedFeeds = state.likedFeeds
+        .where((f) => f.config.id != updatedFeed.config.id)
+        .toList();
 
-      state = state.copyWith(feeds: updatedFeeds, likedFeeds: likedFeeds);
-    }
+    state = state.copyWith(feeds: updatedFeeds, likedFeeds: likedFeeds);
   }
 
   /// Syncs all preferences from server

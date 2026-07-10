@@ -1,8 +1,10 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/info_bar.dart';
@@ -14,8 +16,7 @@ class PostOverlay extends ConsumerWidget {
     super.key,
     this.feed,
     this.isLiked = false,
-    this.onProfilePressed,
-    this.onUsernameTap,
+    this.onAuthorTap,
     this.onMediaPauseRequested,
     this.labels = const [],
     this.showBlockOption = true,
@@ -24,14 +25,32 @@ class PostOverlay extends ConsumerWidget {
   final PostView post;
   final Feed? feed;
   final bool isLiked;
-  final VoidCallback? onProfilePressed;
-  final VoidCallback? onUsernameTap;
   final VoidCallback? onMediaPauseRequested;
+
+  final VoidCallback? onAuthorTap;
+
   final List<Label> labels;
 
   /// Whether to show the block option in the options panel.
   /// Set to false for profile feeds where blocking doesn't make sense.
   final bool showBlockOption;
+
+  void _handleAuthorTap(BuildContext context) {
+    onMediaPauseRequested?.call();
+    final authorTap = onAuthorTap;
+    if (authorTap != null) {
+      authorTap();
+      return;
+    }
+
+    context.router.push(
+      ProfileRoute(
+        did: post.author.did,
+        initialProfile: post.author,
+        bsky: post.uri.collection.toString().startsWith('app.bsky'),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,7 +127,7 @@ class PostOverlay extends ConsumerWidget {
                               informLabels: informLabels,
                               isSprk: post.uri.toString().contains('so.sprk'),
                               audio: post.localSound,
-                              onUsernameTap: onUsernameTap,
+                              onUsernameTap: () => _handleAuthorTap(context),
                             );
                           },
                         ),
@@ -126,9 +145,6 @@ class PostOverlay extends ConsumerWidget {
                       commentCount: '${post.replyCount ?? 0}',
                       shareCount: '${post.repostCount ?? 0}',
                       isLiked: isLiked,
-                      profileImageUrl: post.author.avatar.toString(),
-                      isImage: post.imageUrls.length > 1,
-                      onProfilePressed: onProfilePressed,
                       onMediaPauseRequested: onMediaPauseRequested,
                       showBlockOption: showBlockOption,
                     ),

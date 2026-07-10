@@ -12,9 +12,8 @@ class ProfileCard extends StatelessWidget {
     required this.userName,
     required this.userHandle,
     required this.isFollowing,
-    required this.onFollow,
-    required this.onUnfollow,
     this.isBlocking = false,
+    this.onFollowingChanged,
     this.onUnblock,
     this.showFollowButton = true,
     this.description,
@@ -30,10 +29,9 @@ class ProfileCard extends StatelessWidget {
     required String userName,
     required String userHandle,
     required bool isFollowing,
-    required VoidCallback onFollow,
-    required VoidCallback onUnfollow,
     required String description,
     bool isBlocking = false,
+    ValueChanged<bool>? onFollowingChanged,
     VoidCallback? onUnblock,
     bool showFollowButton = true,
     VoidCallback? onTap,
@@ -45,9 +43,8 @@ class ProfileCard extends StatelessWidget {
          userName: userName,
          userHandle: userHandle,
          isFollowing: isFollowing,
-         onFollow: onFollow,
-         onUnfollow: onUnfollow,
          isBlocking: isBlocking,
+         onFollowingChanged: onFollowingChanged,
          onUnblock: onUnblock,
          showFollowButton: showFollowButton,
          description: description,
@@ -62,8 +59,7 @@ class ProfileCard extends StatelessWidget {
   final String userHandle;
   final bool isFollowing;
   final bool isBlocking;
-  final VoidCallback onFollow;
-  final VoidCallback onUnfollow;
+  final ValueChanged<bool>? onFollowingChanged;
   final VoidCallback? onUnblock;
   final bool showFollowButton;
   final String? description;
@@ -134,7 +130,8 @@ class ProfileCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (showFollowButton) ...[
+                if (showFollowButton &&
+                    (onFollowingChanged != null || onUnblock != null)) ...[
                   const SizedBox(width: 8),
                   ToggleButton(
                     isSelected: isBlocking && onUnblock != null
@@ -150,10 +147,8 @@ class ProfileCard extends StatelessWidget {
                     onChanged: (isSelected) {
                       if (isBlocking && onUnblock != null) {
                         onUnblock!();
-                      } else if (isSelected) {
-                        onFollow();
                       } else {
-                        onUnfollow();
+                        onFollowingChanged?.call(isSelected);
                       }
                     },
                   ),

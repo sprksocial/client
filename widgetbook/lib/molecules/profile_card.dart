@@ -23,8 +23,8 @@ Widget buildProfileCardFollowCardUseCase(BuildContext context) {
         initialValue: '@janedoe',
       ),
       isFollowing: isFollowing,
-      onFollow: () => print('Follow'),
-      onUnfollow: () => print('Unfollow'),
+      onFollowingChanged: (isFollowing) =>
+          print(isFollowing ? 'Follow' : 'Unfollow'),
     ),
   );
 }

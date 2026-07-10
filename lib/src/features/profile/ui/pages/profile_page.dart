@@ -289,18 +289,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               }
             });
           },
-          onFollowTap: () async {
+          onFollowingChanged: (following) async {
             try {
-              await notifier.toggleFollow();
+              await notifier.setFollowing(following: following);
             } catch (e) {
-              _logger.e('Error unfollowing profile', error: e);
-            }
-          },
-          onUnfollowTap: () async {
-            try {
-              await notifier.toggleFollow();
-            } catch (e) {
-              _logger.e('Error unfollowing profile', error: e);
+              _logger.e('Error updating follow state', error: e);
             }
           },
           onUnblockTap: () async {

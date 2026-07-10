@@ -195,14 +195,17 @@ class _UserResultsState extends ConsumerState<UserResults>
             userHandle: '@${actor.handle}',
             description: actor.description ?? '',
             isFollowing: isFollowing,
-            onFollow: () =>
-                ref.read(searchProvider.notifier).followUser(actor.did),
-            onUnfollow: () => ref
-                .read(searchProvider.notifier)
-                .unfollowUser(
+            onFollowingChanged: (shouldFollow) {
+              final notifier = ref.read(searchProvider.notifier);
+              if (shouldFollow) {
+                notifier.followUser(actor.did);
+              } else {
+                notifier.unfollowUser(
                   actor.did,
                   actor.viewer?.following ?? AtUri.parse(''),
-                ),
+                );
+              }
+            },
             showFollowButton: !ref
                 .read(searchProvider.notifier)
                 .isCurrentUser(actor.did),

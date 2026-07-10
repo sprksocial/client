@@ -239,23 +239,8 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                   post: postData,
                   isLiked: postData.viewer?.like != null,
                   labels: postData.labels ?? [],
-                  onProfilePressed: () {
-                    // Pause video before navigating to profile
+                  onMediaPauseRequested: () {
                     _videoPlayerKey.currentState?.pauseVideo();
-                  },
-                  onUsernameTap: () {
-                    // Pause video before navigating to profile
-                    _videoPlayerKey.currentState?.pauseVideo();
-                    final isBskyPost = postData.uri.collection
-                        .toString()
-                        .startsWith('app.bsky');
-                    context.router.push(
-                      ProfileRoute(
-                        did: postData.author.did,
-                        initialProfile: postData.author,
-                        bsky: isBskyPost,
-                      ),
-                    );
                   },
                 ),
               ),

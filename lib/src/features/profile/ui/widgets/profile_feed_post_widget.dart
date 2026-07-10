@@ -6,7 +6,6 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:spark/src/core/ui/widgets/heart_animation.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
@@ -237,34 +236,14 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
               Positioned.fill(
                 child: PostOverlay(
                   post: post,
+                  onAuthorTap: post.author.did == widget.profileUri.hostname
+                      ? () => context.router.maybePop()
+                      : null,
                   isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                   labels: post.labels ?? [],
                   showBlockOption: false,
                   onMediaPauseRequested: () {
                     _mediaViewerKey.currentState?.pauseMedia();
-                  },
-                  onUsernameTap: () {
-                    _mediaViewerKey.currentState?.pauseMedia();
-                    // Extract DID from the profile URI
-                    final currentProfileDid = widget.profileUri.hostname;
-
-                    // If clicking on same profile we're viewing, navigate back
-                    if (post.author.did == currentProfileDid) {
-                      context.router.maybePop();
-                    } else {
-                      // Check if post is from Bluesky
-                      final isBskyPost = post.uri.collection
-                          .toString()
-                          .startsWith('app.bsky');
-                      // Otherwise, navigate to the new profile
-                      context.router.push(
-                        ProfileRoute(
-                          did: post.author.did,
-                          initialProfile: post.author,
-                          bsky: isBskyPost,
-                        ),
-                      );
-                    }
                   },
                 ),
               ),

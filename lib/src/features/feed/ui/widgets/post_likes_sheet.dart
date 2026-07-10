@@ -126,8 +126,6 @@ class _PostLikesSheetState extends ConsumerState<_PostLikesSheet> {
                       userHandle: '@${actor.handle}',
                       description: actor.description,
                       isFollowing: actor.viewer?.following != null,
-                      onFollow: () {},
-                      onUnfollow: () {},
                       showFollowButton: false,
                       onTap: () {
                         final router = context.router;

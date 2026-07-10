@@ -11,7 +11,6 @@ import 'package:spark/src/core/network/atproto/data/models/story_embed_models.da
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:video_player/video_player.dart';
 
-@RoutePage()
 class StoryPage extends ConsumerStatefulWidget {
   const StoryPage({
     required this.story,

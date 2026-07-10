@@ -162,8 +162,8 @@ Widget buildProfilePageTemplateOtherUserNotFollowingUseCase(
     onAvatarTap: () => print('Avatar tapped'),
     onFollowersTap: () => print('Followers tapped'),
     onFollowingTap: () => print('Following tapped'),
-    onFollowTap: () => print('Follow tapped'),
-    onUnfollowTap: () => print('Unfollow tapped'),
+    onFollowingChanged: (isFollowing) =>
+        print(isFollowing ? 'Follow tapped' : 'Unfollow tapped'),
     onEarlySupporterTap: () => print('Early supporter badge tapped'),
     onMentionTap: (username) => print('Mention tapped: $username'),
     appBarActions: [
@@ -218,8 +218,8 @@ Widget buildProfilePageTemplateOtherUserFollowingUseCase(BuildContext context) {
     onAvatarTap: () => print('Avatar tapped'),
     onFollowersTap: () => print('Followers tapped'),
     onFollowingTap: () => print('Following tapped'),
-    onFollowTap: () => print('Follow tapped'),
-    onUnfollowTap: () => print('Unfollow tapped'),
+    onFollowingChanged: (isFollowing) =>
+        print(isFollowing ? 'Follow tapped' : 'Unfollow tapped'),
     onEarlySupporterTap: () => print('Early supporter badge tapped'),
     onMentionTap: (username) => print('Mention tapped: $username'),
     appBarActions: [
@@ -260,8 +260,8 @@ Widget buildProfilePageTemplateMinimalProfileUseCase(BuildContext context) {
     onAvatarTap: () => print('Avatar tapped'),
     onFollowersTap: () => print('Followers tapped'),
     onFollowingTap: () => print('Following tapped'),
-    onFollowTap: () => print('Follow tapped'),
-    onUnfollowTap: () => print('Unfollow tapped'),
+    onFollowingChanged: (isFollowing) =>
+        print(isFollowing ? 'Follow tapped' : 'Unfollow tapped'),
     appBarActions: [
       IconButton(
         icon: const Icon(FluentIcons.more_vertical_24_regular),

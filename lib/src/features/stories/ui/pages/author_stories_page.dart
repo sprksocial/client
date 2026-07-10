@@ -10,7 +10,6 @@ import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/stories/ui/pages/story_page.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
-@RoutePage()
 class AuthorStoriesPage extends ConsumerStatefulWidget {
   const AuthorStoriesPage({
     required this.author,

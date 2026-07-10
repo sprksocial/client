@@ -36,6 +36,4 @@ export 'package:spark/src/features/settings/ui/pages/labeler_management_page.dar
 export 'package:spark/src/features/settings/ui/pages/settings_page.dart';
 export 'package:spark/src/features/sound/ui/pages/sound_page.dart';
 export 'package:spark/src/features/stories/ui/pages/all_stories_page.dart';
-export 'package:spark/src/features/stories/ui/pages/author_stories_page.dart';
 export 'package:spark/src/features/stories/ui/pages/story_manager_page.dart';
-export 'package:spark/src/features/stories/ui/pages/story_page.dart';

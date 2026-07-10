@@ -1,12 +1,10 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:spark/src/core/ui/widgets/heart_animation.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
@@ -258,24 +256,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     isLiked:
                         _overrideIsLiked ?? (currentPost.viewer?.like != null),
                     labels: labels,
-                    onProfilePressed: () {
-                      _mediaViewerKey.currentState?.pauseMedia();
-                    },
                     onMediaPauseRequested: () {
                       _mediaViewerKey.currentState?.pauseMedia();
-                    },
-                    onUsernameTap: () {
-                      _mediaViewerKey.currentState?.pauseMedia();
-                      final isBskyPost = currentPost.uri.collection
-                          .toString()
-                          .startsWith('app.bsky');
-                      context.router.push(
-                        ProfileRoute(
-                          did: currentPost.author.did,
-                          initialProfile: currentPost.author,
-                          bsky: isBskyPost,
-                        ),
-                      );
                     },
                   ),
                 ),

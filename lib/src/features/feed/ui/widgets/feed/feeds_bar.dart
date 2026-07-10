@@ -83,15 +83,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                     ),
                     onTap: () async {
                       Navigator.pop(context);
-                      if (isLiked) {
-                        await ref
-                            .read(settingsProvider.notifier)
-                            .unlikeFeed(feed);
-                      } else {
-                        await ref
-                            .read(settingsProvider.notifier)
-                            .likeFeed(feed);
-                      }
+                      await ref
+                          .read(settingsProvider.notifier)
+                          .setFeedLiked(feed, liked: !isLiked);
                     },
                   ),
                 // Delete option

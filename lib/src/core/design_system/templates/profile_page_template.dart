@@ -35,8 +35,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.onFollowersTap,
     this.onFollowingTap,
     this.onEditTap,
-    this.onFollowTap,
-    this.onUnfollowTap,
+    this.onFollowingChanged,
     this.onUnblockTap,
     this.onEarlySupporterTap,
     this.onKnownFollowersTap,
@@ -71,8 +70,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final VoidCallback? onFollowersTap;
   final VoidCallback? onFollowingTap;
   final VoidCallback? onEditTap;
-  final VoidCallback? onFollowTap;
-  final VoidCallback? onUnfollowTap;
+  final ValueChanged<bool>? onFollowingChanged;
   final VoidCallback? onUnblockTap;
   final VoidCallback? onEarlySupporterTap;
   final VoidCallback? onKnownFollowersTap;
@@ -133,8 +131,7 @@ class ProfilePageTemplate extends StatelessWidget {
                     onFollowersTap: onFollowersTap,
                     onFollowingTap: onFollowingTap,
                     onEditTap: onEditTap,
-                    onFollowTap: onFollowTap,
-                    onUnfollowTap: onUnfollowTap,
+                    onFollowingChanged: onFollowingChanged,
                     onUnblockTap: onUnblockTap,
                     onEarlySupporterTap: onEarlySupporterTap,
                     onKnownFollowersTap: onKnownFollowersTap,
@@ -179,8 +176,7 @@ class _ProfileHeaderSection extends StatelessWidget {
     this.onFollowersTap,
     this.onFollowingTap,
     this.onEditTap,
-    this.onFollowTap,
-    this.onUnfollowTap,
+    this.onFollowingChanged,
     this.onUnblockTap,
     this.onEarlySupporterTap,
     this.onKnownFollowersTap,
@@ -206,8 +202,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final VoidCallback? onFollowersTap;
   final VoidCallback? onFollowingTap;
   final VoidCallback? onEditTap;
-  final VoidCallback? onFollowTap;
-  final VoidCallback? onUnfollowTap;
+  final ValueChanged<bool>? onFollowingChanged;
   final VoidCallback? onUnblockTap;
   final VoidCallback? onEarlySupporterTap;
   final VoidCallback? onKnownFollowersTap;
@@ -294,8 +289,7 @@ class _ProfileHeaderSection extends StatelessWidget {
               isFollowing: isFollowing,
               isBlocking: isBlocking,
               onEditTap: onEditTap,
-              onFollowTap: onFollowTap,
-              onUnfollowTap: onUnfollowTap,
+              onFollowingChanged: onFollowingChanged,
               onUnblockTap: onUnblockTap,
             ),
           ),

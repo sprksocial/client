@@ -66,15 +66,15 @@ class UserListView extends ConsumerWidget {
             userHandle: '@${user.handle}',
             description: user.description,
             isFollowing: user.viewer?.following != null,
-            onFollow: () {
-              ref
-                  .read(userListProvider(did: did, type: type).notifier)
-                  .followUser(user.did);
-            },
-            onUnfollow: () {
-              ref
-                  .read(userListProvider(did: did, type: type).notifier)
-                  .unfollowUser(user.did);
+            onFollowingChanged: (shouldFollow) {
+              final notifier = ref.read(
+                userListProvider(did: did, type: type).notifier,
+              );
+              if (shouldFollow) {
+                notifier.followUser(user.did);
+              } else {
+                notifier.unfollowUser(user.did);
+              }
             },
             showFollowButton: !ref
                 .read(userListProvider(did: did, type: type).notifier)

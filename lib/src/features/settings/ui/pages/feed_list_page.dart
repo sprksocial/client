@@ -4,11 +4,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:spark/src/core/design_system/components/molecules/settings_feed_card.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_state.dart';
+import 'package:spark/src/features/settings/ui/widgets/settings_feed_card.dart';
 
 @RoutePage()
 class FeedListPage extends ConsumerStatefulWidget {
@@ -26,7 +26,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
   @override
   bool get wantKeepAlive => true;
 
-  void _showFeedUpdateError() {
+  void _showFeedReorderError() {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(
@@ -109,7 +109,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                         beforeFeedId: beforeFeedId,
                       );
                 } catch (_) {
-                  _showFeedUpdateError();
+                  _showFeedReorderError();
                 }
               },
               proxyDecorator: (child, index, animation) {
@@ -140,12 +140,6 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
               itemBuilder: (context, index) {
                 final filteredFeeds = _getFilteredFeeds(settingsState);
                 final feed = filteredFeeds[index];
-                final isActive = settingsState.activeFeed == feed;
-
-                // Determine if feed can be deleted (Following can't be deleted)
-                final canDelete =
-                    !(feed.type == 'timeline' &&
-                        feed.config.value == 'following');
 
                 return Padding(
                   key: ValueKey(feed.config.id),
@@ -155,77 +149,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                     mode: _isEditMode
                         ? SettingsFeedCardMode.edit
                         : SettingsFeedCardMode.display,
-                    isActive: isActive,
                     index: index,
-                    onTap: _isEditMode || _isReordering
-                        ? null
-                        : () {
-                            ref
-                                .read(settingsProvider.notifier)
-                                .setActiveFeed(feed);
-                          },
-                    onDelete: _isEditMode && canDelete
-                        ? () async {
-                            // Handle delete action
-                            try {
-                              await ref
-                                  .read(settingsProvider.notifier)
-                                  .removeFeed(feed);
-                            } catch (_) {
-                              _showFeedUpdateError();
-                            }
-                          }
-                        : null,
-                    onPin: _isEditMode
-                        ? () async {
-                            // Handle pin action
-                            try {
-                              if (!feed.config.pinned) {
-                                await ref
-                                    .read(settingsProvider.notifier)
-                                    .setFeedPinned(feed, pinned: true);
-                              }
-                            } catch (_) {
-                              _showFeedUpdateError();
-                            }
-                          }
-                        : null,
-                    onUnpin: _isEditMode
-                        ? () async {
-                            // Handle unpin action
-                            try {
-                              if (feed.config.pinned) {
-                                await ref
-                                    .read(settingsProvider.notifier)
-                                    .setFeedPinned(feed, pinned: false);
-                              }
-                            } catch (_) {
-                              _showFeedUpdateError();
-                            }
-                          }
-                        : null,
-                    onLike: feed.view != null
-                        ? () async {
-                            try {
-                              await ref
-                                  .read(settingsProvider.notifier)
-                                  .likeFeed(feed);
-                            } catch (_) {
-                              _showFeedUpdateError();
-                            }
-                          }
-                        : null,
-                    onUnlike: feed.view?.viewer?.like != null
-                        ? () async {
-                            try {
-                              await ref
-                                  .read(settingsProvider.notifier)
-                                  .unlikeFeed(feed);
-                            } catch (_) {
-                              _showFeedUpdateError();
-                            }
-                          }
-                        : null,
+                    interactionEnabled: !_isReordering,
                   ),
                 );
               },

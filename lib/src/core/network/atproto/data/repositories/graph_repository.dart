@@ -39,18 +39,6 @@ abstract class GraphRepository {
   /// [followUri] The URI of the follow record to delete
   Future<void> unfollowUser(AtUri followUri);
 
-  /// Toggle follow status for a user
-  ///
-  /// [did] The DID of the user to toggle follow for
-  /// [currentFollowUri] The follow URI if following, null if not
-  /// [bsky] Whether to use Bluesky follow records instead of Spark
-  /// Returns the follow URI if now following, null if unfollowed
-  Future<String?> toggleFollow(
-    String did,
-    AtUri? currentFollowUri, {
-    bool bsky = false,
-  });
-
   /// Get blocks for a DID
   ///
   /// [did] The DID to get blocks for

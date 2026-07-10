@@ -227,31 +227,6 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<String?> toggleFollow(
-    String did,
-    AtUri? currentFollowUri, {
-    bool bsky = false,
-  }) async {
-    _logger.d(
-      'Toggling follow for DID: $did, current URI: $currentFollowUri, '
-      'bsky: $bsky',
-    );
-    return _client.executeWithRetry(() async {
-      if (currentFollowUri != null) {
-        // User is following, so unfollow
-        await unfollowUser(currentFollowUri);
-        _logger.i('User unfollowed via toggle');
-        return null;
-      } else {
-        // User is not following, so follow
-        final response = await followUser(did, bsky: bsky);
-        _logger.i('User followed via toggle: ${response.uri}');
-        return response.uri.toString();
-      }
-    });
-  }
-
-  @override
   Future<sprk_get_blocks.GraphGetBlocksOutput> getBlocks(
     String did, {
     String? cursor,
