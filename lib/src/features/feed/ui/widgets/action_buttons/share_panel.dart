@@ -11,6 +11,23 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/messages/providers/conversation_provider.dart';
 import 'package:spark/src/features/messages/providers/conversations_provider.dart';
 
+Future<void> showShareSheet({
+  required BuildContext context,
+  required String shareUrl,
+  required String atUri,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    showDragHandle: true,
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.sizeOf(context).height * 0.7,
+    ),
+    builder: (context) => SharePanel(shareUrl: shareUrl, atUri: atUri),
+  );
+}
+
 class SharePanel extends ConsumerStatefulWidget {
   const SharePanel({required this.shareUrl, required this.atUri, super.key});
 
@@ -94,35 +111,14 @@ class _SharePanelState extends ConsumerState<SharePanel> {
     final convosAsync = ref.watch(conversationsProvider);
     final hasSelection = _selectedConvoId != null;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.2),
-            blurRadius: 10,
-          ),
-        ],
-      ),
+    return SizedBox(
+      width: double.infinity,
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12, bottom: 16),
-                decoration: BoxDecoration(
-                  color: dividerColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(

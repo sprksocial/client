@@ -277,19 +277,11 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   void _handleShare() {
-    widget.onMediaPauseRequested?.call();
     final currentPost = _currentPost ?? widget.post;
     final originalAtUri = currentPost.uri.toString();
     final shareUrl = _buildShareUrl(currentPost);
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SharePanel(shareUrl: shareUrl, atUri: originalAtUri);
-      },
-    );
+    showShareSheet(context: context, shareUrl: shareUrl, atUri: originalAtUri);
   }
 
   void _handleCommentPressed() {
