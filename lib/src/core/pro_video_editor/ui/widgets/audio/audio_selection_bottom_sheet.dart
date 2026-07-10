@@ -18,7 +18,8 @@ class AudioSelectionBottomSheet extends StatefulWidget {
     required this.videoDuration,
     required this.onTrackSelected,
     required this.onBalanceChanged,
-    required this.onStartTimeChanged,
+    required this.onTrackChanged,
+    required this.onTrackChangeEnd,
     required this.onConfirm,
     required this.onTrackPlay,
     required this.onTrackStop,
@@ -41,8 +42,11 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   /// Called when balance slider changes.
   final void Function(double balance) onBalanceChanged;
 
-  /// Called when start time changes in waveform selector.
-  final void Function(Duration startTime) onStartTimeChanged;
+  /// Called when timing or playback options change for the selected track.
+  final ValueChanged<AudioTrack> onTrackChanged;
+
+  /// Called after the user commits a timing or volume interaction.
+  final ValueChanged<AudioTrack> onTrackChangeEnd;
 
   /// Called when user confirms their audio selection.
   final void Function(AudioTrack? track) onConfirm;
@@ -123,17 +127,19 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   }
 
   void _handleBalanceChange(double balance) {
-    if (_selectedTrack != null) {
-      _selectedTrack!.volumeBalance = balance;
-      widget.onBalanceChanged(balance);
-    }
+    final track = _selectedTrack;
+    if (track == null) return;
+    _handleTrackChange(track.copyWith(volumeBalance: balance));
+    widget.onBalanceChanged(balance);
   }
 
-  void _handleStartTimeChange(Duration startTime) {
-    if (_selectedTrack != null) {
-      _selectedTrack!.startTime = startTime;
-      widget.onStartTimeChanged(startTime);
-    }
+  void _handleTrackChange(AudioTrack track) {
+    setState(() => _selectedTrack = track);
+    widget.onTrackChanged(track);
+  }
+
+  void _handleTrackChangeEnd(AudioTrack track) {
+    widget.onTrackChangeEnd(track);
   }
 
   @override
@@ -166,7 +172,8 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
                 audioTrack: _selectedTrack!,
                 videoDuration: widget.videoDuration,
                 onBalanceChanged: _handleBalanceChange,
-                onStartTimeChanged: _handleStartTimeChange,
+                onTrackChanged: _handleTrackChange,
+                onTrackChangeEnd: _handleTrackChangeEnd,
                 onChangeTrack: _handleChangeTrack,
                 onConfirm: _handleConfirm,
               )

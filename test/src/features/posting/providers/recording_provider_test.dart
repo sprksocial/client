@@ -93,7 +93,7 @@ void main() {
       final notifier = container.read(recordingProvider.notifier);
       final track = createTrack(
         'sound-1',
-      ).copyWith(startTime: const Duration(seconds: 2));
+      ).copyWith(audioStartTime: const Duration(seconds: 2));
 
       notifier.selectSound(track);
 
@@ -102,10 +102,10 @@ void main() {
         const Duration(seconds: 2),
       );
 
-      notifier.setSelectedSoundStartTime(const Duration(seconds: 4));
+      notifier.setSelectedSoundAudioStartTime(const Duration(seconds: 4));
 
       final state = container.read(recordingProvider);
-      expect(state.selectedSound?.startTime, const Duration(seconds: 4));
+      expect(state.selectedSound?.audioStartTime, const Duration(seconds: 4));
       expect(state.soundGuideOffset, const Duration(seconds: 4));
     });
 

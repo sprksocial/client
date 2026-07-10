@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_waveform_selector.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_timing_controls.dart';
 
 /// Displays edit controls for the selected audio track.
 ///
@@ -14,7 +15,8 @@ class AudioEditControlsSection extends StatefulWidget {
     required this.audioTrack,
     required this.videoDuration,
     required this.onBalanceChanged,
-    required this.onStartTimeChanged,
+    required this.onTrackChanged,
+    required this.onTrackChangeEnd,
     required this.onChangeTrack,
     required this.onConfirm,
     super.key,
@@ -32,8 +34,11 @@ class AudioEditControlsSection extends StatefulWidget {
   /// Called when balance slider changes.
   final void Function(double balance) onBalanceChanged;
 
-  /// Called when start time changes in waveform selector.
-  final void Function(Duration startTime) onStartTimeChanged;
+  /// Called when any audio timing or playback option changes.
+  final ValueChanged<AudioTrack> onTrackChanged;
+
+  /// Called after a timing or volume interaction finishes.
+  final ValueChanged<AudioTrack> onTrackChangeEnd;
 
   /// Called when user wants to change the track.
   final VoidCallback onChangeTrack;
@@ -85,7 +90,12 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
             const SizedBox(height: 24),
           ],
           if (_configs.enableEditStartTime) ...[
-            _buildStartTimeSelector(),
+            AudioTimingControls(
+              track: widget.audioTrack,
+              videoDuration: widget.videoDuration,
+              onChanged: widget.onTrackChanged,
+              onChangeEnd: widget.onTrackChangeEnd,
+            ),
             const SizedBox(height: 32),
           ],
           _buildActionButtons(),
@@ -152,7 +162,7 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Balance',
+          AppLocalizations.of(context).labelAudioBalance,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -189,31 +199,6 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
               );
             },
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStartTimeSelector() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Start Time',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        AudioWaveformSelector(
-          configs: widget.configs,
-          audioTrack: widget.audioTrack,
-          videoDuration: widget.videoDuration,
-          onStartTimeChanged: widget.onStartTimeChanged,
         ),
       ],
     );

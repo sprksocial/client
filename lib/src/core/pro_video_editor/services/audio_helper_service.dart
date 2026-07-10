@@ -7,31 +7,89 @@ import 'package:video_player/video_player.dart';
 
 const _resumeSeekTolerance = Duration(milliseconds: 250);
 
-Duration syncedCustomAudioPosition({
+AudioPlaybackTiming resolveCustomAudioTiming({
+  required Duration? audioStartTime,
+  required Duration? audioEndTime,
+  required Duration audioDuration,
   required Duration? trackStartTime,
+  required Duration? trackEndTime,
+  required bool loop,
   required Duration videoPosition,
   required Duration videoStart,
+  required Duration videoEnd,
 }) {
-  final relativeVideoPosition = videoPosition - videoStart;
-  final clampedVideoPosition = relativeVideoPosition.isNegative
-      ? Duration.zero
-      : relativeVideoPosition;
-  return customAudioRenderStartTime(
-        trackStartTime: trackStartTime,
-        videoStart: videoStart,
-      ) +
-      clampedVideoPosition;
+  final timelineStart = trackStartTime ?? Duration.zero;
+  final timelineEnd = trackEndTime ?? videoEnd;
+  final sourceStart = _clampDuration(
+    audioStartTime ?? Duration.zero,
+    Duration.zero,
+    audioDuration,
+  );
+  final sourceEnd = _clampDuration(
+    audioEndTime ?? audioDuration,
+    sourceStart,
+    audioDuration,
+  );
+  final sourceDuration = sourceEnd - sourceStart;
+  final elapsed = videoPosition - timelineStart;
+  final isInsideTimeline =
+      videoPosition >= timelineStart && videoPosition < timelineEnd;
+
+  if (!isInsideTimeline || sourceDuration <= Duration.zero) {
+    return AudioPlaybackTiming(isActive: false, position: sourceStart);
+  }
+
+  if (!loop && elapsed >= sourceDuration) {
+    return AudioPlaybackTiming(isActive: false, position: sourceEnd);
+  }
+
+  final elapsedMicroseconds = loop
+      ? elapsed.inMicroseconds % sourceDuration.inMicroseconds
+      : elapsed.inMicroseconds;
+  return AudioPlaybackTiming(
+    isActive: true,
+    position: sourceStart + Duration(microseconds: elapsedMicroseconds),
+  );
 }
 
-Duration customAudioRenderStartTime({
-  required Duration? trackStartTime,
-  required Duration videoStart,
-}) {
-  return (trackStartTime ?? Duration.zero) + videoStart;
+Duration _clampDuration(Duration value, Duration min, Duration max) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
 }
 
-Duration customAudioExportStartTime({required Duration? trackStartTime}) {
-  return trackStartTime ?? Duration.zero;
+class AudioPlaybackTiming {
+  const AudioPlaybackTiming({required this.isActive, required this.position});
+
+  final bool isActive;
+  final Duration position;
+}
+
+AudioMixVolumes resolveAudioMixVolumes({
+  required double trackVolume,
+  required double volumeBalance,
+}) {
+  var overlayVolume = trackVolume;
+  var originalVolume = 1.0;
+  if (volumeBalance < 0) {
+    overlayVolume *= 1 + volumeBalance;
+  } else {
+    originalVolume -= volumeBalance;
+  }
+  return AudioMixVolumes(
+    overlayVolume: overlayVolume,
+    originalVolume: originalVolume,
+  );
+}
+
+class AudioMixVolumes {
+  const AudioMixVolumes({
+    required this.overlayVolume,
+    required this.originalVolume,
+  });
+
+  final double overlayVolume;
+  final double originalVolume;
 }
 
 bool shouldSeekCustomAudioOnResume({
@@ -43,9 +101,10 @@ bool shouldSeekCustomAudioOnResume({
   return delta.abs() > _resumeSeekTolerance;
 }
 
-String customAudioTempFilename(AudioTrack track) {
+String customAudioTempFilename(AudioTrack track, {int? index}) {
   final extension = decodeSoundTrackAudioFileExtension(track.id);
-  return 'temp-audio.$extension';
+  final suffix = index == null ? '' : '-$index';
+  return 'temp-audio$suffix.$extension';
 }
 
 /// A helper service that manages audio playback alongside video playback.
@@ -67,9 +126,15 @@ class AudioHelperService {
   bool get useCustomAudio => _useCustomAudio;
 
   String? _currentTrackId;
+  bool _isSynchronizing = false;
+  bool? _wasActiveAtLastSync;
+  Duration? _lastSyncVideoPosition;
+  Future<void> _prepareQueue = Future.value();
+  int _prepareRevision = 0;
 
   /// Stores the last applied audio balance between video and overlay.
   double _lastVolumeBalance = 0;
+  double _trackVolume = 1;
 
   /// Initializes the audio player with platform-specific audio context
   /// settings.
@@ -89,6 +154,8 @@ class AudioHelperService {
 
   /// Disposes of the audio player and releases resources.
   Future<void> dispose() async {
+    _prepareRevision++;
+    await _prepareQueue;
     await _audioPlayer.dispose();
   }
 
@@ -114,27 +181,39 @@ class AudioHelperService {
     AudioTrack track, {
     Duration videoPosition = Duration.zero,
     Duration videoStart = Duration.zero,
+    Duration? videoEnd,
     bool forceSeek = false,
   }) async {
-    final position = syncedCustomAudioPosition(
+    _prepareRevision++;
+    await _prepareQueue;
+    _trackVolume = track.volume;
+    _lastVolumeBalance = track.volumeBalance;
+    final timing = resolveCustomAudioTiming(
+      audioStartTime: track.audioStartTime,
+      audioEndTime: track.audioEndTime,
+      audioDuration: track.duration,
       trackStartTime: track.startTime,
+      trackEndTime: track.endTime,
+      loop: track.loop,
       videoPosition: videoPosition,
       videoStart: videoStart,
+      videoEnd: videoEnd ?? videoController.value.duration,
     );
 
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    await _audioPlayer.setReleaseMode(ReleaseMode.stop);
     if (_currentTrackId != track.id) {
       await _audioPlayer.setSource(_sourceForTrack(track));
       _currentTrackId = track.id;
-      await _audioPlayer.seek(position);
+      await _audioPlayer.seek(timing.position);
     } else if (forceSeek) {
-      await _audioPlayer.seek(position);
+      await _audioPlayer.seek(timing.position);
     } else if (shouldSeekCustomAudioOnResume(
       currentPosition: await _audioPlayer.getCurrentPosition(),
-      targetPosition: position,
+      targetPosition: timing.position,
     )) {
-      await _audioPlayer.seek(position);
+      await _audioPlayer.seek(timing.position);
     }
+    if (!timing.isActive) return _audioPlayer.pause();
     await _audioPlayer.resume();
   }
 
@@ -142,19 +221,54 @@ class AudioHelperService {
     AudioTrack track, {
     Duration videoPosition = Duration.zero,
     Duration videoStart = Duration.zero,
+    Duration? videoEnd,
+  }) {
+    final revision = ++_prepareRevision;
+    final operation = _prepareQueue.then((_) async {
+      if (revision != _prepareRevision) return;
+      await _prepare(
+        track,
+        videoPosition: videoPosition,
+        videoStart: videoStart,
+        videoEnd: videoEnd,
+      );
+    });
+    _prepareQueue = operation.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return operation;
+  }
+
+  Future<void> _prepare(
+    AudioTrack track, {
+    required Duration videoPosition,
+    required Duration videoStart,
+    required Duration? videoEnd,
   }) async {
-    final position = syncedCustomAudioPosition(
+    final timing = resolveCustomAudioTiming(
+      audioStartTime: track.audioStartTime,
+      audioEndTime: track.audioEndTime,
+      audioDuration: track.duration,
       trackStartTime: track.startTime,
+      trackEndTime: track.endTime,
+      loop: track.loop,
       videoPosition: videoPosition,
       videoStart: videoStart,
+      videoEnd: videoEnd ?? videoController.value.duration,
     );
 
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    await _audioPlayer.setReleaseMode(ReleaseMode.stop);
     if (_currentTrackId != track.id) {
       await _audioPlayer.setSource(_sourceForTrack(track));
       _currentTrackId = track.id;
     }
-    await _audioPlayer.seek(position);
+    await _audioPlayer.seek(timing.position);
+    _trackVolume = track.volume;
+    await balanceAudio(track.volumeBalance);
+    if (!timing.isActive && _audioPlayer.state == PlayerState.playing) {
+      await pause();
+    }
   }
 
   /// Pauses the current audio playback.
@@ -178,14 +292,78 @@ class AudioHelperService {
     AudioTrack track, {
     required Duration videoPosition,
     required Duration videoStart,
-  }) {
-    return seek(
-      syncedCustomAudioPosition(
-        trackStartTime: track.startTime,
-        videoPosition: videoPosition,
-        videoStart: videoStart,
-      ),
+    required Duration videoEnd,
+  }) async {
+    final timing = resolveCustomAudioTiming(
+      audioStartTime: track.audioStartTime,
+      audioEndTime: track.audioEndTime,
+      audioDuration: track.duration,
+      trackStartTime: track.startTime,
+      trackEndTime: track.endTime,
+      loop: track.loop,
+      videoPosition: videoPosition,
+      videoStart: videoStart,
+      videoEnd: videoEnd,
     );
+    await seek(timing.position);
+    if (!timing.isActive) await pause();
+  }
+
+  Future<void> synchronizePlayback(
+    AudioTrack track, {
+    required Duration videoPosition,
+    required Duration videoStart,
+    required Duration videoEnd,
+    required bool isVideoPlaying,
+  }) async {
+    if (_isSynchronizing) return;
+
+    final timing = resolveCustomAudioTiming(
+      audioStartTime: track.audioStartTime,
+      audioEndTime: track.audioEndTime,
+      audioDuration: track.duration,
+      trackStartTime: track.startTime,
+      trackEndTime: track.endTime,
+      loop: track.loop,
+      videoPosition: videoPosition,
+      videoStart: videoStart,
+      videoEnd: videoEnd,
+    );
+    final lastPosition = _lastSyncVideoPosition;
+    final activeChanged = timing.isActive != _wasActiveAtLastSync;
+    if (!activeChanged &&
+        lastPosition != null &&
+        (videoPosition - lastPosition).abs() <
+            const Duration(milliseconds: 200)) {
+      return;
+    }
+
+    _isSynchronizing = true;
+    _lastSyncVideoPosition = videoPosition;
+    _wasActiveAtLastSync = timing.isActive;
+    try {
+      if (!isVideoPlaying || !timing.isActive) {
+        if (_audioPlayer.state == PlayerState.playing) await pause();
+        return;
+      }
+
+      if (_currentTrackId != track.id) {
+        await _audioPlayer.setSource(_sourceForTrack(track));
+        _currentTrackId = track.id;
+      }
+      final currentPosition = await _audioPlayer.getCurrentPosition();
+      if (shouldSeekCustomAudioOnResume(
+        currentPosition: currentPosition,
+        targetPosition: timing.position,
+      )) {
+        await seek(timing.position);
+      }
+      if (_audioPlayer.state != PlayerState.playing) {
+        await _audioPlayer.resume();
+      }
+    } finally {
+      _isSynchronizing = false;
+    }
   }
 
   /// Sets the audio mode to either original or custom.
@@ -212,16 +390,13 @@ class AudioHelperService {
   Future<void> balanceAudio([double? volumeBalance]) async {
     volumeBalance ??= _lastVolumeBalance;
 
-    double overlayVolume = 1;
-    double originalVolume = 1;
-    if (volumeBalance < 0) {
-      overlayVolume += volumeBalance;
-    } else {
-      originalVolume -= volumeBalance;
-    }
+    final volumes = resolveAudioMixVolumes(
+      trackVolume: _trackVolume,
+      volumeBalance: volumeBalance,
+    );
     await Future.wait([
-      setVolume(overlayVolume),
-      videoController.setVolume(originalVolume),
+      setVolume(volumes.overlayVolume),
+      videoController.setVolume(volumes.originalVolume),
     ]);
     _lastVolumeBalance = volumeBalance;
   }
@@ -241,7 +416,10 @@ class AudioHelperService {
   /// - If the audio already exists as a file, its path is returned.
   /// - Otherwise, the audio is written to a temporary file from
   ///   assets, network, or memory bytes.
-  Future<String?> safeCustomAudioPath(AudioTrack? track) async {
+  Future<String?> safeCustomAudioPath(
+    AudioTrack? track, {
+    int index = 0,
+  }) async {
     final directory = await getTemporaryDirectory();
 
     final effectiveTrack = track;
@@ -253,7 +431,7 @@ class AudioHelperService {
       return audio.file!.path;
     } else {
       final filePath =
-          '${directory.path}/${customAudioTempFilename(effectiveTrack)}';
+          '${directory.path}/${customAudioTempFilename(effectiveTrack, index: index)}';
 
       if (audio.hasNetworkUrl) {
         return (await fetchVideoToFile(audio.networkUrl!, filePath)).path;

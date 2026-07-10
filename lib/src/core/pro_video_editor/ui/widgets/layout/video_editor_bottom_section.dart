@@ -14,6 +14,7 @@ class VideoEditorBottomSection extends StatelessWidget {
     required this.onToggleMute,
     required this.onAddSound,
     required this.onToggleFullscreen,
+    required this.onAudioTimingChanged,
     required this.onSeekStart,
     required this.onSeekEnd,
     this.onTrimChanged,
@@ -28,6 +29,7 @@ class VideoEditorBottomSection extends StatelessWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onAddSound;
   final VoidCallback onToggleFullscreen;
+  final ValueChanged<AudioTrack> onAudioTimingChanged;
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
   final void Function(double start, double end)? onTrimChanged;
@@ -51,6 +53,19 @@ class VideoEditorBottomSection extends StatelessWidget {
             onSeekStart: onSeekStart,
             onSeekEnd: onSeekEnd,
             onToggleFullscreen: onToggleFullscreen,
+            selectedLayer: editor.selectedLayer,
+            onAudioTimingChanged: onAudioTimingChanged,
+            onLayerTimingChanged: (layer, start, end) {
+              final index = editor.activeLayers.indexWhere(
+                (candidate) => candidate.id == layer.id,
+              );
+              if (index < 0) return;
+              editor.setLayerTimeline(
+                index: index,
+                startTime: start,
+                endTime: end,
+              );
+            },
             onTrimChanged: onTrimChanged,
             onTrimEnd: onTrimEnd,
             canUndo: editor.canUndo,

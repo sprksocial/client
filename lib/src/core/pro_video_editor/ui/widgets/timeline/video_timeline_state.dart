@@ -150,6 +150,14 @@ class VideoTimelineState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replaces the selected track while retaining its extracted waveform and
+  /// artwork, for example when timeline placement or looping changes.
+  void updateCustomAudioTrack(AudioTrack track) {
+    _customAudioTrack = track;
+    _useCustomAudio = true;
+    notifyListeners();
+  }
+
   /// Sets the audio mode (original vs custom).
   void setAudioMode({required bool useCustom}) {
     _useCustomAudio = useCustom;

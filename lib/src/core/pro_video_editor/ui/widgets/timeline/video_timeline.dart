@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/theme/text_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
@@ -17,6 +18,9 @@ class VideoTimeline extends StatelessWidget {
     required this.onSeekStart,
     required this.onSeekEnd,
     required this.onToggleFullscreen,
+    required this.selectedLayer,
+    required this.onAudioTimingChanged,
+    required this.onLayerTimingChanged,
     required this.canUndo,
     required this.canRedo,
     this.onTrimChanged,
@@ -34,6 +38,10 @@ class VideoTimeline extends StatelessWidget {
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
   final VoidCallback onToggleFullscreen;
+  final Layer? selectedLayer;
+  final ValueChanged<AudioTrack> onAudioTimingChanged;
+  final void Function(Layer layer, Duration start, Duration end)
+  onLayerTimingChanged;
   final bool canUndo;
   final bool canRedo;
   final void Function(double start, double end)? onTrimChanged;
@@ -69,6 +77,9 @@ class VideoTimeline extends StatelessWidget {
                 onSeekEnd: onSeekEnd,
                 onTrimChanged: onTrimChanged,
                 onTrimEnd: onTrimEnd,
+                selectedLayer: selectedLayer,
+                onAudioTimingChanged: onAudioTimingChanged,
+                onLayerTimingChanged: onLayerTimingChanged,
                 isMuted: videoTimelineState.isMuted,
               ),
             ],
@@ -214,6 +225,9 @@ class _TracksSection extends StatelessWidget {
     required this.onSeekStart,
     required this.onSeekEnd,
     required this.isMuted,
+    required this.selectedLayer,
+    required this.onAudioTimingChanged,
+    required this.onLayerTimingChanged,
     this.onTrimChanged,
     this.onTrimEnd,
   });
@@ -225,6 +239,10 @@ class _TracksSection extends StatelessWidget {
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
   final bool isMuted;
+  final Layer? selectedLayer;
+  final ValueChanged<AudioTrack> onAudioTimingChanged;
+  final void Function(Layer layer, Duration start, Duration end)
+  onLayerTimingChanged;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
 
@@ -245,6 +263,9 @@ class _TracksSection extends StatelessWidget {
               onAddSound: onAddSound,
               onTrimChanged: onTrimChanged,
               onTrimEnd: onTrimEnd,
+              selectedLayer: selectedLayer,
+              onAudioTimingChanged: onAudioTimingChanged,
+              onLayerTimingChanged: onLayerTimingChanged,
               pixelsPerSecond: 50,
             ),
           ),

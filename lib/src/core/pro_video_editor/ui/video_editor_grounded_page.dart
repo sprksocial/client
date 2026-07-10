@@ -5,17 +5,16 @@ import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ColorFilter;
-import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:spark/src/core/pro_image_editor/story_mention_editing.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:spark/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
+import 'package:spark/src/core/pro_video_editor/services/video_timing_export_service.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
@@ -121,7 +120,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
   late ProImageEditorConfigs _configs;
   late VideoTimelineState _videoTimelineState;
-  List<AudioTrack> _audioTracks = [];
 
   @override
   GlobalKey<ProImageEditorState> get storyEditorKey => _editorKey;
@@ -202,19 +200,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   Future<void> _initializePlayer() async {
     // Start parallel initialization
     final metadataFuture = _setMetadata();
-    final trendingAudiosFuture = widget.storyMode
-        ? Future.value(<AudioTrack>[])
-        : _fetchTrendingAudioTracks();
     final controllerFuture = createVideoPlayerControllerFromEditorVideo(_video);
 
     // Wait for completion
     await metadataFuture;
-    _audioTracks = await trendingAudiosFuture;
     final initialAudioTrack = widget.initialAudioTrack;
-    if (initialAudioTrack != null &&
-        !_audioTracks.any((track) => track.id == initialAudioTrack.id)) {
-      _audioTracks = [initialAudioTrack, ..._audioTracks];
-    }
     _videoController = await controllerFuture;
 
     // Initialize audio timeline state
@@ -236,7 +226,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
         useCoverFit: widget.storyMode,
       ),
       videoEditorConfigs: _videoConfigs,
-      audioTracks: _audioTracks,
       videoTimelineState: _videoTimelineState,
       onSeek: _onTimelineSeek,
       onSeekStart: _onTimelineSeekStart,
@@ -244,6 +233,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       onTogglePlay: _onTogglePlay,
       onToggleMute: _onToggleMute,
       onAddSound: _showAudioSelectionBottomSheet,
+      onAudioTimingChanged: _onAudioTimingChanged,
       onToggleFullscreen: _openFullscreenPreview,
       onTrimChanged: _onTrimChanged,
       onTrimEnd: _onTrimEnd,
@@ -322,16 +312,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     }
   }
 
-  Future<List<AudioTrack>> _fetchTrendingAudioTracks() async {
-    final audioTracks = <AudioTrack>[];
-    try {
-      final soundRepository = GetIt.instance<SoundRepository>();
-      final trendingAudios = await soundRepository.getTrendingAudios();
-      audioTracks.addAll(audioViewsToAudioTracks(trendingAudios.audios));
-    } catch (_) {}
-    return audioTracks;
-  }
-
   String? _decodeAuthorAvatar(String? encoded) {
     return decodeSoundTrackAuthorAvatar(encoded);
   }
@@ -343,6 +323,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
     // Update audio timeline progress
     _videoTimelineState.setProgressFromDuration(duration);
+    final audioTrack = _proVideoController?.audioTrack;
+    if (audioTrack != null) {
+      unawaited(
+        _audioService.synchronizePlayback(
+          audioTrack,
+          videoPosition: duration,
+          videoStart: _playbackStart,
+          videoEnd: _playbackEnd,
+          isVideoPlaying: _videoController.value.isPlaying,
+        ),
+      );
+    }
 
     if (_durationSpan != null && duration < _durationSpan!.start) {
       _seekToPosition(_durationSpan!);
@@ -365,6 +357,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   }
 
   Duration get _playbackStart => _durationSpan?.start ?? Duration.zero;
+  Duration get _playbackEnd => _durationSpan?.end ?? _videoMetadata.duration;
 
   Duration _playablePosition(Duration position) {
     final span = _durationSpan;
@@ -386,14 +379,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     return playablePosition;
   }
 
-  Future<void> _seekToPlaybackStartWithCustomAudio() async {
-    final playbackStart = _playbackStart;
-    await _videoController.seekTo(playbackStart);
-    _proVideoController?.setPlayTime(playbackStart);
-    _videoTimelineState.setProgressFromDuration(playbackStart);
-    await _syncCustomAudioToVideoPosition(playbackStart);
-  }
-
   Future<void> _syncCustomAudioToVideoPosition(Duration position) async {
     final audioTrack = _proVideoController?.audioTrack;
     if (audioTrack == null) return;
@@ -401,19 +386,25 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       audioTrack,
       videoPosition: position,
       videoStart: _playbackStart,
+      videoEnd: _playbackEnd,
     );
   }
 
   Future<void> _playCustomAudioForCurrentVideoPosition(AudioTrack track) async {
     final videoPosition = await _ensurePlayableVideoPosition();
     final isPlaybackStart = videoPosition == _playbackStart;
-    final syncedVideoPosition = isPlaybackStart
-        ? await _startVideoPlaybackFromBeginning()
-        : videoPosition;
+    final Duration syncedVideoPosition;
+    if (isPlaybackStart) {
+      syncedVideoPosition = await _startVideoPlaybackFromBeginning();
+    } else {
+      if (!_videoController.value.isPlaying) await _videoController.play();
+      syncedVideoPosition = videoPosition;
+    }
     await _audioService.play(
       track,
       videoPosition: syncedVideoPosition,
       videoStart: _playbackStart,
+      videoEnd: _playbackEnd,
       forceSeek: isPlaybackStart,
     );
   }
@@ -442,6 +433,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       track,
       videoPosition: _videoController.value.position,
       videoStart: _playbackStart,
+      videoEnd: _playbackEnd,
     );
   }
 
@@ -513,6 +505,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   void _onToggleMute() {
     final isMuted = _proVideoController?.isMutedNotifier.value ?? false;
     _proVideoController?.setMuteState(!isMuted);
+  }
+
+  void _onAudioTimingChanged(AudioTrack track) {
+    _proVideoController?.audioTrack = track;
+    _videoTimelineState.updateCustomAudioTrack(track);
+    unawaited(_prepareCustomAudioForCurrentVideoPosition(track));
   }
 
   void _onTrimChanged(double start, double end) {
@@ -599,12 +597,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => AudioSelectionBottomSheet(
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.9,
+        child: AudioSelectionBottomSheet(
           configs: _configs,
           videoDuration: _videoMetadata.duration,
           initialSelectedTrack: _proVideoController?.audioTrack,
@@ -614,8 +609,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
           onBalanceChanged: (balance) async {
             await _audioService.balanceAudio(balance);
           },
-          onStartTimeChanged: (_) async {
-            await _seekToPlaybackStartWithCustomAudio();
+          onTrackChanged: (track) {
+            _proVideoController?.audioTrack = track;
+            _videoTimelineState.updateCustomAudioTrack(track);
+          },
+          onTrackChangeEnd: (track) {
+            unawaited(_prepareCustomAudioForCurrentVideoPosition(track));
           },
           onConfirm: (track) {
             if (track != null) {
@@ -652,70 +651,74 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     unawaited(_videoController.pause());
     unawaited(_audioService.pause());
 
-    final customAudioTrack = parameters.audioTracks.isEmpty
-        ? null
-        : parameters.audioTracks.first;
-    _selectedSoundRef = decodeSoundTrackStrongRef(customAudioTrack?.id);
+    _selectedSoundRef = decodeSoundTrackStrongRef(
+      parameters.audioTracks.isEmpty ? null : parameters.audioTracks.first.id,
+    );
     final sourceVideoPath = await _video.safeFilePath();
     final shouldCompressForUpload = await _shouldCompressForUpload(
       sourceVideoPath,
     );
 
     final directory = await getTemporaryDirectory();
-
-    double overlayVolume = 0;
-    double originalVolume = 1;
-    if (customAudioTrack != null) {
-      final volumeBalance = customAudioTrack.volumeBalance;
-      overlayVolume = 1;
-      originalVolume = 1;
-      if (volumeBalance < 0) {
-        overlayVolume += volumeBalance;
-      } else {
-        originalVolume -= volumeBalance;
-      }
-    }
-
-    final customAudioPath = await _audioService.safeCustomAudioPath(
-      customAudioTrack,
-    );
-
     final transform = _buildExportTransform(parameters);
     final exportTransform = shouldCompressForUpload
         ? _uploadCompressionTransform(transform)
         : transform;
-    final exportStartTime = _durationSpan?.start ?? parameters.startTime;
+    final exportStartTime =
+        _durationSpan?.start ?? parameters.startTime ?? Duration.zero;
+    final exportEndTime =
+        _durationSpan?.end ?? parameters.endTime ?? _videoMetadata.duration;
+    final outputDuration = exportEndTime - exportStartTime;
+
+    double originalVolume = 1;
+    final renderedAudioTracks = <VideoAudioTrack>[];
+    for (final (index, track) in parameters.audioTracks.indexed) {
+      var overlayVolume = 1.0;
+      final volumeBalance = track.volumeBalance;
+      if (volumeBalance < 0) {
+        overlayVolume += volumeBalance;
+      } else {
+        originalVolume = math.min(originalVolume, 1 - volumeBalance);
+      }
+      final audioPath = await _audioService.safeCustomAudioPath(
+        track,
+        index: index,
+      );
+      if (audioPath == null) continue;
+      final renderedTracks = buildTimedAudioTracks(
+        track: track,
+        path: audioPath,
+        balanceVolume: overlayVolume,
+        timelineOffset: exportStartTime,
+        outputDuration: outputDuration,
+      );
+      renderedAudioTracks.addAll(renderedTracks);
+    }
+
     final exportModel = VideoRenderData(
       id: _taskId,
       videoSegments: [VideoSegment(video: _video, volume: originalVolume)],
       outputFormat: _outputFormat,
       enableAudio: _proVideoController?.isAudioEnabled ?? true,
-      imageLayers: parameters.layers.isNotEmpty
-          ? [ImageLayer(image: EditorLayerImage.memory(parameters.image))]
-          : null,
+      imageLayers: buildTimedImageLayers(
+        parameters: parameters,
+        outputSize: _targetExportResolution(exportTransform),
+        timelineOffset: exportStartTime,
+        outputDuration: outputDuration,
+        videoFit: widget.storyMode ? BoxFit.cover : BoxFit.contain,
+      ),
       blur: parameters.blur,
       colorFilters: parameters.colorFilters
           .map((matrix) => ColorFilter(matrix: matrix))
           .toList(),
       startTime: exportStartTime,
-      endTime: _durationSpan?.end ?? parameters.endTime,
+      endTime: exportEndTime,
       transform: exportTransform,
       bitrate: shouldCompressForUpload
           ? _uploadCompressionBitrate
           : _targetExportBitrate(exportTransform),
       shouldOptimizeForNetworkUse: shouldCompressForUpload,
-      audioTracks: customAudioPath != null
-          ? [
-              VideoAudioTrack(
-                path: customAudioPath,
-                volume: overlayVolume,
-                audioStartTime: customAudioExportStartTime(
-                  trackStartTime: customAudioTrack?.startTime,
-                ),
-                loop: true,
-              ),
-            ]
-          : const [],
+      audioTracks: renderedAudioTracks,
     );
 
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -945,12 +948,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
               onPause: () {
                 _shouldResetOnPlaybackComplete = false;
                 _videoController.pause();
+                unawaited(_audioService.pause());
                 _videoTimelineState.setPlaying(isPlaying: false);
               },
               onPlay: () {
                 _shouldResetOnPlaybackComplete = true;
-                if (_proVideoController?.audioTrack == null) {
+                final audioTrack = _proVideoController?.audioTrack;
+                if (audioTrack == null) {
                   _videoController.play();
+                } else {
+                  unawaited(
+                    _playCustomAudioForCurrentVideoPosition(audioTrack),
+                  );
                 }
                 _videoTimelineState.setPlaying(isPlaying: true);
               },
@@ -968,33 +977,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
                 }
               },
               onTrimSpanEnd: _seekToPosition,
-            ),
-            audioEditorCallbacks: AudioEditorCallbacks(
-              onBalanceChange: (value) async {
-                await _audioService.balanceAudio(value);
-              },
-              onStartTimeChange: (_) async {
-                await _seekToPlaybackStartWithCustomAudio();
-              },
-              onPlay: (audio) async {
-                final isNewTrack = !_audioService.useCustomAudio;
-                if (isNewTrack) {
-                  await _audioService.setAudioMode(useCustom: true);
-                } else {
-                  await _audioService.balanceAudio();
-                }
-                await _playCustomAudioForCurrentVideoPosition(audio);
-                if (!_videoController.value.isPlaying) {
-                  await _videoController.play();
-                }
-                if (isNewTrack) {
-                  unawaited(_extractCustomAudioWaveform(audio));
-                }
-              },
-              onStop: (audio) async {
-                // Only pause playback, don't clear the audio selection
-                await _audioService.pause();
-              },
             ),
             stickerEditorCallbacks: StickerEditorCallbacks(
               onSearchChanged: (_) {},

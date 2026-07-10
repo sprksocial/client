@@ -3,7 +3,11 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/layer_timing_track.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 const _kHandleWidth = 12.0;
@@ -19,6 +23,9 @@ class ScrollableTimeline extends StatefulWidget {
     required this.videoTimelineState,
     required this.onSeek,
     required this.onAddSound,
+    required this.selectedLayer,
+    required this.onAudioTimingChanged,
+    required this.onLayerTimingChanged,
     this.onSeekStart,
     this.onSeekEnd,
     this.onTrimChanged,
@@ -33,6 +40,10 @@ class ScrollableTimeline extends StatefulWidget {
   final VideoTimelineState videoTimelineState;
   final void Function(double progress) onSeek;
   final VoidCallback onAddSound;
+  final Layer? selectedLayer;
+  final ValueChanged<AudioTrack> onAudioTimingChanged;
+  final void Function(Layer layer, Duration start, Duration end)
+  onLayerTimingChanged;
   final VoidCallback? onSeekStart;
   final VoidCallback? onSeekEnd;
   final void Function(double start, double end)? onTrimChanged;
@@ -68,7 +79,11 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       math.max(1.0, _sourceWidth * widget.videoTimelineState.trimSpanFraction);
 
   double get _totalHeight =>
-      widget.rulerHeight + widget.thumbnailHeight + 8 + widget.audioTrackHeight;
+      widget.rulerHeight +
+      widget.thumbnailHeight +
+      8 +
+      widget.audioTrackHeight +
+      (widget.selectedLayer == null ? 0 : 8 + widget.audioTrackHeight);
 
   double get _minTrimFraction {
     final ms = widget.videoTimelineState.videoDuration.inMilliseconds;
@@ -314,7 +329,21 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                                 videoTimelineState: widget.videoTimelineState,
                                 onAddSound: widget.onAddSound,
                                 pixelsPerSecond: widget.pixelsPerSecond,
+                                onTimingChanged: widget.onAudioTimingChanged,
                               ),
+                              if (widget.selectedLayer case final layer?) ...[
+                                const SizedBox(height: 8),
+                                LayerTimingTrack(
+                                  totalWidth: timelineWidth,
+                                  sourceWidth: sourceWidth,
+                                  sourceOffset: sourceOffset,
+                                  height: widget.audioTrackHeight,
+                                  videoDuration:
+                                      widget.videoTimelineState.videoDuration,
+                                  layer: layer,
+                                  onTimingChanged: widget.onLayerTimingChanged,
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -622,6 +651,7 @@ class _AudioTrack extends StatelessWidget {
     required this.videoTimelineState,
     required this.onAddSound,
     required this.pixelsPerSecond,
+    required this.onTimingChanged,
   });
 
   final double totalWidth;
@@ -631,129 +661,116 @@ class _AudioTrack extends StatelessWidget {
   final VideoTimelineState videoTimelineState;
   final VoidCallback onAddSound;
   final double pixelsPerSecond;
+  final ValueChanged<AudioTrack> onTimingChanged;
 
   @override
   Widget build(BuildContext context) {
     if (videoTimelineState.useCustomAudio) {
       return _buildAudioWaveformTrack();
     }
-    return _buildAddSoundTrack();
+    return _buildAddSoundTrack(context);
   }
 
   Widget _buildAudioWaveformTrack() {
-    return Container(
-      width: totalWidth,
+    final track = videoTimelineState.customAudioTrack!;
+    final videoDurationMs = videoTimelineState.videoDuration.inMilliseconds;
+    final start = videoDurationMs <= 0
+        ? 0.0
+        : (track.startTime ?? Duration.zero).inMilliseconds / videoDurationMs;
+    final end = videoDurationMs <= 0
+        ? 1.0
+        : (track.endTime ?? videoTimelineState.videoDuration).inMilliseconds /
+              videoDurationMs;
+    final clampedStart = start.clamp(0.0, 1.0).toDouble();
+    final clampedEnd = end.clamp(0.0, 1.0).toDouble();
+
+    return TimedTrackRange(
+      totalWidth: totalWidth,
+      sourceWidth: sourceWidth,
+      sourceOffset: sourceOffset,
       height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary600.withAlpha(180),
-            AppColors.primary700.withAlpha(180),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: ClipRect(
-        child: OverflowBox(
-          alignment: Alignment.centerLeft,
-          minWidth: sourceWidth,
-          maxWidth: sourceWidth,
-          minHeight: height,
-          maxHeight: height,
-          child: Transform.translate(
-            offset: Offset(-sourceOffset, 0),
-            child: SizedBox(
-              width: sourceWidth,
-              height: height,
-              child: Stack(
+      startFraction: clampedStart <= clampedEnd ? clampedStart : clampedEnd,
+      endFraction: clampedStart <= clampedEnd ? clampedEnd : clampedStart,
+      color: AppColors.primary700,
+      minimumRangeFraction: videoDurationMs <= 0
+          ? 0.01
+          : (250 / videoDurationMs).clamp(0.001, 1.0).toDouble(),
+      onRangeChanged: (start, end) {
+        final updatedTrack = track.copyWith(
+          startTime: _durationAtFraction(start),
+          endTime: _durationAtFraction(end),
+        );
+        videoTimelineState.updateCustomAudioTrack(updatedTrack);
+      },
+      onRangeChangeEnd: (_, _) {
+        final updatedTrack = videoTimelineState.customAudioTrack;
+        if (updatedTrack != null) onTimingChanged(updatedTrack);
+      },
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _AudioWaveformPainter(
+                waveformData: videoTimelineState.customWaveformData,
+                totalWidth: sourceWidth,
+                pixelsPerSecond: pixelsPerSecond,
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              color: AppColors.primary700.withAlpha(220),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Waveform
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: _AudioWaveformPainter(
-                        waveformData: videoTimelineState.customWaveformData,
-                        totalWidth: sourceWidth,
-                        pixelsPerSecond: pixelsPerSecond,
+                  if (videoTimelineState.authorAvatarUrl != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        fadeInDuration: Duration.zero,
+                        fadeOutDuration: Duration.zero,
+                        imageUrl: videoTimelineState.authorAvatarUrl!,
+                        width: 24,
+                        height: 24,
+                        fit: BoxFit.cover,
+                        placeholder: (_, _) => _buildAvatarPlaceholder(),
+                        errorWidget: (_, _, _) => _buildAvatarPlaceholder(),
                       ),
+                    )
+                  else
+                    const Icon(
+                      Icons.music_note,
+                      color: AppColors.greyWhite,
+                      size: 18,
                     ),
-                  ),
-                  // Audio info overlay at the start
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary700,
-                            AppColors.primary700.withAlpha(200),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.7, 1.0],
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (videoTimelineState.authorAvatarUrl != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: CachedNetworkImage(
-                                fadeInDuration: Duration.zero,
-                                fadeOutDuration: Duration.zero,
-                                imageUrl: videoTimelineState.authorAvatarUrl!,
-                                width: 24,
-                                height: 24,
-                                fit: BoxFit.cover,
-                                placeholder: (_, _) =>
-                                    _buildAvatarPlaceholder(),
-                                errorWidget: (_, _, _) =>
-                                    _buildAvatarPlaceholder(),
-                              ),
-                            )
-                          else
-                            const Icon(
-                              Icons.music_note,
-                              color: AppColors.greyWhite,
-                              size: 18,
-                            ),
-                          const SizedBox(width: 8),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                videoTimelineState.activeAudioName,
-                                style: const TextStyle(
-                                  color: AppColors.greyWhite,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              if (videoTimelineState.activeAudioSubtitle !=
-                                  null)
-                                Text(
-                                  videoTimelineState.activeAudioSubtitle!,
-                                  style: TextStyle(
-                                    color: AppColors.greyWhite.withAlpha(180),
-                                    fontSize: 10,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
+                  const SizedBox(width: 8),
+                  Text(
+                    videoTimelineState.activeAudioName,
+                    style: const TextStyle(
+                      color: AppColors.greyWhite,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  Duration _durationAtFraction(double fraction) {
+    return Duration(
+      milliseconds: (videoTimelineState.videoDuration.inMilliseconds * fraction)
+          .round(),
     );
   }
 
@@ -769,7 +786,7 @@ class _AudioTrack extends StatelessWidget {
     );
   }
 
-  Widget _buildAddSoundTrack() {
+  Widget _buildAddSoundTrack(BuildContext context) {
     return GestureDetector(
       onTap: onAddSound,
       child: Container(
@@ -780,7 +797,7 @@ class _AudioTrack extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
           border: Border.all(color: AppColors.grey500),
         ),
-        child: const Stack(
+        child: Stack(
           children: [
             // Centered add sound button (visible at the start)
             Positioned(
@@ -788,15 +805,19 @@ class _AudioTrack extends StatelessWidget {
               top: 0,
               bottom: 0,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.music_note, color: AppColors.grey300, size: 16),
-                    SizedBox(width: 6),
+                    const Icon(
+                      Icons.music_note,
+                      color: AppColors.grey300,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
                     Text(
-                      'Add sound',
-                      style: TextStyle(
+                      AppLocalizations.of(context).buttonAddSound,
+                      style: const TextStyle(
                         color: AppColors.grey300,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,

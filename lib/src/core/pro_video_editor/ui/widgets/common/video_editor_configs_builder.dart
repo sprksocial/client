@@ -44,7 +44,6 @@ class VideoEditorConfigsBuilder {
 
   /// Full set of tools for regular video editing.
   static const _fullTools = [
-    SubEditorMode.audio,
     SubEditorMode.paint,
     SubEditorMode.text,
     SubEditorMode.cropRotate,
@@ -67,13 +66,13 @@ class VideoEditorConfigsBuilder {
     required VoidCallback onTogglePlay,
     required VoidCallback onToggleMute,
     required VoidCallback onAddSound,
+    required ValueChanged<AudioTrack> onAudioTimingChanged,
     required VoidCallback onToggleFullscreen,
     void Function(double start, double end)? onTrimChanged,
     void Function(double start, double end, bool isStartHandle)? onTrimEnd,
     Future<void> Function()? onMention,
     void Function(ProImageEditorState editor)? onDone,
     bool storyMode = false,
-    List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
       enableTrimBar: false,
@@ -96,8 +95,13 @@ class VideoEditorConfigsBuilder {
         colorScheme: AppColorScheme.dark,
         textTheme: AppTextTheme.dark,
       ),
+      layerInteraction: const LayerInteractionConfigs(
+        selectable: LayerInteractionSelectable.enabled,
+        initialSelected: true,
+      ),
       mainEditor: MainEditorConfigs(
         tools: tools,
+        captureLayersOnDone: true,
         widgets: MainEditorWidgets(
           removeLayerArea:
               (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
@@ -115,6 +119,7 @@ class VideoEditorConfigsBuilder {
                 return StoryEditorBottomSection(
                   editor: editor,
                   onMention: onMention,
+                  videoDuration: videoTimelineState.videoDuration,
                 );
               }
 
@@ -127,6 +132,7 @@ class VideoEditorConfigsBuilder {
                 onTogglePlay: onTogglePlay,
                 onToggleMute: onToggleMute,
                 onAddSound: onAddSound,
+                onAudioTimingChanged: onAudioTimingChanged,
                 onToggleFullscreen: onToggleFullscreen,
                 onTrimChanged: onTrimChanged,
                 onTrimEnd: onTrimEnd,
@@ -392,12 +398,6 @@ class VideoEditorConfigsBuilder {
         ),
         textEditor: I18nTextEditor(backgroundMode: 'Mode', textAlign: 'Align'),
       ),
-      // audioEditor: const AudioEditorConfigs(
-      //   // Audio selection is now handled by the custom bottom sheet
-      //   // in _showAudioSelectionBottomSheet, so we provide an empty list here
-      //   // to prevent the default audio editor from showing
-      //   audioTracks: const [],
-      // ),
       clipsEditor: ClipsEditorConfigs(
         style: const ClipsEditorStyle(reversedClipsList: true),
         widgets: ClipsEditorWidgets(
