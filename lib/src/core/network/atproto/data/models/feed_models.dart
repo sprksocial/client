@@ -20,6 +20,8 @@ import 'package:sprk_poptart/so/sprk/feed/get_feed/output.dart'
     as sprk_get_feed;
 import 'package:sprk_poptart/so/sprk/feed/get_feed_skeleton/output.dart'
     as sprk_get_feed_skeleton;
+import 'package:sprk_poptart/so/sprk/feed/get_likes/like.dart'
+    as sprk_get_likes;
 import 'package:sprk_poptart/so/sprk/media/image/view.dart'
     as sprk_media_image_view;
 import 'package:sprk_poptart/so/sprk/story/defs.dart' as sprk_story_defs;
@@ -41,6 +43,7 @@ typedef ViewerState = sprk_feed_defs.ViewerState;
 typedef KnownInteraction = sprk_feed_defs.UViewerStateKnownInteractions;
 typedef KnownRepost = sprk_feed_defs.KnownRepost;
 typedef KnownLike = sprk_feed_defs.KnownLike;
+typedef PostLike = sprk_get_likes.Like;
 typedef KnownReply = sprk_feed_defs.KnownReply;
 typedef ReplyViewerState = sprk_feed_defs.ReplyViewerState;
 typedef ReplyView = sprk_feed_defs.ReplyView;

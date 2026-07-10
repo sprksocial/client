@@ -63,6 +63,7 @@ import 'package:sprk_poptart/so/sprk/feed/get_feed_generator.dart'
     as sprk_get_feed_generator;
 import 'package:sprk_poptart/so/sprk/feed/get_feed_generators.dart'
     as sprk_get_feed_generators;
+import 'package:sprk_poptart/so/sprk/feed/get_likes.dart' as sprk_get_likes;
 import 'package:sprk_poptart/so/sprk/feed/get_posts.dart' as sprk_get_posts;
 import 'package:sprk_poptart/so/sprk/feed/get_post_thread.dart'
     as sprk_get_post_thread;
@@ -1921,6 +1922,46 @@ class FeedRepositoryImpl implements FeedRepository {
           .toList();
 
       return (posts: posts, cursor: output.cursor);
+    });
+  }
+
+  @override
+  Future<({List<PostLike> likes, String? cursor})> getLikes(
+    AtUri uri, {
+    String? cid,
+    int limit = 50,
+    String? cursor,
+  }) async {
+    _logger.d(
+      'Getting likes for post: $uri, cid: $cid, limit: $limit, '
+      'cursor: $cursor',
+    );
+
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final result = await atproto.call(
+        sprk_get_likes.soSprkFeedGetLikes,
+        parameters: sprk_get_likes.FeedGetLikesInput(
+          uri: uri,
+          cid: cid,
+          limit: limit,
+          cursor: cursor,
+        ),
+        headers: {'atproto-proxy': _client.sprkDid},
+      );
+      final output = result.data;
+      _logger.d('Likes retrieved successfully: ${output.likes.length} actors');
+      return (likes: output.likes.toList(), cursor: output.cursor);
     });
   }
 

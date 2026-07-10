@@ -389,6 +389,14 @@
   "@errorLoadingLikes": {
     "description": "Error loading likes message"
   },
+  "pageTitlePostLikes": "Likes",
+  "@pageTitlePostLikes": {
+    "description": "Title for the list of people who liked a post"
+  },
+  "emptyNoPostLikes": "No likes yet",
+  "@emptyNoPostLikes": {
+    "description": "Message shown when a post has no likes"
+  },
 
   "errorLoadingPosts": "Error loading posts",
   "@errorLoadingPosts": {

@@ -19,6 +19,7 @@ import 'package:spark/src/core/utils/utils.dart';
 import 'package:spark/src/features/comments/providers/comment_provider.dart';
 import 'package:spark/src/features/comments/providers/comment_state.dart';
 import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
+import 'package:spark/src/features/feed/ui/widgets/post_likes_sheet.dart';
 
 class CommentItem extends ConsumerWidget {
   const CommentItem({
@@ -373,9 +374,25 @@ class _ActionButtons extends StatelessWidget {
               else
                 AppIcons.like(size: 16, color: secondaryTextColor),
               const SizedBox(width: 4),
-              Text(
-                commentState.likeCount.toString(),
-                style: TextStyle(fontSize: 12, color: secondaryTextColor),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: commentState.likeCount == 0
+                    ? null
+                    : () {
+                        final post = commentState.thread.post;
+                        showPostLikesSheet(
+                          context: context,
+                          uri: post.uri.toString(),
+                          cid: post.cid,
+                        );
+                      },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    commentState.likeCount.toString(),
+                    style: TextStyle(fontSize: 12, color: secondaryTextColor),
+                  ),
+                ),
               ),
             ],
           ),

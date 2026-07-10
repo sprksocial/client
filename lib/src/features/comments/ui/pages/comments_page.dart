@@ -12,7 +12,7 @@ import 'package:spark/src/features/comments/ui/widgets/comment_item.dart';
 import 'package:spark/src/features/comments/ui/widgets/highlighted_reply_scroll.dart';
 
 @RoutePage()
-class CommentsPage extends ConsumerStatefulWidget {
+class CommentsPage extends StatelessWidget {
   const CommentsPage({
     required this.postUri,
     required this.isSprk,
@@ -26,93 +26,8 @@ class CommentsPage extends ConsumerStatefulWidget {
   final String? highlightedReplyUri;
 
   @override
-  ConsumerState<CommentsPage> createState() => _CommentsPageState();
-}
-
-class _CommentsPageState extends ConsumerState<CommentsPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    );
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height * 0.75;
-    final backgroundColor = Theme.of(context).colorScheme.surface;
-
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, height * (1 - _animation.value)),
-          child: child,
-        );
-      },
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
-        ),
-        child: const ClipRRect(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                _CommentsTrayHandle(),
-                Expanded(child: AutoRouter()),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CommentsTrayHandle extends StatelessWidget {
-  const _CommentsTrayHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    final borderColor = Theme.of(context).colorScheme.outline;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Container(
-        width: 40,
-        height: 4,
-        decoration: BoxDecoration(
-          color: borderColor,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-    );
+    return const AutoRouter();
   }
 }
 
@@ -177,10 +92,6 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
     }
   }
 
-  void _closeComments() {
-    context.router.maybePop();
-  }
-
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
@@ -211,9 +122,6 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
     final visibleCommentCount = asyncState.value?.thread.replies?.length ?? 0;
     final totalCommentCount =
         asyncState.value?.thread.post.replyCount ?? visibleCommentCount;
-    final borderColor = Theme.of(context).colorScheme.outline;
-    final textColor = Theme.of(context).colorScheme.onSurface;
-
     if (displayPost == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -222,33 +130,17 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
 
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: borderColor, width: 0.2)),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text(
+            '$totalCommentCount comments',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '$totalCommentCount comments',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: _closeComments,
-                  icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
-                ),
-              ],
-            ),
-          ),
+        ),
+        Divider(
+          height: 0.2,
+          thickness: 0.2,
+          color: Theme.of(context).colorScheme.outline,
         ),
         if (hasCrossposts)
           _CrosspostCommentsBanner(
@@ -372,9 +264,12 @@ class _KeyboardAwareCommentInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: keyboardHeight),
+      padding: EdgeInsets.only(
+        bottom: keyboardHeight > 0 ? keyboardHeight : bottomInset,
+      ),
       child: CommentInputWidget(
         videoId: videoId,
         postCid: postCid,

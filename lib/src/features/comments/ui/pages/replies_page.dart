@@ -128,47 +128,50 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
             });
           }
 
-          return SafeArea(
-            child: Column(
-              children: [
-                _ReplyAnchor(
-                  child: CommentBody(
-                    key: ValueKey('comment-${data.thread.post.uri}'),
-                    thread: data.thread,
-                    mainPostUri: AtUri.parse(widget.postUri),
-                    isHighlighted:
-                        widget.highlightedReplyUri ==
-                        data.thread.post.uri.toString(),
-                  ),
+          return Column(
+            children: [
+              _ReplyAnchor(
+                child: CommentBody(
+                  key: ValueKey('comment-${data.thread.post.uri}'),
+                  thread: data.thread,
+                  mainPostUri: AtUri.parse(widget.postUri),
+                  isHighlighted:
+                      widget.highlightedReplyUri ==
+                      data.thread.post.uri.toString(),
                 ),
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: EdgeInsets.only(
-                      top: 8,
-                      bottom: 16 + (keyboardHeight > 0 ? 0 : 80),
-                    ),
-                    itemCount: replies.length,
-                    itemBuilder: (context, index) {
-                      final comment = replies[index];
-                      final isHighlighted =
-                          widget.highlightedReplyUri != null &&
-                          comment.post.uri.toString() ==
-                              widget.highlightedReplyUri;
-                      return _ThreadedReplyItem(
-                        isFirst: index == 0,
-                        isLast: index == replies.length - 1,
-                        child: CommentItem(
-                          key: ValueKey('comment-${comment.post.cid}'),
-                          thread: comment,
-                          mainPostUri: AtUri.parse(widget.postUri),
-                          isHighlighted: isHighlighted,
-                        ),
-                      );
-                    },
+              ),
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: EdgeInsets.only(
+                    top: 8,
+                    bottom: 16 + (keyboardHeight > 0 ? 0 : 80),
                   ),
+                  itemCount: replies.length,
+                  itemBuilder: (context, index) {
+                    final comment = replies[index];
+                    final isHighlighted =
+                        widget.highlightedReplyUri != null &&
+                        comment.post.uri.toString() ==
+                            widget.highlightedReplyUri;
+                    return _ThreadedReplyItem(
+                      isFirst: index == 0,
+                      isLast: index == replies.length - 1,
+                      child: CommentItem(
+                        key: ValueKey('comment-${comment.post.cid}'),
+                        thread: comment,
+                        mainPostUri: AtUri.parse(widget.postUri),
+                        isHighlighted: isHighlighted,
+                      ),
+                    );
+                  },
                 ),
-                CommentInputWidget(
+              ),
+              SafeArea(
+                top: false,
+                left: false,
+                right: false,
+                child: CommentInputWidget(
                   videoId: widget.postUri,
                   postUri: widget.postUri,
                   isSprk: data.thread.post.isSprk,
@@ -177,8 +180,8 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
                   rootUri: threadRoot?.uri,
                   rootCid: threadRoot?.cid,
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
         error: (error, stackTrace) =>

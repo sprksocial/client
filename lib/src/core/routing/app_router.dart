@@ -196,12 +196,15 @@ class AppRouter extends RootStackRouter {
     Widget child,
     AutoRoutePage<T> page,
   ) {
-    return ModalBottomSheetRoute(
+    return _CommentsModalBottomSheetRoute(
       settings: page,
       builder: (context) => child,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       useSafeArea: true,
+      showDragHandle: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.75,
+      ),
     );
   }
 
@@ -220,6 +223,34 @@ class AppRouter extends RootStackRouter {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       clipBehavior: Clip.antiAlias,
+    );
+  }
+}
+
+class _CommentsModalBottomSheetRoute<T> extends ModalBottomSheetRoute<T> {
+  _CommentsModalBottomSheetRoute({
+    required super.builder,
+    required super.isScrollControlled,
+    super.settings,
+    super.useSafeArea,
+    super.showDragHandle,
+    super.constraints,
+  });
+
+  @override
+  Widget buildModalBarrier() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        super.buildModalBarrier(),
+        ExcludeSemantics(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: () => navigator?.pop<T>(),
+          ),
+        ),
+      ],
     );
   }
 }

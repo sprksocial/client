@@ -550,6 +550,18 @@ abstract class AppLocalizations {
   /// **'Error loading likes'**
   String get errorLoadingLikes;
 
+  /// Title for the list of people who liked a post
+  ///
+  /// In en, this message translates to:
+  /// **'Likes'**
+  String get pageTitlePostLikes;
+
+  /// Message shown when a post has no likes
+  ///
+  /// In en, this message translates to:
+  /// **'No likes yet'**
+  String get emptyNoPostLikes;
+
   /// Error loading posts message
   ///
   /// In en, this message translates to:

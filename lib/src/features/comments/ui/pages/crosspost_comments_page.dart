@@ -82,6 +82,9 @@ class CrosspostCommentsPage extends ConsumerWidget {
                 }
 
                 return ListView.separated(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.paddingOf(context).bottom,
+                  ),
                   itemCount: comments.length,
                   separatorBuilder: (context, index) => Divider(
                     height: 1,

@@ -20,6 +20,7 @@ import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
 import 'package:spark/src/features/feed/providers/repost_post.dart';
 import 'package:spark/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
+import 'package:spark/src/features/feed/ui/widgets/post_likes_sheet.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
@@ -169,6 +170,18 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         _likeCount += wasLiked ? 1 : -1;
       });
     }
+  }
+
+  void _handleLikeCountPressed() {
+    final post = _currentPost ?? widget.post;
+    if (_likeCount == 0) return;
+
+    widget.onMediaPauseRequested?.call();
+    showPostLikesSheet(
+      context: context,
+      uri: post.uri.toString(),
+      cid: post.cid,
+    );
   }
 
   Future<void> _handleRepost() async {
@@ -420,6 +433,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
     return SparkSideActionBar(
       onLike: _handleLike,
+      onLikeCountTap: _handleLikeCountPressed,
       onComment: _handleCommentPressed,
       onRepost: _handleRepost,
       onShare: _handleShare,

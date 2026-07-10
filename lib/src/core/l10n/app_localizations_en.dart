@@ -250,6 +250,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorLoadingLikes => 'Error loading likes';
 
   @override
+  String get pageTitlePostLikes => 'Likes';
+
+  @override
+  String get emptyNoPostLikes => 'No likes yet';
+
+  @override
   String get errorLoadingPosts => 'Error loading posts';
 
   @override

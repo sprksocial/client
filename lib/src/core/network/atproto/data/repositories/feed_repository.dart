@@ -242,6 +242,19 @@ abstract class FeedRepository {
     String? cursor,
   });
 
+  /// Get the actors who liked a post.
+  ///
+  /// [uri] AT-URI of the liked post.
+  /// [cid] Optional CID to restrict results to a specific post version.
+  /// [limit] The number of likes to return (default 50, max 100).
+  /// [cursor] Pagination cursor for the next page.
+  Future<({List<PostLike> likes, String? cursor})> getLikes(
+    AtUri uri, {
+    String? cid,
+    int limit = 50,
+    String? cursor,
+  });
+
   /// Get a list of posts reposted by an actor
   ///
   /// [actor] The at-identifier of the actor (handle or DID)

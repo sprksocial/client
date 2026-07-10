@@ -7,6 +7,7 @@ class SparkSideActionBar extends StatefulWidget {
   const SparkSideActionBar({
     super.key,
     this.onLike,
+    this.onLikeCountTap,
     this.onComment,
     this.onRepost,
     this.onShare,
@@ -23,6 +24,7 @@ class SparkSideActionBar extends StatefulWidget {
   });
 
   final VoidCallback? onLike;
+  final VoidCallback? onLikeCountTap;
   final VoidCallback? onComment;
   final VoidCallback? onRepost;
   final VoidCallback? onShare;
@@ -48,8 +50,11 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
   Widget build(BuildContext context) {
     final children = <Widget>[
       _ActionItem(
+        tapTargetKey: const ValueKey('side-action-like'),
+        labelKey: const ValueKey('side-action-like-count'),
         isActive: widget.isLiked,
         label: widget.likeCount,
+        onLabelTap: widget.onLikeCountTap,
         icon: widget.isLiked
             ? AppIcons.likeFilled(
                 size: 32,
@@ -112,6 +117,9 @@ class _ActionItem extends StatefulWidget {
     this.label,
     this.onTap,
     this.onLongPress,
+    this.onLabelTap,
+    this.tapTargetKey,
+    this.labelKey,
     this.isActive = false,
   });
 
@@ -119,6 +127,9 @@ class _ActionItem extends StatefulWidget {
   final String? label;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
+  final VoidCallback? onLabelTap;
+  final Key? tapTargetKey;
+  final Key? labelKey;
   final bool isActive;
 
   @override
@@ -164,6 +175,7 @@ class _ActionItemState extends State<_ActionItem>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: widget.tapTargetKey,
       behavior: HitTestBehavior.opaque,
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
@@ -186,13 +198,21 @@ class _ActionItemState extends State<_ActionItem>
             ),
           ),
           if (widget.label != null && widget.label!.isNotEmpty)
-            Text(
-              widget.label!,
-              style: const TextStyle(
-                fontSize: 12,
-                height: 1.1,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+            GestureDetector(
+              key: widget.labelKey,
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onLabelTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  widget.label!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    height: 1.1,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
         ],
