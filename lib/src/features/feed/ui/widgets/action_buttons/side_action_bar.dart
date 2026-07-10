@@ -176,7 +176,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     final post = _currentPost ?? widget.post;
     if (_likeCount == 0) return;
 
-    widget.onMediaPauseRequested?.call();
     showPostLikesSheet(
       context: context,
       uri: post.uri.toString(),
@@ -300,7 +299,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   void _handleCommentPressed() {
-    widget.onMediaPauseRequested?.call();
     final currentPost = _currentPost ?? widget.post;
     context.router.push(
       CommentsRoute(
