@@ -5,16 +5,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/layer_timing_track.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection_handle.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_subtrack_content.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 const _kHandleWidth = 12.0;
 
 const _kCapWidth = 6.0;
-const _kCapHeight = 2.5;
+const _kHandleHitWidth = 32.0;
 const _kMinTrimDuration = Duration(seconds: 1);
+const _kSubtrackSpacing = 6.0;
+const _kMaxVisibleSubtracks = 4;
 
 enum _TrimHandleSide { start, end }
 
@@ -22,16 +25,17 @@ class ScrollableTimeline extends StatefulWidget {
   const ScrollableTimeline({
     required this.videoTimelineState,
     required this.onSeek,
-    required this.onAddSound,
-    required this.selectedLayer,
+    required this.layers,
+    required this.selectedLayerId,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
+    required this.onLayerSelected,
     this.onSeekStart,
     this.onSeekEnd,
     this.onTrimChanged,
     this.onTrimEnd,
     this.thumbnailHeight = 56,
-    this.audioTrackHeight = 44,
+    this.subtrackHeight = 34,
     this.rulerHeight = 24,
     this.pixelsPerSecond = 40.0,
     super.key,
@@ -39,17 +43,18 @@ class ScrollableTimeline extends StatefulWidget {
 
   final VideoTimelineState videoTimelineState;
   final void Function(double progress) onSeek;
-  final VoidCallback onAddSound;
-  final Layer? selectedLayer;
+  final List<Layer> layers;
+  final String? selectedLayerId;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
+  final ValueChanged<Layer> onLayerSelected;
   final VoidCallback? onSeekStart;
   final VoidCallback? onSeekEnd;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
   final double thumbnailHeight;
-  final double audioTrackHeight;
+  final double subtrackHeight;
   final double rulerHeight;
   final double pixelsPerSecond;
 
@@ -59,12 +64,16 @@ class ScrollableTimeline extends StatefulWidget {
 
 class _ScrollableTimelineState extends State<ScrollableTimeline> {
   late ScrollController _scrollController;
+  late ScrollController _subtrackScrollController;
   bool _isUserScrolling = false;
   bool _isProgrammaticScroll = false;
   bool _isDraggingHandle = false;
-  bool _trimModeActive = false;
+  String? _selectedTrackId;
   _TrimHandleSide? _activeTrimHandle;
   Timer? _scrollEndTimer;
+
+  static const _primaryTrackId = 'primary';
+  static const _audioTrackId = 'audio';
 
   bool get _canTrim => widget.onTrimChanged != null || widget.onTrimEnd != null;
 
@@ -78,12 +87,26 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   double get _timelineWidth =>
       math.max(1.0, _sourceWidth * widget.videoTimelineState.trimSpanFraction);
 
+  int get _subtrackCount =>
+      widget.layers.length + (widget.videoTimelineState.useCustomAudio ? 1 : 0);
+
+  double get _subtrackContentHeight {
+    if (_subtrackCount == 0) return 0;
+    return _subtrackCount * widget.subtrackHeight +
+        (_subtrackCount - 1) * _kSubtrackSpacing;
+  }
+
+  double get _subtrackViewportHeight {
+    final maxHeight =
+        _kMaxVisibleSubtracks * widget.subtrackHeight +
+        (_kMaxVisibleSubtracks - 1) * _kSubtrackSpacing;
+    return math.min(_subtrackContentHeight, maxHeight);
+  }
+
   double get _totalHeight =>
       widget.rulerHeight +
       widget.thumbnailHeight +
-      8 +
-      widget.audioTrackHeight +
-      (widget.selectedLayer == null ? 0 : 8 + widget.audioTrackHeight);
+      (_subtrackCount == 0 ? 0 : 8 + _subtrackViewportHeight);
 
   double get _minTrimFraction {
     final ms = widget.videoTimelineState.videoDuration.inMilliseconds;
@@ -94,9 +117,33 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   @override
   void initState() {
     super.initState();
+    _selectedTrackId = widget.selectedLayerId;
     _scrollController = ScrollController();
+    _subtrackScrollController = ScrollController();
     _scrollController.addListener(_onScrollChange);
     widget.videoTimelineState.addListener(_onProgressChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant ScrollableTimeline oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedLayerId != widget.selectedLayerId) {
+      if (widget.selectedLayerId != null) {
+        _selectedTrackId = widget.selectedLayerId;
+      } else if (_selectedTrackId == oldWidget.selectedLayerId) {
+        _selectedTrackId = null;
+      }
+    }
+    if (_selectedTrackId == _audioTrackId &&
+        !widget.videoTimelineState.useCustomAudio) {
+      _selectedTrackId = null;
+    }
+    if (_selectedTrackId != null &&
+        _selectedTrackId != _primaryTrackId &&
+        _selectedTrackId != _audioTrackId &&
+        !widget.layers.any((layer) => layer.id == _selectedTrackId)) {
+      _selectedTrackId = null;
+    }
   }
 
   @override
@@ -105,6 +152,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     _scrollController.removeListener(_onScrollChange);
     _scrollEndTimer?.cancel();
     _scrollController.dispose();
+    _subtrackScrollController.dispose();
     super.dispose();
   }
 
@@ -149,7 +197,26 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
 
   void _onThumbnailTap() {
     if (!_canTrim) return;
-    setState(() => _trimModeActive = !_trimModeActive);
+    setState(() {
+      _selectedTrackId = _selectedTrackId == _primaryTrackId
+          ? null
+          : _primaryTrackId;
+    });
+  }
+
+  void _onAudioTrackTap() {
+    setState(() {
+      _selectedTrackId = _selectedTrackId == _audioTrackId
+          ? null
+          : _audioTrackId;
+    });
+  }
+
+  void _onLayerTrackTap(Layer layer) {
+    setState(() {
+      _selectedTrackId = _selectedTrackId == layer.id ? null : layer.id;
+    });
+    widget.onLayerSelected(layer);
   }
 
   void _onTrimStartDragStart(DragStartDetails _) {
@@ -199,17 +266,26 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     widget.onTrimChanged?.call(start, end);
   }
 
-  Widget _buildTrimFrameLine({
+  Widget _buildTrimFrame({
     required double left,
     required double width,
     required double top,
+    required double height,
   }) {
     return Positioned(
       left: left,
       width: width,
       top: top,
-      height: 2,
-      child: IgnorePointer(child: Container(color: AppColors.greyWhite)),
+      height: height,
+      child: IgnorePointer(
+        child: DecoratedBox(
+          key: const ValueKey('timeline-primary-selection-frame'),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: AppColors.greyWhite, width: 2),
+          ),
+        ),
+      ),
     );
   }
 
@@ -220,16 +296,29 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     required GestureDragUpdateCallback onDragUpdate,
   }) {
     return Positioned(
-      left: left,
+      left: isLeft
+          ? left
+          : left - (_kHandleHitWidth - _kHandleWidth - _kCapWidth),
       top: widget.rulerHeight,
-      width: _kHandleWidth + _kCapWidth,
+      width: _kHandleHitWidth,
       height: widget.thumbnailHeight,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onHorizontalDragStart: onDragStart,
         onHorizontalDragUpdate: onDragUpdate,
         onHorizontalDragEnd: _onTrimDragEnd,
-        child: CustomPaint(painter: _TrimHandlePainter(isLeft: isLeft)),
+        child: Align(
+          alignment: isLeft ? Alignment.centerLeft : Alignment.centerRight,
+          child: TimelineSelectionHandle(
+            key: ValueKey(
+              isLeft
+                  ? 'timeline-primary-selection-handle-start'
+                  : 'timeline-primary-selection-handle-end',
+            ),
+            isLeft: isLeft,
+            height: widget.thumbnailHeight,
+          ),
+        ),
       ),
     );
   }
@@ -251,15 +340,8 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                 widget.videoTimelineState.trimStart * sourceWidth;
             final trimStartVp = viewportWidth / 2 - scrollOffset;
             final trimEndVp = viewportWidth / 2 + timelineWidth - scrollOffset;
-            final frameStartVp = trimStartVp
-                .clamp(0.0, viewportWidth)
-                .toDouble();
-            final frameEndVp = trimEndVp.clamp(0.0, viewportWidth).toDouble();
-            final frameWidth = (frameEndVp - frameStartVp)
-                .clamp(0.0, viewportWidth)
-                .toDouble();
-            final leftHandleLeft = trimStartVp - _kHandleWidth;
-            final rightHandleLeft = trimEndVp;
+            final leftHandleLeft = trimStartVp;
+            final rightHandleLeft = trimEndVp - _kHandleWidth - _kCapWidth;
 
             return SizedBox(
               height: _totalHeight,
@@ -268,6 +350,9 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                 children: [
                   NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
+                      if (notification.metrics.axis != Axis.horizontal) {
+                        return false;
+                      }
                       if (notification is ScrollStartNotification) {
                         if (!_isProgrammaticScroll) {
                           _scrollEndTimer?.cancel();
@@ -320,28 +405,24 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                                   videoTimelineState: widget.videoTimelineState,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              _AudioTrack(
-                                totalWidth: timelineWidth,
-                                sourceWidth: sourceWidth,
-                                sourceOffset: sourceOffset,
-                                height: widget.audioTrackHeight,
-                                videoTimelineState: widget.videoTimelineState,
-                                onAddSound: widget.onAddSound,
-                                pixelsPerSecond: widget.pixelsPerSecond,
-                                onTimingChanged: widget.onAudioTimingChanged,
-                              ),
-                              if (widget.selectedLayer case final layer?) ...[
+                              if (_subtrackCount > 0) ...[
                                 const SizedBox(height: 8),
-                                LayerTimingTrack(
-                                  totalWidth: timelineWidth,
-                                  sourceWidth: sourceWidth,
-                                  sourceOffset: sourceOffset,
-                                  height: widget.audioTrackHeight,
-                                  videoDuration:
-                                      widget.videoTimelineState.videoDuration,
-                                  layer: layer,
-                                  onTimingChanged: widget.onLayerTimingChanged,
+                                SizedBox(
+                                  height: _subtrackViewportHeight,
+                                  child: SingleChildScrollView(
+                                    key: const ValueKey(
+                                      'timeline-subtrack-scroll',
+                                    ),
+                                    controller: _subtrackScrollController,
+                                    physics: const ClampingScrollPhysics(),
+                                    child: Column(
+                                      children: _buildSubtracks(
+                                        timelineWidth: timelineWidth,
+                                        sourceWidth: sourceWidth,
+                                        sourceOffset: sourceOffset,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ],
                             ],
@@ -350,16 +431,12 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                       ),
                     ),
                   ),
-                  if (_trimModeActive && _canTrim) ...[
-                    _buildTrimFrameLine(
-                      left: frameStartVp,
-                      width: frameWidth,
+                  if (_selectedTrackId == _primaryTrackId && _canTrim) ...[
+                    _buildTrimFrame(
+                      left: trimStartVp,
+                      width: timelineWidth,
                       top: widget.rulerHeight,
-                    ),
-                    _buildTrimFrameLine(
-                      left: frameStartVp,
-                      width: frameWidth,
-                      top: widget.rulerHeight + widget.thumbnailHeight - 2,
+                      height: widget.thumbnailHeight,
                     ),
                     _buildTrimHandle(
                       left: leftHandleLeft,
@@ -368,7 +445,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                       onDragUpdate: _onTrimStartDragUpdate,
                     ),
                     _buildTrimHandle(
-                      left: rightHandleLeft - _kCapWidth,
+                      left: rightHandleLeft,
                       isLeft: false,
                       onDragStart: _onTrimEndDragStart,
                       onDragUpdate: _onTrimEndDragUpdate,
@@ -402,61 +479,48 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       },
     );
   }
-}
 
-class _TrimHandlePainter extends CustomPainter {
-  const _TrimHandlePainter({required this.isLeft});
+  List<Widget> _buildSubtracks({
+    required double timelineWidth,
+    required double sourceWidth,
+    required double sourceOffset,
+  }) {
+    final subtracks = <Widget>[
+      if (widget.videoTimelineState.useCustomAudio)
+        _AudioSubtrack(
+          key: const ValueKey('timeline-subtrack-audio'),
+          totalWidth: timelineWidth,
+          sourceWidth: sourceWidth,
+          sourceOffset: sourceOffset,
+          height: widget.subtrackHeight,
+          videoTimelineState: widget.videoTimelineState,
+          pixelsPerSecond: widget.pixelsPerSecond,
+          onTimingChanged: widget.onAudioTimingChanged,
+          isSelected: _selectedTrackId == _audioTrackId,
+          onTap: _onAudioTrackTap,
+        ),
+      for (final layer in widget.layers)
+        LayerTimingTrack(
+          key: ValueKey('timeline-subtrack-layer-${layer.id}'),
+          totalWidth: timelineWidth,
+          sourceWidth: sourceWidth,
+          sourceOffset: sourceOffset,
+          height: widget.subtrackHeight,
+          videoDuration: widget.videoTimelineState.videoDuration,
+          layer: layer,
+          isSelected: layer.id == _selectedTrackId,
+          onTap: () => _onLayerTrackTap(layer),
+          onTimingChanged: widget.onLayerTimingChanged,
+        ),
+    ];
 
-  final bool isLeft;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final fillPaint = Paint()
-      ..color = AppColors.greyWhite
-      ..style = PaintingStyle.fill;
-
-    final barLeft = isLeft ? 0.0 : size.width - _kHandleWidth;
-    canvas.drawRRect(
-      RRect.fromRectAndCorners(
-        Rect.fromLTWH(barLeft, 0, _kHandleWidth, size.height),
-        topLeft: isLeft ? const Radius.circular(3) : Radius.zero,
-        bottomLeft: isLeft ? const Radius.circular(3) : Radius.zero,
-        topRight: isLeft ? Radius.zero : const Radius.circular(3),
-        bottomRight: isLeft ? Radius.zero : const Radius.circular(3),
-      ),
-      fillPaint,
-    );
-
-    final capLeft = isLeft ? _kHandleWidth : 0.0;
-    final capWidth = size.width - _kHandleWidth;
-    canvas.drawRect(
-      Rect.fromLTWH(capLeft, 0, capWidth, _kCapHeight),
-      fillPaint,
-    );
-    canvas.drawRect(
-      Rect.fromLTWH(capLeft, size.height - _kCapHeight, capWidth, _kCapHeight),
-      fillPaint,
-    );
-
-    final gripPaint = Paint()
-      ..color = AppColors.grey500
-      ..strokeWidth = 1.5
-      ..strokeCap = StrokeCap.round;
-    final gripX = barLeft + _kHandleWidth / 2;
-    canvas.drawLine(
-      Offset(gripX, size.height * 0.35),
-      Offset(gripX, size.height * 0.45),
-      gripPaint,
-    );
-    canvas.drawLine(
-      Offset(gripX, size.height * 0.55),
-      Offset(gripX, size.height * 0.65),
-      gripPaint,
-    );
+    return [
+      for (final (index, subtrack) in subtracks.indexed) ...[
+        if (index > 0) const SizedBox(height: _kSubtrackSpacing),
+        subtrack,
+      ],
+    ];
   }
-
-  @override
-  bool shouldRepaint(covariant _TrimHandlePainter old) => old.isLeft != isLeft;
 }
 
 class _TimeRuler extends StatelessWidget {
@@ -586,6 +650,7 @@ class _VideoThumbnailTrack extends StatelessWidget {
     final thumbnails = videoTimelineState.thumbnails;
 
     return Container(
+      key: const ValueKey('timeline-primary-track'),
       width: totalWidth,
       height: height,
       decoration: BoxDecoration(
@@ -642,16 +707,18 @@ class _VideoThumbnailTrack extends StatelessWidget {
   }
 }
 
-class _AudioTrack extends StatelessWidget {
-  const _AudioTrack({
+class _AudioSubtrack extends StatelessWidget {
+  const _AudioSubtrack({
     required this.totalWidth,
     required this.sourceWidth,
     required this.sourceOffset,
     required this.height,
     required this.videoTimelineState,
-    required this.onAddSound,
     required this.pixelsPerSecond,
     required this.onTimingChanged,
+    required this.isSelected,
+    required this.onTap,
+    super.key,
   });
 
   final double totalWidth;
@@ -659,16 +726,14 @@ class _AudioTrack extends StatelessWidget {
   final double sourceOffset;
   final double height;
   final VideoTimelineState videoTimelineState;
-  final VoidCallback onAddSound;
   final double pixelsPerSecond;
   final ValueChanged<AudioTrack> onTimingChanged;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    if (videoTimelineState.useCustomAudio) {
-      return _buildAudioWaveformTrack();
-    }
-    return _buildAddSoundTrack(context);
+    return _buildAudioWaveformTrack();
   }
 
   Widget _buildAudioWaveformTrack() {
@@ -692,6 +757,9 @@ class _AudioTrack extends StatelessWidget {
       startFraction: clampedStart <= clampedEnd ? clampedStart : clampedEnd,
       endFraction: clampedStart <= clampedEnd ? clampedEnd : clampedStart,
       color: AppColors.primary700,
+      isSelected: isSelected,
+      borderColor: isSelected ? AppColors.greyWhite : null,
+      onTap: onTap,
       minimumRangeFraction: videoDurationMs <= 0
           ? 0.01
           : (250 / videoDurationMs).clamp(0.001, 1.0).toDouble(),
@@ -706,63 +774,31 @@ class _AudioTrack extends StatelessWidget {
         final updatedTrack = videoTimelineState.customAudioTrack;
         if (updatedTrack != null) onTimingChanged(updatedTrack);
       },
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _AudioWaveformPainter(
-                waveformData: videoTimelineState.customWaveformData,
-                totalWidth: sourceWidth,
-                pixelsPerSecond: pixelsPerSecond,
+      foreground: TimelineSubtrackContent(
+        icon: Icons.music_note_rounded,
+        label: videoTimelineState.activeAudioName,
+        leading: videoTimelineState.authorAvatarUrl == null
+            ? null
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(9),
+                child: CachedNetworkImage(
+                  fadeInDuration: Duration.zero,
+                  fadeOutDuration: Duration.zero,
+                  imageUrl: videoTimelineState.authorAvatarUrl!,
+                  width: 18,
+                  height: 18,
+                  fit: BoxFit.cover,
+                  placeholder: (_, _) => _buildAvatarPlaceholder(),
+                  errorWidget: (_, _, _) => _buildAvatarPlaceholder(),
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              color: AppColors.primary700.withAlpha(220),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (videoTimelineState.authorAvatarUrl != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: CachedNetworkImage(
-                        fadeInDuration: Duration.zero,
-                        fadeOutDuration: Duration.zero,
-                        imageUrl: videoTimelineState.authorAvatarUrl!,
-                        width: 24,
-                        height: 24,
-                        fit: BoxFit.cover,
-                        placeholder: (_, _) => _buildAvatarPlaceholder(),
-                        errorWidget: (_, _, _) => _buildAvatarPlaceholder(),
-                      ),
-                    )
-                  else
-                    const Icon(
-                      Icons.music_note,
-                      color: AppColors.greyWhite,
-                      size: 18,
-                    ),
-                  const SizedBox(width: 8),
-                  Text(
-                    videoTimelineState.activeAudioName,
-                    style: const TextStyle(
-                      color: AppColors.greyWhite,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      ),
+      child: CustomPaint(
+        painter: _AudioWaveformPainter(
+          waveformData: videoTimelineState.customWaveformData,
+          totalWidth: sourceWidth,
+          pixelsPerSecond: pixelsPerSecond,
+        ),
       ),
     );
   }
@@ -776,60 +812,13 @@ class _AudioTrack extends StatelessWidget {
 
   Widget _buildAvatarPlaceholder() {
     return Container(
-      width: 24,
-      height: 24,
+      width: 18,
+      height: 18,
       decoration: BoxDecoration(
         color: AppColors.grey500,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(9),
       ),
-      child: const Icon(Icons.person, color: AppColors.grey300, size: 14),
-    );
-  }
-
-  Widget _buildAddSoundTrack(BuildContext context) {
-    return GestureDetector(
-      onTap: onAddSound,
-      child: Container(
-        width: totalWidth,
-        height: height,
-        decoration: BoxDecoration(
-          color: AppColors.grey700,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: AppColors.grey500),
-        ),
-        child: Stack(
-          children: [
-            // Centered add sound button (visible at the start)
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.music_note,
-                      color: AppColors.grey300,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      AppLocalizations.of(context).buttonAddSound,
-                      style: const TextStyle(
-                        color: AppColors.grey300,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: const Icon(Icons.person, color: AppColors.grey300, size: 12),
     );
   }
 }

@@ -13,14 +13,15 @@ class VideoTimeline extends StatelessWidget {
     required this.onRedo,
     required this.onTogglePlay,
     required this.onToggleMute,
-    required this.onAddSound,
     required this.onSeek,
     required this.onSeekStart,
     required this.onSeekEnd,
     required this.onToggleFullscreen,
-    required this.selectedLayer,
+    required this.layers,
+    required this.selectedLayerId,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
+    required this.onLayerSelected,
     required this.canUndo,
     required this.canRedo,
     this.onTrimChanged,
@@ -33,15 +34,16 @@ class VideoTimeline extends StatelessWidget {
   final VoidCallback onRedo;
   final VoidCallback onTogglePlay;
   final VoidCallback onToggleMute;
-  final VoidCallback onAddSound;
   final void Function(double progress) onSeek;
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
   final VoidCallback onToggleFullscreen;
-  final Layer? selectedLayer;
+  final List<Layer> layers;
+  final String? selectedLayerId;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
+  final ValueChanged<Layer> onLayerSelected;
   final bool canUndo;
   final bool canRedo;
   final void Function(double start, double end)? onTrimChanged;
@@ -71,15 +73,16 @@ class VideoTimeline extends StatelessWidget {
               _TracksSection(
                 videoTimelineState: videoTimelineState,
                 onToggleMute: onToggleMute,
-                onAddSound: onAddSound,
                 onSeek: onSeek,
                 onSeekStart: onSeekStart,
                 onSeekEnd: onSeekEnd,
                 onTrimChanged: onTrimChanged,
                 onTrimEnd: onTrimEnd,
-                selectedLayer: selectedLayer,
+                layers: layers,
+                selectedLayerId: selectedLayerId,
                 onAudioTimingChanged: onAudioTimingChanged,
                 onLayerTimingChanged: onLayerTimingChanged,
+                onLayerSelected: onLayerSelected,
                 isMuted: videoTimelineState.isMuted,
               ),
             ],
@@ -220,29 +223,31 @@ class _TracksSection extends StatelessWidget {
   const _TracksSection({
     required this.videoTimelineState,
     required this.onToggleMute,
-    required this.onAddSound,
     required this.onSeek,
     required this.onSeekStart,
     required this.onSeekEnd,
     required this.isMuted,
-    required this.selectedLayer,
+    required this.layers,
+    required this.selectedLayerId,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
+    required this.onLayerSelected,
     this.onTrimChanged,
     this.onTrimEnd,
   });
 
   final VideoTimelineState videoTimelineState;
   final VoidCallback onToggleMute;
-  final VoidCallback onAddSound;
   final void Function(double progress) onSeek;
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
   final bool isMuted;
-  final Layer? selectedLayer;
+  final List<Layer> layers;
+  final String? selectedLayerId;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
+  final ValueChanged<Layer> onLayerSelected;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
 
@@ -260,12 +265,13 @@ class _TracksSection extends StatelessWidget {
               onSeek: onSeek,
               onSeekStart: onSeekStart,
               onSeekEnd: onSeekEnd,
-              onAddSound: onAddSound,
               onTrimChanged: onTrimChanged,
               onTrimEnd: onTrimEnd,
-              selectedLayer: selectedLayer,
+              layers: layers,
+              selectedLayerId: selectedLayerId,
               onAudioTimingChanged: onAudioTimingChanged,
               onLayerTimingChanged: onLayerTimingChanged,
+              onLayerSelected: onLayerSelected,
               pixelsPerSecond: 50,
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_subtrack_content.dart';
 
 class LayerTimingTrack extends StatelessWidget {
   const LayerTimingTrack({
@@ -13,6 +14,8 @@ class LayerTimingTrack extends StatelessWidget {
     required this.videoDuration,
     required this.layer,
     required this.onTimingChanged,
+    required this.isSelected,
+    required this.onTap,
     super.key,
   });
 
@@ -24,6 +27,8 @@ class LayerTimingTrack extends StatelessWidget {
   final Layer layer;
   final void Function(Layer layer, Duration start, Duration end)
   onTimingChanged;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +41,7 @@ class LayerTimingTrack extends StatelessWidget {
         : (layer.endTime ?? videoDuration).inMilliseconds / durationMs;
     final clampedStart = start.clamp(0.0, 1.0).toDouble();
     final clampedEnd = end.clamp(0.0, 1.0).toDouble();
-    final (icon, label) = _labelFor(context);
+    final (icon, label, color) = _visualsFor(context);
 
     return TimedTrackRange(
       key: ValueKey(layer.id),
@@ -46,7 +51,10 @@ class LayerTimingTrack extends StatelessWidget {
       height: height,
       startFraction: clampedStart <= clampedEnd ? clampedStart : clampedEnd,
       endFraction: clampedStart <= clampedEnd ? clampedEnd : clampedStart,
-      color: AppColors.indigo600,
+      color: color,
+      isSelected: isSelected,
+      borderColor: isSelected ? AppColors.greyWhite : null,
+      onTap: onTap,
       minimumRangeFraction: durationMs <= 0
           ? 0.01
           : (250 / durationMs).clamp(0.001, 1.0).toDouble(),
@@ -58,27 +66,8 @@ class LayerTimingTrack extends StatelessWidget {
           _durationAtFraction(end),
         );
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: [
-            Icon(icon, size: 17, color: AppColors.greyWhite),
-            const SizedBox(width: 7),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.greyWhite,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      foreground: TimelineSubtrackContent(icon: icon, label: label),
+      child: const SizedBox.expand(),
     );
   }
 
@@ -88,13 +77,25 @@ class LayerTimingTrack extends StatelessWidget {
     );
   }
 
-  (IconData, String) _labelFor(BuildContext context) {
+  (IconData, String, Color) _visualsFor(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    if (layer.isTextLayer) return (Icons.text_fields_rounded, l10n.labelText);
-    if (layer.isPaintLayer) return (Icons.brush_rounded, l10n.labelPaint);
-    if (layer.isEmojiLayer) {
-      return (Icons.emoji_emotions_rounded, l10n.labelEmoji);
+    if (layer.isTextLayer) {
+      return (Icons.text_fields_rounded, l10n.labelText, AppColors.indigo600);
     }
-    return (Icons.sticky_note_2_rounded, l10n.labelStickers);
+    if (layer.isPaintLayer) {
+      return (Icons.brush_rounded, l10n.labelPaint, AppColors.blue600);
+    }
+    if (layer.isEmojiLayer) {
+      return (
+        Icons.emoji_emotions_rounded,
+        l10n.labelEmoji,
+        AppColors.rajah900,
+      );
+    }
+    return (
+      Icons.sticky_note_2_rounded,
+      l10n.labelStickers,
+      AppColors.turquoise900,
+    );
   }
 }

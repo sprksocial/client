@@ -48,12 +48,12 @@ class VideoEditorBottomSection extends StatelessWidget {
             onRedo: editor.redoAction,
             onTogglePlay: onTogglePlay,
             onToggleMute: onToggleMute,
-            onAddSound: onAddSound,
             onSeek: onSeek,
             onSeekStart: onSeekStart,
             onSeekEnd: onSeekEnd,
             onToggleFullscreen: onToggleFullscreen,
-            selectedLayer: editor.selectedLayer,
+            layers: editor.activeLayers.reversed.toList(growable: false),
+            selectedLayerId: editor.selectedLayer?.id,
             onAudioTimingChanged: onAudioTimingChanged,
             onLayerTimingChanged: (layer, start, end) {
               final index = editor.activeLayers.indexWhere(
@@ -66,6 +66,7 @@ class VideoEditorBottomSection extends StatelessWidget {
                 endTime: end,
               );
             },
+            onLayerSelected: (layer) => editor.selectLayerById(layer.id),
             onTrimChanged: onTrimChanged,
             onTrimEnd: onTrimEnd,
             canUndo: editor.canUndo,

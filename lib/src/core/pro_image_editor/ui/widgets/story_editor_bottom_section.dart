@@ -38,6 +38,8 @@ class StoryEditorBottomSection extends StatelessWidget {
                     height: 40,
                     videoDuration: duration,
                     layer: layer,
+                    isSelected: true,
+                    onTap: () => editor.selectLayerById(layer.id),
                     onTimingChanged: _updateLayerTiming,
                   ),
                 ),
