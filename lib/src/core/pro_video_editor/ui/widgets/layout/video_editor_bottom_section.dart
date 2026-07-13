@@ -67,6 +67,25 @@ class VideoEditorBottomSection extends StatelessWidget {
               );
             },
             onLayerSelected: (layer) => editor.selectLayerById(layer.id),
+            onLayerReordered: (layer, hierarchyIndex, start, end) {
+              final oldIndex = editor.activeLayers.indexWhere(
+                (candidate) => candidate.id == layer.id,
+              );
+              if (oldIndex < 0) return;
+              if (start != null && end != null) {
+                editor.setLayerTimeline(
+                  index: oldIndex,
+                  startTime: start,
+                  endTime: end,
+                  skipUpdateHistory: true,
+                );
+              }
+              final newIndex = editor.activeLayers.length - 1 - hierarchyIndex;
+              editor.moveLayerListPosition(
+                oldIndex: oldIndex,
+                newIndex: newIndex,
+              );
+            },
             onTrimChanged: onTrimChanged,
             onTrimEnd: onTrimEnd,
             canUndo: editor.canUndo,

@@ -22,6 +22,7 @@ class VideoTimeline extends StatelessWidget {
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
     required this.onLayerSelected,
+    required this.onLayerReordered,
     required this.canUndo,
     required this.canRedo,
     this.onTrimChanged,
@@ -44,6 +45,7 @@ class VideoTimeline extends StatelessWidget {
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
   final ValueChanged<Layer> onLayerSelected;
+  final LayerReorderedCallback onLayerReordered;
   final bool canUndo;
   final bool canRedo;
   final void Function(double start, double end)? onTrimChanged;
@@ -83,6 +85,7 @@ class VideoTimeline extends StatelessWidget {
                 onAudioTimingChanged: onAudioTimingChanged,
                 onLayerTimingChanged: onLayerTimingChanged,
                 onLayerSelected: onLayerSelected,
+                onLayerReordered: onLayerReordered,
                 isMuted: videoTimelineState.isMuted,
               ),
             ],
@@ -232,6 +235,7 @@ class _TracksSection extends StatelessWidget {
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
     required this.onLayerSelected,
+    required this.onLayerReordered,
     this.onTrimChanged,
     this.onTrimEnd,
   });
@@ -248,6 +252,7 @@ class _TracksSection extends StatelessWidget {
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
   final ValueChanged<Layer> onLayerSelected;
+  final LayerReorderedCallback onLayerReordered;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
 
@@ -272,6 +277,7 @@ class _TracksSection extends StatelessWidget {
               onAudioTimingChanged: onAudioTimingChanged,
               onLayerTimingChanged: onLayerTimingChanged,
               onLayerSelected: onLayerSelected,
+              onLayerReordered: onLayerReordered,
               pixelsPerSecond: 50,
             ),
           ),

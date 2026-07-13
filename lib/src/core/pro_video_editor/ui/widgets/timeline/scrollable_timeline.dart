@@ -18,6 +18,17 @@ const _kHandleHitWidth = 32.0;
 const _kMinTrimDuration = Duration(seconds: 1);
 const _kSubtrackSpacing = 6.0;
 const _kMaxVisibleSubtracks = 4;
+const _kReorderAutoScrollEdge = 28.0;
+const _kReorderAutoScrollMaxSpeed = 240.0;
+const _kReorderAutoScrollInterval = Duration(milliseconds: 16);
+
+typedef LayerReorderedCallback =
+    void Function(
+      Layer layer,
+      int hierarchyIndex,
+      Duration? start,
+      Duration? end,
+    );
 
 enum _TrimHandleSide { start, end }
 
@@ -30,6 +41,7 @@ class ScrollableTimeline extends StatefulWidget {
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
     required this.onLayerSelected,
+    required this.onLayerReordered,
     this.onSeekStart,
     this.onSeekEnd,
     this.onTrimChanged,
@@ -49,6 +61,7 @@ class ScrollableTimeline extends StatefulWidget {
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
   final ValueChanged<Layer> onLayerSelected;
+  final LayerReorderedCallback onLayerReordered;
   final VoidCallback? onSeekStart;
   final VoidCallback? onSeekEnd;
   final void Function(double start, double end)? onTrimChanged;
@@ -69,8 +82,16 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   bool _isProgrammaticScroll = false;
   bool _isDraggingHandle = false;
   String? _selectedTrackId;
+  String? _reorderingLayerId;
+  int? _reorderingStartIndex;
+  int? _reorderingTargetIndex;
+  List<Layer>? _reorderPreviewLayers;
+  double _reorderingStartScrollOffset = 0;
+  double _reorderingLastOffsetY = 0;
+  double _reorderAutoScrollSpeed = 0;
   _TrimHandleSide? _activeTrimHandle;
   Timer? _scrollEndTimer;
+  Timer? _reorderAutoScrollTimer;
 
   static const _primaryTrackId = 'primary';
   static const _audioTrackId = 'audio';
@@ -89,6 +110,8 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
 
   int get _subtrackCount =>
       widget.layers.length + (widget.videoTimelineState.useCustomAudio ? 1 : 0);
+
+  List<Layer> get _displayLayers => _reorderPreviewLayers ?? widget.layers;
 
   double get _subtrackContentHeight {
     if (_subtrackCount == 0) return 0;
@@ -151,6 +174,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     widget.videoTimelineState.removeListener(_onProgressChange);
     _scrollController.removeListener(_onScrollChange);
     _scrollEndTimer?.cancel();
+    _reorderAutoScrollTimer?.cancel();
     _scrollController.dispose();
     _subtrackScrollController.dispose();
     super.dispose();
@@ -217,6 +241,179 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       _selectedTrackId = _selectedTrackId == layer.id ? null : layer.id;
     });
     widget.onLayerSelected(layer);
+  }
+
+  void _onLayerRepositionStart(Layer layer) {
+    if (widget.layers.length < 2) return;
+    final index = widget.layers.indexWhere((item) => item.id == layer.id);
+    if (index < 0) return;
+    _reorderingLayerId = layer.id;
+    _reorderingStartIndex = index;
+    _reorderingTargetIndex = index;
+    _reorderPreviewLayers = List<Layer>.of(widget.layers);
+    _reorderingStartScrollOffset = _subtrackScrollController.hasClients
+        ? _subtrackScrollController.offset
+        : 0;
+    _reorderingLastOffsetY = 0;
+  }
+
+  void _onLayerVerticalReposition(Layer layer, double offsetY) {
+    if (_reorderingLayerId != layer.id) return;
+    _reorderingLastOffsetY = offsetY;
+    _updateLayerReorderTarget(layer);
+    _updateLayerAutoScroll(offsetY);
+  }
+
+  void _updateLayerReorderTarget(Layer layer) {
+    final startIndex = _reorderingStartIndex;
+    if (startIndex == null) return;
+    final rowExtent = widget.subtrackHeight + _kSubtrackSpacing;
+    final scrollOffset = _subtrackScrollController.hasClients
+        ? _subtrackScrollController.offset
+        : _reorderingStartScrollOffset;
+    final scrollDelta = scrollOffset - _reorderingStartScrollOffset;
+    final targetIndex =
+        (startIndex + (_reorderingLastOffsetY + scrollDelta) / rowExtent)
+            .round()
+            .clamp(0, widget.layers.length - 1);
+    if (targetIndex == _reorderingTargetIndex) return;
+    setState(() {
+      final previewLayers = _reorderPreviewLayers;
+      if (previewLayers == null) return;
+      final oldIndex = previewLayers.indexWhere((item) => item.id == layer.id);
+      if (oldIndex < 0) return;
+      final movedLayer = previewLayers.removeAt(oldIndex);
+      previewLayers.insert(targetIndex, movedLayer);
+      _reorderingTargetIndex = targetIndex;
+    });
+  }
+
+  void _updateLayerAutoScroll(double offsetY) {
+    if (!_subtrackScrollController.hasClients ||
+        _subtrackCount <= _kMaxVisibleSubtracks) {
+      _setReorderAutoScrollSpeed(0);
+      return;
+    }
+    final startIndex = _reorderingStartIndex;
+    if (startIndex == null) return;
+    final rowExtent = widget.subtrackHeight + _kSubtrackSpacing;
+    final audioRowCount = widget.videoTimelineState.useCustomAudio ? 1 : 0;
+    final startCenter =
+        (startIndex + audioRowCount) * rowExtent +
+        widget.subtrackHeight / 2 -
+        _reorderingStartScrollOffset;
+    final pointerY = startCenter + offsetY;
+    final viewportHeight = _subtrackViewportHeight;
+    double speed = 0;
+    if (pointerY < _kReorderAutoScrollEdge) {
+      final strength =
+          ((_kReorderAutoScrollEdge - pointerY) / _kReorderAutoScrollEdge)
+              .clamp(0.0, 1.0);
+      speed = -_kReorderAutoScrollMaxSpeed * strength;
+    } else if (pointerY > viewportHeight - _kReorderAutoScrollEdge) {
+      final strength =
+          ((pointerY - (viewportHeight - _kReorderAutoScrollEdge)) /
+                  _kReorderAutoScrollEdge)
+              .clamp(0.0, 1.0);
+      speed = _kReorderAutoScrollMaxSpeed * strength;
+    }
+    _setReorderAutoScrollSpeed(speed);
+  }
+
+  void _setReorderAutoScrollSpeed(double speed) {
+    _reorderAutoScrollSpeed = speed;
+    if (speed == 0) {
+      _reorderAutoScrollTimer?.cancel();
+      _reorderAutoScrollTimer = null;
+      return;
+    }
+    if (_reorderAutoScrollTimer != null) return;
+    _reorderAutoScrollTimer = Timer.periodic(
+      _kReorderAutoScrollInterval,
+      (_) => _tickLayerAutoScroll(),
+    );
+  }
+
+  void _tickLayerAutoScroll() {
+    if (!_subtrackScrollController.hasClients || _reorderingLayerId == null) {
+      _setReorderAutoScrollSpeed(0);
+      return;
+    }
+    final position = _subtrackScrollController.position;
+    final nextOffset =
+        (position.pixels +
+                _reorderAutoScrollSpeed *
+                    _kReorderAutoScrollInterval.inMicroseconds /
+                    Duration.microsecondsPerSecond)
+            .clamp(position.minScrollExtent, position.maxScrollExtent)
+            .toDouble();
+    if (nextOffset == position.pixels) {
+      _setReorderAutoScrollSpeed(0);
+      return;
+    }
+    _subtrackScrollController.jumpTo(nextOffset);
+    final layerIndex = widget.layers.indexWhere(
+      (item) => item.id == _reorderingLayerId,
+    );
+    if (layerIndex >= 0) {
+      _updateLayerReorderTarget(widget.layers[layerIndex]);
+    }
+  }
+
+  void _onLayerRepositionEnd(
+    Layer layer,
+    double start,
+    double end,
+    bool rangeChanged,
+  ) {
+    if (_reorderingLayerId != layer.id) return;
+    final startIndex = _reorderingStartIndex;
+    final targetIndex = _reorderingTargetIndex;
+    final reorderedLayer = _reorderPreviewLayers?.firstWhere(
+      (item) => item.id == layer.id,
+      orElse: () => layer,
+    );
+    _clearLayerReposition();
+    if (reorderedLayer != null &&
+        startIndex != null &&
+        targetIndex != null &&
+        startIndex != targetIndex) {
+      widget.onLayerReordered(
+        reorderedLayer,
+        targetIndex,
+        rangeChanged ? _durationAtFraction(start) : null,
+        rangeChanged ? _durationAtFraction(end) : null,
+      );
+    } else if (rangeChanged) {
+      widget.onLayerTimingChanged(
+        layer,
+        _durationAtFraction(start),
+        _durationAtFraction(end),
+      );
+    }
+  }
+
+  void _onLayerRepositionCancel(Layer layer) {
+    if (_reorderingLayerId != layer.id) return;
+    _clearLayerReposition();
+  }
+
+  void _clearLayerReposition() {
+    _setReorderAutoScrollSpeed(0);
+    setState(() {
+      _reorderPreviewLayers = null;
+      _reorderingLayerId = null;
+      _reorderingStartIndex = null;
+      _reorderingTargetIndex = null;
+    });
+  }
+
+  Duration _durationAtFraction(double fraction) {
+    return Duration(
+      milliseconds:
+          (widget.videoTimelineState.videoDuration.inMilliseconds * fraction)
+              .round(),
+    );
   }
 
   void _onTrimStartDragStart(DragStartDetails _) {
@@ -499,7 +696,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
           isSelected: _selectedTrackId == _audioTrackId,
           onTap: _onAudioTrackTap,
         ),
-      for (final layer in widget.layers)
+      for (final layer in _displayLayers)
         LayerTimingTrack(
           key: ValueKey('timeline-subtrack-layer-${layer.id}'),
           totalWidth: timelineWidth,
@@ -511,6 +708,19 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
           isSelected: layer.id == _selectedTrackId,
           onTap: () => _onLayerTrackTap(layer),
           onTimingChanged: widget.onLayerTimingChanged,
+          onRepositionStart: widget.layers.length < 2
+              ? null
+              : () => _onLayerRepositionStart(layer),
+          onVerticalRepositionChanged: widget.layers.length < 2
+              ? null
+              : (offsetY) => _onLayerVerticalReposition(layer, offsetY),
+          onRepositionEnd: widget.layers.length < 2
+              ? null
+              : (start, end, rangeChanged) =>
+                    _onLayerRepositionEnd(layer, start, end, rangeChanged),
+          onRepositionCancel: widget.layers.length < 2
+              ? null
+              : () => _onLayerRepositionCancel(layer),
         ),
     ];
 

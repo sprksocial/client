@@ -16,6 +16,10 @@ class LayerTimingTrack extends StatelessWidget {
     required this.onTimingChanged,
     required this.isSelected,
     required this.onTap,
+    this.onRepositionStart,
+    this.onVerticalRepositionChanged,
+    this.onRepositionEnd,
+    this.onRepositionCancel,
     super.key,
   });
 
@@ -29,6 +33,11 @@ class LayerTimingTrack extends StatelessWidget {
   onTimingChanged;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onRepositionStart;
+  final ValueChanged<double>? onVerticalRepositionChanged;
+  final void Function(double start, double end, bool rangeChanged)?
+  onRepositionEnd;
+  final VoidCallback? onRepositionCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +64,10 @@ class LayerTimingTrack extends StatelessWidget {
       isSelected: isSelected,
       borderColor: isSelected ? AppColors.greyWhite : null,
       onTap: onTap,
+      onRepositionStart: onRepositionStart,
+      onVerticalRepositionChanged: onVerticalRepositionChanged,
+      onRepositionEnd: onRepositionEnd,
+      onRepositionCancel: onRepositionCancel,
       minimumRangeFraction: durationMs <= 0
           ? 0.01
           : (250 / durationMs).clamp(0.001, 1.0).toDouble(),
