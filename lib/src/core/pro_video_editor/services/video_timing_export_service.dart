@@ -1,8 +1,39 @@
 import 'dart:ui';
 
-import 'package:flutter/painting.dart' show BoxFit, applyBoxFit;
+import 'package:flutter/painting.dart' show Alignment, BoxFit, applyBoxFit;
 import 'package:pro_image_editor/pro_image_editor.dart' as image_editor;
 import 'package:pro_video_editor/pro_video_editor.dart' as video_editor;
+
+Rect mapEditorCanvasCropToSource({
+  required Size sourceSize,
+  required Size canvasSize,
+  required Rect canvasCrop,
+}) {
+  if (sourceSize.isEmpty || canvasSize.isEmpty) {
+    return Offset.zero & sourceSize;
+  }
+  final fittedSizes = applyBoxFit(BoxFit.cover, sourceSize, canvasSize);
+  final sourceRect = Alignment.center.inscribe(
+    fittedSizes.source,
+    Offset.zero & sourceSize,
+  );
+  final canvasRect = Alignment.center.inscribe(
+    fittedSizes.destination,
+    Offset.zero & canvasSize,
+  );
+  if (sourceRect.isEmpty || canvasRect.isEmpty) {
+    return Offset.zero & sourceSize;
+  }
+
+  final scaleX = sourceRect.width / canvasRect.width;
+  final scaleY = sourceRect.height / canvasRect.height;
+  return Rect.fromLTRB(
+    sourceRect.left + (canvasCrop.left - canvasRect.left) * scaleX,
+    sourceRect.top + (canvasCrop.top - canvasRect.top) * scaleY,
+    sourceRect.left + (canvasCrop.right - canvasRect.left) * scaleX,
+    sourceRect.top + (canvasCrop.bottom - canvasRect.top) * scaleY,
+  ).intersect(Offset.zero & sourceSize);
+}
 
 /// Builds the individually timed visual layers consumed by the native video
 /// renderer.

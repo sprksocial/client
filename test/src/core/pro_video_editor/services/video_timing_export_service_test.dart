@@ -7,6 +7,26 @@ import 'package:pro_video_editor/pro_video_editor.dart' as video_editor;
 import 'package:spark/src/core/pro_video_editor/services/video_timing_export_service.dart';
 
 void main() {
+  test('maps the portrait camera canvas to its visible source crop', () {
+    final sourceCrop = mapEditorCanvasCropToSource(
+      sourceSize: const Size(1080, 1920),
+      canvasSize: const Size(400, 800),
+      canvasCrop: const Rect.fromLTWH(0, 0, 400, 800),
+    );
+
+    expect(sourceCrop, const Rect.fromLTWH(60, 0, 960, 1920));
+  });
+
+  test('maps a user crop through the portrait camera canvas', () {
+    final sourceCrop = mapEditorCanvasCropToSource(
+      sourceSize: const Size(1080, 1920),
+      canvasSize: const Size(400, 800),
+      canvasCrop: const Rect.fromLTWH(100, 200, 200, 400),
+    );
+
+    expect(sourceCrop, const Rect.fromLTWH(300, 480, 480, 960));
+  });
+
   test('maps captured layer placement, timing, and animations', () {
     final layer = image_editor.WidgetLayer(
       widget: const SizedBox(width: 20, height: 10),

@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
 import 'package:spark/src/core/pro_image_editor/story_mention_editing.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
@@ -18,6 +19,7 @@ import 'package:spark/src/core/pro_video_editor/services/video_timing_export_ser
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_reveal_layout.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_fullscreen_preview_page.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
@@ -47,7 +49,9 @@ class VideoEditorGroundedPage extends StatefulWidget {
 }
 
 class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
-    with StoryMentionEditing<VideoEditorGroundedPage> {
+    with
+        StoryMentionEditing<VideoEditorGroundedPage>,
+        SingleTickerProviderStateMixin {
   static const _storyCanvasSize = Size(1440, 2560);
   static const _uploadCompressionMinFileSizeBytes = 25 * 1024 * 1024;
   static const _uploadCompressionBitrate = 3000000;
@@ -65,6 +69,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   /// Video editor configuration settings.
   final VideoEditorConfigs _videoConfigs = const VideoEditorConfigs(
     enableTrimBar: false,
+    showControls: false,
     playTimeSmoothingDuration: Duration(milliseconds: 600),
     widgets: VideoEditorWidgets(headerToolbar: SizedBox.shrink()),
   );
@@ -120,6 +125,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
   late ProImageEditorConfigs _configs;
   late VideoTimelineState _videoTimelineState;
+  late final VideoEditorRevealController _editorRevealController;
 
   @override
   GlobalKey<ProImageEditorState> get storyEditorKey => _editorKey;
@@ -130,12 +136,19 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   @override
   void initState() {
     super.initState();
+    _editorRevealController = VideoEditorRevealController(
+      vsync: this,
+      initiallyRevealed: widget.storyMode,
+    );
+    _editorRevealController.addListener(_syncEditorViewport);
     _video = widget.video;
     _initializePlayer();
   }
 
   @override
   void dispose() {
+    _editorRevealController.removeListener(_syncEditorViewport);
+    _editorRevealController.dispose();
     _audioService.dispose();
     _videoController.dispose();
     _videoTimelineState.dispose();
@@ -223,10 +236,16 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       videoPlayerBuilder: () => VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
-        useCoverFit: widget.storyMode,
+        useCoverFit: _videoFit == BoxFit.cover,
+        borderRadius: recordingPagePreviewBorderRadius,
       ),
       videoEditorConfigs: _videoConfigs,
       videoTimelineState: _videoTimelineState,
+      editorRevealController: _editorRevealController,
+      previewAspectRatio: widget.storyMode
+          ? _storyCanvasSize.aspectRatio
+          : _regularEditorPreviewSize.aspectRatio,
+      onViewportGeometryChanged: _syncEditorViewport,
       onSeek: _onTimelineSeek,
       onSeekStart: _onTimelineSeekStart,
       onSeekEnd: _onTimelineSeekEnd,
@@ -266,11 +285,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       videoPlayer: VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
-        useCoverFit: widget.storyMode,
+        useCoverFit: _videoFit == BoxFit.cover,
+        borderRadius: recordingPagePreviewBorderRadius,
       ),
       initialResolution: widget.storyMode
           ? _storyCanvasSize
-          : _videoMetadata.resolution,
+          : _regularEditorPreviewSize,
       videoDuration: _videoMetadata.duration,
       fileSize: _videoMetadata.fileSize,
       thumbnails: _thumbnails,
@@ -287,6 +307,32 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
     setState(() {});
   }
+
+  Size _regularEditorCanvasSize() {
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final devicePixelRatio = view.devicePixelRatio;
+    final logicalSize = view.physicalSize / devicePixelRatio;
+    final verticalPadding =
+        (view.padding.top + view.padding.bottom) / devicePixelRatio;
+    return Size(
+      logicalSize.width,
+      math.max(
+        1,
+        logicalSize.height - verticalPadding - recordingPageFooterHeight,
+      ),
+    );
+  }
+
+  bool get _usesCameraCanvas =>
+      !widget.storyMode &&
+      _videoMetadata.resolution.height > _videoMetadata.resolution.width;
+
+  Size get _regularEditorPreviewSize => _usesCameraCanvas
+      ? _regularEditorCanvasSize()
+      : _videoMetadata.resolution;
+
+  BoxFit get _videoFit =>
+      widget.storyMode || _usesCameraCanvas ? BoxFit.cover : BoxFit.contain;
 
   /// Extracts waveform data from the video's audio track.
   Future<void> _extractVideoWaveform() async {
@@ -705,7 +751,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
         outputSize: _targetExportResolution(exportTransform),
         timelineOffset: exportStartTime,
         outputDuration: outputDuration,
-        videoFit: widget.storyMode ? BoxFit.cover : BoxFit.contain,
+        videoFit: _videoFit,
       ),
       blur: parameters.blur,
       colorFilters: parameters.colorFilters
@@ -798,6 +844,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
   ExportTransform? _buildExportTransform(CompleteParameters parameters) {
     if (!widget.storyMode) {
+      if (_usesCameraCanvas) {
+        return _buildCameraCanvasExportTransform(parameters);
+      }
       if (!parameters.isTransformed) {
         return null;
       }
@@ -827,6 +876,46 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       flipY: parameters.flipY,
       scaleX: targetWidth / coverCrop.width,
       scaleY: targetHeight / coverCrop.height,
+    );
+  }
+
+  ExportTransform _buildCameraCanvasExportTransform(
+    CompleteParameters parameters,
+  ) {
+    final canvasSize = _regularEditorPreviewSize;
+    final canvasCrop = Rect.fromLTWH(
+      (parameters.cropX ?? 0).toDouble(),
+      (parameters.cropY ?? 0).toDouble(),
+      (parameters.cropWidth ?? canvasSize.width.round()).toDouble(),
+      (parameters.cropHeight ?? canvasSize.height.round()).toDouble(),
+    );
+    final sourceSize = _videoMetadata.resolution;
+    final sourceCrop = mapEditorCanvasCropToSource(
+      sourceSize: sourceSize,
+      canvasSize: canvasSize,
+      canvasCrop: canvasCrop,
+    );
+    final sourceWidth = math.max(1, sourceSize.width.round());
+    final sourceHeight = math.max(1, sourceSize.height.round());
+    final cropX = sourceCrop.left.round().clamp(0, sourceWidth - 1).toInt();
+    final cropY = sourceCrop.top.round().clamp(0, sourceHeight - 1).toInt();
+    final cropRight = sourceCrop.right
+        .round()
+        .clamp(cropX + 1, sourceWidth)
+        .toInt();
+    final cropBottom = sourceCrop.bottom
+        .round()
+        .clamp(cropY + 1, sourceHeight)
+        .toInt();
+
+    return ExportTransform(
+      width: cropRight - cropX,
+      height: cropBottom - cropY,
+      rotateTurns: parameters.rotateTurns,
+      x: cropX,
+      y: cropY,
+      flipX: parameters.flipX,
+      flipY: parameters.flipY,
     );
   }
 
@@ -925,6 +1014,16 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     return 'video/mp4';
   }
 
+  void _syncEditorViewport() {
+    if (widget.storyMode) return;
+    final viewport = _editorRevealController.viewport;
+    if (viewport == null) return;
+    _editorKey.currentState?.zoomTo(
+      offset: viewport.offset,
+      scale: viewport.scale,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
@@ -944,6 +1043,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
           callbacks: ProImageEditorCallbacks(
             onCompleteWithParameters: generateVideo,
             onCloseEditor: onCloseEditor,
+            mainEditorCallbacks: MainEditorCallbacks(
+              onAfterViewInit: _syncEditorViewport,
+            ),
             videoEditorCallbacks: VideoEditorCallbacks(
               onPause: () {
                 _shouldResetOnPlaybackComplete = false;

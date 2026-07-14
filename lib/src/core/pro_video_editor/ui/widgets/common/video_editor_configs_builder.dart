@@ -18,6 +18,7 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rota
 import 'package:spark/src/core/pro_video_editor/ui/widgets/filter/filter_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_bottom_section.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_header.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_reveal_layout.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/paint/paint_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_color_picker.dart';
@@ -60,6 +61,9 @@ class VideoEditorConfigsBuilder {
     required bool useMaterialDesign,
     required Widget Function() videoPlayerBuilder,
     required VideoTimelineState videoTimelineState,
+    required VideoEditorRevealController editorRevealController,
+    required double previewAspectRatio,
+    required VoidCallback onViewportGeometryChanged,
     required void Function(double progress) onSeek,
     required VoidCallback onSeekStart,
     required VoidCallback onSeekEnd,
@@ -100,20 +104,30 @@ class VideoEditorConfigsBuilder {
         initialSelected: true,
       ),
       mainEditor: MainEditorConfigs(
+        enableZoom: !storyMode,
+        enableDoubleTapZoom: false,
+        editorMinScale: 0.1,
         tools: tools,
         captureLayersOnDone: true,
         widgets: MainEditorWidgets(
           removeLayerArea:
-              (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
-                  VideoEditorRemoveArea(
-                    removeAreaKey: removeAreaKey,
-                    editor: editor,
-                    rebuildStream: rebuildStream,
-                    isLayerBeingTransformed: isLayerBeingTransformed,
-                  ),
+              (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) {
+                final removeArea = VideoEditorRemoveArea(
+                  removeAreaKey: removeAreaKey,
+                  editor: editor,
+                  rebuildStream: rebuildStream,
+                  isLayerBeingTransformed: isLayerBeingTransformed,
+                );
+                return storyMode
+                    ? removeArea
+                    : VideoEditorRevealRemoveArea(
+                        controller: editorRevealController,
+                        child: removeArea,
+                      );
+              },
           appBar: (editor, rebuildStream) => null,
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
-            key: key,
+            key: storyMode ? key : null,
             builder: (_) {
               if (storyMode) {
                 return StoryEditorBottomSection(
@@ -123,26 +137,52 @@ class VideoEditorConfigsBuilder {
                 );
               }
 
-              return VideoEditorBottomSection(
-                editor: editor,
-                videoTimelineState: videoTimelineState,
-                onSeek: onSeek,
-                onSeekStart: onSeekStart,
-                onSeekEnd: onSeekEnd,
-                onTogglePlay: onTogglePlay,
-                onToggleMute: onToggleMute,
-                onAddSound: onAddSound,
-                onAudioTimingChanged: onAudioTimingChanged,
-                onToggleFullscreen: onToggleFullscreen,
-                onTrimChanged: onTrimChanged,
-                onTrimEnd: onTrimEnd,
+              return VideoEditorRevealBottomBar(
+                key: key,
+                controller: editorRevealController,
+                visible: !editor.isSubEditorOpen,
+                child: VideoEditorBottomSection(
+                  editor: editor,
+                  videoTimelineState: videoTimelineState,
+                  onSeek: onSeek,
+                  onSeekStart: onSeekStart,
+                  onSeekEnd: onSeekEnd,
+                  onTogglePlay: onTogglePlay,
+                  onToggleMute: onToggleMute,
+                  onAddSound: onAddSound,
+                  onAudioTimingChanged: onAudioTimingChanged,
+                  onToggleFullscreen: onToggleFullscreen,
+                  onTrimChanged: onTrimChanged,
+                  onTrimEnd: onTrimEnd,
+                ),
               );
             },
             stream: rebuildStream,
           ),
           wrapBody: (editor, rebuildStream, content) {
             if (!storyMode) {
-              return content;
+              return VideoEditorRevealBody(
+                controller: editorRevealController,
+                previewAspectRatio: previewAspectRatio,
+                onViewportGeometryChanged: onViewportGeometryChanged,
+                isPositionOnLayer: (position) => _isPositionOnEditorLayer(
+                  editor,
+                  position,
+                  videoTimelineState.sourcePosition,
+                ),
+                overlay: VideoEditorHeader(
+                  onBack: editor.closeEditor,
+                  onNext: editor.doneEditing,
+                ),
+                previewOverlay: ReactiveWidget(
+                  stream: rebuildStream,
+                  builder: (_) => _VideoPlaybackIndicator(
+                    timelineState: videoTimelineState,
+                    visible: !editor.hasSelectedLayers,
+                  ),
+                ),
+                child: content,
+              );
             }
 
             return ClipRRect(
@@ -155,17 +195,17 @@ class VideoEditorConfigsBuilder {
               ),
             );
           },
-          bodyItems: (editor, rebuildStream) => [
-            ReactiveWidget(
-              stream: rebuildStream,
-              builder: (_) => Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SafeArea(
-                  bottom: false,
-                  child: storyMode
-                      ? StoryEditorHeader(
+          bodyItems: storyMode
+              ? (editor, rebuildStream) => [
+                  ReactiveWidget(
+                    stream: rebuildStream,
+                    builder: (_) => Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: SafeArea(
+                        bottom: false,
+                        child: StoryEditorHeader(
                           onBack: editor.closeEditor,
                           onDone: onDone != null
                               ? () => onDone(editor)
@@ -174,15 +214,12 @@ class VideoEditorConfigsBuilder {
                           canRedo: editor.canRedo,
                           onUndo: editor.undoAction,
                           onRedo: editor.redoAction,
-                        )
-                      : VideoEditorHeader(
-                          onBack: editor.closeEditor,
-                          onNext: editor.doneEditing,
                         ),
-                ),
-              ),
-            ),
-          ],
+                      ),
+                    ),
+                  ),
+                ]
+              : null,
         ),
         style: const MainEditorStyle(
           background: AppColors.greyBlack,
@@ -445,4 +482,81 @@ class VideoEditorConfigsBuilder {
       videoEditor: videoEditorConfigs,
     );
   }
+}
+
+class _VideoPlaybackIndicator extends StatelessWidget {
+  const _VideoPlaybackIndicator({
+    required this.timelineState,
+    required this.visible,
+  });
+
+  final VideoTimelineState timelineState;
+  final bool visible;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: timelineState,
+        builder: (_, _) {
+          if (!visible || timelineState.isPlaying) {
+            return const SizedBox.shrink();
+          }
+          return Center(
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: const ShapeDecoration(
+                shape: CircleBorder(),
+                color: Color.fromARGB(128, 0, 0, 0),
+              ),
+              child: const Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 44,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+bool _isPositionOnEditorLayer(
+  ProImageEditorState editor,
+  Offset globalPosition,
+  Duration videoPosition,
+) {
+  final interactionStyle = editor.configs.layerInteraction.style;
+  final hitPadding =
+      interactionStyle.overlayPadding.horizontal / 2 +
+      interactionStyle.buttonRadius +
+      interactionStyle.strokeWidth;
+  for (final layer in editor.activeLayers.reversed) {
+    if (!isVideoEditorLayerVisibleAt(layer, videoPosition)) continue;
+    final renderObject = layer.repaintBoundaryKey.currentContext
+        ?.findRenderObject();
+    if (renderObject is! RenderBox ||
+        !renderObject.attached ||
+        !renderObject.hasSize) {
+      continue;
+    }
+
+    final transform = renderObject.getTransformTo(null);
+    final bounds = MatrixUtils.transformRect(
+      transform,
+      Offset.zero & renderObject.size,
+    ).inflate(hitPadding);
+    if (bounds.contains(globalPosition)) return true;
+  }
+  return false;
+}
+
+@visibleForTesting
+bool isVideoEditorLayerVisibleAt(Layer layer, Duration videoPosition) {
+  final startTime = layer.startTime;
+  final endTime = layer.endTime;
+  return (startTime == null || videoPosition >= startTime) &&
+      (endTime == null || videoPosition <= endTime);
 }

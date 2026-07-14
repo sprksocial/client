@@ -11,12 +11,14 @@ class VideoPlayerWidget extends StatelessWidget {
     required this.controller,
     required this.isLoadingListenable,
     this.useCoverFit = false,
+    this.borderRadius = BorderRadius.zero,
     super.key,
   });
 
   final VideoPlayerController controller;
   final ValueListenable<bool?> isLoadingListenable;
   final bool useCoverFit;
+  final BorderRadius borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -27,38 +29,40 @@ class VideoPlayerWidget extends StatelessWidget {
         final width = size.width > 0 ? size.width : 1280.0;
         final height = size.height > 0 ? size.height : 720.0;
 
-        return Center(
-          child: isLoading ?? false
-              ? const CircularProgressIndicator.adaptive()
-              : useCoverFit
-              ? LayoutBuilder(
-                  builder: (context, constraints) {
-                    if (!constraints.hasBoundedWidth ||
-                        !constraints.hasBoundedHeight) {
-                      return AspectRatio(
-                        aspectRatio: width / height,
-                        child: VideoPlayer(controller),
-                      );
-                    }
-
-                    return SizedBox(
-                      width: constraints.maxWidth,
-                      height: constraints.maxHeight,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: width,
-                          height: height,
-                          child: VideoPlayer(controller),
-                        ),
-                      ),
+        final content = isLoading ?? false
+            ? const CircularProgressIndicator.adaptive()
+            : useCoverFit
+            ? LayoutBuilder(
+                builder: (context, constraints) {
+                  if (!constraints.hasBoundedWidth ||
+                      !constraints.hasBoundedHeight) {
+                    return AspectRatio(
+                      aspectRatio: width / height,
+                      child: VideoPlayer(controller),
                     );
-                  },
-                )
-              : AspectRatio(
-                  aspectRatio: width / height,
-                  child: VideoPlayer(controller),
-                ),
+                  }
+
+                  return SizedBox(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: width,
+                        height: height,
+                        child: VideoPlayer(controller),
+                      ),
+                    ),
+                  );
+                },
+              )
+            : AspectRatio(
+                aspectRatio: width / height,
+                child: VideoPlayer(controller),
+              );
+
+        return Center(
+          child: ClipRRect(borderRadius: borderRadius, child: content),
         );
       },
     );
