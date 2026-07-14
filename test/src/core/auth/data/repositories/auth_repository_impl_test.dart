@@ -722,7 +722,7 @@ void main() {
               );
               expect(
                 registrationBody['scope'] as String,
-                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.repo.uploadBlob?aud=* rpc:com.atproto.moderation.createReport?aud=*',
               );
               return http.Response(
                 json.encode({
@@ -770,7 +770,7 @@ void main() {
         expect(authUri.queryParameters['state'], isNotEmpty);
         expect(
           authUri.queryParameters['scope'],
-          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.repo.uploadBlob?aud=* rpc:com.atproto.moderation.createReport?aud=*',
         );
 
         final callbackUrl = Uri.parse(_redirectUri)
@@ -901,7 +901,7 @@ void main() {
                   json.decode(request.body) as Map<String, dynamic>;
               expect(
                 registrationBody['scope'] as String,
-                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+                'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.repo.uploadBlob?aud=* rpc:com.atproto.moderation.createReport?aud=*',
               );
               return http.Response(
                 json.encode({
@@ -928,7 +928,7 @@ void main() {
         expect(registrationCalls, 1);
         expect(
           authUri.queryParameters['scope'],
-          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.repo.uploadBlob?aud=* rpc:com.atproto.moderation.createReport?aud=*',
         );
 
         final savedSnapshot = AuthSnapshot.fromJsonString(
@@ -937,7 +937,7 @@ void main() {
         expect(savedSnapshot.aipClientRegistration?.clientId, 'client-2');
         expect(
           savedSnapshot.aipClientRegistration?.scope,
-          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.moderation.createReport?aud=*',
+          'atproto include:so.sprk.authFullApp?aud=did:web:api.sprk.so#sprk_appview include:chat.sprk.authFull?aud=did:web:api.sprk.chat#sprk_chat include:app.bsky.authViewAll?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authCreatePosts?aud=did:web:api.bsky.app#bsky_appview include:app.bsky.authDeleteContent?aud=did:web:api.bsky.app#bsky_appview blob:*/* repo:app.bsky.feed.like repo:app.bsky.feed.repost repo:app.bsky.graph.follow rpc:com.atproto.repo.uploadBlob?aud=* rpc:com.atproto.moderation.createReport?aud=*',
         );
       },
     );

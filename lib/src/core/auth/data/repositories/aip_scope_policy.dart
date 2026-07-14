@@ -24,6 +24,7 @@ class AipScopePolicy {
       'repo:app.bsky.feed.like',
       'repo:app.bsky.feed.repost',
       'repo:app.bsky.graph.follow',
+      'rpc:com.atproto.repo.uploadBlob?aud=*',
       'rpc:com.atproto.moderation.createReport?aud=*',
     ]);
   }
