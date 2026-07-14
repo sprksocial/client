@@ -136,6 +136,49 @@ void main() {
     expect(tester.getSize(preview).height, closeTo(732, 0.001));
   });
 
+  testWidgets('only blank fullscreen taps toggle preview playback', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harnessKey = GlobalKey<_RevealHarnessState>();
+    await tester.pumpWidget(
+      _RevealHarness(
+        key: harnessKey,
+        isPositionOnLayer: (position) => position.dx < 100,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tapAt(const Offset(200, 400));
+    expect(harnessKey.currentState!.previewTapCount, 1);
+
+    await tester.tapAt(const Offset(50, 400));
+    expect(harnessKey.currentState!.previewTapCount, 1);
+
+    harnessKey.currentState!.hasSelectedLayer = true;
+    await tester.tapAt(const Offset(200, 400));
+    expect(harnessKey.currentState!.previewTapCount, 1);
+
+    harnessKey.currentState!
+      ..hasSelectedLayer = false
+      ..controller.value = 1;
+    await tester.pump();
+    await tester.tapAt(const Offset(200, 300));
+    expect(harnessKey.currentState!.previewTapCount, 1);
+
+    harnessKey.currentState!.controller.value = 0;
+    await tester.pump();
+    final swipe = await tester.startGesture(const Offset(200, 500));
+    await swipe.moveBy(const Offset(0, -120));
+    await swipe.up();
+    await tester.pumpAndSettle();
+    expect(harnessKey.currentState!.previewTapCount, 1);
+  });
+
   testWidgets('wide preview recenters before it needs to shrink', (
     tester,
   ) async {
@@ -211,10 +254,7 @@ void main() {
     await tester.pumpWidget(_RevealHarness(key: harnessKey));
     await tester.pumpAndSettle();
 
-    final first = await tester.startGesture(
-      const Offset(150, 400),
-      pointer: 1,
-    );
+    final first = await tester.startGesture(const Offset(150, 400), pointer: 1);
     final second = await tester.startGesture(
       const Offset(250, 400),
       pointer: 2,
@@ -281,6 +321,8 @@ class _RevealHarnessState extends State<_RevealHarness>
     with SingleTickerProviderStateMixin {
   late final VideoEditorRevealController controller;
   int parentScaleUpdateCount = 0;
+  int previewTapCount = 0;
+  bool hasSelectedLayer = false;
 
   @override
   void initState() {
@@ -306,6 +348,8 @@ class _RevealHarnessState extends State<_RevealHarness>
             controller: controller,
             previewAspectRatio: widget.previewAspectRatio,
             onViewportGeometryChanged: () {},
+            hasSelectedLayer: () => hasSelectedLayer,
+            onPreviewTap: () => previewTapCount++,
             isPositionOnLayer: widget.isPositionOnLayer,
             overlay: const SizedBox(
               key: ValueKey('reveal-header'),

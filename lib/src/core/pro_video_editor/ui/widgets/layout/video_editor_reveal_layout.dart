@@ -36,6 +36,8 @@ class VideoEditorRevealController extends AnimationController {
 
   double get panelHeight => _panelHeight;
 
+  bool get isFullscreen => value == lowerBound;
+
   VideoEditorViewport? get viewport {
     final sourceSize = _viewportSize;
     final aspectRatio = _previewAspectRatio;
@@ -134,6 +136,8 @@ class VideoEditorRevealBody extends StatefulWidget {
     required this.child,
     required this.overlay,
     required this.onViewportGeometryChanged,
+    required this.hasSelectedLayer,
+    required this.onPreviewTap,
     this.previewOverlay,
     this.isPositionOnLayer,
     super.key,
@@ -145,6 +149,8 @@ class VideoEditorRevealBody extends StatefulWidget {
   final Widget overlay;
   final Widget? previewOverlay;
   final VoidCallback onViewportGeometryChanged;
+  final bool Function() hasSelectedLayer;
+  final VoidCallback onPreviewTap;
   final bool Function(Offset globalPosition)? isPositionOnLayer;
 
   @override
@@ -152,6 +158,62 @@ class VideoEditorRevealBody extends StatefulWidget {
 }
 
 class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
+  int? _previewTapPointer;
+  Offset? _previewTapOrigin;
+  Duration? _previewTapStart;
+  bool _previewTapMoved = false;
+  bool _previewTapStartedOnLayer = false;
+  bool _previewTapStartedWithSelection = false;
+
+  void _onPreviewPointerDown(PointerDownEvent event) {
+    if (_previewTapPointer != null || !widget.controller.isFullscreen) {
+      _clearPreviewTap();
+      return;
+    }
+
+    _previewTapPointer = event.pointer;
+    _previewTapOrigin = event.position;
+    _previewTapStart = event.timeStamp;
+    _previewTapStartedOnLayer =
+        widget.isPositionOnLayer?.call(event.position) ?? false;
+    _previewTapStartedWithSelection = widget.hasSelectedLayer();
+  }
+
+  void _onPreviewPointerMove(PointerMoveEvent event) {
+    if (event.pointer != _previewTapPointer) return;
+    final origin = _previewTapOrigin;
+    if (origin != null && (event.position - origin).distance >= kTouchSlop) {
+      _previewTapMoved = true;
+    }
+  }
+
+  void _onPreviewPointerUp(PointerUpEvent event) {
+    if (event.pointer != _previewTapPointer) return;
+    final start = _previewTapStart;
+    final shouldTogglePlayback =
+        widget.controller.isFullscreen &&
+        !_previewTapMoved &&
+        !_previewTapStartedOnLayer &&
+        !_previewTapStartedWithSelection &&
+        start != null &&
+        event.timeStamp - start <= kLongPressTimeout;
+    _clearPreviewTap();
+    if (shouldTogglePlayback) widget.onPreviewTap();
+  }
+
+  void _onPreviewPointerCancel(PointerCancelEvent event) {
+    if (event.pointer == _previewTapPointer) _clearPreviewTap();
+  }
+
+  void _clearPreviewTap() {
+    _previewTapPointer = null;
+    _previewTapOrigin = null;
+    _previewTapStart = null;
+    _previewTapMoved = false;
+    _previewTapStartedOnLayer = false;
+    _previewTapStartedWithSelection = false;
+  }
+
   void _onVerticalDragStart(DragStartDetails details) {
     widget.controller.beginDrag();
   }
@@ -221,7 +283,14 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
                   children: [
                     ClipRRect(
                       clipper: _PreviewFrameClipper(targetRect),
-                      child: child,
+                      child: Listener(
+                        behavior: HitTestBehavior.translucent,
+                        onPointerDown: _onPreviewPointerDown,
+                        onPointerMove: _onPreviewPointerMove,
+                        onPointerUp: _onPreviewPointerUp,
+                        onPointerCancel: _onPreviewPointerCancel,
+                        child: child,
+                      ),
                     ),
                     Positioned.fromRect(
                       rect: targetRect,

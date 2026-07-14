@@ -40,7 +40,7 @@ class ScrollableTimeline extends StatefulWidget {
     required this.selectedLayerId,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
-    required this.onLayerSelected,
+    required this.onLayerSelectionChanged,
     required this.onLayerReordered,
     this.onSeekStart,
     this.onSeekEnd,
@@ -60,7 +60,7 @@ class ScrollableTimeline extends StatefulWidget {
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
-  final ValueChanged<Layer> onLayerSelected;
+  final ValueChanged<Layer?> onLayerSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final VoidCallback? onSeekStart;
   final VoidCallback? onSeekEnd;
@@ -221,26 +221,27 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
 
   void _onThumbnailTap() {
     if (!_canTrim) return;
+    final isSelecting = _selectedTrackId != _primaryTrackId;
     setState(() {
-      _selectedTrackId = _selectedTrackId == _primaryTrackId
-          ? null
-          : _primaryTrackId;
+      _selectedTrackId = isSelecting ? _primaryTrackId : null;
     });
+    if (isSelecting) widget.onLayerSelectionChanged(null);
   }
 
   void _onAudioTrackTap() {
+    final isSelecting = _selectedTrackId != _audioTrackId;
     setState(() {
-      _selectedTrackId = _selectedTrackId == _audioTrackId
-          ? null
-          : _audioTrackId;
+      _selectedTrackId = isSelecting ? _audioTrackId : null;
     });
+    if (isSelecting) widget.onLayerSelectionChanged(null);
   }
 
   void _onLayerTrackTap(Layer layer) {
+    final isDeselecting = _selectedTrackId == layer.id;
     setState(() {
-      _selectedTrackId = _selectedTrackId == layer.id ? null : layer.id;
+      _selectedTrackId = isDeselecting ? null : layer.id;
     });
-    widget.onLayerSelected(layer);
+    widget.onLayerSelectionChanged(isDeselecting ? null : layer);
   }
 
   void _onLayerRepositionStart(Layer layer) {

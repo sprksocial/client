@@ -61,6 +61,7 @@ class VideoEditorConfigsBuilder {
     required bool useMaterialDesign,
     required Widget Function() videoPlayerBuilder,
     required VideoTimelineState videoTimelineState,
+    required ValueListenable<String?> selectedLayerIdListenable,
     required VideoEditorRevealController editorRevealController,
     required double previewAspectRatio,
     required VoidCallback onViewportGeometryChanged,
@@ -71,7 +72,6 @@ class VideoEditorConfigsBuilder {
     required VoidCallback onToggleMute,
     required VoidCallback onAddSound,
     required ValueChanged<AudioTrack> onAudioTimingChanged,
-    required VoidCallback onToggleFullscreen,
     void Function(double start, double end)? onTrimChanged,
     void Function(double start, double end, bool isStartHandle)? onTrimEnd,
     Future<void> Function()? onMention,
@@ -144,6 +144,7 @@ class VideoEditorConfigsBuilder {
                 child: VideoEditorBottomSection(
                   editor: editor,
                   videoTimelineState: videoTimelineState,
+                  selectedLayerIdListenable: selectedLayerIdListenable,
                   onSeek: onSeek,
                   onSeekStart: onSeekStart,
                   onSeekEnd: onSeekEnd,
@@ -151,7 +152,6 @@ class VideoEditorConfigsBuilder {
                   onToggleMute: onToggleMute,
                   onAddSound: onAddSound,
                   onAudioTimingChanged: onAudioTimingChanged,
-                  onToggleFullscreen: onToggleFullscreen,
                   onTrimChanged: onTrimChanged,
                   onTrimEnd: onTrimEnd,
                 ),
@@ -165,6 +165,8 @@ class VideoEditorConfigsBuilder {
                 controller: editorRevealController,
                 previewAspectRatio: previewAspectRatio,
                 onViewportGeometryChanged: onViewportGeometryChanged,
+                hasSelectedLayer: () => editor.hasSelectedLayers,
+                onPreviewTap: onTogglePlay,
                 isPositionOnLayer: (position) => _isPositionOnEditorLayer(
                   editor,
                   position,
@@ -174,12 +176,10 @@ class VideoEditorConfigsBuilder {
                   onBack: editor.closeEditor,
                   onNext: editor.doneEditing,
                 ),
-                previewOverlay: ReactiveWidget(
-                  stream: rebuildStream,
-                  builder: (_) => _VideoPlaybackIndicator(
-                    timelineState: videoTimelineState,
-                    visible: !editor.hasSelectedLayers,
-                  ),
+                previewOverlay: _VideoPlaybackIndicator(
+                  timelineState: videoTimelineState,
+                  revealController: editorRevealController,
+                  selectedLayerIdListenable: selectedLayerIdListenable,
                 ),
                 child: content,
               );
@@ -487,19 +487,27 @@ class VideoEditorConfigsBuilder {
 class _VideoPlaybackIndicator extends StatelessWidget {
   const _VideoPlaybackIndicator({
     required this.timelineState,
-    required this.visible,
+    required this.revealController,
+    required this.selectedLayerIdListenable,
   });
 
   final VideoTimelineState timelineState;
-  final bool visible;
+  final VideoEditorRevealController revealController;
+  final ValueListenable<String?> selectedLayerIdListenable;
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: AnimatedBuilder(
-        animation: timelineState,
+        animation: Listenable.merge([
+          timelineState,
+          revealController,
+          selectedLayerIdListenable,
+        ]),
         builder: (_, _) {
-          if (!visible || timelineState.isPlaying) {
+          if (selectedLayerIdListenable.value != null ||
+              !revealController.isFullscreen ||
+              timelineState.isPlaying) {
             return const SizedBox.shrink();
           }
           return Center(

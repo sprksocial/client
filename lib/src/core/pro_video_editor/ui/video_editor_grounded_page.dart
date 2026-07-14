@@ -20,7 +20,6 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_selection
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_reveal_layout.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_fullscreen_preview_page.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 import 'package:video_player/video_player.dart' hide VideoAudioTrack;
@@ -120,6 +119,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   final _taskId = DateTime.now().microsecondsSinceEpoch.toString();
 
   final _updateClipsNotifier = ValueNotifier(false);
+  final _selectedLayerIdNotifier = ValueNotifier<String?>(null);
   final _proVideoEditor = ProVideoEditor.instance;
   final _waveformExtractor = AudioWaveformExtractor.instance;
 
@@ -152,6 +152,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _audioService.dispose();
     _videoController.dispose();
     _videoTimelineState.dispose();
+    _selectedLayerIdNotifier.dispose();
     super.dispose();
   }
 
@@ -239,8 +240,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
         useCoverFit: _videoFit == BoxFit.cover,
         borderRadius: recordingPagePreviewBorderRadius,
       ),
-      videoEditorConfigs: _videoConfigs,
+      videoEditorConfigs: widget.storyMode
+          ? _videoConfigs
+          : _videoConfigs.copyWith(enablePlayButton: true),
       videoTimelineState: _videoTimelineState,
+      selectedLayerIdListenable: _selectedLayerIdNotifier,
       editorRevealController: _editorRevealController,
       previewAspectRatio: widget.storyMode
           ? _storyCanvasSize.aspectRatio
@@ -253,7 +257,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       onToggleMute: _onToggleMute,
       onAddSound: _showAudioSelectionBottomSheet,
       onAudioTimingChanged: _onAudioTimingChanged,
-      onToggleFullscreen: _openFullscreenPreview,
       onTrimChanged: _onTrimChanged,
       onTrimEnd: _onTrimEnd,
       onMention: widget.storyMode ? addStoryMention : null,
@@ -597,42 +600,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   void _setTrimSpan(TrimDurationSpan span) {
     _durationSpan = span;
     _proVideoController?.setTrimSpan(span);
-  }
-
-  Future<void> _openFullscreenPreview() async {
-    if (!mounted) return;
-    if (_proVideoController == null) return;
-
-    await Navigator.of(context).push<void>(
-      PageRouteBuilder(
-        barrierColor: Colors.black,
-        transitionDuration: const Duration(milliseconds: 260),
-        reverseTransitionDuration: const Duration(milliseconds: 220),
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return VideoFullscreenPreviewPage(
-            controller: _videoController,
-            videoTimelineState: _videoTimelineState,
-            onTogglePlay: _onTogglePlay,
-            onSeek: _onTimelineSeek,
-          );
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curve = CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-            reverseCurve: Curves.easeInCubic,
-          );
-
-          return FadeTransition(
-            opacity: curve,
-            child: ScaleTransition(
-              scale: Tween<double>(begin: 0.98, end: 1).animate(curve),
-              child: child,
-            ),
-          );
-        },
-      ),
-    );
   }
 
   /// Shows audio selection bottom sheet for choosing & editing audio tracks.
@@ -1045,6 +1012,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
             onCloseEditor: onCloseEditor,
             mainEditorCallbacks: MainEditorCallbacks(
               onAfterViewInit: _syncEditorViewport,
+              onSelectedLayerChanged: (layerId) {
+                _selectedLayerIdNotifier.value = layerId.isEmpty
+                    ? null
+                    : layerId;
+              },
             ),
             videoEditorCallbacks: VideoEditorCallbacks(
               onPause: () {

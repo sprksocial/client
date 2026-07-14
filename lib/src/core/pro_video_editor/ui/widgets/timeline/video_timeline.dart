@@ -16,12 +16,11 @@ class VideoTimeline extends StatelessWidget {
     required this.onSeek,
     required this.onSeekStart,
     required this.onSeekEnd,
-    required this.onToggleFullscreen,
     required this.layers,
     required this.selectedLayerId,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
-    required this.onLayerSelected,
+    required this.onLayerSelectionChanged,
     required this.onLayerReordered,
     required this.canUndo,
     required this.canRedo,
@@ -38,13 +37,12 @@ class VideoTimeline extends StatelessWidget {
   final void Function(double progress) onSeek;
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
-  final VoidCallback onToggleFullscreen;
   final List<Layer> layers;
   final String? selectedLayerId;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
-  final ValueChanged<Layer> onLayerSelected;
+  final ValueChanged<Layer?> onLayerSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final bool canUndo;
   final bool canRedo;
@@ -66,7 +64,6 @@ class VideoTimeline extends StatelessWidget {
                 onUndo: onUndo,
                 onRedo: onRedo,
                 onTogglePlay: onTogglePlay,
-                onToggleFullscreen: onToggleFullscreen,
                 canUndo: canUndo,
                 canRedo: canRedo,
                 isPlaying: videoTimelineState.isPlaying,
@@ -84,7 +81,7 @@ class VideoTimeline extends StatelessWidget {
                 selectedLayerId: selectedLayerId,
                 onAudioTimingChanged: onAudioTimingChanged,
                 onLayerTimingChanged: onLayerTimingChanged,
-                onLayerSelected: onLayerSelected,
+                onLayerSelectionChanged: onLayerSelectionChanged,
                 onLayerReordered: onLayerReordered,
                 isMuted: videoTimelineState.isMuted,
               ),
@@ -102,7 +99,6 @@ class _TransportControls extends StatelessWidget {
     required this.onUndo,
     required this.onRedo,
     required this.onTogglePlay,
-    required this.onToggleFullscreen,
     required this.canUndo,
     required this.canRedo,
     required this.isPlaying,
@@ -112,7 +108,6 @@ class _TransportControls extends StatelessWidget {
   final VoidCallback onUndo;
   final VoidCallback onRedo;
   final VoidCallback onTogglePlay;
-  final VoidCallback onToggleFullscreen;
   final bool canUndo;
   final bool canRedo;
   final bool isPlaying;
@@ -169,7 +164,7 @@ class _TransportControls extends StatelessWidget {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
           ),
-          // Right section - undo/redo/fullscreen (takes equal space)
+          // Right section - undo/redo (takes equal space)
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -200,19 +195,6 @@ class _TransportControls extends StatelessWidget {
                     minHeight: 36,
                   ),
                 ),
-                IconButton(
-                  onPressed: onToggleFullscreen,
-                  icon: const Icon(
-                    Icons.fullscreen,
-                    color: AppColors.greyWhite,
-                    size: 22,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
-                ),
               ],
             ),
           ),
@@ -234,7 +216,7 @@ class _TracksSection extends StatelessWidget {
     required this.selectedLayerId,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
-    required this.onLayerSelected,
+    required this.onLayerSelectionChanged,
     required this.onLayerReordered,
     this.onTrimChanged,
     this.onTrimEnd,
@@ -251,7 +233,7 @@ class _TracksSection extends StatelessWidget {
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
-  final ValueChanged<Layer> onLayerSelected;
+  final ValueChanged<Layer?> onLayerSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
@@ -276,7 +258,7 @@ class _TracksSection extends StatelessWidget {
               selectedLayerId: selectedLayerId,
               onAudioTimingChanged: onAudioTimingChanged,
               onLayerTimingChanged: onLayerTimingChanged,
-              onLayerSelected: onLayerSelected,
+              onLayerSelectionChanged: onLayerSelectionChanged,
               onLayerReordered: onLayerReordered,
               pixelsPerSecond: 50,
             ),

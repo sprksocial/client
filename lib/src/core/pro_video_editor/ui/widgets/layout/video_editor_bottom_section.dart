@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
@@ -9,11 +10,11 @@ class VideoEditorBottomSection extends StatelessWidget {
   const VideoEditorBottomSection({
     required this.editor,
     required this.videoTimelineState,
+    required this.selectedLayerIdListenable,
     required this.onSeek,
     required this.onTogglePlay,
     required this.onToggleMute,
     required this.onAddSound,
-    required this.onToggleFullscreen,
     required this.onAudioTimingChanged,
     required this.onSeekStart,
     required this.onSeekEnd,
@@ -24,11 +25,11 @@ class VideoEditorBottomSection extends StatelessWidget {
 
   final ProImageEditorState editor;
   final VideoTimelineState videoTimelineState;
+  final ValueListenable<String?> selectedLayerIdListenable;
   final void Function(double progress) onSeek;
   final VoidCallback onTogglePlay;
   final VoidCallback onToggleMute;
   final VoidCallback onAddSound;
-  final VoidCallback onToggleFullscreen;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
@@ -42,54 +43,63 @@ class VideoEditorBottomSection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          VideoTimeline(
-            videoTimelineState: videoTimelineState,
-            onUndo: editor.undoAction,
-            onRedo: editor.redoAction,
-            onTogglePlay: onTogglePlay,
-            onToggleMute: onToggleMute,
-            onSeek: onSeek,
-            onSeekStart: onSeekStart,
-            onSeekEnd: onSeekEnd,
-            onToggleFullscreen: onToggleFullscreen,
-            layers: editor.activeLayers.reversed.toList(growable: false),
-            selectedLayerId: editor.selectedLayer?.id,
-            onAudioTimingChanged: onAudioTimingChanged,
-            onLayerTimingChanged: (layer, start, end) {
-              final index = editor.activeLayers.indexWhere(
-                (candidate) => candidate.id == layer.id,
-              );
-              if (index < 0) return;
-              editor.setLayerTimeline(
-                index: index,
-                startTime: start,
-                endTime: end,
-              );
-            },
-            onLayerSelected: (layer) => editor.selectLayerById(layer.id),
-            onLayerReordered: (layer, hierarchyIndex, start, end) {
-              final oldIndex = editor.activeLayers.indexWhere(
-                (candidate) => candidate.id == layer.id,
-              );
-              if (oldIndex < 0) return;
-              if (start != null && end != null) {
+          ValueListenableBuilder<String?>(
+            valueListenable: selectedLayerIdListenable,
+            builder: (context, selectedLayerId, _) => VideoTimeline(
+              videoTimelineState: videoTimelineState,
+              onUndo: editor.undoAction,
+              onRedo: editor.redoAction,
+              onTogglePlay: onTogglePlay,
+              onToggleMute: onToggleMute,
+              onSeek: onSeek,
+              onSeekStart: onSeekStart,
+              onSeekEnd: onSeekEnd,
+              layers: editor.activeLayers.reversed.toList(growable: false),
+              selectedLayerId: selectedLayerId,
+              onAudioTimingChanged: onAudioTimingChanged,
+              onLayerTimingChanged: (layer, start, end) {
+                final index = editor.activeLayers.indexWhere(
+                  (candidate) => candidate.id == layer.id,
+                );
+                if (index < 0) return;
                 editor.setLayerTimeline(
-                  index: oldIndex,
+                  index: index,
                   startTime: start,
                   endTime: end,
-                  skipUpdateHistory: true,
                 );
-              }
-              final newIndex = editor.activeLayers.length - 1 - hierarchyIndex;
-              editor.moveLayerListPosition(
-                oldIndex: oldIndex,
-                newIndex: newIndex,
-              );
-            },
-            onTrimChanged: onTrimChanged,
-            onTrimEnd: onTrimEnd,
-            canUndo: editor.canUndo,
-            canRedo: editor.canRedo,
+              },
+              onLayerSelectionChanged: (layer) {
+                if (layer == null) {
+                  editor.unselectAllLayers();
+                } else {
+                  editor.selectLayerById(layer.id);
+                }
+              },
+              onLayerReordered: (layer, hierarchyIndex, start, end) {
+                final oldIndex = editor.activeLayers.indexWhere(
+                  (candidate) => candidate.id == layer.id,
+                );
+                if (oldIndex < 0) return;
+                if (start != null && end != null) {
+                  editor.setLayerTimeline(
+                    index: oldIndex,
+                    startTime: start,
+                    endTime: end,
+                    skipUpdateHistory: true,
+                  );
+                }
+                final newIndex =
+                    editor.activeLayers.length - 1 - hierarchyIndex;
+                editor.moveLayerListPosition(
+                  oldIndex: oldIndex,
+                  newIndex: newIndex,
+                );
+              },
+              onTrimChanged: onTrimChanged,
+              onTrimEnd: onTrimEnd,
+              canUndo: editor.canUndo,
+              canRedo: editor.canRedo,
+            ),
           ),
           VideoToolbar(
             onSound: onAddSound,

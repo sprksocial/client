@@ -38,7 +38,7 @@ void main() {
       _TimelineTestApp(
         state: state,
         layers: [topText, secondText, sticker],
-        onLayerSelected: (layer) => selectedLayer = layer,
+        onLayerSelectionChanged: (layer) => selectedLayer = layer,
         onLayerTimingChanged: (layer, start, _) {
           if (layer.id == sticker.id) stickerStart = start;
         },
@@ -167,7 +167,7 @@ void main() {
       _TimelineTestApp(
         state: VideoTimelineState(videoDuration: const Duration(seconds: 18)),
         layers: [layer],
-        onLayerSelected: (_) {},
+        onLayerSelectionChanged: (_) {},
       ),
     );
     await tester.pump();
@@ -195,7 +195,7 @@ void main() {
           state: state,
           layers: [layer],
           selectedLayerId: layer.id,
-          onLayerSelected: (_) {},
+          onLayerSelectionChanged: (_) {},
           onLayerTimingChanged: (_, start, end) {
             updatedStart = start;
             updatedEnd = end;
@@ -512,7 +512,7 @@ void main() {
           return _TimelineTestApp(
             state: state,
             layers: layers,
-            onLayerSelected: (_) {},
+            onLayerSelectionChanged: (_) {},
             onLayerTimingChanged: (_, _, _) => timingChangeCount++,
             onLayerReordered: (layer, hierarchyIndex, _, _) {
               reorderCount++;
@@ -649,7 +649,7 @@ void main() {
       _TimelineTestApp(
         state: state,
         layers: layers,
-        onLayerSelected: (_) {},
+        onLayerSelectionChanged: (_) {},
         onLayerReordered: (_, hierarchyIndex, _, _) {
           targetIndex = hierarchyIndex;
         },
@@ -706,7 +706,7 @@ void main() {
       _TimelineTestApp(
         state: state,
         layers: layers,
-        onLayerSelected: (_) {},
+        onLayerSelectionChanged: (_) {},
         onLayerTimingChanged: (_, _, _) => timingCommitCount++,
         onLayerReordered: (_, _, start, end) {
           reorderCommitCount++;
@@ -849,7 +849,7 @@ void main() {
       _TimelineTestApp(
         state: VideoTimelineState(videoDuration: const Duration(seconds: 18)),
         layers: layers,
-        onLayerSelected: (_) {},
+        onLayerSelectionChanged: (_) {},
         onSeek: (_) => seekCount++,
         onSeekStart: () => seekStartCount++,
         onSeekEnd: () => seekEndCount++,
@@ -888,7 +888,7 @@ void main() {
         state: state,
         layers: [layer],
         selectedLayerId: layer.id,
-        onLayerSelected: (_) {},
+        onLayerSelectionChanged: (_) {},
       ),
     );
     await tester.pump();
@@ -909,7 +909,7 @@ void main() {
         state: state,
         layers: [layer],
         selectedLayerId: null,
-        onLayerSelected: (_) {},
+        onLayerSelectionChanged: (_) {},
       ),
     );
     await tester.pump();
@@ -921,6 +921,87 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('tapping a selected layer subtrack deselects the editor layer', (
+    tester,
+  ) async {
+    final layer = TextLayer(id: 'text', text: 'Text');
+    final state = VideoTimelineState(
+      videoDuration: const Duration(seconds: 18),
+    );
+    Layer? selectedLayer = layer;
+
+    await tester.pumpWidget(
+      _TimelineTestApp(
+        state: state,
+        layers: [layer],
+        selectedLayerId: layer.id,
+        onLayerSelectionChanged: (value) => selectedLayer = value,
+      ),
+    );
+    await tester.pump();
+
+    final layerTrack = find.byKey(
+      const ValueKey('timeline-subtrack-layer-text'),
+    );
+    await tester.tapAt(Offset(250, tester.getCenter(layerTrack).dy));
+    await tester.pump();
+
+    expect(selectedLayer, isNull);
+    expect(
+      find.descendant(
+        of: layerTrack,
+        matching: find.byType(TimelineSelectionHandle),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('primary and audio tracks clear the selected editor layer', (
+    tester,
+  ) async {
+    final layer = TextLayer(id: 'text', text: 'Text');
+    final state = VideoTimelineState(videoDuration: const Duration(seconds: 18))
+      ..setCustomAudio(
+        AudioTrack(
+          id: 'audio',
+          title: 'Sound',
+          subtitle: 'Artist',
+          duration: const Duration(seconds: 9),
+          audio: EditorAudio(networkUrl: 'https://example.com/audio.mp3'),
+        ),
+        const [],
+      );
+    final selectionChanges = <Layer?>[];
+
+    await tester.pumpWidget(
+      _TimelineTestApp(
+        state: state,
+        layers: [layer],
+        selectedLayerId: layer.id,
+        onLayerSelectionChanged: selectionChanges.add,
+      ),
+    );
+    await tester.pump();
+
+    final primaryTrack = find.byKey(const ValueKey('timeline-primary-track'));
+    final audioTrack = find.byKey(const ValueKey('timeline-subtrack-audio'));
+    final layerTrack = find.byKey(
+      const ValueKey('timeline-subtrack-layer-text'),
+    );
+
+    await tester.tapAt(Offset(250, tester.getCenter(primaryTrack).dy));
+    await tester.pump();
+    expect(selectionChanges, [isNull]);
+
+    await tester.tapAt(Offset(250, tester.getCenter(layerTrack).dy));
+    await tester.pump();
+    expect(selectionChanges.last, same(layer));
+
+    await tester.tapAt(Offset(250, tester.getCenter(audioTrack).dy));
+    await tester.pump();
+    expect(selectionChanges, [isNull, same(layer), isNull]);
   });
 }
 
@@ -944,7 +1025,7 @@ class _TimelineTestApp extends StatelessWidget {
   const _TimelineTestApp({
     required this.state,
     required this.layers,
-    required this.onLayerSelected,
+    required this.onLayerSelectionChanged,
     this.selectedLayerId,
     this.onLayerTimingChanged,
     this.onLayerReordered,
@@ -955,7 +1036,7 @@ class _TimelineTestApp extends StatelessWidget {
 
   final VideoTimelineState state;
   final List<Layer> layers;
-  final ValueChanged<Layer> onLayerSelected;
+  final ValueChanged<Layer?> onLayerSelectionChanged;
   final String? selectedLayerId;
   final void Function(Layer layer, Duration start, Duration end)?
   onLayerTimingChanged;
@@ -981,7 +1062,7 @@ class _TimelineTestApp extends StatelessWidget {
             selectedLayerId: selectedLayerId,
             onAudioTimingChanged: (_) {},
             onLayerTimingChanged: onLayerTimingChanged ?? (_, _, _) {},
-            onLayerSelected: onLayerSelected,
+            onLayerSelectionChanged: onLayerSelectionChanged,
             onLayerReordered: onLayerReordered ?? (_, _, _, _) {},
             onTrimChanged: (_, _) {},
           ),
