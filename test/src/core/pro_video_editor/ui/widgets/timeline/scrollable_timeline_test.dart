@@ -875,6 +875,40 @@ void main() {
     expect(seekEndCount, 0);
   });
 
+  testWidgets('user scrubbing interrupts programmatic timeline scrolling', (
+    tester,
+  ) async {
+    final state = VideoTimelineState(
+      videoDuration: const Duration(seconds: 18),
+    );
+    addTearDown(state.dispose);
+    var seekCount = 0;
+    var seekStartCount = 0;
+
+    await tester.pumpWidget(
+      _TimelineTestApp(
+        state: state,
+        layers: const [],
+        onLayerSelectionChanged: (_) {},
+        onSeek: (_) => seekCount++,
+        onSeekStart: () => seekStartCount++,
+      ),
+    );
+    await tester.pump();
+
+    state.setProgress(0.5);
+    await tester.pump();
+
+    final timelineScroll = find.byType(SingleChildScrollView);
+    final gesture = await tester.startGesture(tester.getCenter(timelineScroll));
+    await gesture.moveBy(const Offset(-80, 0));
+    await tester.pump();
+    await gesture.up();
+
+    expect(seekStartCount, 1);
+    expect(seekCount, greaterThan(0));
+  });
+
   testWidgets('subtrack scroll indicators reflect the available direction', (
     tester,
   ) async {

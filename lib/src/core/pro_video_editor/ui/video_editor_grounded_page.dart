@@ -686,9 +686,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     unawaited(_videoController.pause());
     unawaited(_audioService.pause());
 
-    _selectedSoundRef = decodeSoundTrackStrongRef(
-      parameters.audioTracks.isEmpty ? null : parameters.audioTracks.first.id,
-    );
     final sourceVideoPath = await _video.safeFilePath();
     final shouldCompressForUpload = await _shouldCompressForUpload(
       sourceVideoPath,
@@ -707,6 +704,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
     double originalVolume = 1;
     final renderedAudioTracks = <VideoAudioTrack>[];
+    RepoStrongRef? renderedSoundRef;
     if (!_videoTimelineState.isCustomAudioMuted) {
       for (final (index, track) in parameters.audioTracks.indexed) {
         var overlayVolume = 1.0;
@@ -728,9 +726,13 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
           timelineOffset: exportStartTime,
           outputDuration: outputDuration,
         );
+        if (renderedTracks.isNotEmpty) {
+          renderedSoundRef ??= decodeSoundTrackStrongRef(track.id);
+        }
         renderedAudioTracks.addAll(renderedTracks);
       }
     }
+    _selectedSoundRef = renderedSoundRef;
 
     final exportModel = VideoRenderData(
       id: _taskId,
@@ -819,18 +821,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   }
 
   Size _targetExportResolution(ExportTransform? transform) {
-    if (transform == null) {
-      return _videoMetadata.resolution;
-    }
-
-    final width = (transform.width ?? _videoMetadata.resolution.width)
-        .toDouble();
-    final height = (transform.height ?? _videoMetadata.resolution.height)
-        .toDouble();
-
-    return Size(
-      width * (transform.scaleX ?? 1),
-      height * (transform.scaleY ?? 1),
+    return resolveExportOutputSize(
+      sourceSize: _videoMetadata.resolution,
+      transform: transform,
     );
   }
 

@@ -593,12 +593,14 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                           return false;
                         }
                         if (notification is ScrollStartNotification) {
-                          if (!_isProgrammaticScroll) {
+                          if (notification.dragDetails != null) {
+                            _isProgrammaticScroll = false;
                             _scrollEndTimer?.cancel();
                             _isUserScrolling = true;
                             widget.onSeekStart?.call();
                           }
                         } else if (notification is ScrollEndNotification) {
+                          if (!_isUserScrolling) return false;
                           _scrollEndTimer?.cancel();
                           _scrollEndTimer = Timer(
                             const Duration(milliseconds: 300),

@@ -4,6 +4,26 @@ import 'package:flutter/painting.dart' show Alignment, BoxFit, applyBoxFit;
 import 'package:pro_image_editor/pro_image_editor.dart' as image_editor;
 import 'package:pro_video_editor/pro_video_editor.dart' as video_editor;
 
+Size resolveExportOutputSize({
+  required Size sourceSize,
+  video_editor.ExportTransform? transform,
+}) {
+  if (transform == null) return sourceSize;
+
+  var width = (transform.width ?? sourceSize.width).toDouble();
+  var height = (transform.height ?? sourceSize.height).toDouble();
+  if ((transform.rotateTurns % 4).isOdd) {
+    final previousWidth = width;
+    width = height;
+    height = previousWidth;
+  }
+
+  return Size(
+    width * (transform.scaleX ?? 1),
+    height * (transform.scaleY ?? 1),
+  );
+}
+
 Rect mapEditorCanvasCropToSource({
   required Size sourceSize,
   required Size canvasSize,

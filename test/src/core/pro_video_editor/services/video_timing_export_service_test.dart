@@ -7,6 +7,30 @@ import 'package:pro_video_editor/pro_video_editor.dart' as video_editor;
 import 'package:spark/src/core/pro_video_editor/services/video_timing_export_service.dart';
 
 void main() {
+  test('swaps the export canvas for quarter-turn rotations', () {
+    final outputSize = resolveExportOutputSize(
+      sourceSize: const Size(1920, 1080),
+      transform: const video_editor.ExportTransform(
+        width: 1600,
+        height: 900,
+        rotateTurns: 1,
+        scaleX: 0.5,
+        scaleY: 0.25,
+      ),
+    );
+
+    expect(outputSize, const Size(450, 400));
+  });
+
+  test('keeps the export canvas orientation for half-turn rotations', () {
+    final outputSize = resolveExportOutputSize(
+      sourceSize: const Size(1920, 1080),
+      transform: const video_editor.ExportTransform(rotateTurns: 2),
+    );
+
+    expect(outputSize, const Size(1920, 1080));
+  });
+
   test('maps the portrait camera canvas to its visible source crop', () {
     final sourceCrop = mapEditorCanvasCropToSource(
       sourceSize: const Size(1080, 1920),
@@ -327,6 +351,28 @@ void main() {
     expect(result, hasLength(1));
     expect(result.single.audioStartTime, const Duration(seconds: 5));
     expect(result.single.startTime, isNull);
+  });
+
+  test('drops an audio track outside the exported range', () {
+    final track = image_editor.AudioTrack(
+      id: 'track',
+      title: 'Track',
+      subtitle: 'Artist',
+      duration: const Duration(seconds: 5),
+      audio: image_editor.EditorAudio(networkUrl: 'https://example.com/a.mp3'),
+      startTime: Duration.zero,
+      endTime: const Duration(seconds: 5),
+    );
+
+    final result = buildTimedAudioTracks(
+      track: track,
+      path: '/tmp/a.mp3',
+      balanceVolume: 1,
+      timelineOffset: const Duration(seconds: 5),
+      outputDuration: const Duration(seconds: 5),
+    );
+
+    expect(result, isEmpty);
   });
 }
 
