@@ -68,7 +68,12 @@ class AudioPlaybackTiming {
 AudioMixVolumes resolveAudioMixVolumes({
   required double trackVolume,
   required double volumeBalance,
+  bool isMuted = false,
 }) {
+  if (isMuted) {
+    return const AudioMixVolumes(overlayVolume: 0, originalVolume: 0);
+  }
+
   var overlayVolume = trackVolume;
   var originalVolume = 1.0;
   if (volumeBalance < 0) {
@@ -135,6 +140,7 @@ class AudioHelperService {
   /// Stores the last applied audio balance between video and overlay.
   double _lastVolumeBalance = 0;
   double _trackVolume = 1;
+  bool _isMuted = false;
 
   /// Initializes the audio player with platform-specific audio context
   /// settings.
@@ -393,6 +399,7 @@ class AudioHelperService {
     final volumes = resolveAudioMixVolumes(
       trackVolume: _trackVolume,
       volumeBalance: volumeBalance,
+      isMuted: _isMuted,
     );
     await Future.wait([
       setVolume(volumes.overlayVolume),
@@ -403,11 +410,13 @@ class AudioHelperService {
 
   /// Mutes all audio (both original and custom).
   Future<void> muteAll() async {
+    _isMuted = true;
     await Future.wait([setVolume(0), videoController.setVolume(0)]);
   }
 
   /// Restores audio based on current balance.
   Future<void> unmute() async {
+    _isMuted = false;
     await balanceAudio();
   }
 

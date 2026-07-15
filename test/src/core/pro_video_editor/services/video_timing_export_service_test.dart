@@ -59,6 +59,7 @@ void main() {
       outputSize: const Size(1000, 500),
       timelineOffset: const Duration(seconds: 1),
       outputDuration: const Duration(seconds: 8),
+      sourceDuration: const Duration(seconds: 10),
     );
 
     expect(result, hasLength(1));
@@ -91,6 +92,7 @@ void main() {
         outputSize: const Size(1000, 500),
         timelineOffset: Duration.zero,
         outputDuration: const Duration(seconds: 10),
+        sourceDuration: const Duration(seconds: 10),
       );
 
       expect(result, hasLength(1));
@@ -120,6 +122,7 @@ void main() {
       outputSize: const Size(1000, 500),
       timelineOffset: Duration.zero,
       outputDuration: const Duration(seconds: 10),
+      sourceDuration: const Duration(seconds: 10),
     );
 
     expect(result.single.size, const Size.square(100));
@@ -160,9 +163,79 @@ void main() {
       outputSize: const Size(1000, 500),
       timelineOffset: const Duration(seconds: 2),
       outputDuration: const Duration(seconds: 5),
+      sourceDuration: const Duration(seconds: 10),
     );
 
     expect(result.single.animations, isEmpty);
+  });
+
+  test('drops an open-ended exit animation when trim cuts the video', () {
+    final layer = image_editor.WidgetLayer(
+      widget: const SizedBox.square(dimension: 20),
+      animations: const [
+        image_editor.LayerAnimation(
+          type: image_editor.LayerAnimationType.fade,
+          phase: image_editor.AnimationPhase.animateOut,
+          duration: Duration(milliseconds: 400),
+        ),
+      ],
+    );
+    final parameters = _parameters(
+      layers: [layer],
+      capturedLayers: [
+        image_editor.ExportedLayer(
+          layer: layer,
+          bytes: Uint8List.fromList([1]),
+          logicalSize: const Size.square(20),
+        ),
+      ],
+    );
+
+    final result = buildTimedImageLayers(
+      parameters: parameters,
+      outputSize: const Size(1000, 500),
+      timelineOffset: Duration.zero,
+      outputDuration: const Duration(seconds: 5),
+      sourceDuration: const Duration(seconds: 10),
+    );
+
+    expect(result.single.animations, isEmpty);
+  });
+
+  test('keeps an open-ended exit animation at the natural video end', () {
+    final layer = image_editor.WidgetLayer(
+      widget: const SizedBox.square(dimension: 20),
+      animations: const [
+        image_editor.LayerAnimation(
+          type: image_editor.LayerAnimationType.fade,
+          phase: image_editor.AnimationPhase.animateOut,
+          duration: Duration(milliseconds: 400),
+        ),
+      ],
+    );
+    final parameters = _parameters(
+      layers: [layer],
+      capturedLayers: [
+        image_editor.ExportedLayer(
+          layer: layer,
+          bytes: Uint8List.fromList([1]),
+          logicalSize: const Size.square(20),
+        ),
+      ],
+    );
+
+    final result = buildTimedImageLayers(
+      parameters: parameters,
+      outputSize: const Size(1000, 500),
+      timelineOffset: Duration.zero,
+      outputDuration: const Duration(seconds: 10),
+      sourceDuration: const Duration(seconds: 10),
+    );
+
+    expect(
+      result.single.animations.single.phase,
+      video_editor.AnimationPhase.animateOut,
+    );
   });
 
   test('maps every audio trim and placement field', () {

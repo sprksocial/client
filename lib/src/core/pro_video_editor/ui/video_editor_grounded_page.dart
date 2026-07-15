@@ -718,6 +718,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
         outputSize: _targetExportResolution(exportTransform),
         timelineOffset: exportStartTime,
         outputDuration: outputDuration,
+        sourceDuration: _videoMetadata.duration,
         videoFit: _videoFit,
       ),
       blur: parameters.blur,

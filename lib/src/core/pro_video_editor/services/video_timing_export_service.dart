@@ -46,6 +46,7 @@ List<video_editor.ImageLayer> buildTimedImageLayers({
   required Size outputSize,
   required Duration timelineOffset,
   required Duration outputDuration,
+  required Duration sourceDuration,
   BoxFit videoFit = BoxFit.contain,
 }) {
   final bodySize = parameters.bodySize;
@@ -96,8 +97,7 @@ List<video_editor.ImageLayer> buildTimedImageLayers({
         return false;
       }
       if (animation.phase == image_editor.AnimationPhase.animateOut &&
-          layer.endTime != null &&
-          layer.endTime! > outputEnd) {
+          (layer.endTime ?? sourceDuration) > outputEnd) {
         return false;
       }
       return true;

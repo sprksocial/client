@@ -145,6 +145,34 @@ void main() {
       expect(volumes.overlayVolume, 0.6);
       expect(volumes.originalVolume, 0.75);
     });
+
+    test('keeps both sources silent while muted after mix updates', () {
+      final preparedTrackVolumes = resolveAudioMixVolumes(
+        trackVolume: 0.6,
+        volumeBalance: 0.25,
+        isMuted: true,
+      );
+      final updatedBalanceVolumes = resolveAudioMixVolumes(
+        trackVolume: 0.6,
+        volumeBalance: -0.5,
+        isMuted: true,
+      );
+
+      expect(preparedTrackVolumes.overlayVolume, 0);
+      expect(preparedTrackVolumes.originalVolume, 0);
+      expect(updatedBalanceVolumes.overlayVolume, 0);
+      expect(updatedBalanceVolumes.originalVolume, 0);
+    });
+
+    test('restores the latest mix after unmuting', () {
+      final volumes = resolveAudioMixVolumes(
+        trackVolume: 0.6,
+        volumeBalance: -0.5,
+      );
+
+      expect(volumes.overlayVolume, closeTo(0.3, 0.0001));
+      expect(volumes.originalVolume, 1);
+    });
   });
 
   group('customAudioTempFilename', () {
