@@ -57,6 +57,41 @@
     "description": "Remove button text"
   },
 
+  "buttonReplace": "Replace",
+  "@buttonReplace": {
+    "description": "Replace the selected media track"
+  },
+
+  "buttonMute": "Mute",
+  "@buttonMute": {
+    "description": "Mute the selected audio track"
+  },
+
+  "buttonUnmute": "Unmute",
+  "@buttonUnmute": {
+    "description": "Unmute the selected audio track"
+  },
+
+  "buttonMoveForward": "Forward",
+  "@buttonMoveForward": {
+    "description": "Move the selected visual layer one level forward"
+  },
+
+  "buttonMoveBackward": "Backward",
+  "@buttonMoveBackward": {
+    "description": "Move the selected visual layer one level backward"
+  },
+
+  "buttonEditText": "Edit text",
+  "@buttonEditText": {
+    "description": "Edit the selected text layer"
+  },
+
+  "buttonEditPaint": "Edit paint",
+  "@buttonEditPaint": {
+    "description": "Edit the selected paint layer"
+  },
+
   "buttonRetry": "Retry",
   "@buttonRetry": {
     "description": "Retry button text"

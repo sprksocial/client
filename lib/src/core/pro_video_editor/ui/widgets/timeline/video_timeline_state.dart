@@ -42,9 +42,11 @@ class VideoTimelineState extends ChangeNotifier {
   bool _isPlaying = false;
   bool get isPlaying => _isPlaying;
 
-  /// Whether the audio is muted.
-  bool _isMuted = false;
-  bool get isMuted => _isMuted;
+  bool _isOriginalAudioMuted = false;
+  bool get isOriginalAudioMuted => _isOriginalAudioMuted;
+
+  bool _isCustomAudioMuted = false;
+  bool get isCustomAudioMuted => _isCustomAudioMuted;
 
   /// Trim start position (0.0–1.0 fraction of total duration).
   double _trimStart = 0.0;
@@ -176,9 +178,13 @@ class VideoTimelineState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Updates the muted state.
-  void setMuted({required bool isMuted}) {
-    _isMuted = isMuted;
+  void setOriginalAudioMuted({required bool isMuted}) {
+    _isOriginalAudioMuted = isMuted;
+    notifyListeners();
+  }
+
+  void setCustomAudioMuted({required bool isMuted}) {
+    _isCustomAudioMuted = isMuted;
     notifyListeners();
   }
 

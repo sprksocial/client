@@ -160,6 +160,48 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get buttonRemove;
 
+  /// Replace the selected media track
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get buttonReplace;
+
+  /// Mute the selected audio track
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get buttonMute;
+
+  /// Unmute the selected audio track
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get buttonUnmute;
+
+  /// Move the selected visual layer one level forward
+  ///
+  /// In en, this message translates to:
+  /// **'Forward'**
+  String get buttonMoveForward;
+
+  /// Move the selected visual layer one level backward
+  ///
+  /// In en, this message translates to:
+  /// **'Backward'**
+  String get buttonMoveBackward;
+
+  /// Edit the selected text layer
+  ///
+  /// In en, this message translates to:
+  /// **'Edit text'**
+  String get buttonEditText;
+
+  /// Edit the selected paint layer
+  ///
+  /// In en, this message translates to:
+  /// **'Edit paint'**
+  String get buttonEditPaint;
+
   /// Retry button text
   ///
   /// In en, this message translates to:

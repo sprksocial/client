@@ -173,6 +173,24 @@ void main() {
       expect(volumes.overlayVolume, closeTo(0.3, 0.0001));
       expect(volumes.originalVolume, 1);
     });
+
+    test('can mute the original and overlay sources independently', () {
+      final originalMuted = resolveAudioMixVolumes(
+        trackVolume: 0.6,
+        volumeBalance: 0.25,
+        isOriginalMuted: true,
+      );
+      final overlayMuted = resolveAudioMixVolumes(
+        trackVolume: 0.6,
+        volumeBalance: 0.25,
+        isOverlayMuted: true,
+      );
+
+      expect(originalMuted.originalVolume, 0);
+      expect(originalMuted.overlayVolume, 0.6);
+      expect(overlayMuted.originalVolume, 0.75);
+      expect(overlayMuted.overlayVolume, 0);
+    });
   });
 
   group('customAudioTempFilename', () {

@@ -12,7 +12,6 @@ class VideoTimeline extends StatelessWidget {
     required this.onUndo,
     required this.onRedo,
     required this.onTogglePlay,
-    required this.onToggleMute,
     required this.onSeek,
     required this.onSeekStart,
     required this.onSeekEnd,
@@ -21,6 +20,7 @@ class VideoTimeline extends StatelessWidget {
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
     required this.onLayerSelectionChanged,
+    required this.onTrackSelectionChanged,
     required this.onLayerReordered,
     required this.canUndo,
     required this.canRedo,
@@ -33,7 +33,6 @@ class VideoTimeline extends StatelessWidget {
   final VoidCallback onUndo;
   final VoidCallback onRedo;
   final VoidCallback onTogglePlay;
-  final VoidCallback onToggleMute;
   final void Function(double progress) onSeek;
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
@@ -43,6 +42,7 @@ class VideoTimeline extends StatelessWidget {
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
   final ValueChanged<Layer?> onLayerSelectionChanged;
+  final ValueChanged<TimelineTrackSelection?> onTrackSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final bool canUndo;
   final bool canRedo;
@@ -71,7 +71,6 @@ class VideoTimeline extends StatelessWidget {
               const SizedBox(height: 8),
               _TracksSection(
                 videoTimelineState: videoTimelineState,
-                onToggleMute: onToggleMute,
                 onSeek: onSeek,
                 onSeekStart: onSeekStart,
                 onSeekEnd: onSeekEnd,
@@ -82,8 +81,8 @@ class VideoTimeline extends StatelessWidget {
                 onAudioTimingChanged: onAudioTimingChanged,
                 onLayerTimingChanged: onLayerTimingChanged,
                 onLayerSelectionChanged: onLayerSelectionChanged,
+                onTrackSelectionChanged: onTrackSelectionChanged,
                 onLayerReordered: onLayerReordered,
-                isMuted: videoTimelineState.isMuted,
               ),
             ],
           ),
@@ -207,33 +206,31 @@ class _TransportControls extends StatelessWidget {
 class _TracksSection extends StatelessWidget {
   const _TracksSection({
     required this.videoTimelineState,
-    required this.onToggleMute,
     required this.onSeek,
     required this.onSeekStart,
     required this.onSeekEnd,
-    required this.isMuted,
     required this.layers,
     required this.selectedLayerId,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
     required this.onLayerSelectionChanged,
+    required this.onTrackSelectionChanged,
     required this.onLayerReordered,
     this.onTrimChanged,
     this.onTrimEnd,
   });
 
   final VideoTimelineState videoTimelineState;
-  final VoidCallback onToggleMute;
   final void Function(double progress) onSeek;
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
-  final bool isMuted;
   final List<Layer> layers;
   final String? selectedLayerId;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
   final ValueChanged<Layer?> onLayerSelectionChanged;
+  final ValueChanged<TimelineTrackSelection?> onTrackSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
@@ -241,29 +238,22 @@ class _TracksSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(width: 4),
-          Expanded(
-            child: ScrollableTimeline(
-              videoTimelineState: videoTimelineState,
-              onSeek: onSeek,
-              onSeekStart: onSeekStart,
-              onSeekEnd: onSeekEnd,
-              onTrimChanged: onTrimChanged,
-              onTrimEnd: onTrimEnd,
-              layers: layers,
-              selectedLayerId: selectedLayerId,
-              onAudioTimingChanged: onAudioTimingChanged,
-              onLayerTimingChanged: onLayerTimingChanged,
-              onLayerSelectionChanged: onLayerSelectionChanged,
-              onLayerReordered: onLayerReordered,
-              pixelsPerSecond: 50,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ScrollableTimeline(
+        videoTimelineState: videoTimelineState,
+        onSeek: onSeek,
+        onSeekStart: onSeekStart,
+        onSeekEnd: onSeekEnd,
+        onTrimChanged: onTrimChanged,
+        onTrimEnd: onTrimEnd,
+        layers: layers,
+        selectedLayerId: selectedLayerId,
+        onAudioTimingChanged: onAudioTimingChanged,
+        onLayerTimingChanged: onLayerTimingChanged,
+        onLayerSelectionChanged: onLayerSelectionChanged,
+        onTrackSelectionChanged: onTrackSelectionChanged,
+        onLayerReordered: onLayerReordered,
+        pixelsPerSecond: 50,
       ),
     );
   }

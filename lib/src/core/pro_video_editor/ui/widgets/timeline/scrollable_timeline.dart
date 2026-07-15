@@ -17,6 +17,10 @@ const _kCapWidth = 6.0;
 const _kHandleHitWidth = 32.0;
 const _kMinTrimDuration = Duration(seconds: 1);
 const _kSubtrackSpacing = 6.0;
+const _kSubtrackScrollIndicatorHeight = 20.0;
+const _kSubtrackScrollIndicatorFadeDuration = Duration(milliseconds: 160);
+const _kTimelineHeightAnimationDuration = Duration(milliseconds: 220);
+const _kScrollEdgeTolerance = 0.5;
 const _kMaxVisibleSubtracks = 4;
 const _kReorderAutoScrollEdge = 28.0;
 const _kReorderAutoScrollMaxSpeed = 240.0;
@@ -30,6 +34,8 @@ typedef LayerReorderedCallback =
       Duration? end,
     );
 
+enum TimelineTrackSelection { primary, audio }
+
 enum _TrimHandleSide { start, end }
 
 class ScrollableTimeline extends StatefulWidget {
@@ -41,6 +47,7 @@ class ScrollableTimeline extends StatefulWidget {
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
     required this.onLayerSelectionChanged,
+    required this.onTrackSelectionChanged,
     required this.onLayerReordered,
     this.onSeekStart,
     this.onSeekEnd,
@@ -61,6 +68,7 @@ class ScrollableTimeline extends StatefulWidget {
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
   final ValueChanged<Layer?> onLayerSelectionChanged;
+  final ValueChanged<TimelineTrackSelection?> onTrackSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final VoidCallback? onSeekStart;
   final VoidCallback? onSeekEnd;
@@ -144,6 +152,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     _scrollController = ScrollController();
     _subtrackScrollController = ScrollController();
     _scrollController.addListener(_onScrollChange);
+    _subtrackScrollController.addListener(_onSubtrackScrollChange);
     widget.videoTimelineState.addListener(_onProgressChange);
   }
 
@@ -173,6 +182,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   void dispose() {
     widget.videoTimelineState.removeListener(_onProgressChange);
     _scrollController.removeListener(_onScrollChange);
+    _subtrackScrollController.removeListener(_onSubtrackScrollChange);
     _scrollEndTimer?.cancel();
     _reorderAutoScrollTimer?.cancel();
     _scrollController.dispose();
@@ -182,6 +192,26 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
 
   void _onScrollChange() {
     if (mounted) setState(() {});
+  }
+
+  void _onSubtrackScrollChange() {
+    if (mounted) setState(() {});
+  }
+
+  bool get _showSubtrackTopIndicator {
+    if (_subtrackContentHeight <= _subtrackViewportHeight ||
+        !_subtrackScrollController.hasClients) {
+      return false;
+    }
+    final position = _subtrackScrollController.position;
+    return position.pixels > position.minScrollExtent + _kScrollEdgeTolerance;
+  }
+
+  bool get _showSubtrackBottomIndicator {
+    if (_subtrackContentHeight <= _subtrackViewportHeight) return false;
+    if (!_subtrackScrollController.hasClients) return true;
+    final position = _subtrackScrollController.position;
+    return position.pixels < position.maxScrollExtent - _kScrollEdgeTolerance;
   }
 
   void _onProgressChange() {
@@ -226,6 +256,9 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       _selectedTrackId = isSelecting ? _primaryTrackId : null;
     });
     if (isSelecting) widget.onLayerSelectionChanged(null);
+    widget.onTrackSelectionChanged(
+      isSelecting ? TimelineTrackSelection.primary : null,
+    );
   }
 
   void _onAudioTrackTap() {
@@ -234,6 +267,9 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       _selectedTrackId = isSelecting ? _audioTrackId : null;
     });
     if (isSelecting) widget.onLayerSelectionChanged(null);
+    widget.onTrackSelectionChanged(
+      isSelecting ? TimelineTrackSelection.audio : null,
+    );
   }
 
   void _onLayerTrackTap(Layer layer) {
@@ -241,6 +277,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     setState(() {
       _selectedTrackId = isDeselecting ? null : layer.id;
     });
+    widget.onTrackSelectionChanged(null);
     widget.onLayerSelectionChanged(isDeselecting ? null : layer);
   }
 
@@ -541,135 +578,175 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
             final leftHandleLeft = trimStartVp;
             final rightHandleLeft = trimEndVp - _kHandleWidth - _kCapWidth;
 
-            return SizedBox(
-              height: _totalHeight,
-              child: Stack(
-                clipBehavior: Clip.hardEdge,
-                children: [
-                  NotificationListener<ScrollNotification>(
-                    onNotification: (notification) {
-                      if (notification.metrics.axis != Axis.horizontal) {
-                        return false;
-                      }
-                      if (notification is ScrollStartNotification) {
-                        if (!_isProgrammaticScroll) {
+            return AnimatedSize(
+              duration: _kTimelineHeightAnimationDuration,
+              curve: Curves.easeInOutCubic,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                height: _totalHeight,
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    NotificationListener<ScrollNotification>(
+                      onNotification: (notification) {
+                        if (notification.metrics.axis != Axis.horizontal) {
+                          return false;
+                        }
+                        if (notification is ScrollStartNotification) {
+                          if (!_isProgrammaticScroll) {
+                            _scrollEndTimer?.cancel();
+                            _isUserScrolling = true;
+                            widget.onSeekStart?.call();
+                          }
+                        } else if (notification is ScrollEndNotification) {
                           _scrollEndTimer?.cancel();
-                          _isUserScrolling = true;
-                          widget.onSeekStart?.call();
+                          _scrollEndTimer = Timer(
+                            const Duration(milliseconds: 300),
+                            () {
+                              if (!mounted) return;
+                              _isUserScrolling = false;
+                              widget.onSeekEnd?.call();
+                            },
+                          );
+                        } else if (notification is ScrollUpdateNotification) {
+                          if (_isUserScrolling && !_isProgrammaticScroll) {
+                            _onScrollUpdate();
+                          }
                         }
-                      } else if (notification is ScrollEndNotification) {
-                        _scrollEndTimer?.cancel();
-                        _scrollEndTimer = Timer(
-                          const Duration(milliseconds: 300),
-                          () {
-                            if (!mounted) return;
-                            _isUserScrolling = false;
-                            widget.onSeekEnd?.call();
-                          },
-                        );
-                      } else if (notification is ScrollUpdateNotification) {
-                        if (_isUserScrolling && !_isProgrammaticScroll) {
-                          _onScrollUpdate();
-                        }
-                      }
-                      return false;
-                    },
-                    child: SingleChildScrollView(
-                      controller: _scrollController,
-                      scrollDirection: Axis.horizontal,
-                      physics: const ClampingScrollPhysics(),
-                      child: SizedBox(
-                        width: timelineWidth + viewportWidth,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: viewportWidth / 2,
-                          ),
-                          child: Column(
-                            children: [
-                              _TimeRuler(
-                                totalWidth: timelineWidth,
-                                pixelsPerSecond: widget.pixelsPerSecond,
-                                height: widget.rulerHeight,
-                                videoDuration:
-                                    widget.videoTimelineState.trimmedDuration,
-                              ),
-                              GestureDetector(
-                                onTap: _onThumbnailTap,
-                                child: _VideoThumbnailTrack(
+                        return false;
+                      },
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+                        physics: const ClampingScrollPhysics(),
+                        child: SizedBox(
+                          width: timelineWidth + viewportWidth,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: viewportWidth / 2,
+                            ),
+                            child: Column(
+                              children: [
+                                _TimeRuler(
                                   totalWidth: timelineWidth,
-                                  sourceWidth: sourceWidth,
-                                  sourceOffset: sourceOffset,
-                                  height: widget.thumbnailHeight,
-                                  videoTimelineState: widget.videoTimelineState,
+                                  pixelsPerSecond: widget.pixelsPerSecond,
+                                  height: widget.rulerHeight,
+                                  videoDuration:
+                                      widget.videoTimelineState.trimmedDuration,
                                 ),
-                              ),
-                              if (_subtrackCount > 0) ...[
-                                const SizedBox(height: 8),
-                                SizedBox(
-                                  height: _subtrackViewportHeight,
-                                  child: SingleChildScrollView(
-                                    key: const ValueKey(
-                                      'timeline-subtrack-scroll',
-                                    ),
-                                    controller: _subtrackScrollController,
-                                    physics: const ClampingScrollPhysics(),
-                                    child: Column(
-                                      children: _buildSubtracks(
-                                        timelineWidth: timelineWidth,
-                                        sourceWidth: sourceWidth,
-                                        sourceOffset: sourceOffset,
-                                      ),
-                                    ),
+                                GestureDetector(
+                                  onTap: _onThumbnailTap,
+                                  child: _VideoThumbnailTrack(
+                                    totalWidth: timelineWidth,
+                                    sourceWidth: sourceWidth,
+                                    sourceOffset: sourceOffset,
+                                    height: widget.thumbnailHeight,
+                                    videoTimelineState:
+                                        widget.videoTimelineState,
                                   ),
                                 ),
+                                if (_subtrackCount > 0) ...[
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    height: _subtrackViewportHeight,
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        SingleChildScrollView(
+                                          key: const ValueKey(
+                                            'timeline-subtrack-scroll',
+                                          ),
+                                          controller: _subtrackScrollController,
+                                          physics:
+                                              const ClampingScrollPhysics(),
+                                          child: Column(
+                                            children: _buildSubtracks(
+                                              timelineWidth: timelineWidth,
+                                              sourceWidth: sourceWidth,
+                                              sourceOffset: sourceOffset,
+                                            ),
+                                          ),
+                                        ),
+                                        AnimatedOpacity(
+                                          key: const ValueKey(
+                                            'timeline-subtrack-scroll-indicator-top',
+                                          ),
+                                          opacity: _showSubtrackTopIndicator
+                                              ? 1
+                                              : 0,
+                                          duration:
+                                              _kSubtrackScrollIndicatorFadeDuration,
+                                          curve: Curves.easeOutCubic,
+                                          child: const _SubtrackScrollIndicator(
+                                            alignment: Alignment.topCenter,
+                                          ),
+                                        ),
+                                        AnimatedOpacity(
+                                          key: const ValueKey(
+                                            'timeline-subtrack-scroll-indicator-bottom',
+                                          ),
+                                          opacity: _showSubtrackBottomIndicator
+                                              ? 1
+                                              : 0,
+                                          duration:
+                                              _kSubtrackScrollIndicatorFadeDuration,
+                                          curve: Curves.easeOutCubic,
+                                          child: const _SubtrackScrollIndicator(
+                                            alignment: Alignment.bottomCenter,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_selectedTrackId == _primaryTrackId && _canTrim) ...[
+                      _buildTrimFrame(
+                        left: trimStartVp,
+                        width: timelineWidth,
+                        top: widget.rulerHeight,
+                        height: widget.thumbnailHeight,
+                      ),
+                      _buildTrimHandle(
+                        left: leftHandleLeft,
+                        isLeft: true,
+                        onDragStart: _onTrimStartDragStart,
+                        onDragUpdate: _onTrimStartDragUpdate,
+                      ),
+                      _buildTrimHandle(
+                        left: rightHandleLeft,
+                        isLeft: false,
+                        onDragStart: _onTrimEndDragStart,
+                        onDragUpdate: _onTrimEndDragUpdate,
+                      ),
+                    ],
+                    Positioned(
+                      left: viewportWidth / 2 - 1,
+                      top: 0,
+                      bottom: 0,
+                      child: IgnorePointer(
+                        child: Container(
+                          width: 2,
+                          decoration: BoxDecoration(
+                            color: AppColors.greyWhite,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.greyBlack.withAlpha(100),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  if (_selectedTrackId == _primaryTrackId && _canTrim) ...[
-                    _buildTrimFrame(
-                      left: trimStartVp,
-                      width: timelineWidth,
-                      top: widget.rulerHeight,
-                      height: widget.thumbnailHeight,
-                    ),
-                    _buildTrimHandle(
-                      left: leftHandleLeft,
-                      isLeft: true,
-                      onDragStart: _onTrimStartDragStart,
-                      onDragUpdate: _onTrimStartDragUpdate,
-                    ),
-                    _buildTrimHandle(
-                      left: rightHandleLeft,
-                      isLeft: false,
-                      onDragStart: _onTrimEndDragStart,
-                      onDragUpdate: _onTrimEndDragUpdate,
-                    ),
                   ],
-                  Positioned(
-                    left: viewportWidth / 2 - 1,
-                    top: 0,
-                    bottom: 0,
-                    child: IgnorePointer(
-                      child: Container(
-                        width: 2,
-                        decoration: BoxDecoration(
-                          color: AppColors.greyWhite,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.greyBlack.withAlpha(100),
-                              blurRadius: 4,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             );
           },
@@ -731,6 +808,35 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
         subtrack,
       ],
     ];
+  }
+}
+
+class _SubtrackScrollIndicator extends StatelessWidget {
+  const _SubtrackScrollIndicator({required this.alignment});
+
+  final Alignment alignment;
+
+  @override
+  Widget build(BuildContext context) {
+    final isTop = alignment == Alignment.topCenter;
+    return Align(
+      alignment: alignment,
+      child: IgnorePointer(
+        child: SizedBox(
+          width: double.infinity,
+          height: _kSubtrackScrollIndicatorHeight,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: isTop ? Alignment.topCenter : Alignment.bottomCenter,
+                end: isTop ? Alignment.bottomCenter : Alignment.topCenter,
+                colors: [AppColors.greyBlack, Colors.transparent],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -69,6 +69,8 @@ AudioMixVolumes resolveAudioMixVolumes({
   required double trackVolume,
   required double volumeBalance,
   bool isMuted = false,
+  bool isOriginalMuted = false,
+  bool isOverlayMuted = false,
 }) {
   if (isMuted) {
     return const AudioMixVolumes(overlayVolume: 0, originalVolume: 0);
@@ -82,8 +84,8 @@ AudioMixVolumes resolveAudioMixVolumes({
     originalVolume -= volumeBalance;
   }
   return AudioMixVolumes(
-    overlayVolume: overlayVolume,
-    originalVolume: originalVolume,
+    overlayVolume: isOverlayMuted ? 0 : overlayVolume,
+    originalVolume: isOriginalMuted ? 0 : originalVolume,
   );
 }
 
@@ -141,6 +143,8 @@ class AudioHelperService {
   double _lastVolumeBalance = 0;
   double _trackVolume = 1;
   bool _isMuted = false;
+  bool _isOriginalMuted = false;
+  bool _isOverlayMuted = false;
 
   /// Initializes the audio player with platform-specific audio context
   /// settings.
@@ -400,6 +404,8 @@ class AudioHelperService {
       trackVolume: _trackVolume,
       volumeBalance: volumeBalance,
       isMuted: _isMuted,
+      isOriginalMuted: _isOriginalMuted,
+      isOverlayMuted: _isOverlayMuted,
     );
     await Future.wait([
       setVolume(volumes.overlayVolume),
@@ -417,6 +423,20 @@ class AudioHelperService {
   /// Restores audio based on current balance.
   Future<void> unmute() async {
     _isMuted = false;
+    _isOriginalMuted = false;
+    _isOverlayMuted = false;
+    await balanceAudio();
+  }
+
+  /// Mutes or restores only the original video audio.
+  Future<void> setOriginalMuted({required bool isMuted}) async {
+    _isOriginalMuted = isMuted;
+    await balanceAudio();
+  }
+
+  /// Mutes or restores only the added overlay audio.
+  Future<void> setOverlayMuted({required bool isMuted}) async {
+    _isOverlayMuted = isMuted;
     await balanceAudio();
   }
 

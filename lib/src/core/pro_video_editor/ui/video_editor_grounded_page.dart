@@ -254,13 +254,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       onSeekStart: _onTimelineSeekStart,
       onSeekEnd: _onTimelineSeekEnd,
       onTogglePlay: _onTogglePlay,
-      onToggleMute: _onToggleMute,
+      onToggleOriginalAudio: _onToggleOriginalAudio,
+      onToggleCustomAudio: _onToggleCustomAudio,
       onAddSound: _showAudioSelectionBottomSheet,
+      onRemoveSound: _removeCustomAudio,
       onAudioTimingChanged: _onAudioTimingChanged,
       onTrimChanged: _onTrimChanged,
       onTrimEnd: _onTrimEnd,
       onMention: widget.storyMode ? addStoryMention : null,
       onDone: widget.storyMode ? finishStoryEditing : null,
+    );
+    _videoTimelineState.setOriginalAudioMuted(
+      isMuted: _configs.videoEditor.initialMuted,
     );
 
     // Update clip duration and thumbnails after first frame
@@ -302,6 +307,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _videoController.addListener(_onDurationChange);
 
     await _audioService.initialize();
+    await _audioService.setOriginalMuted(
+      isMuted: _videoTimelineState.isOriginalAudioMuted,
+    );
     if (initialAudioTrack != null) {
       _proVideoController?.audioTrack = initialAudioTrack;
       await _prepareCustomAudioForCurrentVideoPosition(initialAudioTrack);
@@ -551,15 +559,29 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _proVideoController?.togglePlayState();
   }
 
-  void _onToggleMute() {
-    final isMuted = _proVideoController?.isMutedNotifier.value ?? false;
-    _proVideoController?.setMuteState(!isMuted);
+  void _onToggleOriginalAudio() {
+    final isMuted = !_videoTimelineState.isOriginalAudioMuted;
+    _videoTimelineState.setOriginalAudioMuted(isMuted: isMuted);
+    unawaited(_audioService.setOriginalMuted(isMuted: isMuted));
+  }
+
+  void _onToggleCustomAudio() {
+    final isMuted = !_videoTimelineState.isCustomAudioMuted;
+    _videoTimelineState.setCustomAudioMuted(isMuted: isMuted);
+    unawaited(_audioService.setOverlayMuted(isMuted: isMuted));
   }
 
   void _onAudioTimingChanged(AudioTrack track) {
     _proVideoController?.audioTrack = track;
     _videoTimelineState.updateCustomAudioTrack(track);
     unawaited(_prepareCustomAudioForCurrentVideoPosition(track));
+  }
+
+  void _removeCustomAudio() {
+    _proVideoController?.audioTrack = null;
+    _videoTimelineState.clearCustomAudio();
+    unawaited(_audioService.pause());
+    unawaited(_audioService.setAudioMode(useCustom: false));
   }
 
   void _onTrimChanged(double start, double end) {
@@ -685,34 +707,36 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
     double originalVolume = 1;
     final renderedAudioTracks = <VideoAudioTrack>[];
-    for (final (index, track) in parameters.audioTracks.indexed) {
-      var overlayVolume = 1.0;
-      final volumeBalance = track.volumeBalance;
-      if (volumeBalance < 0) {
-        overlayVolume += volumeBalance;
-      } else {
-        originalVolume = math.min(originalVolume, 1 - volumeBalance);
+    if (!_videoTimelineState.isCustomAudioMuted) {
+      for (final (index, track) in parameters.audioTracks.indexed) {
+        var overlayVolume = 1.0;
+        final volumeBalance = track.volumeBalance;
+        if (volumeBalance < 0) {
+          overlayVolume += volumeBalance;
+        } else {
+          originalVolume = math.min(originalVolume, 1 - volumeBalance);
+        }
+        final audioPath = await _audioService.safeCustomAudioPath(
+          track,
+          index: index,
+        );
+        if (audioPath == null) continue;
+        final renderedTracks = buildTimedAudioTracks(
+          track: track,
+          path: audioPath,
+          balanceVolume: overlayVolume,
+          timelineOffset: exportStartTime,
+          outputDuration: outputDuration,
+        );
+        renderedAudioTracks.addAll(renderedTracks);
       }
-      final audioPath = await _audioService.safeCustomAudioPath(
-        track,
-        index: index,
-      );
-      if (audioPath == null) continue;
-      final renderedTracks = buildTimedAudioTracks(
-        track: track,
-        path: audioPath,
-        balanceVolume: overlayVolume,
-        timelineOffset: exportStartTime,
-        outputDuration: outputDuration,
-      );
-      renderedAudioTracks.addAll(renderedTracks);
     }
 
     final exportModel = VideoRenderData(
       id: _taskId,
       videoSegments: [VideoSegment(video: _video, volume: originalVolume)],
       outputFormat: _outputFormat,
-      enableAudio: _proVideoController?.isAudioEnabled ?? true,
+      enableAudio: !_videoTimelineState.isOriginalAudioMuted,
       imageLayers: buildTimedImageLayers(
         parameters: parameters,
         outputSize: _targetExportResolution(exportTransform),
@@ -1039,7 +1063,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
                 _videoTimelineState.setPlaying(isPlaying: true);
               },
               onMuteToggle: (isMuted) async {
-                _videoTimelineState.setMuted(isMuted: isMuted);
+                _videoTimelineState
+                  ..setOriginalAudioMuted(isMuted: isMuted)
+                  ..setCustomAudioMuted(isMuted: isMuted);
                 if (isMuted) {
                   await _audioService.muteAll();
                 } else {
