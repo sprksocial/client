@@ -10,10 +10,9 @@ import 'package:synchronized/synchronized.dart';
 class FileOutput implements LogOutput {
   /// Constructor
   FileOutput({
-    String fileName = 'spark_app.log',
-    int maxFileSize = 10 * 1024 * 1024, // 10 MB
-  }) : _fileName = fileName,
-       _maxFileSize = maxFileSize;
+    this._fileName = 'spark_app.log',
+    this._maxFileSize = 10 * 1024 * 1024, // 10 MB
+  });
 
   /// The file to write logs to
   File? _file;
