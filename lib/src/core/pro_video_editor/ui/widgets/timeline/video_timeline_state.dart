@@ -160,6 +160,18 @@ class VideoTimelineState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates extracted presentation data without replacing edited timing.
+  void updateCustomAudioPresentation({
+    required String trackId,
+    required List<double> waveformData,
+    String? authorAvatarUrl,
+  }) {
+    if (_customAudioTrack?.id != trackId) return;
+    _customWaveformData = waveformData;
+    _authorAvatarUrl = authorAvatarUrl;
+    notifyListeners();
+  }
+
   /// Sets the audio mode (original vs custom).
   void setAudioMode({required bool useCustom}) {
     _useCustomAudio = useCustom;

@@ -4,6 +4,13 @@ import 'package:flutter/painting.dart' show Alignment, BoxFit, applyBoxFit;
 import 'package:pro_image_editor/pro_image_editor.dart' as image_editor;
 import 'package:pro_video_editor/pro_video_editor.dart' as video_editor;
 
+class IncompleteLayerCaptureException implements Exception {
+  const IncompleteLayerCaptureException();
+
+  @override
+  String toString() => 'Not all editor layers were captured for export.';
+}
+
 Size resolveExportOutputSize({
   required Size sourceSize,
   video_editor.ExportTransform? transform,
@@ -77,20 +84,12 @@ List<video_editor.ImageLayer> buildTimedImageLayers({
       bodySize.isEmpty ||
       outputSize.isEmpty ||
       capturedLayers.length != parameters.layers.length) {
-    return [
-      video_editor.ImageLayer(
-        image: video_editor.EditorLayerImage.memory(parameters.image),
-      ),
-    ];
+    throw const IncompleteLayerCaptureException();
   }
 
   final fittedSizes = applyBoxFit(videoFit, outputSize, bodySize);
   if (fittedSizes.source.isEmpty || fittedSizes.destination.isEmpty) {
-    return [
-      video_editor.ImageLayer(
-        image: video_editor.EditorLayerImage.memory(parameters.image),
-      ),
-    ];
+    throw const IncompleteLayerCaptureException();
   }
   final scale = fittedSizes.source.width / fittedSizes.destination.width;
   final outputCenter = outputSize.center(Offset.zero);
@@ -225,6 +224,24 @@ List<video_editor.VideoAudioTrack> buildTimedAudioTracks({
     );
   }
   return tracks;
+}
+
+bool isTimedAudioTrackRenderable({
+  required image_editor.AudioTrack track,
+  required Duration timelineOffset,
+  required Duration outputDuration,
+}) {
+  final range = _normalizedRange(
+    startTime: track.startTime,
+    endTime: track.endTime,
+    timelineOffset: timelineOffset,
+    outputDuration: outputDuration,
+  );
+  if (range == null) return false;
+  return !_normalizedAudioSourceTiming(
+    track: track,
+    timelineOffset: timelineOffset,
+  ).isExhausted;
 }
 
 _NormalizedAudioSourceTiming _normalizedAudioSourceTiming({

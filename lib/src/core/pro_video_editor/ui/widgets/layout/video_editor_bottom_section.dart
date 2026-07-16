@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_toolbar.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
@@ -47,11 +47,13 @@ class VideoEditorBottomSection extends StatefulWidget {
 }
 
 class _VideoEditorBottomSectionState extends State<VideoEditorBottomSection> {
-  TimelineTrackSelection? _selectedTrack;
+  TimelineSelection _selection = TimelineSelection.none;
+  bool _isApplyingSelection = false;
 
   @override
   void initState() {
     super.initState();
+    _selection = _selectionForLayerId(widget.selectedLayerIdListenable.value);
     widget.selectedLayerIdListenable.addListener(_onEditorSelectionChanged);
   }
 
@@ -64,6 +66,10 @@ class _VideoEditorBottomSectionState extends State<VideoEditorBottomSection> {
         _onEditorSelectionChanged,
       );
       widget.selectedLayerIdListenable.addListener(_onEditorSelectionChanged);
+      _selection = _selectionForLayerId(widget.selectedLayerIdListenable.value);
+    } else if (_selection.kind == TimelineSelectionKind.layer &&
+        _selectedLayer(_selection.layerId) == null) {
+      _selection = TimelineSelection.none;
     }
   }
 
@@ -74,13 +80,33 @@ class _VideoEditorBottomSectionState extends State<VideoEditorBottomSection> {
   }
 
   void _onEditorSelectionChanged() {
-    if (!mounted || _selectedTrack == null) return;
-    setState(() => _selectedTrack = null);
+    if (!mounted || _isApplyingSelection) return;
+    final selection = _selectionForLayerId(
+      widget.selectedLayerIdListenable.value,
+    );
+    if (_selection == selection) return;
+    setState(() => _selection = selection);
   }
 
-  void _onTrackSelectionChanged(TimelineTrackSelection? selection) {
-    if (_selectedTrack == selection) return;
-    setState(() => _selectedTrack = selection);
+  TimelineSelection _selectionForLayerId(String? layerId) {
+    return _selectedLayer(layerId) == null
+        ? TimelineSelection.none
+        : TimelineSelection.layer(layerId!);
+  }
+
+  void _onSelectionChanged(TimelineSelection selection) {
+    if (_selection == selection) return;
+    setState(() => _selection = selection);
+    _isApplyingSelection = true;
+    try {
+      if (selection.kind == TimelineSelectionKind.layer) {
+        widget.editor.selectLayerById(selection.layerId!);
+      } else {
+        widget.editor.unselectAllLayers();
+      }
+    } finally {
+      _isApplyingSelection = false;
+    }
   }
 
   Layer? _selectedLayer(String? selectedLayerId) {
@@ -113,7 +139,8 @@ class _VideoEditorBottomSectionState extends State<VideoEditorBottomSection> {
                 layers: widget.editor.activeLayers.reversed.toList(
                   growable: false,
                 ),
-                selectedLayerId: selectedLayerId,
+                selection: _selection,
+                onSelectionChanged: _onSelectionChanged,
                 onAudioTimingChanged: widget.onAudioTimingChanged,
                 onLayerTimingChanged: (layer, start, end) {
                   final index = widget.editor.activeLayers.indexWhere(
@@ -126,14 +153,6 @@ class _VideoEditorBottomSectionState extends State<VideoEditorBottomSection> {
                     endTime: end,
                   );
                 },
-                onLayerSelectionChanged: (layer) {
-                  if (layer == null) {
-                    widget.editor.unselectAllLayers();
-                  } else {
-                    widget.editor.selectLayerById(layer.id);
-                  }
-                },
-                onTrackSelectionChanged: _onTrackSelectionChanged,
                 onLayerReordered: (layer, hierarchyIndex, start, end) {
                   final oldIndex = widget.editor.activeLayers.indexWhere(
                     (candidate) => candidate.id == layer.id,
@@ -163,12 +182,13 @@ class _VideoEditorBottomSectionState extends State<VideoEditorBottomSection> {
                 editor: widget.editor,
                 videoTimelineState: widget.videoTimelineState,
                 selectedLayer: selectedLayer,
-                selectedTrack: _selectedTrack,
+                selection: _selection,
                 onAddSound: widget.onAddSound,
                 onRemoveSound: widget.onRemoveSound,
                 onToggleOriginalAudio: widget.onToggleOriginalAudio,
                 onToggleCustomAudio: widget.onToggleCustomAudio,
-                onClearTrackSelection: () => _onTrackSelectionChanged(null),
+                onClearSelection: () =>
+                    _onSelectionChanged(TimelineSelection.none),
               ),
             ],
           );

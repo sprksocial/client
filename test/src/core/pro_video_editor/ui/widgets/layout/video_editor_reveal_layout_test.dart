@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_reveal_layout.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 void main() {
   test('timed layers only intercept swipes while visible', () {
@@ -48,7 +48,7 @@ void main() {
       final header = find.byKey(const ValueKey('reveal-header'));
       final removeArea = find.byKey(const ValueKey('reveal-remove-area'));
 
-      expect(harnessKey.currentState!.controller.value, 0);
+      expect(harnessKey.currentState!.coordinator.value, 0);
       expect(tester.getSize(bottomBar).height, recordingPageFooterHeight);
       expect(tester.getSize(preview).width, closeTo(400, 0.001));
       expect(tester.getSize(preview).height, closeTo(732, 0.001));
@@ -67,7 +67,7 @@ void main() {
       await tester.pump();
 
       expect(
-        harnessKey.currentState!.controller.value,
+        harnessKey.currentState!.coordinator.value,
         closeTo(120 / 304, 0.001),
       );
       expect(tester.getSize(bottomBar).height, recordingPageFooterHeight);
@@ -79,7 +79,7 @@ void main() {
       await gesture.up();
       await tester.pumpAndSettle();
 
-      expect(harnessKey.currentState!.controller.value, 1);
+      expect(harnessKey.currentState!.coordinator.value, 1);
       expect(tester.getSize(preview).height, 560);
       expect(tester.getCenter(preview).dy, 280);
       expect(
@@ -98,7 +98,7 @@ void main() {
       await collapseGesture.up();
       await tester.pumpAndSettle();
 
-      expect(harnessKey.currentState!.controller.value, 0);
+      expect(harnessKey.currentState!.coordinator.value, 0);
       expect(tester.getSize(preview).width, closeTo(400, 0.001));
       expect(tester.getSize(preview).height, closeTo(732, 0.001));
       expect(tester.getTopLeft(panel).dy, 800);
@@ -109,7 +109,7 @@ void main() {
         800,
       );
       await tester.pumpAndSettle();
-      expect(harnessKey.currentState!.controller.value, 1);
+      expect(harnessKey.currentState!.coordinator.value, 1);
     },
   );
 
@@ -127,13 +127,31 @@ void main() {
     final gesture = await tester.startGesture(tester.getCenter(preview));
     await gesture.moveBy(const Offset(0, -40));
     await tester.pump();
-    expect(harnessKey.currentState!.controller.value, greaterThan(0));
+    expect(harnessKey.currentState!.coordinator.value, greaterThan(0));
 
     await gesture.up();
     await tester.pumpAndSettle();
 
-    expect(harnessKey.currentState!.controller.value, 0);
+    expect(harnessKey.currentState!.coordinator.value, 0);
     expect(tester.getSize(preview).height, closeTo(732, 0.001));
+  });
+
+  testWidgets('canceling a settle completes the pending drag future', (
+    tester,
+  ) async {
+    final harnessKey = GlobalKey<_RevealHarnessState>();
+    await tester.pumpWidget(_RevealHarness(key: harnessKey));
+    await tester.pumpAndSettle();
+
+    final coordinator = harnessKey.currentState!.coordinator;
+    coordinator
+      ..beginDrag()
+      ..value = 0.5;
+    final settle = coordinator.endDrag(primaryVelocity: 0, reduceMotion: false);
+    await tester.pump(const Duration(milliseconds: 20));
+    coordinator.beginDrag();
+
+    await expectLater(settle, completes);
   });
 
   testWidgets('only blank fullscreen taps toggle preview playback', (
@@ -165,18 +183,43 @@ void main() {
 
     harnessKey.currentState!
       ..hasSelectedLayer = false
-      ..controller.value = 1;
+      ..coordinator.value = 1;
     await tester.pump();
     await tester.tapAt(const Offset(200, 300));
     expect(harnessKey.currentState!.previewTapCount, 1);
 
-    harnessKey.currentState!.controller.value = 0;
+    harnessKey.currentState!.coordinator.value = 0;
     await tester.pump();
     final swipe = await tester.startGesture(const Offset(200, 500));
     await swipe.moveBy(const Offset(0, -120));
     await swipe.up();
     await tester.pumpAndSettle();
     expect(harnessKey.currentState!.previewTapCount, 1);
+  });
+
+  testWidgets('sub-slop movement remains a tap without starting a drag', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harnessKey = GlobalKey<_RevealHarnessState>();
+    await tester.pumpWidget(_RevealHarness(key: harnessKey));
+    await tester.pumpAndSettle();
+
+    final gesture = await tester.startGesture(const Offset(200, 400));
+    await gesture.moveBy(const Offset(0, -17));
+    await tester.pump();
+
+    expect(harnessKey.currentState!.coordinator.value, 0);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(harnessKey.currentState!.previewTapCount, 1);
+    expect(harnessKey.currentState!.coordinator.value, 0);
   });
 
   testWidgets('wide preview recenters before it needs to shrink', (
@@ -197,13 +240,13 @@ void main() {
     final initialRect = tester.getRect(preview);
     expect(initialRect.size, const Size(400, 225));
 
-    harnessKey.currentState!.controller.value = 1;
+    harnessKey.currentState!.coordinator.value = 1;
     await tester.pump();
     expect(tester.getSize(preview), initialRect.size);
     expect(tester.getTopLeft(preview).dy, closeTo(167.5, 0.001));
     expect(tester.getCenter(preview).dx, initialRect.center.dx);
 
-    harnessKey.currentState!.controller.updatePanelHeight(600);
+    harnessKey.currentState!.coordinator.updatePanelHeight(600);
     await tester.pump();
     expect(tester.getSize(preview).height, closeTo(200, 0.001));
     expect(tester.getSize(preview).width, closeTo(355.556, 0.001));
@@ -230,16 +273,16 @@ void main() {
     final emptySwipe = await tester.startGesture(const Offset(200, 400));
     await emptySwipe.moveBy(const Offset(0, -120));
     await tester.pump();
-    expect(harnessKey.currentState!.controller.value, greaterThan(0));
+    expect(harnessKey.currentState!.coordinator.value, greaterThan(0));
     expect(harnessKey.currentState!.parentScaleUpdateCount, 0);
     await emptySwipe.up();
     await tester.pumpAndSettle();
 
-    harnessKey.currentState!.controller.value = 0;
+    harnessKey.currentState!.coordinator.value = 0;
     final layerDrag = await tester.startGesture(const Offset(50, 400));
     await layerDrag.moveBy(const Offset(0, -120));
     await tester.pump();
-    expect(harnessKey.currentState!.controller.value, 0);
+    expect(harnessKey.currentState!.coordinator.value, 0);
     expect(harnessKey.currentState!.parentScaleUpdateCount, greaterThan(0));
     await layerDrag.up();
   });
@@ -264,7 +307,7 @@ void main() {
     await tester.pump();
 
     expect(harnessKey.currentState!.parentScaleUpdateCount, greaterThan(0));
-    expect(harnessKey.currentState!.controller.value, 0);
+    expect(harnessKey.currentState!.coordinator.value, 0);
 
     await first.up();
     await second.up();
@@ -282,11 +325,11 @@ void main() {
     await tester.pumpWidget(_RevealHarness(key: harnessKey));
     await tester.pumpAndSettle();
 
-    final controller = harnessKey.currentState!.controller;
-    controller.value = 1;
+    final coordinator = harnessKey.currentState!.coordinator;
+    coordinator.value = 1;
     await tester.pump();
 
-    final viewport = controller.viewport!;
+    final viewport = coordinator.viewport!;
     expect(viewport.scale, closeTo(560 / 732, 0.001));
     expect(viewport.previewRect.height, closeTo(560, 0.001));
     expect(viewport.previewRect.center.dx, closeTo(200, 0.001));
@@ -300,6 +343,28 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  testWidgets('viewport resize reports the new geometry after layout', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final harnessKey = GlobalKey<_RevealHarnessState>();
+    await tester.pumpWidget(_RevealHarness(key: harnessKey));
+    await tester.pumpAndSettle();
+    harnessKey.currentState!.reportedViewports.clear();
+
+    tester.view.physicalSize = const Size(600, 800);
+    await tester.pump();
+
+    expect(harnessKey.currentState!.reportedViewports, hasLength(1));
+    final viewport = harnessKey.currentState!.reportedViewports.single;
+    expect(viewport.previewRect.size, const Size(400, 732));
+    expect(viewport.previewRect.center, const Offset(300, 366));
   });
 }
 
@@ -319,20 +384,36 @@ class _RevealHarness extends StatefulWidget {
 
 class _RevealHarnessState extends State<_RevealHarness>
     with SingleTickerProviderStateMixin {
-  late final VideoEditorRevealController controller;
+  late final VideoEditorRevealCoordinator coordinator;
+  late final VideoTimelineState timelineState;
+  late final ValueNotifier<String?> selectedLayerId;
+  late final _RevealEditorMock editor;
   int parentScaleUpdateCount = 0;
   int previewTapCount = 0;
-  bool hasSelectedLayer = false;
+  final List<VideoEditorViewport> reportedViewports = [];
+
+  bool get hasSelectedLayer => editor.hasSelectedLayers;
+  set hasSelectedLayer(bool value) => editor.hasSelectedLayers = value;
 
   @override
   void initState() {
     super.initState();
-    controller = VideoEditorRevealController(vsync: this);
+    coordinator = VideoEditorRevealCoordinator(vsync: this);
+    coordinator.onViewportChanged = reportedViewports.add;
+    timelineState = VideoTimelineState(
+      videoDuration: const Duration(seconds: 10),
+    );
+    selectedLayerId = ValueNotifier(null);
+    editor = _RevealEditorMock(
+      includeHitLayer: widget.isPositionOnLayer != null,
+    );
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    selectedLayerId.dispose();
+    timelineState.dispose();
+    coordinator.dispose();
     super.dispose();
   }
 
@@ -345,12 +426,12 @@ class _RevealHarnessState extends State<_RevealHarness>
           onScaleUpdate: (_) => parentScaleUpdateCount++,
           onScaleEnd: (_) {},
           child: VideoEditorRevealBody(
-            controller: controller,
+            coordinator: coordinator,
             previewAspectRatio: widget.previewAspectRatio,
-            onViewportGeometryChanged: () {},
-            hasSelectedLayer: () => hasSelectedLayer,
+            editor: editor,
+            timelineState: timelineState,
+            selectedLayerIdListenable: selectedLayerId,
             onPreviewTap: () => previewTapCount++,
-            isPositionOnLayer: widget.isPositionOnLayer,
             overlay: const SizedBox(
               key: ValueKey('reveal-header'),
               width: double.infinity,
@@ -363,8 +444,19 @@ class _RevealHarnessState extends State<_RevealHarness>
                   key: ValueKey('reveal-preview'),
                   color: Colors.black,
                 ),
+                if (editor.hitLayer case final layer?)
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 100,
+                    child: RepaintBoundary(
+                      key: layer.repaintBoundaryKey,
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
                 VideoEditorRevealRemoveArea(
-                  controller: controller,
+                  coordinator: coordinator,
                   child: const Align(
                     alignment: Alignment.bottomCenter,
                     child: SizedBox(
@@ -379,7 +471,7 @@ class _RevealHarnessState extends State<_RevealHarness>
           ),
         ),
         bottomNavigationBar: VideoEditorRevealBottomBar(
-          controller: controller,
+          coordinator: coordinator,
           child: const SizedBox(
             key: ValueKey('reveal-bottom-content'),
             height: 240,
@@ -388,4 +480,27 @@ class _RevealHarnessState extends State<_RevealHarness>
       ),
     );
   }
+}
+
+class _RevealEditorMock implements ProImageEditorState {
+  _RevealEditorMock({required bool includeHitLayer})
+    : hitLayer = includeHitLayer ? WidgetLayer(widget: const SizedBox()) : null;
+
+  final WidgetLayer? hitLayer;
+  @override
+  bool hasSelectedLayers = false;
+
+  @override
+  List<Layer> get activeLayers => [?hitLayer];
+
+  @override
+  ProImageEditorConfigs get configs => const ProImageEditorConfigs();
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return '_RevealEditorMock';
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

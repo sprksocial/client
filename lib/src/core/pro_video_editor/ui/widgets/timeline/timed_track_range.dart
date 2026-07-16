@@ -3,10 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection_handle.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/layer_reorder_controller.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range_parts.dart';
 
-const _kRangeHandleHitWidth = 32.0;
-const _kOutsideRangeMarkerWidth = 8.0;
 const _kRepositionAxisDeadZone = 4.0;
 
 class TimedTrackRange extends StatefulWidget {
@@ -26,10 +25,7 @@ class TimedTrackRange extends StatefulWidget {
     this.onTap,
     this.borderColor,
     this.foreground,
-    this.onRepositionStart,
-    this.onVerticalRepositionChanged,
-    this.onRepositionEnd,
-    this.onRepositionCancel,
+    this.reorderInteraction,
     super.key,
   });
 
@@ -48,11 +44,7 @@ class TimedTrackRange extends StatefulWidget {
   final VoidCallback? onTap;
   final Color? borderColor;
   final Widget? foreground;
-  final VoidCallback? onRepositionStart;
-  final ValueChanged<double>? onVerticalRepositionChanged;
-  final void Function(double start, double end, bool rangeChanged)?
-  onRepositionEnd;
-  final VoidCallback? onRepositionCancel;
+  final LayerReorderInteraction? reorderInteraction;
 
   @override
   State<TimedTrackRange> createState() => _TimedTrackRangeState();
@@ -64,7 +56,11 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
   late double _repositionStart;
   late double _repositionEnd;
   late double _repositionAnchorStart;
+  late double _horizontalDragStart;
+  late double _horizontalDragEnd;
+  double _horizontalDragOffset = 0;
   bool _isDragging = false;
+  bool _isHorizontalDragging = false;
   bool _isRepositioning = false;
   bool _rangeChangedDuringDrag = false;
 
@@ -92,7 +88,11 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
 
   void _dragStart(DragStartDetails _) {
     _isDragging = true;
+    _isHorizontalDragging = true;
     _rangeChangedDuringDrag = false;
+    _horizontalDragStart = _start;
+    _horizontalDragEnd = _end;
+    _horizontalDragOffset = 0;
   }
 
   void _onRepositionStart(LongPressStartDetails _) {
@@ -105,7 +105,7 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
       _repositionAnchorStart = _repositionStartForVisibleRange;
     });
     HapticFeedback.selectionClick();
-    widget.onRepositionStart?.call();
+    widget.reorderInteraction?.start();
   }
 
   double get _repositionStartForVisibleRange {
@@ -121,7 +121,7 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
 
   void _onRepositionUpdate(LongPressMoveUpdateDetails details) {
     if (widget.sourceWidth <= 0) return;
-    widget.onVerticalRepositionChanged?.call(details.offsetFromOrigin.dy);
+    widget.reorderInteraction?.update(details.offsetFromOrigin.dy);
     if (details.offsetFromOrigin.dx.abs() < _kRepositionAxisDeadZone) return;
     final duration = (_repositionEnd - _repositionStart)
         .clamp(0.0, 1.0)
@@ -139,8 +139,13 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
 
   void _finishReposition() {
     if (!_isRepositioning) return;
-    widget.onRepositionEnd?.call(_start, _end, _rangeChangedDuringDrag);
-    _finishDrag(commitRange: widget.onRepositionEnd == null);
+    final reorderInteraction = widget.reorderInteraction;
+    if (reorderInteraction == null) {
+      _finishDrag();
+    } else {
+      reorderInteraction.finish(_start, _end, _rangeChangedDuringDrag);
+      _finishDrag(commitRange: false);
+    }
   }
 
   void _cancelReposition() {
@@ -156,7 +161,7 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
     if (shouldRestoreRange) {
       widget.onRangeChanged(_repositionStart, _repositionEnd);
     }
-    widget.onRepositionCancel?.call();
+    widget.reorderInteraction?.cancel();
   }
 
   void _dragStartHandle(DragUpdateDetails details) {
@@ -188,28 +193,32 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
   }
 
   void _dragEndIntoViewport(DragUpdateDetails details) {
-    if (widget.sourceWidth <= 0 || details.delta.dx <= 0) return;
+    if (widget.sourceWidth <= 0) return;
+    _horizontalDragOffset += details.delta.dx;
+    if (_horizontalDragOffset <= 0) return;
     final viewportStart = _viewportStartFraction;
     final viewportEnd = _viewportEndFraction;
     final minEnd = math.min(
       viewportEnd,
       viewportStart + widget.minimumRangeFraction,
     );
-    final next = (viewportStart + details.delta.dx / widget.sourceWidth)
+    final next = (viewportStart + _horizontalDragOffset / widget.sourceWidth)
         .clamp(minEnd, viewportEnd)
         .toDouble();
     _update(_start, next);
   }
 
   void _dragStartIntoViewport(DragUpdateDetails details) {
-    if (widget.sourceWidth <= 0 || details.delta.dx >= 0) return;
+    if (widget.sourceWidth <= 0) return;
+    _horizontalDragOffset += details.delta.dx;
+    if (_horizontalDragOffset >= 0) return;
     final viewportStart = _viewportStartFraction;
     final viewportEnd = _viewportEndFraction;
     final maxStart = math.max(
       viewportStart,
       viewportEnd - widget.minimumRangeFraction,
     );
-    final next = (viewportEnd + details.delta.dx / widget.sourceWidth)
+    final next = (viewportEnd + _horizontalDragOffset / widget.sourceWidth)
         .clamp(viewportStart, maxStart)
         .toDouble();
     _update(next, _end);
@@ -226,7 +235,31 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
   }
 
   void _dragEnd(DragEndDetails _) {
+    _isHorizontalDragging = false;
     _finishDrag();
+  }
+
+  void _cancelHorizontalDrag() {
+    if (!_isHorizontalDragging) return;
+    final shouldRestoreRange = _rangeChangedDuringDrag;
+    setState(() {
+      _start = _horizontalDragStart;
+      _end = _horizontalDragEnd;
+      _isDragging = false;
+      _isHorizontalDragging = false;
+      _rangeChangedDuringDrag = false;
+    });
+    if (shouldRestoreRange) {
+      widget.onRangeChanged(_horizontalDragStart, _horizontalDragEnd);
+    }
+  }
+
+  void _cancelActiveDrag() {
+    if (_isHorizontalDragging) {
+      _cancelHorizontalDrag();
+    } else {
+      _cancelReposition();
+    }
   }
 
   void _finishDrag({bool commitRange = true}) {
@@ -254,13 +287,21 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
     final isBeforeViewport = _end <= viewportStart;
     final isAfterViewport = _start >= viewportEnd;
     final rangeWidth = math.max(0.0, (_end - _start) * widget.sourceWidth);
+    final visibleRangeWidth = math.max(
+      0.0,
+      (visibleEnd - visibleStart) * widget.sourceWidth,
+    );
+    final handleHitWidth = math.min(
+      timedTrackRangeHandleHitWidth,
+      visibleRangeWidth / 2,
+    );
     final hiddenLeadingWidth = math.max(
       0.0,
       (visibleStart - _start) * widget.sourceWidth,
     );
 
     return Listener(
-      onPointerCancel: (_) => _cancelReposition(),
+      onPointerCancel: (_) => _cancelActiveDrag(),
       child: SizedBox(
         width: widget.totalWidth,
         height: widget.height,
@@ -363,8 +404,9 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                         ),
                       ),
                       if (widget.isSelected) ...[
-                        _RangeHandle(
+                        TimedTrackRangeHandle(
                           left: visibleStart * widget.sourceWidth,
+                          width: handleHitWidth,
                           height: widget.height,
                           isLeft: true,
                           isStartHandle: true,
@@ -372,16 +414,16 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                           onDragStart: _dragStart,
                           onDragUpdate: _dragStartHandle,
                           onDragEnd: _dragEnd,
-                          onDragCancel: _finishDrag,
+                          onDragCancel: _cancelHorizontalDrag,
                           onLongPressStart: _onRepositionStart,
                           onLongPressMoveUpdate: _onRepositionUpdate,
                           onLongPressEnd: _onRepositionEnd,
                           onLongPressCancel: _cancelReposition,
                         ),
-                        _RangeHandle(
+                        TimedTrackRangeHandle(
                           left:
-                              visibleEnd * widget.sourceWidth -
-                              _kRangeHandleHitWidth,
+                              visibleEnd * widget.sourceWidth - handleHitWidth,
+                          width: handleHitWidth,
                           height: widget.height,
                           isLeft: false,
                           isStartHandle: false,
@@ -389,7 +431,7 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                           onDragStart: _dragStart,
                           onDragUpdate: _dragEndHandle,
                           onDragEnd: _dragEnd,
-                          onDragCancel: _finishDrag,
+                          onDragCancel: _cancelHorizontalDrag,
                           onLongPressStart: _onRepositionStart,
                           onLongPressMoveUpdate: _onRepositionUpdate,
                           onLongPressEnd: _onRepositionEnd,
@@ -397,11 +439,11 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                         ),
                       ],
                     ] else if (isBeforeViewport || isAfterViewport) ...[
-                      _OutsideRangeMarker(
+                      TimedTrackOutsideRangeMarker(
                         left: isBeforeViewport
                             ? viewportStart * widget.sourceWidth
                             : viewportEnd * widget.sourceWidth -
-                                  _kRangeHandleHitWidth,
+                                  timedTrackRangeHandleHitWidth,
                         height: widget.height,
                         alignLeft: isBeforeViewport,
                         color: widget.color,
@@ -415,7 +457,7 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                         onLongPressCancel: _cancelReposition,
                       ),
                       if (widget.isSelected && isBeforeViewport)
-                        _RangeHandle(
+                        TimedTrackRangeHandle(
                           left: viewportStart * widget.sourceWidth,
                           height: widget.height,
                           isLeft: true,
@@ -424,7 +466,7 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                           onDragStart: _dragStart,
                           onDragUpdate: _dragEndIntoViewport,
                           onDragEnd: _dragEnd,
-                          onDragCancel: _finishDrag,
+                          onDragCancel: _cancelHorizontalDrag,
                           onTap: widget.onTap,
                           onLongPressStart: _onRepositionStart,
                           onLongPressMoveUpdate: _onRepositionUpdate,
@@ -432,10 +474,10 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                           onLongPressCancel: _cancelReposition,
                         ),
                       if (widget.isSelected && isAfterViewport)
-                        _RangeHandle(
+                        TimedTrackRangeHandle(
                           left:
                               viewportEnd * widget.sourceWidth -
-                              _kRangeHandleHitWidth,
+                              timedTrackRangeHandleHitWidth,
                           height: widget.height,
                           isLeft: false,
                           isStartHandle: true,
@@ -443,7 +485,7 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                           onDragStart: _dragStart,
                           onDragUpdate: _dragStartIntoViewport,
                           onDragEnd: _dragEnd,
-                          onDragCancel: _finishDrag,
+                          onDragCancel: _cancelHorizontalDrag,
                           onTap: widget.onTap,
                           onLongPressStart: _onRepositionStart,
                           onLongPressMoveUpdate: _onRepositionUpdate,
@@ -454,146 +496,6 @@ class _TimedTrackRangeState extends State<TimedTrackRange> {
                   ],
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _OutsideRangeMarker extends StatelessWidget {
-  const _OutsideRangeMarker({
-    required this.left,
-    required this.height,
-    required this.alignLeft,
-    required this.color,
-    required this.isSelected,
-    required this.isRepositioning,
-    required this.onTap,
-    required this.onLongPressStart,
-    required this.onLongPressMoveUpdate,
-    required this.onLongPressEnd,
-    required this.onLongPressCancel,
-    this.borderColor,
-  });
-
-  final double left;
-  final double height;
-  final bool alignLeft;
-  final Color color;
-  final bool isSelected;
-  final bool isRepositioning;
-  final VoidCallback? onTap;
-  final GestureLongPressStartCallback onLongPressStart;
-  final GestureLongPressMoveUpdateCallback onLongPressMoveUpdate;
-  final GestureLongPressEndCallback onLongPressEnd;
-  final VoidCallback onLongPressCancel;
-  final Color? borderColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: left,
-      top: 0,
-      width: _kRangeHandleHitWidth,
-      height: height,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        onLongPressStart: onLongPressStart,
-        onLongPressMoveUpdate: onLongPressMoveUpdate,
-        onLongPressEnd: onLongPressEnd,
-        onLongPressCancel: onLongPressCancel,
-        child: Align(
-          alignment: alignLeft ? Alignment.centerLeft : Alignment.centerRight,
-          child: DecoratedBox(
-            key: const ValueKey('timed-track-range-surface'),
-            decoration: BoxDecoration(
-              color: isRepositioning
-                  ? Color.lerp(color, AppColors.greyWhite, 0.18)
-                  : color,
-              borderRadius: BorderRadius.circular(3),
-              border: isRepositioning
-                  ? Border.all(color: AppColors.greyWhite, width: 2)
-                  : isSelected
-                  ? Border.all(
-                      color: borderColor ?? AppColors.greyWhite,
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: SizedBox(width: _kOutsideRangeMarkerWidth, height: height),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RangeHandle extends StatelessWidget {
-  const _RangeHandle({
-    required this.left,
-    required this.height,
-    required this.isLeft,
-    required this.isStartHandle,
-    required this.isVisible,
-    required this.onDragStart,
-    required this.onDragUpdate,
-    required this.onDragEnd,
-    required this.onDragCancel,
-    required this.onLongPressStart,
-    required this.onLongPressMoveUpdate,
-    required this.onLongPressEnd,
-    required this.onLongPressCancel,
-    this.onTap,
-  });
-
-  final double left;
-  final double height;
-  final bool isLeft;
-  final bool isStartHandle;
-  final bool isVisible;
-  final GestureDragStartCallback onDragStart;
-  final GestureDragUpdateCallback onDragUpdate;
-  final GestureDragEndCallback onDragEnd;
-  final VoidCallback onDragCancel;
-  final GestureLongPressStartCallback onLongPressStart;
-  final GestureLongPressMoveUpdateCallback onLongPressMoveUpdate;
-  final GestureLongPressEndCallback onLongPressEnd;
-  final VoidCallback onLongPressCancel;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: left,
-      top: 0,
-      width: _kRangeHandleHitWidth,
-      height: height,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onHorizontalDragStart: onDragStart,
-        onHorizontalDragUpdate: onDragUpdate,
-        onHorizontalDragEnd: onDragEnd,
-        onHorizontalDragCancel: onDragCancel,
-        onTap: onTap,
-        onLongPressStart: onLongPressStart,
-        onLongPressMoveUpdate: onLongPressMoveUpdate,
-        onLongPressEnd: onLongPressEnd,
-        onLongPressCancel: onLongPressCancel,
-        child: Align(
-          alignment: isLeft ? Alignment.centerLeft : Alignment.centerRight,
-          child: Opacity(
-            opacity: isVisible ? 1 : 0,
-            child: TimelineSelectionHandle(
-              key: ValueKey(
-                isStartHandle
-                    ? 'timeline-selection-handle-start'
-                    : 'timeline-selection-handle-end',
-              ),
-              isLeft: isLeft,
-              height: height,
             ),
           ),
         ),

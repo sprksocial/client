@@ -1,30 +1,23 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/audio_timeline_track.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/layer_reorder_controller.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/layer_timing_track.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection_handle.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_subtrack_content.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/primary_timeline_trim_overlay.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_visual_tracks.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
-const _kHandleWidth = 12.0;
-
-const _kCapWidth = 6.0;
-const _kHandleHitWidth = 32.0;
-const _kMinTrimDuration = Duration(seconds: 1);
 const _kSubtrackSpacing = 6.0;
 const _kSubtrackScrollIndicatorHeight = 20.0;
 const _kSubtrackScrollIndicatorFadeDuration = Duration(milliseconds: 160);
 const _kTimelineHeightAnimationDuration = Duration(milliseconds: 220);
 const _kScrollEdgeTolerance = 0.5;
 const _kMaxVisibleSubtracks = 4;
-const _kReorderAutoScrollEdge = 28.0;
-const _kReorderAutoScrollMaxSpeed = 240.0;
-const _kReorderAutoScrollInterval = Duration(milliseconds: 16);
 
 typedef LayerReorderedCallback =
     void Function(
@@ -34,20 +27,15 @@ typedef LayerReorderedCallback =
       Duration? end,
     );
 
-enum TimelineTrackSelection { primary, audio }
-
-enum _TrimHandleSide { start, end }
-
 class ScrollableTimeline extends StatefulWidget {
   const ScrollableTimeline({
     required this.videoTimelineState,
     required this.onSeek,
     required this.layers,
-    required this.selectedLayerId,
+    required this.selection,
+    required this.onSelectionChanged,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
-    required this.onLayerSelectionChanged,
-    required this.onTrackSelectionChanged,
     required this.onLayerReordered,
     this.onSeekStart,
     this.onSeekEnd,
@@ -63,12 +51,11 @@ class ScrollableTimeline extends StatefulWidget {
   final VideoTimelineState videoTimelineState;
   final void Function(double progress) onSeek;
   final List<Layer> layers;
-  final String? selectedLayerId;
+  final TimelineSelection selection;
+  final ValueChanged<TimelineSelection> onSelectionChanged;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
-  final ValueChanged<Layer?> onLayerSelectionChanged;
-  final ValueChanged<TimelineTrackSelection?> onTrackSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final VoidCallback? onSeekStart;
   final VoidCallback? onSeekEnd;
@@ -89,20 +76,8 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   bool _isUserScrolling = false;
   bool _isProgrammaticScroll = false;
   bool _isDraggingHandle = false;
-  String? _selectedTrackId;
-  String? _reorderingLayerId;
-  int? _reorderingStartIndex;
-  int? _reorderingTargetIndex;
-  List<Layer>? _reorderPreviewLayers;
-  double _reorderingStartScrollOffset = 0;
-  double _reorderingLastOffsetY = 0;
-  double _reorderAutoScrollSpeed = 0;
-  _TrimHandleSide? _activeTrimHandle;
+  late LayerReorderController _layerReorderController;
   Timer? _scrollEndTimer;
-  Timer? _reorderAutoScrollTimer;
-
-  static const _primaryTrackId = 'primary';
-  static const _audioTrackId = 'audio';
 
   bool get _canTrim => widget.onTrimChanged != null || widget.onTrimEnd != null;
 
@@ -118,8 +93,6 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
 
   int get _subtrackCount =>
       widget.layers.length + (widget.videoTimelineState.useCustomAudio ? 1 : 0);
-
-  List<Layer> get _displayLayers => _reorderPreviewLayers ?? widget.layers;
 
   double get _subtrackContentHeight {
     if (_subtrackCount == 0) return 0;
@@ -139,18 +112,20 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       widget.thumbnailHeight +
       (_subtrackCount == 0 ? 0 : 8 + _subtrackViewportHeight);
 
-  double get _minTrimFraction {
-    final ms = widget.videoTimelineState.videoDuration.inMilliseconds;
-    if (ms <= 0) return 0.0;
-    return _kMinTrimDuration.inMilliseconds / ms;
-  }
-
   @override
   void initState() {
     super.initState();
-    _selectedTrackId = widget.selectedLayerId;
     _scrollController = ScrollController();
     _subtrackScrollController = ScrollController();
+    _layerReorderController = LayerReorderController(
+      _subtrackScrollController,
+      () => widget.layers,
+      () => widget.subtrackHeight + _kSubtrackSpacing,
+      () => widget.subtrackHeight,
+      () => _subtrackViewportHeight,
+      () => widget.videoTimelineState.useCustomAudio ? 1 : 0,
+      _onLayerReorderCommit,
+    )..addListener(_onLayerReorderChange);
     _scrollController.addListener(_onScrollChange);
     _subtrackScrollController.addListener(_onSubtrackScrollChange);
     widget.videoTimelineState.addListener(_onProgressChange);
@@ -159,23 +134,11 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   @override
   void didUpdateWidget(covariant ScrollableTimeline oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedLayerId != widget.selectedLayerId) {
-      if (widget.selectedLayerId != null) {
-        _selectedTrackId = widget.selectedLayerId;
-      } else if (_selectedTrackId == oldWidget.selectedLayerId) {
-        _selectedTrackId = null;
-      }
+    if (!identical(oldWidget.videoTimelineState, widget.videoTimelineState)) {
+      oldWidget.videoTimelineState.removeListener(_onProgressChange);
+      widget.videoTimelineState.addListener(_onProgressChange);
     }
-    if (_selectedTrackId == _audioTrackId &&
-        !widget.videoTimelineState.useCustomAudio) {
-      _selectedTrackId = null;
-    }
-    if (_selectedTrackId != null &&
-        _selectedTrackId != _primaryTrackId &&
-        _selectedTrackId != _audioTrackId &&
-        !widget.layers.any((layer) => layer.id == _selectedTrackId)) {
-      _selectedTrackId = null;
-    }
+    _layerReorderController.synchronizeLayers();
   }
 
   @override
@@ -184,7 +147,9 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     _scrollController.removeListener(_onScrollChange);
     _subtrackScrollController.removeListener(_onSubtrackScrollChange);
     _scrollEndTimer?.cancel();
-    _reorderAutoScrollTimer?.cancel();
+    _layerReorderController
+      ..removeListener(_onLayerReorderChange)
+      ..dispose();
     _scrollController.dispose();
     _subtrackScrollController.dispose();
     super.dispose();
@@ -195,6 +160,10 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   }
 
   void _onSubtrackScrollChange() {
+    if (mounted) setState(() {});
+  }
+
+  void _onLayerReorderChange() {
     if (mounted) setState(() {});
   }
 
@@ -251,199 +220,50 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
 
   void _onThumbnailTap() {
     if (!_canTrim) return;
-    final isSelecting = _selectedTrackId != _primaryTrackId;
-    setState(() {
-      _selectedTrackId = isSelecting ? _primaryTrackId : null;
-    });
-    if (isSelecting) widget.onLayerSelectionChanged(null);
-    widget.onTrackSelectionChanged(
-      isSelecting ? TimelineTrackSelection.primary : null,
+    widget.onSelectionChanged(
+      widget.selection.kind == TimelineSelectionKind.primary
+          ? TimelineSelection.none
+          : TimelineSelection.primary,
     );
   }
 
   void _onAudioTrackTap() {
-    final isSelecting = _selectedTrackId != _audioTrackId;
-    setState(() {
-      _selectedTrackId = isSelecting ? _audioTrackId : null;
-    });
-    if (isSelecting) widget.onLayerSelectionChanged(null);
-    widget.onTrackSelectionChanged(
-      isSelecting ? TimelineTrackSelection.audio : null,
+    widget.onSelectionChanged(
+      widget.selection.kind == TimelineSelectionKind.audio
+          ? TimelineSelection.none
+          : TimelineSelection.audio,
     );
   }
 
   void _onLayerTrackTap(Layer layer) {
-    final isDeselecting = _selectedTrackId == layer.id;
-    setState(() {
-      _selectedTrackId = isDeselecting ? null : layer.id;
-    });
-    widget.onTrackSelectionChanged(null);
-    widget.onLayerSelectionChanged(isDeselecting ? null : layer);
-  }
-
-  void _onLayerRepositionStart(Layer layer) {
-    if (widget.layers.length < 2) return;
-    final index = widget.layers.indexWhere((item) => item.id == layer.id);
-    if (index < 0) return;
-    _reorderingLayerId = layer.id;
-    _reorderingStartIndex = index;
-    _reorderingTargetIndex = index;
-    _reorderPreviewLayers = List<Layer>.of(widget.layers);
-    _reorderingStartScrollOffset = _subtrackScrollController.hasClients
-        ? _subtrackScrollController.offset
-        : 0;
-    _reorderingLastOffsetY = 0;
-  }
-
-  void _onLayerVerticalReposition(Layer layer, double offsetY) {
-    if (_reorderingLayerId != layer.id) return;
-    _reorderingLastOffsetY = offsetY;
-    _updateLayerReorderTarget(layer);
-    _updateLayerAutoScroll(offsetY);
-  }
-
-  void _updateLayerReorderTarget(Layer layer) {
-    final startIndex = _reorderingStartIndex;
-    if (startIndex == null) return;
-    final rowExtent = widget.subtrackHeight + _kSubtrackSpacing;
-    final scrollOffset = _subtrackScrollController.hasClients
-        ? _subtrackScrollController.offset
-        : _reorderingStartScrollOffset;
-    final scrollDelta = scrollOffset - _reorderingStartScrollOffset;
-    final targetIndex =
-        (startIndex + (_reorderingLastOffsetY + scrollDelta) / rowExtent)
-            .round()
-            .clamp(0, widget.layers.length - 1);
-    if (targetIndex == _reorderingTargetIndex) return;
-    setState(() {
-      final previewLayers = _reorderPreviewLayers;
-      if (previewLayers == null) return;
-      final oldIndex = previewLayers.indexWhere((item) => item.id == layer.id);
-      if (oldIndex < 0) return;
-      final movedLayer = previewLayers.removeAt(oldIndex);
-      previewLayers.insert(targetIndex, movedLayer);
-      _reorderingTargetIndex = targetIndex;
-    });
-  }
-
-  void _updateLayerAutoScroll(double offsetY) {
-    if (!_subtrackScrollController.hasClients ||
-        _subtrackCount <= _kMaxVisibleSubtracks) {
-      _setReorderAutoScrollSpeed(0);
-      return;
-    }
-    final startIndex = _reorderingStartIndex;
-    if (startIndex == null) return;
-    final rowExtent = widget.subtrackHeight + _kSubtrackSpacing;
-    final audioRowCount = widget.videoTimelineState.useCustomAudio ? 1 : 0;
-    final startCenter =
-        (startIndex + audioRowCount) * rowExtent +
-        widget.subtrackHeight / 2 -
-        _reorderingStartScrollOffset;
-    final pointerY = startCenter + offsetY;
-    final viewportHeight = _subtrackViewportHeight;
-    double speed = 0;
-    if (pointerY < _kReorderAutoScrollEdge) {
-      final strength =
-          ((_kReorderAutoScrollEdge - pointerY) / _kReorderAutoScrollEdge)
-              .clamp(0.0, 1.0);
-      speed = -_kReorderAutoScrollMaxSpeed * strength;
-    } else if (pointerY > viewportHeight - _kReorderAutoScrollEdge) {
-      final strength =
-          ((pointerY - (viewportHeight - _kReorderAutoScrollEdge)) /
-                  _kReorderAutoScrollEdge)
-              .clamp(0.0, 1.0);
-      speed = _kReorderAutoScrollMaxSpeed * strength;
-    }
-    _setReorderAutoScrollSpeed(speed);
-  }
-
-  void _setReorderAutoScrollSpeed(double speed) {
-    _reorderAutoScrollSpeed = speed;
-    if (speed == 0) {
-      _reorderAutoScrollTimer?.cancel();
-      _reorderAutoScrollTimer = null;
-      return;
-    }
-    if (_reorderAutoScrollTimer != null) return;
-    _reorderAutoScrollTimer = Timer.periodic(
-      _kReorderAutoScrollInterval,
-      (_) => _tickLayerAutoScroll(),
+    widget.onSelectionChanged(
+      widget.selection.kind == TimelineSelectionKind.layer &&
+              widget.selection.layerId == layer.id
+          ? TimelineSelection.none
+          : TimelineSelection.layer(layer.id),
     );
   }
 
-  void _tickLayerAutoScroll() {
-    if (!_subtrackScrollController.hasClients || _reorderingLayerId == null) {
-      _setReorderAutoScrollSpeed(0);
-      return;
-    }
-    final position = _subtrackScrollController.position;
-    final nextOffset =
-        (position.pixels +
-                _reorderAutoScrollSpeed *
-                    _kReorderAutoScrollInterval.inMicroseconds /
-                    Duration.microsecondsPerSecond)
-            .clamp(position.minScrollExtent, position.maxScrollExtent)
-            .toDouble();
-    if (nextOffset == position.pixels) {
-      _setReorderAutoScrollSpeed(0);
-      return;
-    }
-    _subtrackScrollController.jumpTo(nextOffset);
-    final layerIndex = widget.layers.indexWhere(
-      (item) => item.id == _reorderingLayerId,
-    );
-    if (layerIndex >= 0) {
-      _updateLayerReorderTarget(widget.layers[layerIndex]);
-    }
-  }
-
-  void _onLayerRepositionEnd(
-    Layer layer,
+  void _onLayerReorderCommit(
+    LayerReorderResult result,
     double start,
     double end,
     bool rangeChanged,
   ) {
-    if (_reorderingLayerId != layer.id) return;
-    final startIndex = _reorderingStartIndex;
-    final targetIndex = _reorderingTargetIndex;
-    final reorderedLayer = _reorderPreviewLayers?.firstWhere(
-      (item) => item.id == layer.id,
-      orElse: () => layer,
-    );
-    _clearLayerReposition();
-    if (reorderedLayer != null &&
-        startIndex != null &&
-        targetIndex != null &&
-        startIndex != targetIndex) {
+    if (result.startIndex != result.targetIndex) {
       widget.onLayerReordered(
-        reorderedLayer,
-        targetIndex,
+        result.layer,
+        result.targetIndex,
         rangeChanged ? _durationAtFraction(start) : null,
         rangeChanged ? _durationAtFraction(end) : null,
       );
     } else if (rangeChanged) {
       widget.onLayerTimingChanged(
-        layer,
+        result.layer,
         _durationAtFraction(start),
         _durationAtFraction(end),
       );
     }
-  }
-
-  void _onLayerRepositionCancel(Layer layer) {
-    if (_reorderingLayerId != layer.id) return;
-    _clearLayerReposition();
-  }
-
-  void _clearLayerReposition() {
-    _setReorderAutoScrollSpeed(0);
-    setState(() {
-      _reorderPreviewLayers = null;
-      _reorderingLayerId = null;
-      _reorderingStartIndex = null;
-      _reorderingTargetIndex = null;
-    });
   }
 
   Duration _durationAtFraction(double fraction) {
@@ -451,110 +271,6 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       milliseconds:
           (widget.videoTimelineState.videoDuration.inMilliseconds * fraction)
               .round(),
-    );
-  }
-
-  void _onTrimStartDragStart(DragStartDetails _) {
-    _isDraggingHandle = true;
-    _activeTrimHandle = _TrimHandleSide.start;
-  }
-
-  void _onTrimStartDragUpdate(DragUpdateDetails details) {
-    final delta = details.delta.dx / _sourceWidth;
-    final state = widget.videoTimelineState;
-    final maxStart = (state.trimEnd - _minTrimFraction)
-        .clamp(0.0, 1.0)
-        .toDouble();
-    final newStart = (state.trimStart + delta).clamp(0.0, maxStart).toDouble();
-    _updateTrim(newStart, state.trimEnd);
-  }
-
-  void _onTrimEndDragStart(DragStartDetails _) {
-    _isDraggingHandle = true;
-    _activeTrimHandle = _TrimHandleSide.end;
-  }
-
-  void _onTrimEndDragUpdate(DragUpdateDetails details) {
-    final delta = details.delta.dx / _sourceWidth;
-    final state = widget.videoTimelineState;
-    final minEnd = (state.trimStart + _minTrimFraction)
-        .clamp(0.0, 1.0)
-        .toDouble();
-    final newEnd = (state.trimEnd + delta).clamp(minEnd, 1.0).toDouble();
-    _updateTrim(state.trimStart, newEnd);
-  }
-
-  void _onTrimDragEnd(DragEndDetails _) {
-    _isDraggingHandle = false;
-    final state = widget.videoTimelineState;
-    final activeTrimHandle = _activeTrimHandle;
-    _activeTrimHandle = null;
-    widget.onTrimEnd?.call(
-      state.trimStart,
-      state.trimEnd,
-      activeTrimHandle == _TrimHandleSide.start,
-    );
-  }
-
-  void _updateTrim(double start, double end) {
-    widget.videoTimelineState.setTrimRange(start, end);
-    widget.onTrimChanged?.call(start, end);
-  }
-
-  Widget _buildTrimFrame({
-    required double left,
-    required double width,
-    required double top,
-    required double height,
-  }) {
-    return Positioned(
-      left: left,
-      width: width,
-      top: top,
-      height: height,
-      child: IgnorePointer(
-        child: DecoratedBox(
-          key: const ValueKey('timeline-primary-selection-frame'),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: AppColors.greyWhite, width: 2),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrimHandle({
-    required double left,
-    required bool isLeft,
-    required GestureDragStartCallback onDragStart,
-    required GestureDragUpdateCallback onDragUpdate,
-  }) {
-    return Positioned(
-      left: isLeft
-          ? left
-          : left - (_kHandleHitWidth - _kHandleWidth - _kCapWidth),
-      top: widget.rulerHeight,
-      width: _kHandleHitWidth,
-      height: widget.thumbnailHeight,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onHorizontalDragStart: onDragStart,
-        onHorizontalDragUpdate: onDragUpdate,
-        onHorizontalDragEnd: _onTrimDragEnd,
-        child: Align(
-          alignment: isLeft ? Alignment.centerLeft : Alignment.centerRight,
-          child: TimelineSelectionHandle(
-            key: ValueKey(
-              isLeft
-                  ? 'timeline-primary-selection-handle-start'
-                  : 'timeline-primary-selection-handle-end',
-            ),
-            isLeft: isLeft,
-            height: widget.thumbnailHeight,
-          ),
-        ),
-      ),
     );
   }
 
@@ -575,9 +291,6 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                 widget.videoTimelineState.trimStart * sourceWidth;
             final trimStartVp = viewportWidth / 2 - scrollOffset;
             final trimEndVp = viewportWidth / 2 + timelineWidth - scrollOffset;
-            final leftHandleLeft = trimStartVp;
-            final rightHandleLeft = trimEndVp - _kHandleWidth - _kCapWidth;
-
             return AnimatedSize(
               duration: _kTimelineHeightAnimationDuration,
               curve: Curves.easeInOutCubic,
@@ -629,7 +342,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                             ),
                             child: Column(
                               children: [
-                                _TimeRuler(
+                                TimelineTimeRuler(
                                   totalWidth: timelineWidth,
                                   pixelsPerSecond: widget.pixelsPerSecond,
                                   height: widget.rulerHeight,
@@ -638,7 +351,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                                 ),
                                 GestureDetector(
                                   onTap: _onThumbnailTap,
-                                  child: _VideoThumbnailTrack(
+                                  child: VideoThumbnailTrack(
                                     totalWidth: timelineWidth,
                                     sourceWidth: sourceWidth,
                                     sourceOffset: sourceOffset,
@@ -707,26 +420,21 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                         ),
                       ),
                     ),
-                    if (_selectedTrackId == _primaryTrackId && _canTrim) ...[
-                      _buildTrimFrame(
-                        left: trimStartVp,
-                        width: timelineWidth,
-                        top: widget.rulerHeight,
-                        height: widget.thumbnailHeight,
+                    if (widget.selection.kind ==
+                            TimelineSelectionKind.primary &&
+                        _canTrim)
+                      PrimaryTimelineTrimOverlay(
+                        timelineState: widget.videoTimelineState,
+                        sourceWidth: sourceWidth,
+                        trimStartLeft: trimStartVp,
+                        trimEndLeft: trimEndVp,
+                        rulerHeight: widget.rulerHeight,
+                        thumbnailHeight: widget.thumbnailHeight,
+                        onDragActivityChanged: (isDragging) =>
+                            _isDraggingHandle = isDragging,
+                        onTrimChanged: widget.onTrimChanged,
+                        onTrimEnd: widget.onTrimEnd,
                       ),
-                      _buildTrimHandle(
-                        left: leftHandleLeft,
-                        isLeft: true,
-                        onDragStart: _onTrimStartDragStart,
-                        onDragUpdate: _onTrimStartDragUpdate,
-                      ),
-                      _buildTrimHandle(
-                        left: rightHandleLeft,
-                        isLeft: false,
-                        onDragStart: _onTrimEndDragStart,
-                        onDragUpdate: _onTrimEndDragUpdate,
-                      ),
-                    ],
                     Positioned(
                       left: viewportWidth / 2 - 1,
                       top: 0,
@@ -764,19 +472,18 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   }) {
     final subtracks = <Widget>[
       if (widget.videoTimelineState.useCustomAudio)
-        _AudioSubtrack(
+        AudioTimelineTrack(
           key: const ValueKey('timeline-subtrack-audio'),
           totalWidth: timelineWidth,
           sourceWidth: sourceWidth,
           sourceOffset: sourceOffset,
           height: widget.subtrackHeight,
           videoTimelineState: widget.videoTimelineState,
-          pixelsPerSecond: widget.pixelsPerSecond,
           onTimingChanged: widget.onAudioTimingChanged,
-          isSelected: _selectedTrackId == _audioTrackId,
+          isSelected: widget.selection.kind == TimelineSelectionKind.audio,
           onTap: _onAudioTrackTap,
         ),
-      for (final layer in _displayLayers)
+      for (final layer in _layerReorderController.displayLayers)
         LayerTimingTrack(
           key: ValueKey('timeline-subtrack-layer-${layer.id}'),
           totalWidth: timelineWidth,
@@ -785,22 +492,12 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
           height: widget.subtrackHeight,
           videoDuration: widget.videoTimelineState.videoDuration,
           layer: layer,
-          isSelected: layer.id == _selectedTrackId,
+          isSelected:
+              widget.selection.kind == TimelineSelectionKind.layer &&
+              widget.selection.layerId == layer.id,
           onTap: () => _onLayerTrackTap(layer),
           onTimingChanged: widget.onLayerTimingChanged,
-          onRepositionStart: widget.layers.length < 2
-              ? null
-              : () => _onLayerRepositionStart(layer),
-          onVerticalRepositionChanged: widget.layers.length < 2
-              ? null
-              : (offsetY) => _onLayerVerticalReposition(layer, offsetY),
-          onRepositionEnd: widget.layers.length < 2
-              ? null
-              : (start, end, rangeChanged) =>
-                    _onLayerRepositionEnd(layer, start, end, rangeChanged),
-          onRepositionCancel: widget.layers.length < 2
-              ? null
-              : () => _onLayerRepositionCancel(layer),
+          reorderInteraction: _layerReorderController.interactionFor(layer),
         ),
     ];
 
@@ -839,359 +536,5 @@ class _SubtrackScrollIndicator extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _TimeRuler extends StatelessWidget {
-  const _TimeRuler({
-    required this.totalWidth,
-    required this.pixelsPerSecond,
-    required this.height,
-    required this.videoDuration,
-  });
-
-  final double totalWidth;
-  final double pixelsPerSecond;
-  final double height;
-  final Duration videoDuration;
-
-  String _formatTime(int totalSeconds) {
-    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final totalSeconds = videoDuration.inSeconds;
-    final tickInterval = _calculateTickInterval(totalSeconds);
-
-    return SizedBox(
-      width: totalWidth,
-      height: height,
-      child: CustomPaint(
-        painter: _TimeRulerPainter(
-          totalSeconds: totalSeconds,
-          pixelsPerSecond: pixelsPerSecond,
-          tickInterval: tickInterval,
-          formatTime: _formatTime,
-        ),
-      ),
-    );
-  }
-
-  int _calculateTickInterval(int totalSeconds) {
-    if (totalSeconds <= 10) return 1;
-    if (totalSeconds <= 30) return 5;
-    if (totalSeconds <= 60) return 10;
-    if (totalSeconds <= 300) return 30;
-    return 60;
-  }
-}
-
-class _TimeRulerPainter extends CustomPainter {
-  _TimeRulerPainter({
-    required this.totalSeconds,
-    required this.pixelsPerSecond,
-    required this.tickInterval,
-    required this.formatTime,
-  });
-
-  final int totalSeconds;
-  final double pixelsPerSecond;
-  final int tickInterval;
-  final String Function(int) formatTime;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.grey400
-      ..strokeWidth = 1;
-
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
-    for (var seconds = 0; seconds <= totalSeconds; seconds++) {
-      final x = seconds * pixelsPerSecond;
-
-      if (seconds % tickInterval == 0) {
-        canvas.drawLine(
-          Offset(x, size.height - 12),
-          Offset(x, size.height),
-          paint,
-        );
-
-        textPainter
-          ..text = TextSpan(
-            text: formatTime(seconds),
-            style: const TextStyle(
-              color: AppColors.grey300,
-              fontSize: 10,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-          )
-          ..layout()
-          ..paint(canvas, Offset(x - textPainter.width / 2, 2));
-      } else {
-        canvas.drawLine(
-          Offset(x, size.height - 6),
-          Offset(x, size.height),
-          paint..color = AppColors.grey500,
-        );
-        paint.color = AppColors.grey400;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _TimeRulerPainter oldDelegate) {
-    return oldDelegate.totalSeconds != totalSeconds ||
-        oldDelegate.pixelsPerSecond != pixelsPerSecond;
-  }
-}
-
-class _VideoThumbnailTrack extends StatelessWidget {
-  const _VideoThumbnailTrack({
-    required this.totalWidth,
-    required this.sourceWidth,
-    required this.sourceOffset,
-    required this.height,
-    required this.videoTimelineState,
-  });
-
-  final double totalWidth;
-  final double sourceWidth;
-  final double sourceOffset;
-  final double height;
-  final VideoTimelineState videoTimelineState;
-
-  @override
-  Widget build(BuildContext context) {
-    final thumbnails = videoTimelineState.thumbnails;
-
-    return Container(
-      key: const ValueKey('timeline-primary-track'),
-      width: totalWidth,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.grey700,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.grey500),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: _buildSourceViewport(
-        thumbnails == null || thumbnails.isEmpty
-            ? _buildSkeleton()
-            : Row(
-                children: thumbnails.map((thumbnail) {
-                  return Expanded(
-                    child: Image(
-                      image: thumbnail,
-                      fit: BoxFit.cover,
-                      height: height,
-                    ),
-                  );
-                }).toList(),
-              ),
-      ),
-    );
-  }
-
-  Widget _buildSourceViewport(Widget child) {
-    return ClipRect(
-      child: OverflowBox(
-        alignment: Alignment.centerLeft,
-        minWidth: sourceWidth,
-        maxWidth: sourceWidth,
-        minHeight: height,
-        maxHeight: height,
-        child: Transform.translate(
-          offset: Offset(-sourceOffset, 0),
-          child: SizedBox(width: sourceWidth, height: height, child: child),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSkeleton() {
-    return Row(
-      children: List.generate(10, (index) {
-        return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(left: index > 0 ? 1 : 0),
-            color: AppColors.grey600,
-          ),
-        );
-      }),
-    );
-  }
-}
-
-class _AudioSubtrack extends StatelessWidget {
-  const _AudioSubtrack({
-    required this.totalWidth,
-    required this.sourceWidth,
-    required this.sourceOffset,
-    required this.height,
-    required this.videoTimelineState,
-    required this.pixelsPerSecond,
-    required this.onTimingChanged,
-    required this.isSelected,
-    required this.onTap,
-    super.key,
-  });
-
-  final double totalWidth;
-  final double sourceWidth;
-  final double sourceOffset;
-  final double height;
-  final VideoTimelineState videoTimelineState;
-  final double pixelsPerSecond;
-  final ValueChanged<AudioTrack> onTimingChanged;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return _buildAudioWaveformTrack();
-  }
-
-  Widget _buildAudioWaveformTrack() {
-    final track = videoTimelineState.customAudioTrack!;
-    final videoDurationMs = videoTimelineState.videoDuration.inMilliseconds;
-    final start = videoDurationMs <= 0
-        ? 0.0
-        : (track.startTime ?? Duration.zero).inMilliseconds / videoDurationMs;
-    final end = videoDurationMs <= 0
-        ? 1.0
-        : (track.endTime ?? videoTimelineState.videoDuration).inMilliseconds /
-              videoDurationMs;
-    final clampedStart = start.clamp(0.0, 1.0).toDouble();
-    final clampedEnd = end.clamp(0.0, 1.0).toDouble();
-
-    return TimedTrackRange(
-      totalWidth: totalWidth,
-      sourceWidth: sourceWidth,
-      sourceOffset: sourceOffset,
-      height: height,
-      startFraction: clampedStart <= clampedEnd ? clampedStart : clampedEnd,
-      endFraction: clampedStart <= clampedEnd ? clampedEnd : clampedStart,
-      color: AppColors.primary700,
-      isSelected: isSelected,
-      borderColor: isSelected ? AppColors.greyWhite : null,
-      onTap: onTap,
-      minimumRangeFraction: videoDurationMs <= 0
-          ? 0.01
-          : (250 / videoDurationMs).clamp(0.001, 1.0).toDouble(),
-      onRangeChanged: (start, end) {
-        final updatedTrack = track.copyWith(
-          startTime: _durationAtFraction(start),
-          endTime: _durationAtFraction(end),
-        );
-        videoTimelineState.updateCustomAudioTrack(updatedTrack);
-      },
-      onRangeChangeEnd: (_, _) {
-        final updatedTrack = videoTimelineState.customAudioTrack;
-        if (updatedTrack != null) onTimingChanged(updatedTrack);
-      },
-      foreground: TimelineSubtrackContent(
-        icon: Icons.music_note_rounded,
-        label: videoTimelineState.activeAudioName,
-        leading: videoTimelineState.authorAvatarUrl == null
-            ? null
-            : ClipRRect(
-                borderRadius: BorderRadius.circular(9),
-                child: CachedNetworkImage(
-                  fadeInDuration: Duration.zero,
-                  fadeOutDuration: Duration.zero,
-                  imageUrl: videoTimelineState.authorAvatarUrl!,
-                  width: 18,
-                  height: 18,
-                  fit: BoxFit.cover,
-                  placeholder: (_, _) => _buildAvatarPlaceholder(),
-                  errorWidget: (_, _, _) => _buildAvatarPlaceholder(),
-                ),
-              ),
-      ),
-      child: CustomPaint(
-        painter: _AudioWaveformPainter(
-          waveformData: videoTimelineState.customWaveformData,
-          totalWidth: sourceWidth,
-          pixelsPerSecond: pixelsPerSecond,
-        ),
-      ),
-    );
-  }
-
-  Duration _durationAtFraction(double fraction) {
-    return Duration(
-      milliseconds: (videoTimelineState.videoDuration.inMilliseconds * fraction)
-          .round(),
-    );
-  }
-
-  Widget _buildAvatarPlaceholder() {
-    return Container(
-      width: 18,
-      height: 18,
-      decoration: BoxDecoration(
-        color: AppColors.grey500,
-        borderRadius: BorderRadius.circular(9),
-      ),
-      child: const Icon(Icons.person, color: AppColors.grey300, size: 12),
-    );
-  }
-}
-
-class _AudioWaveformPainter extends CustomPainter {
-  _AudioWaveformPainter({
-    required this.waveformData,
-    required this.totalWidth,
-    required this.pixelsPerSecond,
-  });
-
-  final List<double> waveformData;
-  final double totalWidth;
-  final double pixelsPerSecond;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (waveformData.isEmpty) return;
-
-    final paint = Paint()
-      ..color = AppColors.greyWhite.withAlpha(100)
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    const barWidth = 2.0;
-    const barSpacing = 2.0;
-    const barStep = barWidth + barSpacing;
-    final barCount = (size.width / barStep).floor();
-    final samplesPerBar = waveformData.length / barCount;
-    final centerY = size.height / 2;
-
-    for (var i = 0; i < barCount; i++) {
-      final sampleIndex = (i * samplesPerBar).floor().clamp(
-        0,
-        waveformData.length - 1,
-      );
-      final amplitude = waveformData[sampleIndex];
-      final barHeight = (amplitude * size.height * 0.7).clamp(
-        2.0,
-        size.height - 4,
-      );
-      final x = i * barStep + barWidth / 2;
-
-      canvas.drawLine(
-        Offset(x, centerY - barHeight / 2),
-        Offset(x, centerY + barHeight / 2),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _AudioWaveformPainter oldDelegate) {
-    return oldDelegate.waveformData != waveformData ||
-        oldDelegate.totalWidth != totalWidth;
   }
 }

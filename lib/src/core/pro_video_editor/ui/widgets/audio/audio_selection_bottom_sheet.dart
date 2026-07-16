@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
@@ -16,13 +18,9 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   const AudioSelectionBottomSheet({
     required this.configs,
     required this.videoDuration,
-    required this.onTrackSelected,
-    required this.onBalanceChanged,
-    required this.onTrackChanged,
-    required this.onTrackChangeEnd,
-    required this.onConfirm,
     required this.onTrackPlay,
     required this.onTrackStop,
+    required this.onTrackPreviewChanged,
     this.initialSelectedTrack,
     super.key,
   });
@@ -36,26 +34,14 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   /// Initial selected track (if any).
   final AudioTrack? initialSelectedTrack;
 
-  /// Called when a track is selected.
-  final void Function(AudioTrack track) onTrackSelected;
-
-  /// Called when balance slider changes.
-  final void Function(double balance) onBalanceChanged;
-
-  /// Called when timing or playback options change for the selected track.
-  final ValueChanged<AudioTrack> onTrackChanged;
-
-  /// Called after the user commits a timing or volume interaction.
-  final ValueChanged<AudioTrack> onTrackChangeEnd;
-
-  /// Called when user confirms their audio selection.
-  final void Function(AudioTrack? track) onConfirm;
-
   /// Called when a track should start playing.
   final Future<void> Function(AudioTrack track) onTrackPlay;
 
   /// Called when a track should stop playing.
   final Future<void> Function(AudioTrack track) onTrackStop;
+
+  /// Updates temporary preview playback without committing editor state.
+  final Future<void> Function(AudioTrack track) onTrackPreviewChanged;
 
   @override
   State<AudioSelectionBottomSheet> createState() =>
@@ -77,7 +63,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   @override
   void dispose() {
     if (_selectedTrack != null) {
-      widget.onTrackStop(_selectedTrack!);
+      unawaited(widget.onTrackStop(_selectedTrack!));
     }
     super.dispose();
   }
@@ -89,6 +75,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     });
     try {
       await widget.onTrackPlay(track);
+      if (!mounted || requestId != _trackPreviewRequestId) return;
     } catch (_) {
       if (!mounted || requestId != _trackPreviewRequestId) return;
       setState(() {
@@ -109,12 +96,11 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     setState(() {
       _showEditControls = true;
     });
-    widget.onTrackSelected(selectedTrack);
   }
 
   void _handleChangeTrack() {
     if (_selectedTrack != null) {
-      widget.onTrackStop(_selectedTrack!);
+      unawaited(widget.onTrackStop(_selectedTrack!));
     }
     setState(() {
       _showEditControls = false;
@@ -122,7 +108,6 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   }
 
   void _handleConfirm() {
-    widget.onConfirm(_selectedTrack);
     Navigator.of(context).pop(_selectedTrack);
   }
 
@@ -130,16 +115,15 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     final track = _selectedTrack;
     if (track == null) return;
     _handleTrackChange(track.copyWith(volumeBalance: balance));
-    widget.onBalanceChanged(balance);
   }
 
   void _handleTrackChange(AudioTrack track) {
     setState(() => _selectedTrack = track);
-    widget.onTrackChanged(track);
+    unawaited(widget.onTrackPreviewChanged(track));
   }
 
   void _handleTrackChangeEnd(AudioTrack track) {
-    widget.onTrackChangeEnd(track);
+    unawaited(widget.onTrackPreviewChanged(track));
   }
 
   @override

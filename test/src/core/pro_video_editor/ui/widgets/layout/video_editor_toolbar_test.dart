@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_toolbar.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 void main() {
@@ -58,7 +58,7 @@ void main() {
       _ToolbarTestApp(
         editor: editor,
         timelineState: timelineState,
-        selectedTrack: TimelineTrackSelection.primary,
+        selection: TimelineSelection.primary,
         onToggleOriginalAudio: () => muteCount++,
       ),
     );
@@ -75,10 +75,10 @@ void main() {
       _ToolbarTestApp(
         editor: editor,
         timelineState: timelineState,
-        selectedTrack: TimelineTrackSelection.audio,
+        selection: TimelineSelection.audio,
         onToggleCustomAudio: () => muteCount++,
         onRemoveSound: () => removeCount++,
-        onClearTrackSelection: () => selectionClearCount++,
+        onClearSelection: () => selectionClearCount++,
       ),
     );
     await tester.pumpAndSettle();
@@ -104,21 +104,21 @@ class _ToolbarTestApp extends StatelessWidget {
     required this.editor,
     required this.timelineState,
     this.selectedLayer,
-    this.selectedTrack,
+    this.selection = TimelineSelection.none,
     this.onToggleOriginalAudio,
     this.onToggleCustomAudio,
     this.onRemoveSound,
-    this.onClearTrackSelection,
+    this.onClearSelection,
   });
 
   final ProImageEditorState editor;
   final VideoTimelineState timelineState;
   final Layer? selectedLayer;
-  final TimelineTrackSelection? selectedTrack;
+  final TimelineSelection selection;
   final VoidCallback? onToggleOriginalAudio;
   final VoidCallback? onToggleCustomAudio;
   final VoidCallback? onRemoveSound;
-  final VoidCallback? onClearTrackSelection;
+  final VoidCallback? onClearSelection;
 
   @override
   Widget build(BuildContext context) {
@@ -130,12 +130,12 @@ class _ToolbarTestApp extends StatelessWidget {
           editor: editor,
           videoTimelineState: timelineState,
           selectedLayer: selectedLayer,
-          selectedTrack: selectedTrack,
+          selection: selection,
           onAddSound: () {},
           onRemoveSound: onRemoveSound ?? () {},
           onToggleOriginalAudio: onToggleOriginalAudio ?? () {},
           onToggleCustomAudio: onToggleCustomAudio ?? () {},
-          onClearTrackSelection: onClearTrackSelection ?? () {},
+          onClearSelection: onClearSelection ?? () {},
         ),
       ),
     );

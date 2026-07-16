@@ -4,6 +4,7 @@ import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/theme/text_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 class VideoTimeline extends StatelessWidget {
@@ -16,11 +17,10 @@ class VideoTimeline extends StatelessWidget {
     required this.onSeekStart,
     required this.onSeekEnd,
     required this.layers,
-    required this.selectedLayerId,
+    required this.selection,
+    required this.onSelectionChanged,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
-    required this.onLayerSelectionChanged,
-    required this.onTrackSelectionChanged,
     required this.onLayerReordered,
     required this.canUndo,
     required this.canRedo,
@@ -37,12 +37,11 @@ class VideoTimeline extends StatelessWidget {
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
   final List<Layer> layers;
-  final String? selectedLayerId;
+  final TimelineSelection selection;
+  final ValueChanged<TimelineSelection> onSelectionChanged;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
-  final ValueChanged<Layer?> onLayerSelectionChanged;
-  final ValueChanged<TimelineTrackSelection?> onTrackSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final bool canUndo;
   final bool canRedo;
@@ -77,11 +76,10 @@ class VideoTimeline extends StatelessWidget {
                 onTrimChanged: onTrimChanged,
                 onTrimEnd: onTrimEnd,
                 layers: layers,
-                selectedLayerId: selectedLayerId,
+                selection: selection,
+                onSelectionChanged: onSelectionChanged,
                 onAudioTimingChanged: onAudioTimingChanged,
                 onLayerTimingChanged: onLayerTimingChanged,
-                onLayerSelectionChanged: onLayerSelectionChanged,
-                onTrackSelectionChanged: onTrackSelectionChanged,
                 onLayerReordered: onLayerReordered,
               ),
             ],
@@ -210,11 +208,10 @@ class _TracksSection extends StatelessWidget {
     required this.onSeekStart,
     required this.onSeekEnd,
     required this.layers,
-    required this.selectedLayerId,
+    required this.selection,
+    required this.onSelectionChanged,
     required this.onAudioTimingChanged,
     required this.onLayerTimingChanged,
-    required this.onLayerSelectionChanged,
-    required this.onTrackSelectionChanged,
     required this.onLayerReordered,
     this.onTrimChanged,
     this.onTrimEnd,
@@ -225,12 +222,11 @@ class _TracksSection extends StatelessWidget {
   final VoidCallback onSeekStart;
   final VoidCallback onSeekEnd;
   final List<Layer> layers;
-  final String? selectedLayerId;
+  final TimelineSelection selection;
+  final ValueChanged<TimelineSelection> onSelectionChanged;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(Layer layer, Duration start, Duration end)
   onLayerTimingChanged;
-  final ValueChanged<Layer?> onLayerSelectionChanged;
-  final ValueChanged<TimelineTrackSelection?> onTrackSelectionChanged;
   final LayerReorderedCallback onLayerReordered;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
@@ -247,11 +243,10 @@ class _TracksSection extends StatelessWidget {
         onTrimChanged: onTrimChanged,
         onTrimEnd: onTrimEnd,
         layers: layers,
-        selectedLayerId: selectedLayerId,
+        selection: selection,
+        onSelectionChanged: onSelectionChanged,
         onAudioTimingChanged: onAudioTimingChanged,
         onLayerTimingChanged: onLayerTimingChanged,
-        onLayerSelectionChanged: onLayerSelectionChanged,
-        onTrackSelectionChanged: onTrackSelectionChanged,
         onLayerReordered: onLayerReordered,
         pixelsPerSecond: 50,
       ),

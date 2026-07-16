@@ -105,25 +105,21 @@ void main() {
     );
   });
 
-  test(
-    'falls back to the flattened overlay when layer capture is incomplete',
-    () {
-      final layer = image_editor.WidgetLayer(widget: const SizedBox());
-      final parameters = _parameters(layers: [layer]);
+  test('rejects export when layer capture is incomplete', () {
+    final layer = image_editor.WidgetLayer(widget: const SizedBox());
+    final parameters = _parameters(layers: [layer]);
 
-      final result = buildTimedImageLayers(
+    expect(
+      () => buildTimedImageLayers(
         parameters: parameters,
         outputSize: const Size(1000, 500),
         timelineOffset: Duration.zero,
         outputDuration: const Duration(seconds: 10),
         sourceDuration: const Duration(seconds: 10),
-      );
-
-      expect(result, hasLength(1));
-      expect(result.single.offset, isNull);
-      expect(result.single.size, isNull);
-    },
-  );
+      ),
+      throwsA(isA<IncompleteLayerCaptureException>()),
+    );
+  });
 
   test('keeps captured layers square when the editor is letterboxed', () {
     final layer = image_editor.WidgetLayer(

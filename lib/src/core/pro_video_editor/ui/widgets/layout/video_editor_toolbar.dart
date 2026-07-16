@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_toolbar.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 class VideoEditorToolbar extends StatelessWidget {
@@ -10,24 +10,24 @@ class VideoEditorToolbar extends StatelessWidget {
     required this.editor,
     required this.videoTimelineState,
     required this.selectedLayer,
-    required this.selectedTrack,
+    required this.selection,
     required this.onAddSound,
     required this.onRemoveSound,
     required this.onToggleOriginalAudio,
     required this.onToggleCustomAudio,
-    required this.onClearTrackSelection,
+    required this.onClearSelection,
     super.key,
   });
 
   final ProImageEditorState editor;
   final VideoTimelineState videoTimelineState;
   final Layer? selectedLayer;
-  final TimelineTrackSelection? selectedTrack;
+  final TimelineSelection selection;
   final VoidCallback onAddSound;
   final VoidCallback onRemoveSound;
   final VoidCallback onToggleOriginalAudio;
   final VoidCallback onToggleCustomAudio;
-  final VoidCallback onClearTrackSelection;
+  final VoidCallback onClearSelection;
 
   @override
   Widget build(BuildContext context) {
@@ -41,20 +41,21 @@ class VideoEditorToolbar extends StatelessWidget {
   String get _layoutKey {
     final layer = selectedLayer;
     if (layer != null) return 'layer-${layer.runtimeType}';
-    return switch (selectedTrack) {
-      TimelineTrackSelection.primary => 'primary-track',
-      TimelineTrackSelection.audio => 'audio-track',
-      null => 'add-tools',
+    return switch (selection.kind) {
+      TimelineSelectionKind.primary => 'primary-track',
+      TimelineSelectionKind.audio => 'audio-track',
+      TimelineSelectionKind.none || TimelineSelectionKind.layer => 'add-tools',
     };
   }
 
   List<VideoToolbarAction> _actions(BuildContext context) {
     final layer = selectedLayer;
     if (layer != null) return _layerActions(context, layer);
-    return switch (selectedTrack) {
-      TimelineTrackSelection.primary => _primaryTrackActions(context),
-      TimelineTrackSelection.audio => _audioTrackActions(context),
-      null => _addActions(context),
+    return switch (selection.kind) {
+      TimelineSelectionKind.primary => _primaryTrackActions(context),
+      TimelineSelectionKind.audio => _audioTrackActions(context),
+      TimelineSelectionKind.none ||
+      TimelineSelectionKind.layer => _addActions(context),
     };
   }
 
@@ -172,7 +173,7 @@ class VideoEditorToolbar extends StatelessWidget {
         label: l10n.buttonRemove,
         onPressed: () {
           onRemoveSound();
-          onClearTrackSelection();
+          onClearSelection();
         },
         isDestructive: true,
       ),

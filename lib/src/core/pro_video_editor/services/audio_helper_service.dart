@@ -1,11 +1,18 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:video_player/video_player.dart';
 
 const _resumeSeekTolerance = Duration(milliseconds: 250);
+const _flutterAssetDirectory = 'assets/';
+
+String audioPlayerAssetPath(String flutterAssetKey) {
+  return flutterAssetKey.startsWith(_flutterAssetDirectory)
+      ? flutterAssetKey.substring(_flutterAssetDirectory.length)
+      : flutterAssetKey;
+}
 
 AudioPlaybackTiming resolveCustomAudioTiming({
   required Duration? audioStartTime,
@@ -108,20 +115,20 @@ bool shouldSeekCustomAudioOnResume({
   return delta.abs() > _resumeSeekTolerance;
 }
 
-String customAudioTempFilename(AudioTrack track, {int? index}) {
-  final extension = decodeSoundTrackAudioFileExtension(track.id);
-  final suffix = index == null ? '' : '-$index';
-  return 'temp-audio$suffix.$extension';
-}
-
 /// A helper service that manages audio playback alongside video playback.
 class AudioHelperService {
   /// Creates an instance of [AudioHelperService] for the
   /// given [videoController].
-  AudioHelperService({required this.videoController});
+  AudioHelperService({
+    required this.videoController,
+    AudioPlayer? audioPlayer,
+    void Function(Object error, StackTrace stackTrace)? onPlaybackError,
+  }) : _audioPlayer = audioPlayer ?? AudioPlayer(),
+       _onPlaybackError = onPlaybackError ?? Zone.current.handleUncaughtError;
 
   /// The internal audio player used to handle audio playback.
-  final _audioPlayer = AudioPlayer();
+  final AudioPlayer _audioPlayer;
+  final void Function(Object error, StackTrace stackTrace) _onPlaybackError;
 
   /// The controller managing video playback.
   final VideoPlayerController videoController;
@@ -133,11 +140,14 @@ class AudioHelperService {
   bool get useCustomAudio => _useCustomAudio;
 
   String? _currentTrackId;
-  bool _isSynchronizing = false;
   bool? _wasActiveAtLastSync;
+  bool? _wasVideoPlayingAtLastSync;
   Duration? _lastSyncVideoPosition;
-  Future<void> _prepareQueue = Future.value();
-  int _prepareRevision = 0;
+  Future<void> _operationQueue = Future.value();
+  int _playbackRevision = 0;
+  int _synchronizationRevision = 0;
+  bool _isDisposed = false;
+  Timer? _boundaryTimer;
 
   /// Stores the last applied audio balance between video and overlay.
   double _lastVolumeBalance = 0;
@@ -164,15 +174,37 @@ class AudioHelperService {
 
   /// Disposes of the audio player and releases resources.
   Future<void> dispose() async {
-    _prepareRevision++;
-    await _prepareQueue;
+    if (_isDisposed) return;
+    _isDisposed = true;
+    _invalidatePlayback();
+    await _operationQueue;
     await _audioPlayer.dispose();
+  }
+
+  int _invalidatePlayback() {
+    _boundaryTimer?.cancel();
+    _boundaryTimer = null;
+    _synchronizationRevision++;
+    return ++_playbackRevision;
+  }
+
+  bool _isCurrent(int revision) =>
+      !_isDisposed && revision == _playbackRevision;
+
+  Future<void> _enqueue(Future<void> Function() operation) {
+    if (_isDisposed) return Future.value();
+    final result = _operationQueue.then((_) => operation());
+    _operationQueue = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return result;
   }
 
   Source _sourceForTrack(AudioTrack track) {
     final audio = track.audio;
     if (audio.hasAssetPath) {
-      return AssetSource(audio.assetPath!);
+      return AssetSource(audioPlayerAssetPath(audio.assetPath!));
     }
     if (audio.hasFile) {
       return DeviceFileSource(audio.file!.path);
@@ -194,37 +226,54 @@ class AudioHelperService {
     Duration? videoEnd,
     bool forceSeek = false,
   }) async {
-    _prepareRevision++;
-    await _prepareQueue;
-    _trackVolume = track.volume;
-    _lastVolumeBalance = track.volumeBalance;
-    final timing = resolveCustomAudioTiming(
-      audioStartTime: track.audioStartTime,
-      audioEndTime: track.audioEndTime,
-      audioDuration: track.duration,
-      trackStartTime: track.startTime,
-      trackEndTime: track.endTime,
-      loop: track.loop,
-      videoPosition: videoPosition,
-      videoStart: videoStart,
-      videoEnd: videoEnd ?? videoController.value.duration,
-    );
+    final revision = _invalidatePlayback();
+    return _enqueue(() async {
+      _trackVolume = track.volume;
+      _lastVolumeBalance = track.volumeBalance;
+      final effectiveVideoEnd = videoEnd ?? videoController.value.duration;
+      final timing = resolveCustomAudioTiming(
+        audioStartTime: track.audioStartTime,
+        audioEndTime: track.audioEndTime,
+        audioDuration: track.duration,
+        trackStartTime: track.startTime,
+        trackEndTime: track.endTime,
+        loop: track.loop,
+        videoPosition: videoPosition,
+        videoStart: videoStart,
+        videoEnd: effectiveVideoEnd,
+      );
 
-    await _audioPlayer.setReleaseMode(ReleaseMode.stop);
-    if (_currentTrackId != track.id) {
-      await _audioPlayer.setSource(_sourceForTrack(track));
-      _currentTrackId = track.id;
-      await _audioPlayer.seek(timing.position);
-    } else if (forceSeek) {
-      await _audioPlayer.seek(timing.position);
-    } else if (shouldSeekCustomAudioOnResume(
-      currentPosition: await _audioPlayer.getCurrentPosition(),
-      targetPosition: timing.position,
-    )) {
-      await _audioPlayer.seek(timing.position);
-    }
-    if (!timing.isActive) return _audioPlayer.pause();
-    await _audioPlayer.resume();
+      await _audioPlayer.setReleaseMode(ReleaseMode.stop);
+      if (!_isCurrent(revision)) return;
+      if (_currentTrackId != track.id) {
+        await _audioPlayer.setSource(_sourceForTrack(track));
+        _currentTrackId = track.id;
+        if (!_isCurrent(revision)) return;
+        await _audioPlayer.seek(timing.position);
+      } else if (forceSeek) {
+        await _audioPlayer.seek(timing.position);
+      } else if (shouldSeekCustomAudioOnResume(
+        currentPosition: await _audioPlayer.getCurrentPosition(),
+        targetPosition: timing.position,
+      )) {
+        if (!_isCurrent(revision)) return;
+        await _audioPlayer.seek(timing.position);
+      }
+      if (!_isCurrent(revision)) return;
+      if (!timing.isActive) return _audioPlayer.pause();
+      await _audioPlayer.resume();
+      if (!_isCurrent(revision)) {
+        await _audioPlayer.pause();
+        return;
+      }
+      _scheduleBoundary(
+        revision: revision,
+        track: track,
+        timing: timing,
+        videoStart: videoStart,
+        videoEnd: effectiveVideoEnd,
+      );
+    });
   }
 
   Future<void> prepare(
@@ -233,25 +282,23 @@ class AudioHelperService {
     Duration videoStart = Duration.zero,
     Duration? videoEnd,
   }) {
-    final revision = ++_prepareRevision;
-    final operation = _prepareQueue.then((_) async {
-      if (revision != _prepareRevision) return;
+    final revision = _invalidatePlayback();
+    return _enqueue(() async {
+      if (!_isCurrent(revision)) return;
       await _prepare(
         track,
+        revision: revision,
         videoPosition: videoPosition,
         videoStart: videoStart,
         videoEnd: videoEnd,
       );
+      if (!_isCurrent(revision)) await _audioPlayer.pause();
     });
-    _prepareQueue = operation.then<void>(
-      (_) {},
-      onError: (Object _, StackTrace _) {},
-    );
-    return operation;
   }
 
   Future<void> _prepare(
     AudioTrack track, {
+    required int revision,
     required Duration videoPosition,
     required Duration videoStart,
     required Duration? videoEnd,
@@ -269,33 +316,40 @@ class AudioHelperService {
     );
 
     await _audioPlayer.setReleaseMode(ReleaseMode.stop);
+    if (!_isCurrent(revision)) return;
     if (_currentTrackId != track.id) {
       await _audioPlayer.setSource(_sourceForTrack(track));
       _currentTrackId = track.id;
+      if (!_isCurrent(revision)) return;
     }
     await _audioPlayer.seek(timing.position);
+    if (!_isCurrent(revision)) return;
     _trackVolume = track.volume;
-    await balanceAudio(track.volumeBalance);
+    _lastVolumeBalance = track.volumeBalance;
+    await _applyBalance();
+    if (!_isCurrent(revision)) return;
     if (!timing.isActive && _audioPlayer.state == PlayerState.playing) {
-      await pause();
+      await _audioPlayer.pause();
     }
   }
 
   /// Pauses the current audio playback.
   Future<void> pause() {
-    return _audioPlayer.pause();
+    _invalidatePlayback();
+    return _enqueue(_audioPlayer.pause);
   }
 
   /// Sets the playback volume for custom audio.
   ///
   /// The [volume] should be a value between `0.0` (muted) and `1.0` (maximum).
   Future<void> setVolume(double volume) {
-    return _audioPlayer.setVolume(volume);
+    return _enqueue(() => _audioPlayer.setVolume(volume));
   }
 
   /// Seeks the audio playback to the specified [startTime].
   Future<void> seek(Duration startTime) {
-    return _audioPlayer.seek(startTime);
+    _invalidatePlayback();
+    return _enqueue(() => _audioPlayer.seek(startTime));
   }
 
   Future<void> seekToVideoPosition(
@@ -304,19 +358,25 @@ class AudioHelperService {
     required Duration videoStart,
     required Duration videoEnd,
   }) async {
-    final timing = resolveCustomAudioTiming(
-      audioStartTime: track.audioStartTime,
-      audioEndTime: track.audioEndTime,
-      audioDuration: track.duration,
-      trackStartTime: track.startTime,
-      trackEndTime: track.endTime,
-      loop: track.loop,
-      videoPosition: videoPosition,
-      videoStart: videoStart,
-      videoEnd: videoEnd,
-    );
-    await seek(timing.position);
-    if (!timing.isActive) await pause();
+    final revision = _invalidatePlayback();
+    return _enqueue(() async {
+      if (!_isCurrent(revision)) return;
+      final timing = resolveCustomAudioTiming(
+        audioStartTime: track.audioStartTime,
+        audioEndTime: track.audioEndTime,
+        audioDuration: track.duration,
+        trackStartTime: track.startTime,
+        trackEndTime: track.endTime,
+        loop: track.loop,
+        videoPosition: videoPosition,
+        videoStart: videoStart,
+        videoEnd: videoEnd,
+      );
+      await _audioPlayer.seek(timing.position);
+      if (!_isCurrent(revision) || !timing.isActive) {
+        await _audioPlayer.pause();
+      }
+    });
   }
 
   Future<void> synchronizePlayback(
@@ -325,9 +385,8 @@ class AudioHelperService {
     required Duration videoStart,
     required Duration videoEnd,
     required bool isVideoPlaying,
+    bool forceSeek = false,
   }) async {
-    if (_isSynchronizing) return;
-
     final timing = resolveCustomAudioTiming(
       audioStartTime: track.audioStartTime,
       audioEndTime: track.audioEndTime,
@@ -341,39 +400,96 @@ class AudioHelperService {
     );
     final lastPosition = _lastSyncVideoPosition;
     final activeChanged = timing.isActive != _wasActiveAtLastSync;
-    if (!activeChanged &&
+    final videoPlaybackChanged = isVideoPlaying != _wasVideoPlayingAtLastSync;
+    if (!forceSeek &&
+        !activeChanged &&
+        !videoPlaybackChanged &&
         lastPosition != null &&
         (videoPosition - lastPosition).abs() <
             const Duration(milliseconds: 200)) {
       return;
     }
 
-    _isSynchronizing = true;
     _lastSyncVideoPosition = videoPosition;
     _wasActiveAtLastSync = timing.isActive;
-    try {
+    _wasVideoPlayingAtLastSync = isVideoPlaying;
+    final revision = _playbackRevision;
+    final synchronizationRevision = ++_synchronizationRevision;
+    return _enqueue(() async {
+      bool isCurrent() =>
+          _isCurrent(revision) &&
+          synchronizationRevision == _synchronizationRevision;
+
+      if (!isCurrent()) return;
       if (!isVideoPlaying || !timing.isActive) {
-        if (_audioPlayer.state == PlayerState.playing) await pause();
+        _boundaryTimer?.cancel();
+        if (_audioPlayer.state == PlayerState.playing) {
+          await _audioPlayer.pause();
+        }
         return;
       }
 
       if (_currentTrackId != track.id) {
         await _audioPlayer.setSource(_sourceForTrack(track));
         _currentTrackId = track.id;
+        if (!isCurrent()) return;
       }
       final currentPosition = await _audioPlayer.getCurrentPosition();
-      if (shouldSeekCustomAudioOnResume(
-        currentPosition: currentPosition,
-        targetPosition: timing.position,
-      )) {
-        await seek(timing.position);
+      if (!isCurrent()) return;
+      if (forceSeek ||
+          shouldSeekCustomAudioOnResume(
+            currentPosition: currentPosition,
+            targetPosition: timing.position,
+          )) {
+        await _audioPlayer.seek(timing.position);
       }
+      if (!isCurrent()) return;
       if (_audioPlayer.state != PlayerState.playing) {
         await _audioPlayer.resume();
       }
-    } finally {
-      _isSynchronizing = false;
-    }
+      if (!isCurrent()) {
+        await _audioPlayer.pause();
+        return;
+      }
+      _scheduleBoundary(
+        revision: revision,
+        track: track,
+        timing: timing,
+        videoStart: videoStart,
+        videoEnd: videoEnd,
+      );
+    });
+  }
+
+  void _scheduleBoundary({
+    required int revision,
+    required AudioTrack track,
+    required AudioPlaybackTiming timing,
+    required Duration videoStart,
+    required Duration videoEnd,
+  }) {
+    _boundaryTimer?.cancel();
+    final sourceEnd = track.audioEndTime ?? track.duration;
+    final sourceRemaining = sourceEnd - timing.position;
+    final timelineEnd = track.endTime ?? videoEnd;
+    final timelineRemaining = timelineEnd - videoController.value.position;
+    final delay = sourceRemaining < timelineRemaining
+        ? sourceRemaining
+        : timelineRemaining;
+    if (delay <= Duration.zero) return;
+    _boundaryTimer = Timer(delay, () {
+      if (!_isCurrent(revision)) return;
+      unawaited(
+        synchronizePlayback(
+          track,
+          videoPosition: videoController.value.position,
+          videoStart: videoStart,
+          videoEnd: videoEnd,
+          isVideoPlaying: videoController.value.isPlaying,
+          forceSeek: true,
+        ).onError(_onPlaybackError),
+      );
+    });
   }
 
   /// Sets the audio mode to either original or custom.
@@ -382,14 +498,8 @@ class AudioHelperService {
   /// When [useCustom] is false, custom audio is muted and original
   /// video audio plays at full volume.
   Future<void> setAudioMode({required bool useCustom}) async {
+    if (!useCustom) _invalidatePlayback();
     _useCustomAudio = useCustom;
-
-    if (!useCustom) {
-      _lastVolumeBalance = -1;
-    } else if (_lastVolumeBalance < 0) {
-      // Reset to neutral balance when enabling custom audio
-      _lastVolumeBalance = 0;
-    }
     await balanceAudio();
   }
 
@@ -399,25 +509,33 @@ class AudioHelperService {
   /// while a positive value lowers the video volume.
   Future<void> balanceAudio([double? volumeBalance]) async {
     volumeBalance ??= _lastVolumeBalance;
+    _lastVolumeBalance = volumeBalance;
+    await _enqueue(_applyBalance);
+  }
 
+  Future<void> _applyBalance() async {
     final volumes = resolveAudioMixVolumes(
       trackVolume: _trackVolume,
-      volumeBalance: volumeBalance,
+      volumeBalance: _useCustomAudio ? _lastVolumeBalance : 0,
       isMuted: _isMuted,
       isOriginalMuted: _isOriginalMuted,
-      isOverlayMuted: _isOverlayMuted,
+      isOverlayMuted: _isOverlayMuted || !_useCustomAudio,
     );
     await Future.wait([
-      setVolume(volumes.overlayVolume),
+      _audioPlayer.setVolume(volumes.overlayVolume),
       videoController.setVolume(volumes.originalVolume),
     ]);
-    _lastVolumeBalance = volumeBalance;
   }
 
   /// Mutes all audio (both original and custom).
   Future<void> muteAll() async {
     _isMuted = true;
-    await Future.wait([setVolume(0), videoController.setVolume(0)]);
+    await _enqueue(
+      () => Future.wait([
+        _audioPlayer.setVolume(0),
+        videoController.setVolume(0),
+      ]),
+    );
   }
 
   /// Restores audio based on current balance.
@@ -438,40 +556,5 @@ class AudioHelperService {
   Future<void> setOverlayMuted({required bool isMuted}) async {
     _isOverlayMuted = isMuted;
     await balanceAudio();
-  }
-
-  /// Returns a local file path for the given [track]'s audio source.
-  ///
-  /// - If the audio already exists as a file, its path is returned.
-  /// - Otherwise, the audio is written to a temporary file from
-  ///   assets, network, or memory bytes.
-  Future<String?> safeCustomAudioPath(
-    AudioTrack? track, {
-    int index = 0,
-  }) async {
-    final directory = await getTemporaryDirectory();
-
-    final effectiveTrack = track;
-    if (effectiveTrack == null) return null;
-
-    final audio = effectiveTrack.audio;
-
-    if (audio.hasFile) {
-      return audio.file!.path;
-    } else {
-      final filePath =
-          '${directory.path}/${customAudioTempFilename(effectiveTrack, index: index)}';
-
-      if (audio.hasNetworkUrl) {
-        return (await fetchVideoToFile(audio.networkUrl!, filePath)).path;
-      } else if (audio.hasAssetPath) {
-        return (await writeAssetVideoToFile(
-          'assets/${audio.assetPath!}',
-          filePath,
-        )).path;
-      } else {
-        return (await writeMemoryVideoToFile(audio.bytes!, filePath)).path;
-      }
-    }
   }
 }

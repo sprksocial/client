@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
@@ -25,11 +26,10 @@ void main() {
               onSeekStart: () {},
               onSeekEnd: () {},
               layers: const [],
-              selectedLayerId: null,
+              selection: TimelineSelection.none,
+              onSelectionChanged: (_) {},
               onAudioTimingChanged: (_) {},
               onLayerTimingChanged: (_, _, _) {},
-              onLayerSelectionChanged: (_) {},
-              onTrackSelectionChanged: (_) {},
               onLayerReordered: (_, _, _, _) {},
               canUndo: false,
               canRedo: false,

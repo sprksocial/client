@@ -1,9 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 const _kRevealDuration = Duration(milliseconds: 240);
 const _kRevealCurve = Cubic(0.32, 0.72, 0, 1);
@@ -23,20 +26,33 @@ class VideoEditorViewport {
   final Offset offset;
 }
 
-class VideoEditorRevealController extends AnimationController {
-  VideoEditorRevealController({
-    required super.vsync,
+class VideoEditorRevealCoordinator extends ChangeNotifier {
+  VideoEditorRevealCoordinator({
+    required TickerProvider vsync,
     bool initiallyRevealed = false,
-  }) : super(duration: _kRevealDuration, value: initiallyRevealed ? 1 : 0);
+  }) : _animation = AnimationController(
+         vsync: vsync,
+         duration: _kRevealDuration,
+         value: initiallyRevealed ? 1 : 0,
+       ) {
+    _animation.addListener(_onAnimationChanged);
+  }
 
+  final AnimationController _animation;
   double _panelHeight = recordingPageFooterHeight;
-  double _dragStartValue = 0;
   Size? _viewportSize;
   double? _previewAspectRatio;
+  double _dragStartValue = 0;
+  VideoEditorViewport? _pendingViewport;
+  bool _viewportCallbackScheduled = false;
+  bool _isDisposed = false;
+
+  ValueChanged<VideoEditorViewport>? onViewportChanged;
 
   double get panelHeight => _panelHeight;
-
-  bool get isFullscreen => value == lowerBound;
+  double get value => _animation.value;
+  set value(double value) => _animation.value = value;
+  bool get isFullscreen => value == 0;
 
   VideoEditorViewport? get viewport {
     final sourceSize = _viewportSize;
@@ -72,23 +88,33 @@ class VideoEditorRevealController extends AnimationController {
     );
   }
 
-  bool updateViewportGeometry(Size size, double previewAspectRatio) {
+  void updateViewport(Size size, double previewAspectRatio) {
     if (_viewportSize == size && _previewAspectRatio == previewAspectRatio) {
-      return false;
+      return;
     }
     _viewportSize = size;
     _previewAspectRatio = previewAspectRatio;
-    return true;
+    _pendingViewport = viewport;
+    if (_viewportCallbackScheduled) return;
+
+    _viewportCallbackScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _viewportCallbackScheduled = false;
+      final pendingViewport = _pendingViewport;
+      _pendingViewport = null;
+      if (_isDisposed || pendingViewport == null) return;
+      onViewportChanged?.call(pendingViewport);
+    });
   }
 
   void updatePanelHeight(double height) {
     if (height <= 0 || (_panelHeight - height).abs() < 0.5) return;
     _panelHeight = height;
-    notifyListeners();
+    _notifyViewportChanged();
   }
 
   void beginDrag() {
-    stop();
+    _animation.stop();
     _dragStartValue = value;
   }
 
@@ -97,7 +123,7 @@ class VideoEditorRevealController extends AnimationController {
     required double availableHeight,
   }) {
     final travelDistance = (availableHeight * 0.38).clamp(180.0, 320.0);
-    value = (value - primaryDelta / travelDistance).clamp(0.0, 1.0);
+    _animation.value = (value - primaryDelta / travelDistance).clamp(0, 1);
   }
 
   Future<void> endDrag({
@@ -114,7 +140,7 @@ class VideoEditorRevealController extends AnimationController {
         : value >= 0.5;
     final target = shouldReveal ? 1.0 : 0.0;
     if (reduceMotion) {
-      value = target;
+      _animation.value = target;
       return;
     }
 
@@ -125,33 +151,55 @@ class VideoEditorRevealController extends AnimationController {
         (_kRevealDuration.inMilliseconds * remainingDistance).round(),
       ),
     );
-    await animateTo(target, duration: duration, curve: _kRevealCurve);
+    try {
+      await _animation
+          .animateTo(target, duration: duration, curve: _kRevealCurve)
+          .orCancel;
+    } on TickerCanceled {
+      // A new drag or disposal supersedes the previous settle operation.
+    }
+  }
+
+  void _onAnimationChanged() => _notifyViewportChanged();
+
+  void _notifyViewportChanged() {
+    final currentViewport = viewport;
+    if (currentViewport != null) onViewportChanged?.call(currentViewport);
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _pendingViewport = null;
+    _animation
+      ..removeListener(_onAnimationChanged)
+      ..dispose();
+    super.dispose();
   }
 }
 
 class VideoEditorRevealBody extends StatefulWidget {
   const VideoEditorRevealBody({
-    required this.controller,
+    required this.coordinator,
     required this.previewAspectRatio,
+    required this.editor,
+    required this.timelineState,
+    required this.selectedLayerIdListenable,
     required this.child,
     required this.overlay,
-    required this.onViewportGeometryChanged,
-    required this.hasSelectedLayer,
     required this.onPreviewTap,
-    this.previewOverlay,
-    this.isPositionOnLayer,
     super.key,
   });
 
-  final VideoEditorRevealController controller;
+  final VideoEditorRevealCoordinator coordinator;
   final double previewAspectRatio;
+  final ProImageEditorState editor;
+  final VideoTimelineState timelineState;
+  final ValueListenable<String?> selectedLayerIdListenable;
   final Widget child;
   final Widget overlay;
-  final Widget? previewOverlay;
-  final VoidCallback onViewportGeometryChanged;
-  final bool Function() hasSelectedLayer;
   final VoidCallback onPreviewTap;
-  final bool Function(Offset globalPosition)? isPositionOnLayer;
 
   @override
   State<VideoEditorRevealBody> createState() => _VideoEditorRevealBodyState();
@@ -166,7 +214,7 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
   bool _previewTapStartedWithSelection = false;
 
   void _onPreviewPointerDown(PointerDownEvent event) {
-    if (_previewTapPointer != null || !widget.controller.isFullscreen) {
+    if (_previewTapPointer != null || !widget.coordinator.isFullscreen) {
       _clearPreviewTap();
       return;
     }
@@ -174,9 +222,8 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
     _previewTapPointer = event.pointer;
     _previewTapOrigin = event.position;
     _previewTapStart = event.timeStamp;
-    _previewTapStartedOnLayer =
-        widget.isPositionOnLayer?.call(event.position) ?? false;
-    _previewTapStartedWithSelection = widget.hasSelectedLayer();
+    _previewTapStartedOnLayer = _isPositionOnLayer(event.position);
+    _previewTapStartedWithSelection = widget.editor.hasSelectedLayers;
   }
 
   void _onPreviewPointerMove(PointerMoveEvent event) {
@@ -191,7 +238,7 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
     if (event.pointer != _previewTapPointer) return;
     final start = _previewTapStart;
     final shouldTogglePlayback =
-        widget.controller.isFullscreen &&
+        widget.coordinator.isFullscreen &&
         !_previewTapMoved &&
         !_previewTapStartedOnLayer &&
         !_previewTapStartedWithSelection &&
@@ -215,28 +262,58 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
   }
 
   void _onVerticalDragStart(DragStartDetails details) {
-    widget.controller.beginDrag();
+    widget.coordinator.beginDrag();
   }
 
   void _onVerticalDragUpdate(DragUpdateDetails details) {
-    widget.controller.updateDrag(
+    widget.coordinator.updateDrag(
       primaryDelta: details.delta.dy,
       availableHeight: MediaQuery.sizeOf(context).height,
     );
   }
 
   void _onVerticalDragEnd(DragEndDetails details) {
-    widget.controller.endDrag(
+    widget.coordinator.endDrag(
       primaryVelocity: details.velocity.pixelsPerSecond.dy,
       reduceMotion: MediaQuery.disableAnimationsOf(context),
     );
   }
 
   void _onVerticalDragCancel() {
-    widget.controller.endDrag(
+    widget.coordinator.endDrag(
       primaryVelocity: 0,
       reduceMotion: MediaQuery.disableAnimationsOf(context),
     );
+  }
+
+  bool _isPositionOnLayer(Offset globalPosition) {
+    final interactionStyle = widget.editor.configs.layerInteraction.style;
+    final hitPadding =
+        interactionStyle.overlayPadding.horizontal / 2 +
+        interactionStyle.buttonRadius +
+        interactionStyle.strokeWidth;
+    for (final layer in widget.editor.activeLayers.reversed) {
+      if (!isVideoEditorLayerVisibleAt(
+        layer,
+        widget.timelineState.sourcePosition,
+      )) {
+        continue;
+      }
+      final renderObject = layer.repaintBoundaryKey.currentContext
+          ?.findRenderObject();
+      if (renderObject is! RenderBox ||
+          !renderObject.attached ||
+          !renderObject.hasSize) {
+        continue;
+      }
+
+      final bounds = MatrixUtils.transformRect(
+        renderObject.getTransformTo(null),
+        Offset.zero & renderObject.size,
+      ).inflate(hitPadding);
+      if (bounds.contains(globalPosition)) return true;
+    }
+    return false;
   }
 
   @override
@@ -244,20 +321,15 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final sourceSize = constraints.biggest;
-        final geometryChanged = widget.controller.updateViewportGeometry(
+        widget.coordinator.updateViewport(
           sourceSize,
           widget.previewAspectRatio,
         );
-        if (geometryChanged) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) widget.onViewportGeometryChanged();
-          });
-        }
         return AnimatedBuilder(
-          animation: widget.controller,
+          animation: widget.coordinator,
           child: SizedBox.fromSize(size: sourceSize, child: widget.child),
           builder: (context, child) {
-            final targetRect = widget.controller.viewport!.previewRect;
+            final targetRect = widget.coordinator.viewport!.previewRect;
 
             return RawGestureDetector(
               key: const ValueKey('video-editor-reveal-gesture'),
@@ -269,7 +341,7 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
                     >(
                       _LayerAwareVerticalDragGestureRecognizer.new,
                       (recognizer) => recognizer
-                        ..isPositionOnLayer = widget.isPositionOnLayer
+                        ..isPositionOnLayer = _isPositionOnLayer
                         ..onStart = _onVerticalDragStart
                         ..onUpdate = _onVerticalDragUpdate
                         ..onEnd = _onVerticalDragEnd
@@ -300,11 +372,15 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
                         ),
                       ),
                     ),
-                    if (widget.previewOverlay != null)
-                      Positioned.fromRect(
-                        rect: targetRect,
-                        child: widget.previewOverlay!,
+                    Positioned.fromRect(
+                      rect: targetRect,
+                      child: _VideoPlaybackIndicator(
+                        timelineState: widget.timelineState,
+                        reveal: widget.coordinator,
+                        selectedLayerIdListenable:
+                            widget.selectedLayerIdListenable,
                       ),
+                    ),
                     Positioned(
                       top: 0,
                       left: 0,
@@ -354,7 +430,8 @@ class _LayerAwareVerticalDragGestureRecognizer
         event is PointerMoveEvent &&
         origin != null) {
       final delta = event.position - origin;
-      if (delta.distanceSquared > 16 && delta.dy.abs() > delta.dx.abs()) {
+      if (delta.distanceSquared >= kTouchSlop * kTouchSlop &&
+          delta.dy.abs() > delta.dx.abs()) {
         _hasResolvedGesture = true;
         resolve(GestureDisposition.accepted);
       }
@@ -385,22 +462,22 @@ class _PreviewFrameClipper extends CustomClipper<RRect> {
 
 class VideoEditorRevealRemoveArea extends StatelessWidget {
   const VideoEditorRevealRemoveArea({
-    required this.controller,
+    required this.coordinator,
     required this.child,
     super.key,
   });
 
-  final VideoEditorRevealController controller;
+  final VideoEditorRevealCoordinator coordinator;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => AnimatedBuilder(
-        animation: controller,
+        animation: coordinator,
         child: child,
         builder: (_, child) {
-          final previewBottom = controller.viewport?.previewRect.bottom;
+          final previewBottom = coordinator.viewport?.previewRect.bottom;
           final bottomInset = previewBottom == null
               ? 0.0
               : math.max(0.0, constraints.maxHeight - previewBottom);
@@ -424,13 +501,13 @@ Size _containedSize(Size bounds, double aspectRatio) {
 
 class VideoEditorRevealBottomBar extends StatefulWidget {
   const VideoEditorRevealBottomBar({
-    required this.controller,
+    required this.coordinator,
     required this.child,
     this.visible = true,
     super.key,
   });
 
-  final VideoEditorRevealController controller;
+  final VideoEditorRevealCoordinator coordinator;
   final Widget child;
   final bool visible;
 
@@ -447,6 +524,8 @@ class _VideoEditorRevealBottomBarState
   @override
   void initState() {
     super.initState();
+    // OverlayPortal inserts its overlay on the next frame; its content can only
+    // be measured on the following frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _overlayController.show();
@@ -457,13 +536,16 @@ class _VideoEditorRevealBottomBarState
   @override
   void didUpdateWidget(VideoEditorRevealBottomBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _reportPanelHeight());
+    if (oldWidget.child != widget.child ||
+        oldWidget.coordinator != widget.coordinator) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reportPanelHeight());
+    }
   }
 
   void _reportPanelHeight() {
     if (!mounted) return;
     final height = _panelKey.currentContext?.size?.height;
-    if (height != null) widget.controller.updatePanelHeight(height);
+    if (height != null) widget.coordinator.updatePanelHeight(height);
   }
 
   @override
@@ -495,16 +577,14 @@ class _VideoEditorRevealBottomBarState
             overlayChildBuilder: (overlayContext) {
               if (!widget.visible) return const SizedBox.shrink();
               return AnimatedBuilder(
-                animation: widget.controller,
+                animation: widget.coordinator,
                 child: panel,
                 builder: (_, child) => Positioned(
                   left: 0,
                   right: 0,
                   bottom:
-                      MediaQuery.viewPaddingOf(overlayContext).bottom *
-                          widget.controller.value -
-                      widget.controller.panelHeight *
-                          (1 - widget.controller.value),
+                      -widget.coordinator.panelHeight *
+                      (1 - widget.coordinator.value),
                   child: child!,
                 ),
               );
@@ -512,9 +592,9 @@ class _VideoEditorRevealBottomBarState
             child: ColoredBox(
               color: AppColors.greyBlack,
               child: AnimatedBuilder(
-                animation: widget.controller,
+                animation: widget.coordinator,
                 builder: (_, _) {
-                  final cueOpacity = (1 - widget.controller.value * 3).clamp(
+                  final cueOpacity = (1 - widget.coordinator.value * 3).clamp(
                     0.0,
                     1.0,
                   );
@@ -533,6 +613,61 @@ class _VideoEditorRevealBottomBarState
       },
     );
   }
+}
+
+class _VideoPlaybackIndicator extends StatelessWidget {
+  const _VideoPlaybackIndicator({
+    required this.timelineState,
+    required this.reveal,
+    required this.selectedLayerIdListenable,
+  });
+
+  final VideoTimelineState timelineState;
+  final VideoEditorRevealCoordinator reveal;
+  final ValueListenable<String?> selectedLayerIdListenable;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([
+          timelineState,
+          reveal,
+          selectedLayerIdListenable,
+        ]),
+        builder: (_, _) {
+          if (selectedLayerIdListenable.value != null ||
+              !reveal.isFullscreen ||
+              timelineState.isPlaying) {
+            return const SizedBox.shrink();
+          }
+          return Center(
+            child: Container(
+              width: 64,
+              height: 64,
+              decoration: const ShapeDecoration(
+                shape: CircleBorder(),
+                color: Color.fromARGB(128, 0, 0, 0),
+              ),
+              child: const Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 44,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+@visibleForTesting
+bool isVideoEditorLayerVisibleAt(Layer layer, Duration videoPosition) {
+  final startTime = layer.startTime;
+  final endTime = layer.endTime;
+  return (startTime == null || videoPosition >= startTime) &&
+      (endTime == null || videoPosition <= endTime);
 }
 
 class _RevealCue extends StatelessWidget {

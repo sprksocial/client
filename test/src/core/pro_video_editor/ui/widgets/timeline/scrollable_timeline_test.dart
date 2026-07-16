@@ -2,169 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_selection_handle.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
+import 'scrollable_timeline_test_harness.dart';
+
 void main() {
-  testWidgets('renders one ordered subtrack per audio and layer element', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(430, 760);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final topText = TextLayer(id: 'top-text', text: 'Top');
-    final secondText = TextLayer(id: 'second-text', text: 'Second');
-    final sticker = WidgetLayer(id: 'sticker', widget: const SizedBox());
-    final state = VideoTimelineState(videoDuration: const Duration(seconds: 18))
-      ..setCustomAudio(
-        AudioTrack(
-          id: 'audio',
-          title: 'Sound',
-          subtitle: 'Artist',
-          duration: const Duration(seconds: 9),
-          audio: EditorAudio(networkUrl: 'https://example.com/audio.mp3'),
-        ),
-        const [],
-      );
-    Layer? selectedLayer;
-    Duration? stickerStart;
-
-    await tester.pumpWidget(
-      _TimelineTestApp(
-        state: state,
-        layers: [topText, secondText, sticker],
-        onLayerSelectionChanged: (layer) => selectedLayer = layer,
-        onLayerTimingChanged: (layer, start, _) {
-          if (layer.id == sticker.id) stickerStart = start;
-        },
-      ),
-    );
-    await tester.pump();
-
-    final primary = find.byKey(const ValueKey('timeline-primary-track'));
-    final audio = find.byKey(const ValueKey('timeline-subtrack-audio'));
-    final top = find.byKey(const ValueKey('timeline-subtrack-layer-top-text'));
-    final second = find.byKey(
-      const ValueKey('timeline-subtrack-layer-second-text'),
-    );
-    final stickerTrack = find.byKey(
-      const ValueKey('timeline-subtrack-layer-sticker'),
-    );
-
-    expect(primary, findsOneWidget);
-    expect(audio, findsOneWidget);
-    expect(top, findsOneWidget);
-    expect(second, findsOneWidget);
-    expect(stickerTrack, findsOneWidget);
-    expect(tester.getSize(primary).height, 56);
-    for (final subtrack in [audio, top, second, stickerTrack]) {
-      expect(tester.getSize(subtrack).height, 34);
-    }
-    expect(tester.getTopLeft(audio).dy, lessThan(tester.getTopLeft(top).dy));
-    expect(tester.getTopLeft(top).dy, lessThan(tester.getTopLeft(second).dy));
-    expect(
-      tester.getTopLeft(second).dy,
-      lessThan(tester.getTopLeft(stickerTrack).dy),
-    );
-
-    final audioRange = _rangeWithin(tester, audio);
-    final topRange = _rangeWithin(tester, top);
-    final secondRange = _rangeWithin(tester, second);
-    final stickerRange = _rangeWithin(tester, stickerTrack);
-    expect(audioRange.color, AppColors.primary700);
-    expect(topRange.color, AppColors.indigo600);
-    expect(secondRange.color, AppColors.indigo600);
-    expect(stickerRange.color, AppColors.turquoise900);
-    expect(_surfaceDecorationWithin(tester, top).border, isNull);
-    expect(_surfaceDecorationWithin(tester, audio).border, isNull);
-
-    expect(find.byType(TimelineSelectionHandle), findsNothing);
-    await tester.tapAt(Offset(250, tester.getTopLeft(primary).dy + 28));
-    await tester.pump();
-    expect(
-      find.byKey(const ValueKey('timeline-primary-selection-handle-start')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const ValueKey('timeline-primary-selection-handle-end')),
-      findsOneWidget,
-    );
-    final primaryStartHandle = find.byKey(
-      const ValueKey('timeline-primary-selection-handle-start'),
-    );
-    final primaryEndHandle = find.byKey(
-      const ValueKey('timeline-primary-selection-handle-end'),
-    );
-    expect(
-      tester.getTopLeft(primaryStartHandle).dx,
-      closeTo(tester.getTopLeft(primary).dx, 0.01),
-    );
-    expect(
-      tester.getTopRight(primaryEndHandle).dx,
-      closeTo(tester.getTopRight(primary).dx, 0.01),
-    );
-    final primarySelectionFrame = tester.widget<DecoratedBox>(
-      find.byKey(const ValueKey('timeline-primary-selection-frame')),
-    );
-    final primarySelectionDecoration =
-        primarySelectionFrame.decoration as BoxDecoration;
-    expect(primarySelectionDecoration.borderRadius, BorderRadius.circular(6));
-
-    await tester.tapAt(Offset(250, tester.getTopLeft(audio).dy + 17));
-    await tester.pump();
-    expect(
-      find.byKey(const ValueKey('timeline-primary-selection-handle-start')),
-      findsNothing,
-    );
-    expect(
-      find.descendant(
-        of: audio,
-        matching: find.byType(TimelineSelectionHandle),
-      ),
-      findsNWidgets(2),
-    );
-
-    await tester.tapAt(Offset(250, tester.getTopLeft(stickerTrack).dy + 17));
-    await tester.pump();
-    expect(selectedLayer?.id, 'sticker');
-    expect(
-      find.descendant(
-        of: audio,
-        matching: find.byType(TimelineSelectionHandle),
-      ),
-      findsNothing,
-    );
-    expect(
-      find.descendant(
-        of: stickerTrack,
-        matching: find.byType(TimelineSelectionHandle),
-      ),
-      findsNWidgets(2),
-    );
-    expect(_surfaceDecorationWithin(tester, stickerTrack).border, isNotNull);
-
-    final stickerStartHandle = find.descendant(
-      of: stickerTrack,
-      matching: find.byKey(const ValueKey('timeline-selection-handle-start')),
-    );
-    await tester.drag(stickerStartHandle, const Offset(40, 0));
-    await tester.pump();
-    expect(stickerStart, isNotNull);
-    expect(stickerStart, greaterThan(Duration.zero));
-  });
-
   testWidgets('omits the sound row without audio so layers move up', (
     tester,
   ) async {
     final layer = TextLayer(id: 'text', text: 'Text');
 
     await tester.pumpWidget(
-      _TimelineTestApp(
+      TimelineTestApp(
         state: VideoTimelineState(videoDuration: const Duration(seconds: 18)),
         layers: [layer],
         onLayerSelectionChanged: (_) {},
@@ -180,6 +31,53 @@ void main() {
     expect(find.text('Add sound'), findsNothing);
   });
 
+  testWidgets('canceling a primary trim drag restores its initial range', (
+    tester,
+  ) async {
+    final state = VideoTimelineState(
+      videoDuration: const Duration(seconds: 10),
+    );
+    var changeCount = 0;
+    var commitCount = 0;
+    final changes = <(double, double)>[];
+
+    await tester.pumpWidget(
+      TimelineTestApp(
+        state: state,
+        layers: const [],
+        onLayerSelectionChanged: (_) {},
+        onTrimChanged: (start, end) {
+          changeCount++;
+          changes.add((start, end));
+        },
+        onTrimEnd: (_, _, _) => commitCount++,
+      ),
+    );
+    await tester.tap(find.byKey(const ValueKey('timeline-primary-track')));
+    await tester.pump();
+
+    final startHandle = find.byKey(
+      const ValueKey('timeline-primary-selection-handle-start'),
+    );
+    final canceledDrag = await tester.startGesture(
+      tester.getCenter(startHandle),
+    );
+    await canceledDrag.moveBy(const Offset(40, 0));
+    await tester.pump();
+    await canceledDrag.cancel();
+    await tester.pump();
+
+    expect(changeCount, greaterThan(0));
+    expect(commitCount, 0);
+    expect(state.trimStart, 0);
+    expect(state.trimEnd, 1);
+    expect(changes.last, (0, 1));
+
+    await tester.drag(startHandle, const Offset(20, 0));
+    await tester.pump();
+    expect(commitCount, 1);
+  });
+
   testWidgets(
     'pins selected subtrack handles to the primary trim and saves source time',
     (tester) async {
@@ -191,7 +89,7 @@ void main() {
       Duration? updatedEnd;
 
       await tester.pumpWidget(
-        _TimelineTestApp(
+        TimelineTestApp(
           state: state,
           layers: [layer],
           selectedLayerId: layer.id,
@@ -252,6 +150,166 @@ void main() {
       expect(updatedEnd, const Duration(seconds: 7));
     },
   );
+
+  testWidgets('canceling a horizontal range handle drag restores its range', (
+    tester,
+  ) async {
+    final changedRanges = <(double, double)>[];
+    var commitCount = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.topLeft,
+            child: TimedTrackRange(
+              totalWidth: 400,
+              sourceWidth: 400,
+              sourceOffset: 0,
+              height: 34,
+              startFraction: 0.2,
+              endFraction: 0.6,
+              color: AppColors.indigo600,
+              isSelected: true,
+              onRangeChanged: (start, end) {
+                changedRanges.add((start, end));
+              },
+              onRangeChangeEnd: (_, _) => commitCount++,
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final startHandle = find.byKey(
+      const ValueKey('timeline-selection-handle-start'),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(startHandle));
+    await gesture.moveBy(const Offset(20, 0));
+    await gesture.moveBy(const Offset(20, 0));
+    await tester.pump();
+
+    expect(changedRanges.last.$1, closeTo(0.25, 0.001));
+    expect(changedRanges.last.$2, closeTo(0.6, 0.001));
+
+    await gesture.cancel();
+    await tester.pump();
+
+    expect(changedRanges.last.$1, closeTo(0.2, 0.001));
+    expect(changedRanges.last.$2, closeTo(0.6, 0.001));
+    expect(commitCount, 0);
+  });
+
+  testWidgets('hidden range handle accumulates multiple drag updates', (
+    tester,
+  ) async {
+    double? committedEnd;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.topLeft,
+            child: TimedTrackRange(
+              totalWidth: 240,
+              sourceWidth: 400,
+              sourceOffset: 80,
+              height: 34,
+              startFraction: 0,
+              endFraction: 0.1,
+              color: AppColors.indigo600,
+              isSelected: true,
+              onRangeChanged: (_, _) {},
+              onRangeChangeEnd: (_, end) => committedEnd = end,
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final endHandle = find.byKey(
+      const ValueKey('timeline-selection-handle-end'),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(endHandle));
+    await gesture.moveBy(const Offset(20, 0));
+    await gesture.moveBy(const Offset(20, 0));
+    await gesture.moveBy(const Offset(20, 0));
+    await gesture.up();
+    await tester.pump();
+
+    expect(committedEnd, closeTo(0.3, 0.001));
+  });
+
+  testWidgets('both handles can drag a range shorter than their hit widths', (
+    tester,
+  ) async {
+    double? committedStart;
+    double? committedEnd;
+
+    Future<void> pumpRange(Key key) {
+      return tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: TimedTrackRange(
+                key: key,
+                totalWidth: 400,
+                sourceWidth: 400,
+                sourceOffset: 0,
+                height: 34,
+                startFraction: 0.2,
+                endFraction: 0.25,
+                color: AppColors.indigo600,
+                isSelected: true,
+                onRangeChanged: (_, _) {},
+                onRangeChangeEnd: (start, end) {
+                  committedStart = start;
+                  committedEnd = end;
+                },
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    await pumpRange(const ValueKey('short-range-start'));
+    var surfaceRect = tester.getRect(
+      find.byKey(const ValueKey('timed-track-range-surface')),
+    );
+    final startGesture = await tester.startGesture(
+      Offset(surfaceRect.left + surfaceRect.width / 4, surfaceRect.center.dy),
+    );
+    await startGesture.moveBy(const Offset(20, 0));
+    await startGesture.moveBy(const Offset(20, 0));
+    await startGesture.up();
+    await tester.pump();
+    expect(committedStart, closeTo(0.24, 0.001));
+    expect(committedEnd, closeTo(0.25, 0.001));
+
+    committedStart = null;
+    committedEnd = null;
+    await pumpRange(const ValueKey('short-range-end'));
+    surfaceRect = tester.getRect(
+      find.byKey(const ValueKey('timed-track-range-surface')),
+    );
+    final endGesture = await tester.startGesture(
+      Offset(
+        surfaceRect.left + surfaceRect.width * 3 / 4,
+        surfaceRect.center.dy,
+      ),
+    );
+    await endGesture.moveBy(const Offset(-20, 0));
+    await endGesture.moveBy(const Offset(-20, 0));
+    await endGesture.up();
+    await tester.pump();
+    expect(committedStart, closeTo(0.2, 0.001));
+    expect(committedEnd, closeTo(0.21, 0.001));
+  });
 
   testWidgets('keeps clipped subtrack content in source coordinates', (
     tester,
@@ -417,7 +475,6 @@ void main() {
   ) async {
     final changedRanges = <(double, double)>[];
     var commitCount = 0;
-    var cancelCount = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -437,7 +494,6 @@ void main() {
                 changedRanges.add((start, end));
               },
               onRangeChangeEnd: (_, _) => commitCount++,
-              onRepositionCancel: () => cancelCount++,
               child: const SizedBox.expand(),
             ),
           ),
@@ -477,7 +533,6 @@ void main() {
     expect(changedRanges.last.$1, closeTo(0.2, 0.001));
     expect(changedRanges.last.$2, closeTo(0.4, 0.001));
     expect(commitCount, 0);
-    expect(cancelCount, 1);
   });
 
   testWidgets('vertical long press drag reorders layers but not audio', (
@@ -509,7 +564,7 @@ void main() {
     await tester.pumpWidget(
       StatefulBuilder(
         builder: (context, setState) {
-          return _TimelineTestApp(
+          return TimelineTestApp(
             state: state,
             layers: layers,
             onLayerSelectionChanged: (_) {},
@@ -646,7 +701,7 @@ void main() {
     int? targetIndex;
 
     await tester.pumpWidget(
-      _TimelineTestApp(
+      TimelineTestApp(
         state: state,
         layers: layers,
         onLayerSelectionChanged: (_) {},
@@ -703,7 +758,7 @@ void main() {
     Duration? combinedEnd;
 
     await tester.pumpWidget(
-      _TimelineTestApp(
+      TimelineTestApp(
         state: state,
         layers: layers,
         onLayerSelectionChanged: (_) {},
@@ -846,7 +901,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      _TimelineTestApp(
+      TimelineTestApp(
         state: VideoTimelineState(videoDuration: const Duration(seconds: 18)),
         layers: layers,
         onLayerSelectionChanged: (_) {},
@@ -886,7 +941,7 @@ void main() {
     var seekStartCount = 0;
 
     await tester.pumpWidget(
-      _TimelineTestApp(
+      TimelineTestApp(
         state: state,
         layers: const [],
         onLayerSelectionChanged: (_) {},
@@ -908,357 +963,4 @@ void main() {
     expect(seekStartCount, 1);
     expect(seekCount, greaterThan(0));
   });
-
-  testWidgets('subtrack scroll indicators reflect the available direction', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(430, 760);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    final layers = List<Layer>.generate(
-      6,
-      (index) => TextLayer(id: 'text-$index', text: 'Text $index'),
-    );
-
-    await tester.pumpWidget(
-      _TimelineTestApp(
-        state: VideoTimelineState(videoDuration: const Duration(seconds: 18)),
-        layers: layers,
-        onLayerSelectionChanged: (_) {},
-      ),
-    );
-    await tester.pump();
-
-    final subtrackScroll = find.byKey(
-      const ValueKey('timeline-subtrack-scroll'),
-    );
-    final topIndicator = find.byKey(
-      const ValueKey('timeline-subtrack-scroll-indicator-top'),
-    );
-    final bottomIndicator = find.byKey(
-      const ValueKey('timeline-subtrack-scroll-indicator-bottom'),
-    );
-    final controller = tester
-        .widget<SingleChildScrollView>(subtrackScroll)
-        .controller!;
-
-    expect(tester.widget<AnimatedOpacity>(topIndicator).opacity, 0);
-    expect(tester.widget<AnimatedOpacity>(bottomIndicator).opacity, 1);
-
-    controller.jumpTo(controller.position.maxScrollExtent / 2);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 80));
-    final topFade = tester.widget<FadeTransition>(
-      find.descendant(of: topIndicator, matching: find.byType(FadeTransition)),
-    );
-    expect(topFade.opacity.value, greaterThan(0));
-    expect(topFade.opacity.value, lessThan(1));
-    expect(tester.widget<AnimatedOpacity>(bottomIndicator).opacity, 1);
-    await tester.pumpAndSettle();
-    expect(topFade.opacity.value, 1);
-
-    controller.jumpTo(controller.position.maxScrollExtent);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 80));
-    final bottomFade = tester.widget<FadeTransition>(
-      find.descendant(
-        of: bottomIndicator,
-        matching: find.byType(FadeTransition),
-      ),
-    );
-    expect(bottomFade.opacity.value, greaterThan(0));
-    expect(bottomFade.opacity.value, lessThan(1));
-    await tester.pumpAndSettle();
-    expect(bottomFade.opacity.value, 0);
-  });
-
-  testWidgets('subtrack scroll indicators stay hidden when content fits', (
-    tester,
-  ) async {
-    final layers = List<Layer>.generate(
-      4,
-      (index) => TextLayer(id: 'text-$index', text: 'Text $index'),
-    );
-
-    await tester.pumpWidget(
-      _TimelineTestApp(
-        state: VideoTimelineState(videoDuration: const Duration(seconds: 18)),
-        layers: layers,
-        onLayerSelectionChanged: (_) {},
-      ),
-    );
-    await tester.pump();
-
-    final topIndicator = find.byKey(
-      const ValueKey('timeline-subtrack-scroll-indicator-top'),
-    );
-    final bottomIndicator = find.byKey(
-      const ValueKey('timeline-subtrack-scroll-indicator-bottom'),
-    );
-    expect(tester.widget<AnimatedOpacity>(topIndicator).opacity, 0);
-    expect(tester.widget<AnimatedOpacity>(bottomIndicator).opacity, 0);
-  });
-
-  testWidgets(
-    'animates visible subtrack height changes but stays fixed after overflow',
-    (tester) async {
-      final state = VideoTimelineState(
-        videoDuration: const Duration(seconds: 18),
-      );
-      addTearDown(state.dispose);
-      final layers = List<Layer>.generate(
-        5,
-        (index) => TextLayer(id: 'text-$index', text: 'Text $index'),
-      );
-      final timeline = find.byType(ScrollableTimeline);
-
-      Future<void> pumpWithLayers(int count) {
-        return tester.pumpWidget(
-          _TimelineTestApp(
-            state: state,
-            layers: layers.take(count).toList(),
-            onLayerSelectionChanged: (_) {},
-          ),
-        );
-      }
-
-      await pumpWithLayers(1);
-      await tester.pumpAndSettle();
-      final oneTrackHeight = tester.getSize(timeline).height;
-
-      await pumpWithLayers(2);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 110));
-      final growingHeight = tester.getSize(timeline).height;
-      await tester.pumpAndSettle();
-      final twoTrackHeight = tester.getSize(timeline).height;
-      expect(growingHeight, greaterThan(oneTrackHeight));
-      expect(growingHeight, lessThan(twoTrackHeight));
-
-      await pumpWithLayers(1);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 110));
-      final shrinkingHeight = tester.getSize(timeline).height;
-      expect(shrinkingHeight, greaterThan(oneTrackHeight));
-      expect(shrinkingHeight, lessThan(twoTrackHeight));
-      await tester.pumpAndSettle();
-      expect(tester.getSize(timeline).height, oneTrackHeight);
-
-      await pumpWithLayers(4);
-      await tester.pumpAndSettle();
-      final maxVisibleHeight = tester.getSize(timeline).height;
-      await pumpWithLayers(5);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 110));
-      expect(tester.getSize(timeline).height, maxVisibleHeight);
-      await tester.pumpAndSettle();
-      expect(tester.getSize(timeline).height, maxVisibleHeight);
-    },
-  );
-
-  testWidgets('clears local layer selection when the editor deselects it', (
-    tester,
-  ) async {
-    final layer = TextLayer(id: 'text', text: 'Text');
-    final state = VideoTimelineState(
-      videoDuration: const Duration(seconds: 18),
-    );
-
-    await tester.pumpWidget(
-      _TimelineTestApp(
-        state: state,
-        layers: [layer],
-        selectedLayerId: layer.id,
-        onLayerSelectionChanged: (_) {},
-      ),
-    );
-    await tester.pump();
-
-    final layerTrack = find.byKey(
-      const ValueKey('timeline-subtrack-layer-text'),
-    );
-    expect(
-      find.descendant(
-        of: layerTrack,
-        matching: find.byType(TimelineSelectionHandle),
-      ),
-      findsNWidgets(2),
-    );
-
-    await tester.pumpWidget(
-      _TimelineTestApp(
-        state: state,
-        layers: [layer],
-        selectedLayerId: null,
-        onLayerSelectionChanged: (_) {},
-      ),
-    );
-    await tester.pump();
-
-    expect(
-      find.descendant(
-        of: layerTrack,
-        matching: find.byType(TimelineSelectionHandle),
-      ),
-      findsNothing,
-    );
-  });
-
-  testWidgets('tapping a selected layer subtrack deselects the editor layer', (
-    tester,
-  ) async {
-    final layer = TextLayer(id: 'text', text: 'Text');
-    final state = VideoTimelineState(
-      videoDuration: const Duration(seconds: 18),
-    );
-    Layer? selectedLayer = layer;
-
-    await tester.pumpWidget(
-      _TimelineTestApp(
-        state: state,
-        layers: [layer],
-        selectedLayerId: layer.id,
-        onLayerSelectionChanged: (value) => selectedLayer = value,
-      ),
-    );
-    await tester.pump();
-
-    final layerTrack = find.byKey(
-      const ValueKey('timeline-subtrack-layer-text'),
-    );
-    await tester.tapAt(Offset(250, tester.getCenter(layerTrack).dy));
-    await tester.pump();
-
-    expect(selectedLayer, isNull);
-    expect(
-      find.descendant(
-        of: layerTrack,
-        matching: find.byType(TimelineSelectionHandle),
-      ),
-      findsNothing,
-    );
-  });
-
-  testWidgets('primary and audio tracks clear the selected editor layer', (
-    tester,
-  ) async {
-    final layer = TextLayer(id: 'text', text: 'Text');
-    final state = VideoTimelineState(videoDuration: const Duration(seconds: 18))
-      ..setCustomAudio(
-        AudioTrack(
-          id: 'audio',
-          title: 'Sound',
-          subtitle: 'Artist',
-          duration: const Duration(seconds: 9),
-          audio: EditorAudio(networkUrl: 'https://example.com/audio.mp3'),
-        ),
-        const [],
-      );
-    final selectionChanges = <Layer?>[];
-    final trackSelectionChanges = <TimelineTrackSelection?>[];
-
-    await tester.pumpWidget(
-      _TimelineTestApp(
-        state: state,
-        layers: [layer],
-        selectedLayerId: layer.id,
-        onLayerSelectionChanged: selectionChanges.add,
-        onTrackSelectionChanged: trackSelectionChanges.add,
-      ),
-    );
-    await tester.pump();
-
-    final primaryTrack = find.byKey(const ValueKey('timeline-primary-track'));
-    final audioTrack = find.byKey(const ValueKey('timeline-subtrack-audio'));
-    final layerTrack = find.byKey(
-      const ValueKey('timeline-subtrack-layer-text'),
-    );
-
-    await tester.tapAt(Offset(250, tester.getCenter(primaryTrack).dy));
-    await tester.pump();
-    expect(selectionChanges, [isNull]);
-    expect(trackSelectionChanges, [TimelineTrackSelection.primary]);
-
-    await tester.tapAt(Offset(250, tester.getCenter(layerTrack).dy));
-    await tester.pump();
-    expect(selectionChanges.last, same(layer));
-    expect(trackSelectionChanges.last, isNull);
-
-    await tester.tapAt(Offset(250, tester.getCenter(audioTrack).dy));
-    await tester.pump();
-    expect(selectionChanges, [isNull, same(layer), isNull]);
-    expect(trackSelectionChanges.last, TimelineTrackSelection.audio);
-  });
-}
-
-TimedTrackRange _rangeWithin(WidgetTester tester, Finder parent) {
-  return tester.widget<TimedTrackRange>(
-    find.descendant(of: parent, matching: find.byType(TimedTrackRange)),
-  );
-}
-
-BoxDecoration _surfaceDecorationWithin(WidgetTester tester, Finder parent) {
-  final surface = tester.widget<DecoratedBox>(
-    find.descendant(
-      of: parent,
-      matching: find.byKey(const ValueKey('timed-track-range-surface')),
-    ),
-  );
-  return surface.decoration as BoxDecoration;
-}
-
-class _TimelineTestApp extends StatelessWidget {
-  const _TimelineTestApp({
-    required this.state,
-    required this.layers,
-    required this.onLayerSelectionChanged,
-    this.selectedLayerId,
-    this.onLayerTimingChanged,
-    this.onLayerReordered,
-    this.onSeek,
-    this.onSeekStart,
-    this.onSeekEnd,
-    this.onTrackSelectionChanged,
-  });
-
-  final VideoTimelineState state;
-  final List<Layer> layers;
-  final ValueChanged<Layer?> onLayerSelectionChanged;
-  final String? selectedLayerId;
-  final void Function(Layer layer, Duration start, Duration end)?
-  onLayerTimingChanged;
-  final LayerReorderedCallback? onLayerReordered;
-  final ValueChanged<double>? onSeek;
-  final VoidCallback? onSeekStart;
-  final VoidCallback? onSeekEnd;
-  final ValueChanged<TimelineTrackSelection?>? onTrackSelectionChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: SizedBox(
-          width: 430,
-          child: ScrollableTimeline(
-            videoTimelineState: state,
-            onSeek: onSeek ?? (_) {},
-            onSeekStart: onSeekStart,
-            onSeekEnd: onSeekEnd,
-            layers: layers,
-            selectedLayerId: selectedLayerId,
-            onAudioTimingChanged: (_) {},
-            onLayerTimingChanged: onLayerTimingChanged ?? (_, _, _) {},
-            onLayerSelectionChanged: onLayerSelectionChanged,
-            onTrackSelectionChanged: onTrackSelectionChanged ?? (_) {},
-            onLayerReordered: onLayerReordered ?? (_, _, _, _) {},
-            onTrimChanged: (_, _) {},
-          ),
-        ),
-      ),
-    );
-  }
 }
