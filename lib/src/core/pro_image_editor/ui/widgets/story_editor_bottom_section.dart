@@ -10,27 +10,35 @@ class StoryEditorBottomSection extends StatelessWidget {
   const StoryEditorBottomSection({
     required this.editor,
     this.onMention,
+    this.contextualControl,
     super.key,
   });
 
   final ProImageEditorState editor;
   final Future<void> Function()? onMention;
+  final Widget? contextualControl;
 
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
       color: AppColors.greyBlack,
-      child: SafeArea(
-        top: false,
-        child: StoryEditorToolbar(
-          onMention: onMention,
-          onPaint: editor.openPaintEditor,
-          onText: editor.openTextEditor,
-          onFilter: editor.openFilterEditor,
-          onBlur: editor.openBlurEditor,
-          onEmoji: editor.openEmojiEditor,
-          onStickers: editor.openStickerEditor,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ?contextualControl,
+          SafeArea(
+            top: false,
+            child: StoryEditorToolbar(
+              onMention: onMention,
+              onPaint: editor.openPaintEditor,
+              onText: editor.openTextEditor,
+              onFilter: editor.openFilterEditor,
+              onBlur: editor.openBlurEditor,
+              onEmoji: editor.openEmojiEditor,
+              onStickers: editor.openStickerEditor,
+            ),
+          ),
+        ],
       ),
     );
   }

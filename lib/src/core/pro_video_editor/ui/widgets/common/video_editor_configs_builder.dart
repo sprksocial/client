@@ -16,12 +16,12 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/common/build_stickers
 import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_progress_alert.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/filter/filter_editor_bar.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_bottom_section.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_header.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_regular_chrome.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/paint/paint_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/text/text_editor_color_picker.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/story_video_timeline_controls.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
 
 const _storyEditorBorderRadius = BorderRadius.vertical(
@@ -44,7 +44,6 @@ class VideoEditorConfigsBuilder {
 
   /// Full set of tools for regular video editing.
   static const _fullTools = [
-    SubEditorMode.audio,
     SubEditorMode.paint,
     SubEditorMode.text,
     SubEditorMode.cropRotate,
@@ -55,25 +54,18 @@ class VideoEditorConfigsBuilder {
     SubEditorMode.sticker,
   ];
 
-  static ProImageEditorConfigs build({
+  static ProImageEditorConfigs buildStory({
     required EditorVideo video,
     required String taskId,
     required bool useMaterialDesign,
     required Widget Function() videoPlayerBuilder,
-    required VideoTimelineState videoTimelineState,
-    required void Function(double progress) onSeek,
+    required VideoTimelineState timelineState,
+    required ValueChanged<double> onSeek,
     required VoidCallback onSeekStart,
     required VoidCallback onSeekEnd,
     required VoidCallback onTogglePlay,
-    required VoidCallback onToggleMute,
-    required VoidCallback onAddSound,
-    required VoidCallback onToggleFullscreen,
-    void Function(double start, double end)? onTrimChanged,
-    void Function(double start, double end, bool isStartHandle)? onTrimEnd,
     Future<void> Function()? onMention,
     void Function(ProImageEditorState editor)? onDone,
-    bool storyMode = false,
-    List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
       enableTrimBar: false,
@@ -81,8 +73,128 @@ class VideoEditorConfigsBuilder {
       widgets: VideoEditorWidgets(headerToolbar: SizedBox.shrink()),
     ),
   }) {
-    final tools = storyMode ? _storyModeTools : _fullTools;
+    return _build(
+      video: video,
+      taskId: taskId,
+      useMaterialDesign: useMaterialDesign,
+      videoPlayerBuilder: videoPlayerBuilder,
+      tools: _storyModeTools,
+      enableZoom: false,
+      mainEditorWidgets: MainEditorWidgets(
+        removeLayerArea:
+            (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
+                VideoEditorRemoveArea(
+                  removeAreaKey: removeAreaKey,
+                  editor: editor,
+                  rebuildStream: rebuildStream,
+                  isLayerBeingTransformed: isLayerBeingTransformed,
+                ),
+        appBar: (editor, rebuildStream) => null,
+        bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
+          key: key,
+          stream: rebuildStream,
+          builder: (_) => StoryEditorBottomSection(
+            editor: editor,
+            onMention: onMention,
+            contextualControl: StoryVideoTimelineControls(
+              editor: editor,
+              timelineState: timelineState,
+              onTogglePlay: onTogglePlay,
+              onSeek: onSeek,
+              onSeekStart: onSeekStart,
+              onSeekEnd: onSeekEnd,
+            ),
+          ),
+        ),
+        wrapBody: (editor, rebuildStream, content) => ClipRRect(
+          borderRadius: _storyEditorBorderRadius,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black,
+            child: content,
+          ),
+        ),
+        bodyItems: (editor, rebuildStream) => [
+          ReactiveWidget(
+            stream: rebuildStream,
+            builder: (_) => Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                bottom: false,
+                child: StoryEditorHeader(
+                  onBack: editor.closeEditor,
+                  onDone: onDone != null
+                      ? () => onDone(editor)
+                      : editor.doneEditing,
+                  canUndo: editor.canUndo,
+                  canRedo: editor.canRedo,
+                  onUndo: editor.undoAction,
+                  onRedo: editor.redoAction,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      videoEditorConfigs: videoEditorConfigs,
+    );
+  }
 
+  static ProImageEditorConfigs buildRegular({
+    required EditorVideo video,
+    required String taskId,
+    required bool useMaterialDesign,
+    required Widget Function() videoPlayerBuilder,
+    required VideoEditorRegularChrome chrome,
+    required VideoEditorConfigs videoEditorConfigs,
+  }) {
+    return _build(
+      video: video,
+      taskId: taskId,
+      useMaterialDesign: useMaterialDesign,
+      videoPlayerBuilder: videoPlayerBuilder,
+      tools: _fullTools,
+      enableZoom: true,
+      mainEditorWidgets: MainEditorWidgets(
+        removeLayerArea:
+            (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
+                chrome.buildRemoveArea(
+                  VideoEditorRemoveArea(
+                    removeAreaKey: removeAreaKey,
+                    editor: editor,
+                    rebuildStream: rebuildStream,
+                    isLayerBeingTransformed: isLayerBeingTransformed,
+                  ),
+                ),
+        appBar: (editor, rebuildStream) => null,
+        bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
+          stream: rebuildStream,
+          builder: (_) => chrome.buildBottomBar(
+            key: key,
+            editor: editor,
+            visible: !editor.isSubEditorOpen,
+          ),
+        ),
+        wrapBody: (editor, rebuildStream, content) =>
+            chrome.buildBody(editor: editor, content: content),
+      ),
+      videoEditorConfigs: videoEditorConfigs,
+    );
+  }
+
+  static ProImageEditorConfigs _build({
+    required EditorVideo video,
+    required String taskId,
+    required bool useMaterialDesign,
+    required Widget Function() videoPlayerBuilder,
+    required List<SubEditorMode> tools,
+    required bool enableZoom,
+    required MainEditorWidgets mainEditorWidgets,
+    required VideoEditorConfigs videoEditorConfigs,
+  }) {
     return ProImageEditorConfigs(
       designMode: platformDesignMode,
       dialogConfigs: DialogConfigs(
@@ -96,88 +208,17 @@ class VideoEditorConfigsBuilder {
         colorScheme: AppColorScheme.dark,
         textTheme: AppTextTheme.dark,
       ),
+      layerInteraction: const LayerInteractionConfigs(
+        selectable: LayerInteractionSelectable.enabled,
+        initialSelected: true,
+      ),
       mainEditor: MainEditorConfigs(
+        enableZoom: enableZoom,
+        enableDoubleTapZoom: false,
+        editorMinScale: 0.1,
         tools: tools,
-        widgets: MainEditorWidgets(
-          removeLayerArea:
-              (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
-                  VideoEditorRemoveArea(
-                    removeAreaKey: removeAreaKey,
-                    editor: editor,
-                    rebuildStream: rebuildStream,
-                    isLayerBeingTransformed: isLayerBeingTransformed,
-                  ),
-          appBar: (editor, rebuildStream) => null,
-          bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
-            key: key,
-            builder: (_) {
-              if (storyMode) {
-                return StoryEditorBottomSection(
-                  editor: editor,
-                  onMention: onMention,
-                );
-              }
-
-              return VideoEditorBottomSection(
-                editor: editor,
-                videoTimelineState: videoTimelineState,
-                onSeek: onSeek,
-                onSeekStart: onSeekStart,
-                onSeekEnd: onSeekEnd,
-                onTogglePlay: onTogglePlay,
-                onToggleMute: onToggleMute,
-                onAddSound: onAddSound,
-                onToggleFullscreen: onToggleFullscreen,
-                onTrimChanged: onTrimChanged,
-                onTrimEnd: onTrimEnd,
-              );
-            },
-            stream: rebuildStream,
-          ),
-          wrapBody: (editor, rebuildStream, content) {
-            if (!storyMode) {
-              return content;
-            }
-
-            return ClipRRect(
-              borderRadius: _storyEditorBorderRadius,
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.black,
-                child: content,
-              ),
-            );
-          },
-          bodyItems: (editor, rebuildStream) => [
-            ReactiveWidget(
-              stream: rebuildStream,
-              builder: (_) => Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: SafeArea(
-                  bottom: false,
-                  child: storyMode
-                      ? StoryEditorHeader(
-                          onBack: editor.closeEditor,
-                          onDone: onDone != null
-                              ? () => onDone(editor)
-                              : editor.doneEditing,
-                          canUndo: editor.canUndo,
-                          canRedo: editor.canRedo,
-                          onUndo: editor.undoAction,
-                          onRedo: editor.redoAction,
-                        )
-                      : VideoEditorHeader(
-                          onBack: editor.closeEditor,
-                          onNext: editor.doneEditing,
-                        ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        captureLayersOnDone: true,
+        widgets: mainEditorWidgets,
         style: const MainEditorStyle(
           background: AppColors.greyBlack,
           bottomBarBackground: AppColors.grey800,
@@ -392,12 +433,6 @@ class VideoEditorConfigsBuilder {
         ),
         textEditor: I18nTextEditor(backgroundMode: 'Mode', textAlign: 'Align'),
       ),
-      // audioEditor: const AudioEditorConfigs(
-      //   // Audio selection is now handled by the custom bottom sheet
-      //   // in _showAudioSelectionBottomSheet, so we provide an empty list here
-      //   // to prevent the default audio editor from showing
-      //   audioTracks: const [],
-      // ),
       clipsEditor: ClipsEditorConfigs(
         style: const ClipsEditorStyle(reversedClipsList: true),
         widgets: ClipsEditorWidgets(

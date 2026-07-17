@@ -42,9 +42,11 @@ class VideoTimelineState extends ChangeNotifier {
   bool _isPlaying = false;
   bool get isPlaying => _isPlaying;
 
-  /// Whether the audio is muted.
-  bool _isMuted = false;
-  bool get isMuted => _isMuted;
+  bool _isOriginalAudioMuted = false;
+  bool get isOriginalAudioMuted => _isOriginalAudioMuted;
+
+  bool _isCustomAudioMuted = false;
+  bool get isCustomAudioMuted => _isCustomAudioMuted;
 
   /// Trim start position (0.0–1.0 fraction of total duration).
   double _trimStart = 0.0;
@@ -150,6 +152,26 @@ class VideoTimelineState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Replaces the selected track while retaining its extracted waveform and
+  /// artwork, for example when timeline placement or looping changes.
+  void updateCustomAudioTrack(AudioTrack track) {
+    _customAudioTrack = track;
+    _useCustomAudio = true;
+    notifyListeners();
+  }
+
+  /// Updates extracted presentation data without replacing edited timing.
+  void updateCustomAudioPresentation({
+    required String trackId,
+    required List<double> waveformData,
+    String? authorAvatarUrl,
+  }) {
+    if (_customAudioTrack?.id != trackId) return;
+    _customWaveformData = waveformData;
+    _authorAvatarUrl = authorAvatarUrl;
+    notifyListeners();
+  }
+
   /// Sets the audio mode (original vs custom).
   void setAudioMode({required bool useCustom}) {
     _useCustomAudio = useCustom;
@@ -168,9 +190,13 @@ class VideoTimelineState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Updates the muted state.
-  void setMuted({required bool isMuted}) {
-    _isMuted = isMuted;
+  void setOriginalAudioMuted({required bool isMuted}) {
+    _isOriginalAudioMuted = isMuted;
+    notifyListeners();
+  }
+
+  void setCustomAudioMuted({required bool isMuted}) {
+    _isCustomAudioMuted = isMuted;
     notifyListeners();
   }
 

@@ -26,6 +26,7 @@ AudioTrack? audioViewToAudioTrack(AudioView audio) {
     duration: audioDuration(audio),
     image: coverArtUrl != null ? EditorImage(networkUrl: coverArtUrl) : null,
     audio: EditorAudio(networkUrl: audioUrl),
+    loop: true,
   );
 }
 

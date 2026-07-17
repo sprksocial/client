@@ -42,6 +42,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonRemove => 'Remove';
 
   @override
+  String get buttonReplace => 'Replace';
+
+  @override
+  String get buttonMute => 'Mute';
+
+  @override
+  String get buttonUnmute => 'Unmute';
+
+  @override
+  String get buttonMoveForward => 'Forward';
+
+  @override
+  String get buttonMoveBackward => 'Backward';
+
+  @override
+  String get buttonEditText => 'Edit text';
+
+  @override
+  String get buttonEditPaint => 'Edit paint';
+
+  @override
   String get buttonRetry => 'Retry';
 
   @override
@@ -647,6 +668,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelSound => 'Sound';
+
+  @override
+  String get labelAudioSourceRange => 'Audio source range';
+
+  @override
+  String get labelVideoPlacement => 'Video placement';
+
+  @override
+  String get labelTrackVolume => 'Track volume';
+
+  @override
+  String get labelAudioBalance => 'Balance';
+
+  @override
+  String get labelLoopAudio => 'Loop audio';
 
   @override
   String get titleSelectSound => 'Select sound';

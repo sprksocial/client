@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
@@ -16,12 +18,9 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   const AudioSelectionBottomSheet({
     required this.configs,
     required this.videoDuration,
-    required this.onTrackSelected,
-    required this.onBalanceChanged,
-    required this.onStartTimeChanged,
-    required this.onConfirm,
     required this.onTrackPlay,
     required this.onTrackStop,
+    required this.onTrackPreviewChanged,
     this.initialSelectedTrack,
     super.key,
   });
@@ -35,23 +34,14 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   /// Initial selected track (if any).
   final AudioTrack? initialSelectedTrack;
 
-  /// Called when a track is selected.
-  final void Function(AudioTrack track) onTrackSelected;
-
-  /// Called when balance slider changes.
-  final void Function(double balance) onBalanceChanged;
-
-  /// Called when start time changes in waveform selector.
-  final void Function(Duration startTime) onStartTimeChanged;
-
-  /// Called when user confirms their audio selection.
-  final void Function(AudioTrack? track) onConfirm;
-
   /// Called when a track should start playing.
   final Future<void> Function(AudioTrack track) onTrackPlay;
 
   /// Called when a track should stop playing.
   final Future<void> Function(AudioTrack track) onTrackStop;
+
+  /// Updates temporary preview playback without committing editor state.
+  final Future<void> Function(AudioTrack track) onTrackPreviewChanged;
 
   @override
   State<AudioSelectionBottomSheet> createState() =>
@@ -73,7 +63,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   @override
   void dispose() {
     if (_selectedTrack != null) {
-      widget.onTrackStop(_selectedTrack!);
+      unawaited(widget.onTrackStop(_selectedTrack!));
     }
     super.dispose();
   }
@@ -85,6 +75,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     });
     try {
       await widget.onTrackPlay(track);
+      if (!mounted || requestId != _trackPreviewRequestId) return;
     } catch (_) {
       if (!mounted || requestId != _trackPreviewRequestId) return;
       setState(() {
@@ -105,12 +96,11 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     setState(() {
       _showEditControls = true;
     });
-    widget.onTrackSelected(selectedTrack);
   }
 
   void _handleChangeTrack() {
     if (_selectedTrack != null) {
-      widget.onTrackStop(_selectedTrack!);
+      unawaited(widget.onTrackStop(_selectedTrack!));
     }
     setState(() {
       _showEditControls = false;
@@ -118,22 +108,22 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   }
 
   void _handleConfirm() {
-    widget.onConfirm(_selectedTrack);
     Navigator.of(context).pop(_selectedTrack);
   }
 
   void _handleBalanceChange(double balance) {
-    if (_selectedTrack != null) {
-      _selectedTrack!.volumeBalance = balance;
-      widget.onBalanceChanged(balance);
-    }
+    final track = _selectedTrack;
+    if (track == null) return;
+    _handleTrackChange(track.copyWith(volumeBalance: balance));
   }
 
-  void _handleStartTimeChange(Duration startTime) {
-    if (_selectedTrack != null) {
-      _selectedTrack!.startTime = startTime;
-      widget.onStartTimeChanged(startTime);
-    }
+  void _handleTrackChange(AudioTrack track) {
+    setState(() => _selectedTrack = track);
+    unawaited(widget.onTrackPreviewChanged(track));
+  }
+
+  void _handleTrackChangeEnd(AudioTrack track) {
+    unawaited(widget.onTrackPreviewChanged(track));
   }
 
   @override
@@ -166,7 +156,8 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
                 audioTrack: _selectedTrack!,
                 videoDuration: widget.videoDuration,
                 onBalanceChanged: _handleBalanceChange,
-                onStartTimeChanged: _handleStartTimeChange,
+                onTrackChanged: _handleTrackChange,
+                onTrackChangeEnd: _handleTrackChangeEnd,
                 onChangeTrack: _handleChangeTrack,
                 onConfirm: _handleConfirm,
               )

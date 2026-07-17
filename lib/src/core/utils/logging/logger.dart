@@ -5,14 +5,11 @@ import 'package:spark/src/core/utils/logging/log_output.dart';
 class SparkLogger {
   /// Constructor
   SparkLogger({
-    String name = '',
-    LogLevel minLevel = LogLevel.info,
+    this._name = '',
+    this._minLevel = LogLevel.info,
     List<LogOutput> outputs = const [],
-    bool includeStackTrace = true,
-  }) : _name = name,
-       _minLevel = minLevel,
-       _outputs = List.from(outputs),
-       _includeStackTrace = includeStackTrace;
+    this._includeStackTrace = true,
+  }) : _outputs = List.from(outputs);
 
   /// The minimum log level that will be output
   LogLevel _minLevel;

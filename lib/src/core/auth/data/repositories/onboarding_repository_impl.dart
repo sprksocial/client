@@ -20,10 +20,9 @@ import 'package:sprk_poptart/so/sprk/graph/get_follows/output.dart'
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
   OnboardingRepositoryImpl({
-    required RepoRepository repoRepository,
-    required AuthRepository authRepository,
-  }) : _repoRepository = repoRepository,
-       _authRepository = authRepository;
+    required this._repoRepository,
+    required this._authRepository,
+  });
   final RepoRepository _repoRepository;
   final AuthRepository _authRepository;
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(

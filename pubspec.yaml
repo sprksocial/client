@@ -4,7 +4,7 @@ publish_to: "none"
 # The number after + should stay fixed, the android workflow will change it on every build
 version: 0.12.3+1
 environment:
-  sdk: ^3.11.0
+  sdk: ^3.12.0
 workspace:
   - widgetbook
   - fonts
@@ -61,8 +61,8 @@ dependencies:
   oauth2: ^2.0.5
   pool: ^1.5.2
   posthog_flutter: ^5.26.0
-  pro_image_editor: ^12.4.8
-  pro_video_editor: ^1.18.0
+  pro_image_editor: ^13.2.0
+  pro_video_editor: ^2.5.1
   riverpod_annotation: ^4.0.2
   share_plus: ^13.1.0
   shared_preferences: ^2.5.5

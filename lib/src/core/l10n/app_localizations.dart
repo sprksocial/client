@@ -160,6 +160,48 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get buttonRemove;
 
+  /// Replace the selected media track
+  ///
+  /// In en, this message translates to:
+  /// **'Replace'**
+  String get buttonReplace;
+
+  /// Mute the selected audio track
+  ///
+  /// In en, this message translates to:
+  /// **'Mute'**
+  String get buttonMute;
+
+  /// Unmute the selected audio track
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute'**
+  String get buttonUnmute;
+
+  /// Move the selected visual layer one level forward
+  ///
+  /// In en, this message translates to:
+  /// **'Forward'**
+  String get buttonMoveForward;
+
+  /// Move the selected visual layer one level backward
+  ///
+  /// In en, this message translates to:
+  /// **'Backward'**
+  String get buttonMoveBackward;
+
+  /// Edit the selected text layer
+  ///
+  /// In en, this message translates to:
+  /// **'Edit text'**
+  String get buttonEditText;
+
+  /// Edit the selected paint layer
+  ///
+  /// In en, this message translates to:
+  /// **'Edit paint'**
+  String get buttonEditPaint;
+
   /// Retry button text
   ///
   /// In en, this message translates to:
@@ -1287,6 +1329,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sound'**
   String get labelSound;
+
+  /// Label for selecting the portion of an audio file used in a video
+  ///
+  /// In en, this message translates to:
+  /// **'Audio source range'**
+  String get labelAudioSourceRange;
+
+  /// Label for selecting when an audio or visual layer appears in a video
+  ///
+  /// In en, this message translates to:
+  /// **'Video placement'**
+  String get labelVideoPlacement;
+
+  /// Label for the custom audio track volume control
+  ///
+  /// In en, this message translates to:
+  /// **'Track volume'**
+  String get labelTrackVolume;
+
+  /// Label for balancing original and overlay audio
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get labelAudioBalance;
+
+  /// Label for toggling custom audio looping
+  ///
+  /// In en, this message translates to:
+  /// **'Loop audio'**
+  String get labelLoopAudio;
 
   /// Title for the recorder sound picker
   ///

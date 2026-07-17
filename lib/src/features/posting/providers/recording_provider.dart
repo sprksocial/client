@@ -66,17 +66,17 @@ class Recording extends _$Recording {
   void selectSound(AudioTrack sound) {
     state = state.copyWith(
       selectedSound: sound,
-      soundGuideOffset: sound.startTime ?? Duration.zero,
+      soundGuideOffset: sound.audioStartTime ?? Duration.zero,
       error: null,
     );
   }
 
-  void setSelectedSoundStartTime(Duration offset) {
+  void setSelectedSoundAudioStartTime(Duration offset) {
     final sound = state.selectedSound;
     if (sound == null) return;
 
     state = state.copyWith(
-      selectedSound: sound.copyWith(startTime: offset),
+      selectedSound: sound.copyWith(audioStartTime: offset),
       soundGuideOffset: offset,
       error: null,
     );

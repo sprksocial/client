@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/recording_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/recording_timer.dart';
+import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 
 export 'package:spark/src/core/design_system/components/molecules/recording_button.dart'
@@ -70,9 +71,6 @@ class RecordingPageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const footerHeight = kBottomNavigationBarHeight + 12;
-    const borderRadius = BorderRadius.all(Radius.circular(20));
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -92,7 +90,7 @@ class RecordingPageTemplate extends StatelessWidget {
                   if (scale < 1) scale = 1 / scale;
 
                   return ClipRRect(
-                    borderRadius: borderRadius,
+                    borderRadius: recordingPagePreviewBorderRadius,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -147,7 +145,7 @@ class RecordingPageTemplate extends StatelessWidget {
               ),
             ),
             _FooterBar(
-              height: footerHeight,
+              height: recordingPageFooterHeight,
               onOpenLibrary: onOpenLibrary,
               onFlipCamera: canFlipCamera ? onFlipCamera : null,
             ),

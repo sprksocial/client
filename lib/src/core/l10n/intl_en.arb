@@ -57,6 +57,41 @@
     "description": "Remove button text"
   },
 
+  "buttonReplace": "Replace",
+  "@buttonReplace": {
+    "description": "Replace the selected media track"
+  },
+
+  "buttonMute": "Mute",
+  "@buttonMute": {
+    "description": "Mute the selected audio track"
+  },
+
+  "buttonUnmute": "Unmute",
+  "@buttonUnmute": {
+    "description": "Unmute the selected audio track"
+  },
+
+  "buttonMoveForward": "Forward",
+  "@buttonMoveForward": {
+    "description": "Move the selected visual layer one level forward"
+  },
+
+  "buttonMoveBackward": "Backward",
+  "@buttonMoveBackward": {
+    "description": "Move the selected visual layer one level backward"
+  },
+
+  "buttonEditText": "Edit text",
+  "@buttonEditText": {
+    "description": "Edit the selected text layer"
+  },
+
+  "buttonEditPaint": "Edit paint",
+  "@buttonEditPaint": {
+    "description": "Edit the selected paint layer"
+  },
+
   "buttonRetry": "Retry",
   "@buttonRetry": {
     "description": "Retry button text"
@@ -1051,6 +1086,31 @@
   "labelSound": "Sound",
   "@labelSound": {
     "description": "Sound label for video editor toolbar"
+  },
+
+  "labelAudioSourceRange": "Audio source range",
+  "@labelAudioSourceRange": {
+    "description": "Label for selecting the portion of an audio file used in a video"
+  },
+
+  "labelVideoPlacement": "Video placement",
+  "@labelVideoPlacement": {
+    "description": "Label for selecting when an audio or visual layer appears in a video"
+  },
+
+  "labelTrackVolume": "Track volume",
+  "@labelTrackVolume": {
+    "description": "Label for the custom audio track volume control"
+  },
+
+  "labelAudioBalance": "Balance",
+  "@labelAudioBalance": {
+    "description": "Label for balancing original and overlay audio"
+  },
+
+  "labelLoopAudio": "Loop audio",
+  "@labelLoopAudio": {
+    "description": "Label for toggling custom audio looping"
   },
 
   "titleSelectSound": "Select sound",

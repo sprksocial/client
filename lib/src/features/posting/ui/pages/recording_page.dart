@@ -701,7 +701,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     final position = await _guideAudioPlayer.getCurrentPosition();
     if (position == null || !mounted) return;
 
-    ref.read(recordingProvider.notifier).setSelectedSoundStartTime(position);
+    ref
+        .read(recordingProvider.notifier)
+        .setSelectedSoundAudioStartTime(position);
   }
 
   Future<void> _prepareSelectedSoundGuide() {
