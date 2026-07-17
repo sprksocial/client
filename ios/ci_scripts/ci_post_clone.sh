@@ -31,14 +31,6 @@ MESSAGES_SERVICE_URL=https://api.sprk.chat
 SHOWCASES_LICENSE_FLUTTER=$SHOWCASES_LICENSE_FLUTTER
 EOL
 
-# Decode Firebase config from base64 environment variable
-if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
-  echo "Decoding GoogleService-Info.plist..."
-  echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 -d > ios/Runner/GoogleService-Info.plist
-else
-  echo "Warning: GOOGLE_SERVICE_INFO_PLIST not set"
-fi
-
 # Install CocoaPods using Homebrew.
 HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
 brew install cocoapods
