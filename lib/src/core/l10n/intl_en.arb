@@ -833,21 +833,6 @@
     }
   },
 
-  "dialogOpenBlueskyAccount": "Open Bluesky account management?",
-  "@dialogOpenBlueskyAccount": {
-    "description": "Dialog title for opening Bluesky account management"
-  },
-
-  "dialogOpenBlueskyAccountDescription": "This opens the Bluesky account management screen. You may have to log in again.\n\nIf prompted for an account provider, use:\n{pdsUrl}",
-  "@dialogOpenBlueskyAccountDescription": {
-    "description": "Description for opening Bluesky account management dialog",
-    "placeholders": {
-      "pdsUrl": {
-        "type": "String"
-      }
-    }
-  },
-
   "pageTitleReplies": "Replies",
   "@pageTitleReplies": {
     "description": "Replies page title"

@@ -20,10 +20,6 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  static final Uri _manageAccountUri = Uri.parse(
-    'https://bsky.app/settings/account',
-  );
-
   Future<void> _handleLogout() async {
     try {
       // Show loading indicator
@@ -54,26 +50,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _handleManageAccount() async {
     final l10n = AppLocalizations.of(context);
     final authRepository = GetIt.instance<AuthRepository>();
-    final pdsUrl = authRepository.pdsEndpoint ?? 'your PDS URL';
-    final shouldOpen = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.dialogOpenBlueskyAccount),
-        content: Text(l10n.dialogOpenBlueskyAccountDescription(pdsUrl)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.buttonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.buttonOpen),
-          ),
-        ],
-      ),
-    );
+    final pdsUrl = authRepository.pdsEndpoint;
+    if (pdsUrl == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
+      return;
+    }
+    final manageAccountUri = Uri.parse(pdsUrl).resolve('/account/manage');
 
-    if (shouldOpen != true || !mounted) {
+    if (!mounted) {
       return;
     }
 
@@ -81,8 +67,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     try {
       final didLaunch = await launchUrl(
-        _manageAccountUri,
-        mode: LaunchMode.externalApplication,
+        manageAccountUri,
+        mode: LaunchMode.inAppBrowserView,
       );
 
       if (!didLaunch && mounted) {
@@ -92,7 +78,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
     } catch (error, stackTrace) {
       logger.e(
-        'Failed to launch manage account URL: $_manageAccountUri',
+        'Failed to launch manage account URL: $manageAccountUri',
         error: error,
         stackTrace: stackTrace,
       );

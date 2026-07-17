@@ -516,14 +516,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get dialogOpenBlueskyAccount => 'Open Bluesky account management?';
-
-  @override
-  String dialogOpenBlueskyAccountDescription(String pdsUrl) {
-    return 'This opens the Bluesky account management screen. You may have to log in again.\n\nIf prompted for an account provider, use:\n$pdsUrl';
-  }
-
-  @override
   String get pageTitleReplies => 'Replies';
 
   @override

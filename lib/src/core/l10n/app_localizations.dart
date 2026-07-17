@@ -1048,18 +1048,6 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to remove \"{name}\"?'**
   String dialogRemoveFeedConfirm(String name);
 
-  /// Dialog title for opening Bluesky account management
-  ///
-  /// In en, this message translates to:
-  /// **'Open Bluesky account management?'**
-  String get dialogOpenBlueskyAccount;
-
-  /// Description for opening Bluesky account management dialog
-  ///
-  /// In en, this message translates to:
-  /// **'This opens the Bluesky account management screen. You may have to log in again.\n\nIf prompted for an account provider, use:\n{pdsUrl}'**
-  String dialogOpenBlueskyAccountDescription(String pdsUrl);
-
   /// Replies page title
   ///
   /// In en, this message translates to:
