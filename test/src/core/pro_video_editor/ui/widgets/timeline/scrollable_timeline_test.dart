@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
