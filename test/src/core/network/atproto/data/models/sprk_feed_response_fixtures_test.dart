@@ -61,7 +61,7 @@ void main() {
         r'$type': 'so.sprk.feed.post#captionRef',
         'text': 'spark fixture',
       },
-      if (recordMedia != null) 'media': recordMedia,
+      'media': ?recordMedia,
       'createdAt': '2026-05-15T12:00:00.000Z',
     },
     'media':
