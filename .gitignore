@@ -48,10 +48,6 @@ app.*.map.json
 # Environment variables
 .env
 
-# Firebase config files (stored as secrets in CI)
-android/app/google-services.json
-ios/Runner/GoogleService-Info.plist
-
 # AI assistant settings
 .claude/
 

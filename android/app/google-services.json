@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "244807562864",
+    "project_id": "sprk-social",
+    "storage_bucket": "sprk-social.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:244807562864:android:04ab7d3cda19185e2e66b5",
+        "android_client_info": {
+          "package_name": "so.sprk.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZUyZLcOZkt5FohWAIdDIA4ubnTkEJtKI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
