@@ -45,6 +45,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonReplace => 'Replace';
 
   @override
+  String get buttonAdjustClip => 'Adjust clip';
+
+  @override
   String get buttonMute => 'Mute';
 
   @override
@@ -678,6 +681,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get titleSelectSound => 'Select sound';
+
+  @override
+  String get labelSelectSoundClip => 'Select sound clip';
+
+  @override
+  String get hintDragWaveform => 'Drag to choose the part that plays';
 
   @override
   String get hintSearchSounds => 'Search sounds';

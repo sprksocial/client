@@ -12,6 +12,7 @@ class VideoEditorToolbar extends StatelessWidget {
     required this.selectedLayer,
     required this.selection,
     required this.onAddSound,
+    required this.onAdjustSound,
     required this.onRemoveSound,
     required this.onToggleOriginalAudio,
     required this.onToggleCustomAudio,
@@ -24,6 +25,7 @@ class VideoEditorToolbar extends StatelessWidget {
   final Layer? selectedLayer;
   final TimelineSelection selection;
   final VoidCallback onAddSound;
+  final VoidCallback onAdjustSound;
   final VoidCallback onRemoveSound;
   final VoidCallback onToggleOriginalAudio;
   final VoidCallback onToggleCustomAudio;
@@ -156,6 +158,12 @@ class VideoEditorToolbar extends StatelessWidget {
   List<VideoToolbarAction> _audioTrackActions(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return [
+      VideoToolbarAction(
+        id: 'adjust-audio',
+        icon: Icons.graphic_eq,
+        label: l10n.buttonAdjustClip,
+        onPressed: onAdjustSound,
+      ),
       VideoToolbarAction(
         id: 'replace-audio',
         icon: Icons.library_music,

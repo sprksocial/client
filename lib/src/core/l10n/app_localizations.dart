@@ -166,6 +166,12 @@ abstract class AppLocalizations {
   /// **'Replace'**
   String get buttonReplace;
 
+  /// Change which part of the selected sound is used
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust clip'**
+  String get buttonAdjustClip;
+
   /// Mute the selected audio track
   ///
   /// In en, this message translates to:
@@ -1353,6 +1359,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select sound'**
   String get titleSelectSound;
+
+  /// Title for choosing which section of a sound plays over a video
+  ///
+  /// In en, this message translates to:
+  /// **'Select sound clip'**
+  String get labelSelectSoundClip;
+
+  /// Instruction below the video editor sound waveform
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to choose the part that plays'**
+  String get hintDragWaveform;
 
   /// Placeholder for sound picker search input
   ///

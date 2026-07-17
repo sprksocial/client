@@ -4,15 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_edit_controls_section.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_picker_sheet_scaffold.dart';
 
-/// A bottom sheet for selecting and editing audio tracks.
-///
-/// This widget provides a two-state interface:
-/// 1. Track selection: Displays a list of available audio tracks
-/// 2. Edit controls: Shows balance slider, waveform selector, & action buttons
+/// A bottom sheet for selecting an audio track.
 class AudioSelectionBottomSheet extends StatefulWidget {
   /// Creates an [AudioSelectionBottomSheet].
   const AudioSelectionBottomSheet({
@@ -20,7 +15,6 @@ class AudioSelectionBottomSheet extends StatefulWidget {
     required this.videoDuration,
     required this.onTrackPlay,
     required this.onTrackStop,
-    required this.onTrackPreviewChanged,
     this.initialSelectedTrack,
     super.key,
   });
@@ -40,9 +34,6 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   /// Called when a track should stop playing.
   final Future<void> Function(AudioTrack track) onTrackStop;
 
-  /// Updates temporary preview playback without committing editor state.
-  final Future<void> Function(AudioTrack track) onTrackPreviewChanged;
-
   @override
   State<AudioSelectionBottomSheet> createState() =>
       _AudioSelectionBottomSheetState();
@@ -50,19 +41,18 @@ class AudioSelectionBottomSheet extends StatefulWidget {
 
 class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   AudioTrack? _selectedTrack;
-  bool _showEditControls = false;
+  bool _isConfirmed = false;
   int _trackPreviewRequestId = 0;
 
   @override
   void initState() {
     super.initState();
     _selectedTrack = widget.initialSelectedTrack;
-    _showEditControls = _selectedTrack != null;
   }
 
   @override
   void dispose() {
-    if (_selectedTrack != null) {
+    if (!_isConfirmed && _selectedTrack != null) {
       unawaited(widget.onTrackStop(_selectedTrack!));
     }
     super.dispose();
@@ -92,82 +82,23 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   void _handleContinue() {
     final selectedTrack = _selectedTrack;
     if (selectedTrack == null) return;
-
-    setState(() {
-      _showEditControls = true;
-    });
-  }
-
-  void _handleChangeTrack() {
-    if (_selectedTrack != null) {
-      unawaited(widget.onTrackStop(_selectedTrack!));
-    }
-    setState(() {
-      _showEditControls = false;
-    });
-  }
-
-  void _handleConfirm() {
-    Navigator.of(context).pop(_selectedTrack);
-  }
-
-  void _handleBalanceChange(double balance) {
-    final track = _selectedTrack;
-    if (track == null) return;
-    _handleTrackChange(track.copyWith(volumeBalance: balance));
-  }
-
-  void _handleTrackChange(AudioTrack track) {
-    setState(() => _selectedTrack = track);
-    unawaited(widget.onTrackPreviewChanged(track));
-  }
-
-  void _handleTrackChangeEnd(AudioTrack track) {
-    unawaited(widget.onTrackPreviewChanged(track));
+    _isConfirmed = true;
+    Navigator.of(context).pop(selectedTrack);
   }
 
   @override
   Widget build(BuildContext context) {
-    final i18n = widget.configs.i18n.audioEditor;
     final l10n = AppLocalizations.of(context);
 
     return SoundPickerSheetScaffold(
-      title: _showEditControls ? i18n.editTrack : l10n.titleSelectSound,
-      onClose: _showEditControls ? null : () => Navigator.of(context).pop(),
-      footer: _showEditControls ? null : _buildContinueButton(),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.1),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            ),
-          );
-        },
-        child: _showEditControls && _selectedTrack != null
-            ? AudioEditControlsSection(
-                key: const ValueKey('edit_controls'),
-                configs: widget.configs,
-                audioTrack: _selectedTrack!,
-                videoDuration: widget.videoDuration,
-                onBalanceChanged: _handleBalanceChange,
-                onTrackChanged: _handleTrackChange,
-                onTrackChangeEnd: _handleTrackChangeEnd,
-                onChangeTrack: _handleChangeTrack,
-                onConfirm: _handleConfirm,
-              )
-            : AudioTrackListSection(
-                key: const ValueKey('track_list'),
-                configs: widget.configs,
-                videoDuration: widget.videoDuration,
-                selectedTrack: _selectedTrack,
-                onTrackSelected: _handleTrackSelection,
-              ),
+      title: l10n.titleSelectSound,
+      onClose: () => Navigator.of(context).pop(),
+      footer: _buildContinueButton(),
+      child: AudioTrackListSection(
+        configs: widget.configs,
+        videoDuration: widget.videoDuration,
+        selectedTrack: _selectedTrack,
+        onTrackSelected: _handleTrackSelection,
       ),
     );
   }

@@ -17,6 +17,7 @@ class VideoEditorBottomSection extends StatefulWidget {
     required this.onToggleOriginalAudio,
     required this.onToggleCustomAudio,
     required this.onAddSound,
+    required this.onAdjustSound,
     required this.onRemoveSound,
     required this.onAudioTimingChanged,
     required this.onSeekStart,
@@ -34,6 +35,7 @@ class VideoEditorBottomSection extends StatefulWidget {
   final VoidCallback onToggleOriginalAudio;
   final VoidCallback onToggleCustomAudio;
   final VoidCallback onAddSound;
+  final VoidCallback onAdjustSound;
   final VoidCallback onRemoveSound;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final VoidCallback onSeekStart;
@@ -184,6 +186,7 @@ class _VideoEditorBottomSectionState extends State<VideoEditorBottomSection> {
                 selectedLayer: selectedLayer,
                 selection: _selection,
                 onAddSound: widget.onAddSound,
+                onAdjustSound: widget.onAdjustSound,
                 onRemoveSound: widget.onRemoveSound,
                 onToggleOriginalAudio: widget.onToggleOriginalAudio,
                 onToggleCustomAudio: widget.onToggleCustomAudio,

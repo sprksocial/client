@@ -51,6 +51,7 @@ void main() {
     );
     addTearDown(timelineState.dispose);
     var muteCount = 0;
+    var adjustCount = 0;
     var removeCount = 0;
     var selectionClearCount = 0;
 
@@ -76,19 +77,24 @@ void main() {
         editor: editor,
         timelineState: timelineState,
         selection: TimelineSelection.audio,
+        onAdjustSound: () => adjustCount++,
         onToggleCustomAudio: () => muteCount++,
         onRemoveSound: () => removeCount++,
         onClearSelection: () => selectionClearCount++,
       ),
     );
     await tester.pumpAndSettle();
+    expect(_action('adjust-audio'), findsOneWidget);
+    expect(find.text('Adjust clip'), findsOneWidget);
     expect(_action('replace-audio'), findsOneWidget);
     expect(_action('mute'), findsOneWidget);
     expect(_action('remove-audio'), findsOneWidget);
     expect(_action('crop'), findsNothing);
 
+    await tester.tap(_action('adjust-audio'));
     await tester.tap(_action('mute'));
     await tester.tap(_action('remove-audio'));
+    expect(adjustCount, 1);
     expect(muteCount, 2);
     expect(removeCount, 1);
     expect(selectionClearCount, 1);
@@ -107,6 +113,7 @@ class _ToolbarTestApp extends StatelessWidget {
     this.selection = TimelineSelection.none,
     this.onToggleOriginalAudio,
     this.onToggleCustomAudio,
+    this.onAdjustSound,
     this.onRemoveSound,
     this.onClearSelection,
   });
@@ -117,6 +124,7 @@ class _ToolbarTestApp extends StatelessWidget {
   final TimelineSelection selection;
   final VoidCallback? onToggleOriginalAudio;
   final VoidCallback? onToggleCustomAudio;
+  final VoidCallback? onAdjustSound;
   final VoidCallback? onRemoveSound;
   final VoidCallback? onClearSelection;
 
@@ -132,6 +140,7 @@ class _ToolbarTestApp extends StatelessWidget {
           selectedLayer: selectedLayer,
           selection: selection,
           onAddSound: () {},
+          onAdjustSound: onAdjustSound ?? () {},
           onRemoveSound: onRemoveSound ?? () {},
           onToggleOriginalAudio: onToggleOriginalAudio ?? () {},
           onToggleCustomAudio: onToggleCustomAudio ?? () {},
