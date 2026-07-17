@@ -72,7 +72,6 @@
 4. Analyze (`flutter analyze lib`, or `flutter analyze .` for wider impact)
 5. Run targeted tests first, then broader tests (`flutter test`)
 6. If you want to run the app, first check whether a Flutter process is already running; if it is, use the Dart MCP to hot reload instead of starting a new `flutter run` process
-7. If you want to test with a simulator, use `serve-sim` for simulator control and inspection
 8. Keep comments minimal and only when needed
 9. Only add tests for logic that actually needs verification; avoid trivial or redundant test coverage
 
