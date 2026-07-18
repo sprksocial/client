@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -279,4 +280,122 @@ void main() {
     expect(confirmedTrack!.audioStartTime, previewedTrack!.audioStartTime);
     expect(confirmedTrack!.audioEndTime, previewedTrack!.audioEndTime);
   });
+
+  testWidgets('blocks blank-area input and underlying editor semantics', (
+    tester,
+  ) async {
+    var backgroundTapCount = 0;
+    final playbackProgress = ValueNotifier(0.0);
+    addTearDown(playbackProgress.dispose);
+
+    await tester.pumpWidget(
+      _overlayHarness(
+        track: _testTrack(),
+        playbackProgress: playbackProgress,
+        background: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => backgroundTapCount++,
+          child: Semantics(
+            label: 'Underlying video editor',
+            button: true,
+            child: const ColoredBox(color: Colors.black),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tapAt(const Offset(400, 300));
+    await tester.pump();
+
+    expect(backgroundTapCount, 0);
+    expect(find.semantics.byLabel('Underlying video editor'), findsNothing);
+  });
+
+  testWidgets(
+    'semantic scrolling re-previews without previewing initial positioning',
+    (tester) async {
+      var scrubStartCount = 0;
+      final previewedTracks = <AudioTrack>[];
+      final playbackProgress = ValueNotifier(0.0);
+      addTearDown(playbackProgress.dispose);
+      final track = _testTrack().copyWith(
+        audioStartTime: const Duration(seconds: 5),
+        audioEndTime: const Duration(seconds: 15),
+      );
+
+      await tester.pumpWidget(
+        _overlayHarness(
+          track: track,
+          playbackProgress: playbackProgress,
+          onScrubStarted: () => scrubStartCount++,
+          onPreviewRequested: previewedTracks.add,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(scrubStartCount, 0);
+      expect(previewedTracks, isEmpty);
+
+      tester.semantics.scrollLeft(scrollable: find.semantics.scrollable());
+      await tester.pumpAndSettle();
+
+      expect(scrubStartCount, 1);
+      expect(previewedTracks, hasLength(1));
+      expect(
+        previewedTracks.single.audioStartTime,
+        greaterThan(const Duration(seconds: 5)),
+      );
+      expect(
+        previewedTracks.single.audioEndTime! -
+            previewedTracks.single.audioStartTime!,
+        const Duration(seconds: 10),
+      );
+    },
+  );
+}
+
+AudioTrack _testTrack() {
+  return AudioTrack(
+    id: 'sound',
+    title: 'Summer Loop',
+    subtitle: 'artist.sprk.so',
+    duration: const Duration(seconds: 30),
+    audio: EditorAudio(networkUrl: 'https://example.com/sound.mp3'),
+  );
+}
+
+Widget _overlayHarness({
+  required AudioTrack track,
+  required ValueListenable<double> playbackProgress,
+  Widget? background,
+  VoidCallback? onScrubStarted,
+  ValueChanged<AudioTrack>? onPreviewRequested,
+}) {
+  return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          background ?? const SizedBox.expand(),
+          AudioRangeSelectionOverlay(
+            track: track,
+            videoDuration: const Duration(seconds: 10),
+            waveformData: List<double>.generate(
+              90,
+              (index) => (index % 10 + 1) / 10,
+            ),
+            isWaveformLoading: false,
+            playbackProgress: playbackProgress,
+            onScrubStarted: onScrubStarted ?? () {},
+            onPreviewRequested: onPreviewRequested ?? (_) {},
+            onCancel: () {},
+            onDone: (_) {},
+          ),
+        ],
+      ),
+    ),
+  );
 }

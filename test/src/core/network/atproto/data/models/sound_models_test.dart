@@ -156,6 +156,34 @@ void main() {
       expect(decodeSoundTrackAudioMimeType(track.id), 'audio/mp4');
     });
 
+    test('normalizes legacy FLAC MIME types for Plyr playback', () {
+      final audio = AudioView.fromJson({
+        'uri': 'at://did:plc:plyr123/fm.plyr.track/flac-track',
+        'cid': 'cid-flac',
+        'author': {'did': 'did:plc:plyr123', 'handle': 'artist.plyr.fm'},
+        'record': {
+          r'$type': 'fm.plyr.track',
+          'title': 'FLAC Track',
+          'artist': 'Dame',
+          'fileType': 'flac',
+          'audioUrl': 'https://audio.plyr.fm/audio/track.flac',
+          'audioBlob': _blobJson(mimeType: 'audio/x-flac'),
+          'createdAt': '2026-05-01T12:00:00.000Z',
+        },
+        'title': 'FLAC Track',
+        'coverArt': 'https://example.com/cover.jpg',
+        'indexedAt': '2026-05-01T12:00:00.000Z',
+        'audio': 'https://media.sprk.so/sound/did%3Aplc%3Aplyr123/cid',
+      });
+
+      final track = audioViewToAudioTrack(audio);
+
+      expect(track, isNotNull);
+      expect(track!.audio.networkUrl, 'https://audio.plyr.fm/audio/track.flac');
+      expect(decodeSoundTrackAudioFileExtension(track.id), 'flac');
+      expect(decodeSoundTrackAudioMimeType(track.id), 'audio/flac');
+    });
+
     test('maps Spark audio/mp4 blobs to m4a tracks', () {
       final audio = AudioView.fromJson({
         'uri': 'at://did:plc:test123/so.sprk.sound.audio/m4a-spark',

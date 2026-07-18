@@ -15,6 +15,7 @@ class AudioSelectionBottomSheet extends StatefulWidget {
     required this.videoDuration,
     required this.onTrackPlay,
     required this.onTrackStop,
+    required this.onPreviewError,
     this.initialSelectedTrack,
     super.key,
   });
@@ -34,6 +35,9 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   /// Called when a track should stop playing.
   final Future<void> Function(AudioTrack track) onTrackStop;
 
+  /// Reports preview playback and cleanup failures.
+  final void Function(Object error, StackTrace stackTrace) onPreviewError;
+
   @override
   State<AudioSelectionBottomSheet> createState() =>
       _AudioSelectionBottomSheetState();
@@ -41,36 +45,57 @@ class AudioSelectionBottomSheet extends StatefulWidget {
 
 class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   AudioTrack? _selectedTrack;
+  AudioTrack? _previewedTrack;
   bool _isConfirmed = false;
   int _trackPreviewRequestId = 0;
+
+  bool get _canContinue =>
+      _selectedTrack != null && identical(_selectedTrack, _previewedTrack);
 
   @override
   void initState() {
     super.initState();
     _selectedTrack = widget.initialSelectedTrack;
+    _previewedTrack = widget.initialSelectedTrack;
   }
 
   @override
   void dispose() {
     if (!_isConfirmed && _selectedTrack != null) {
-      unawaited(widget.onTrackStop(_selectedTrack!));
+      unawaited(_stopTrack(_selectedTrack!));
     }
     super.dispose();
+  }
+
+  Future<void> _stopTrack(AudioTrack track) async {
+    try {
+      await widget.onTrackStop(track);
+    } catch (error, stackTrace) {
+      widget.onPreviewError(error, stackTrace);
+    }
   }
 
   Future<void> _handleTrackSelection(AudioTrack track) async {
     final requestId = ++_trackPreviewRequestId;
     setState(() {
       _selectedTrack = track;
+      _previewedTrack = null;
     });
     try {
       await widget.onTrackPlay(track);
       if (!mounted || requestId != _trackPreviewRequestId) return;
-    } catch (_) {
+      setState(() {
+        _previewedTrack = track;
+      });
+    } catch (error, stackTrace) {
+      if (!mounted || requestId != _trackPreviewRequestId) return;
+      widget.onPreviewError(error, stackTrace);
+      await _stopTrack(track);
       if (!mounted || requestId != _trackPreviewRequestId) return;
       setState(() {
         if (_selectedTrack?.id == track.id) {
           _selectedTrack = null;
+          _previewedTrack = null;
         }
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,7 +106,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
 
   void _handleContinue() {
     final selectedTrack = _selectedTrack;
-    if (selectedTrack == null) return;
+    if (selectedTrack == null || !_canContinue) return;
     _isConfirmed = true;
     Navigator.of(context).pop(selectedTrack);
   }
@@ -112,7 +137,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
         child: AppButton(
           label: l10n.buttonContinue,
-          onPressed: _selectedTrack == null ? null : _handleContinue,
+          onPressed: _canContinue ? _handleContinue : null,
           fullWidth: true,
         ),
       ),

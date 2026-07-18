@@ -44,6 +44,7 @@ class _AudioRangeSelectionOverlayState
     extends State<AudioRangeSelectionOverlay> {
   final ScrollController _scrollController = ScrollController();
   bool _didSetInitialPosition = false;
+  bool _isSettingInitialPosition = false;
   bool _isUserScrolling = false;
   double _selectedStartFraction = 0;
 
@@ -90,12 +91,20 @@ class _AudioRangeSelectionOverlayState
     if (_didSetInitialPosition || !_scrollController.hasClients) return;
     _didSetInitialPosition = true;
     final maxScrollExtent = _scrollController.position.maxScrollExtent;
-    _scrollController.jumpTo(maxScrollExtent * _selectedStartFraction);
+    _isSettingInitialPosition = true;
+    try {
+      _scrollController.jumpTo(maxScrollExtent * _selectedStartFraction);
+    } finally {
+      _isSettingInitialPosition = false;
+    }
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
-    if (notification is ScrollStartNotification &&
-        notification.dragDetails != null) {
+    final isScrollMovement =
+        notification is ScrollStartNotification ||
+        notification is ScrollUpdateNotification ||
+        notification is OverscrollNotification;
+    if (isScrollMovement && !_isSettingInitialPosition && !_isUserScrolling) {
       _isUserScrolling = true;
       widget.onScrubStarted();
     }
@@ -136,7 +145,7 @@ class _AudioRangeSelectionOverlayState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Material(
+    final overlay = Material(
       key: const ValueKey('audio-range-selection-overlay'),
       color: Colors.transparent,
       child: Stack(
@@ -325,6 +334,33 @@ class _AudioRangeSelectionOverlayState
             ),
           ),
         ],
+      ),
+    );
+    return _AudioPickerModalBoundary(
+      semanticsLabel: l10n.labelSelectSoundClip,
+      child: overlay,
+    );
+  }
+}
+
+class _AudioPickerModalBoundary extends StatelessWidget {
+  const _AudioPickerModalBoundary({
+    required this.semanticsLabel,
+    required this.child,
+  });
+
+  final String semanticsLabel;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlockSemantics(
+      child: Semantics(
+        container: true,
+        explicitChildNodes: true,
+        scopesRoute: true,
+        label: semanticsLabel,
+        child: Listener(behavior: HitTestBehavior.opaque, child: child),
       ),
     );
   }

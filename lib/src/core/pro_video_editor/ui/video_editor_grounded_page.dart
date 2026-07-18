@@ -129,6 +129,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   List<double> _audioRangeWaveform = const [];
   bool _isAudioRangeWaveformLoading = false;
   bool _isAudioRangeScrubbing = false;
+  double? _audioRangePreviousRevealValue;
+  int _audioPickerPreviewRequest = 0;
   int _audioRangeSelectionRequest = 0;
   int _audioRangePreviewRequest = 0;
 
@@ -815,55 +817,90 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
   Future<void> _showAudioSelectionBottomSheet() async {
     final media = _media;
     if (media == null) return;
-    await media.videoController.pause();
-    if (!mounted || !identical(_media, media)) return;
-    final initialTrack = _proVideoController?.audioTrack;
-    final selectedTrack = await showModalBottomSheet<AudioTrack>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => FractionallySizedBox(
-        heightFactor: 0.9,
-        child: AudioSelectionBottomSheet(
-          configs: _configs,
-          videoDuration: _videoMetadata.duration,
-          initialSelectedTrack: initialTrack,
-          onTrackPlay: (track) async {
-            if (!identical(_media, media)) return;
-            final isNewTrack = !media.audioService.useCustomAudio;
-            await media.audioService.play(
-              track,
-              videoPosition: media.videoController.value.position,
-              videoStart: _playbackStart,
-              videoEnd: _playbackEnd,
-              forceSeek: true,
-            );
-            if (!identical(_media, media)) return;
-            if (isNewTrack) {
-              await media.audioService.setAudioMode(useCustom: true);
-            } else {
-              await media.audioService.balanceAudio();
-            }
-          },
-          onTrackStop: (track) async {
-            if (!identical(_media, media)) return;
-            await media.audioService.pause();
-          },
+    _audioPickerPreviewRequest++;
+    try {
+      await media.videoController.pause();
+      if (!mounted || !identical(_media, media)) return;
+      final initialTrack = _proVideoController?.audioTrack;
+      final selectedTrack = await showModalBottomSheet<AudioTrack>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => FractionallySizedBox(
+          heightFactor: 0.9,
+          child: AudioSelectionBottomSheet(
+            configs: _configs,
+            videoDuration: _videoMetadata.duration,
+            initialSelectedTrack: initialTrack,
+            onTrackPlay: (track) async {
+              final request = ++_audioPickerPreviewRequest;
+              bool isCurrent() =>
+                  mounted &&
+                  identical(_media, media) &&
+                  request == _audioPickerPreviewRequest;
+
+              if (!isCurrent()) return;
+              final isNewTrack = !media.audioService.useCustomAudio;
+              await media.audioService.play(
+                track,
+                videoPosition: media.videoController.value.position,
+                videoStart: _playbackStart,
+                videoEnd: _playbackEnd,
+                forceSeek: true,
+              );
+              if (!isCurrent()) return;
+              if (isNewTrack) {
+                await media.audioService.setAudioMode(useCustom: true);
+              } else {
+                await media.audioService.balanceAudio();
+              }
+            },
+            onTrackStop: (_) async {
+              _audioPickerPreviewRequest++;
+              if (!identical(_media, media)) return;
+              await media.audioService.pause();
+            },
+            onPreviewError: (error, stackTrace) {
+              _logger.w(
+                'Failed to preview a sound picker track',
+                error: error,
+                stackTrace: stackTrace,
+              );
+            },
+          ),
         ),
-      ),
-    );
-    if (!mounted || !identical(_media, media)) return;
-    if (selectedTrack != null) {
-      _beginAudioRangeSelection(selectedTrack, previousTrack: initialTrack);
-    } else if (initialTrack != null) {
-      await media.audioService.prepare(
-        initialTrack,
-        videoPosition: media.videoController.value.position,
-        videoStart: _playbackStart,
-        videoEnd: _playbackEnd,
       );
-    } else {
-      await media.audioService.setAudioMode(useCustom: false);
+      if (!mounted || !identical(_media, media)) return;
+      if (selectedTrack != null) {
+        _beginAudioRangeSelection(selectedTrack, previousTrack: initialTrack);
+      } else if (initialTrack != null) {
+        await media.audioService.prepare(
+          initialTrack,
+          videoPosition: media.videoController.value.position,
+          videoStart: _playbackStart,
+          videoEnd: _playbackEnd,
+        );
+      } else {
+        await media.audioService.setAudioMode(useCustom: false);
+      }
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Failed to complete the sound picker workflow',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!identical(_media, media)) return;
+      try {
+        await media.audioService.pause();
+      } catch (pauseError, pauseStackTrace) {
+        _logger.w(
+          'Failed to pause audio after a sound picker failure',
+          error: pauseError,
+          stackTrace: pauseStackTrace,
+        );
+      }
+    } finally {
+      _audioPickerPreviewRequest++;
     }
   }
 
@@ -902,28 +939,44 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _isAudioRangeWaveformLoading = waveformData.isEmpty;
     _isAudioRangeScrubbing = false;
     _audioRangePlaybackProgress.value = 0;
+    final reveal = _regularChrome?.reveal;
+    _audioRangePreviousRevealValue = reveal?.value;
     _audioRangeSelectionActive.value = true;
-    _regularChrome?.reveal.value = 0;
+    reveal?.value = 0;
     _proVideoController?.audioTrack = draft;
     setState(() => _audioRangeDraft = draft);
 
     if (waveformData.isEmpty) {
-      _runBackgroundTask(
-        _previewAssetLoader.loadCustomWaveform(draft).then((waveform) {
-          if (!mounted ||
-              request != _audioRangeSelectionRequest ||
-              !_audioRangeSelectionActive.value) {
-            return;
-          }
-          setState(() {
-            _audioRangeWaveform = waveform;
-            _isAudioRangeWaveformLoading = false;
-          });
-        }),
-        'Failed to extract audio picker waveform',
-      );
+      unawaited(_loadAudioRangeWaveform(draft, request: request));
     }
     unawaited(_restartAudioRangePreview(draft));
+  }
+
+  Future<void> _loadAudioRangeWaveform(
+    AudioTrack track, {
+    required int request,
+  }) async {
+    bool isCurrent() =>
+        mounted &&
+        request == _audioRangeSelectionRequest &&
+        _audioRangeSelectionActive.value;
+
+    try {
+      final waveform = await _previewAssetLoader.loadCustomWaveform(track);
+      if (!isCurrent()) return;
+      setState(() {
+        _audioRangeWaveform = waveform;
+        _isAudioRangeWaveformLoading = false;
+      });
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Failed to extract audio picker waveform',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!isCurrent()) return;
+      setState(() => _isAudioRangeWaveformLoading = false);
+    }
   }
 
   AudioTrack _audioTrackForVideoRange(
@@ -980,23 +1033,53 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
         _audioRangeSelectionActive.value &&
         request == _audioRangePreviewRequest;
 
-    controller.audioTrack = track;
-    _audioRangePlaybackProgress.value = 0;
-    controller.pause();
-    await media.timelineSeeks.seekLatest(videoStart);
-    if (!isCurrent()) return;
-    controller.setPlayTime(videoStart);
-    media.timelineState.setProgressFromDuration(videoStart);
-    await media.audioService.prepare(
-      track,
-      videoPosition: videoStart,
-      videoStart: videoStart,
-      videoEnd: videoEnd,
-    );
-    if (!isCurrent()) return;
-    await media.audioService.setAudioMode(useCustom: true);
-    if (!isCurrent()) return;
-    controller.play();
+    try {
+      controller.audioTrack = track;
+      _audioRangePlaybackProgress.value = 0;
+      controller.pause();
+      await media.timelineSeeks.seekLatest(videoStart);
+      if (!isCurrent()) return;
+      controller.setPlayTime(videoStart);
+      media.timelineState.setProgressFromDuration(videoStart);
+      await media.audioService.prepare(
+        track,
+        videoPosition: videoStart,
+        videoStart: videoStart,
+        videoEnd: videoEnd,
+      );
+      if (!isCurrent()) return;
+      await media.audioService.setAudioMode(useCustom: true);
+      if (!isCurrent()) return;
+      controller.play();
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Failed to start audio range preview',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!isCurrent()) return;
+      _shouldResetOnPlaybackComplete = false;
+      _isAudioRangeScrubbing = true;
+      _audioRangePlaybackProgress.value = 0;
+      controller.pause();
+      try {
+        await media.audioService.pause();
+      } catch (pauseError, pauseStackTrace) {
+        _logger.w(
+          'Failed to pause audio after range preview failure',
+          error: pauseError,
+          stackTrace: pauseStackTrace,
+        );
+      }
+    }
+  }
+
+  void _restoreAudioRangeReveal() {
+    final previousValue = _audioRangePreviousRevealValue;
+    _audioRangePreviousRevealValue = null;
+    if (previousValue != null) {
+      _regularChrome?.reveal.value = previousValue;
+    }
   }
 
   void _finishAudioRangeSelection(AudioTrack track) {
@@ -1019,6 +1102,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _isAudioRangeScrubbing = false;
     _audioRangePlaybackProgress.value = 0;
     _audioRangeSelectionActive.value = false;
+    _restoreAudioRangeReveal();
     setState(() => _audioRangeDraft = null);
   }
 
@@ -1027,7 +1111,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     final media = _media;
     final previousTrack = _audioRangePreviousTrack;
     _audioRangePreviewRequest++;
-    _audioRangeSelectionRequest++;
+    final request = ++_audioRangeSelectionRequest;
     _shouldResetOnPlaybackComplete = false;
     _proVideoController?.pause();
     _proVideoController?.audioTrack = previousTrack;
@@ -1038,21 +1122,46 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     _isAudioRangeScrubbing = false;
     _audioRangePlaybackProgress.value = 0;
     _audioRangeSelectionActive.value = false;
+    _restoreAudioRangeReveal();
     if (mounted) setState(() => _audioRangeDraft = null);
     if (media == null || !identical(_media, media)) return;
 
-    if (previousTrack == null) {
-      await media.audioService.setAudioMode(useCustom: false);
-      return;
+    bool isCurrent() =>
+        mounted &&
+        identical(_media, media) &&
+        request == _audioRangeSelectionRequest &&
+        identical(_proVideoController?.audioTrack, previousTrack);
+
+    try {
+      if (previousTrack == null) {
+        await media.audioService.setAudioMode(useCustom: false);
+        return;
+      }
+      await media.audioService.prepare(
+        previousTrack,
+        videoPosition: media.videoController.value.position,
+        videoStart: _playbackStart,
+        videoEnd: _playbackEnd,
+      );
+      if (!isCurrent()) return;
+      await media.audioService.setAudioMode(useCustom: true);
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Failed to restore audio after cancelling range selection',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!isCurrent()) return;
+      try {
+        await media.audioService.pause();
+      } catch (pauseError, pauseStackTrace) {
+        _logger.w(
+          'Failed to pause audio after range cancellation failure',
+          error: pauseError,
+          stackTrace: pauseStackTrace,
+        );
+      }
     }
-    await media.audioService.prepare(
-      previousTrack,
-      videoPosition: media.videoController.value.position,
-      videoStart: _playbackStart,
-      videoEnd: _playbackEnd,
-    );
-    if (!identical(_media, media)) return;
-    await media.audioService.setAudioMode(useCustom: true);
   }
 
   /// Generates the final video based on the given [parameters].

@@ -211,6 +211,7 @@ String _normalizeAudioMimeType(String? mimeType, {String? extension}) {
       'audio/vnd.wave' => 'audio/wav',
       'audio/wave' => 'audio/wav',
       'audio/x-wav' => 'audio/wav',
+      'audio/x-flac' => 'audio/flac',
       _ => normalizedMime,
     };
   }
