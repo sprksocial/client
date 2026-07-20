@@ -184,6 +184,30 @@ void main() {
       expect(decodeSoundTrackAudioMimeType(track.id), 'audio/flac');
     });
 
+    test('derives one FLAC format from a legacy Spark blob MIME', () {
+      final audio = AudioView.fromJson({
+        'uri': 'at://did:plc:test123/so.sprk.sound.audio/flac-spark',
+        'cid': 'cid-spark-flac',
+        'author': {'did': 'did:plc:test123', 'handle': 'test.sprk.so'},
+        'record': {
+          r'$type': 'so.sprk.sound.audio',
+          'sound': _blobJson(mimeType: 'audio/x-flac'),
+          'title': 'Spark FLAC',
+          'createdAt': '2026-05-01T12:00:00.000Z',
+        },
+        'title': 'Spark FLAC',
+        'coverArt': 'https://example.com/spark.jpg',
+        'indexedAt': '2026-05-01T12:00:00.000Z',
+        'audio': 'https://example.com/audio.flac',
+      });
+
+      final track = audioViewToAudioTrack(audio);
+
+      expect(track, isNotNull);
+      expect(decodeSoundTrackAudioFileExtension(track!.id), 'flac');
+      expect(decodeSoundTrackAudioMimeType(track.id), 'audio/flac');
+    });
+
     test('maps Spark audio/mp4 blobs to m4a tracks', () {
       final audio = AudioView.fromJson({
         'uri': 'at://did:plc:test123/so.sprk.sound.audio/m4a-spark',

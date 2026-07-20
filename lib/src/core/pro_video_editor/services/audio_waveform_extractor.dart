@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -11,8 +10,6 @@ class AudioWaveformExtractor {
   AudioWaveformExtractor._();
 
   static final instance = AudioWaveformExtractor._();
-
-  final _waveformController = WaveformExtractionController();
 
   /// Extracts waveform samples from a video file.
   ///
@@ -39,11 +36,32 @@ class AudioWaveformExtractor {
   /// Extracts waveform samples from a file path.
   Future<List<double>> extractFromPath(String path) async {
     try {
-      final waveformData = await _waveformController.extractWaveformData(
-        path: path,
+      final waveform = await ProVideoEditor.instance.getWaveform(
+        WaveformConfigs(
+          video: EditorVideo.file(path),
+          resolution: WaveformResolution.medium,
+        ),
       );
-
-      return _normalizeWaveform(waveformData);
+      final leftChannel = waveform.leftChannel;
+      final rightChannel = waveform.rightChannel;
+      final samples = rightChannel == null
+          ? leftChannel.toList(growable: false)
+          : List<double>.generate(
+              leftChannel.length > rightChannel.length
+                  ? leftChannel.length
+                  : rightChannel.length,
+              (index) {
+                final left = index < leftChannel.length
+                    ? leftChannel[index]
+                    : 0.0;
+                final right = index < rightChannel.length
+                    ? rightChannel[index]
+                    : 0.0;
+                return left.abs() > right.abs() ? left : right;
+              },
+              growable: false,
+            );
+      return _normalizeWaveform(samples);
     } catch (_) {
       return [];
     }
@@ -104,10 +122,5 @@ class AudioWaveformExtractor {
     final file = File('${tempDir.path}/$filename');
     await file.writeAsBytes(bytes);
     return file.path;
-  }
-
-  /// Stops any ongoing waveform extraction.
-  Future<void> stopExtraction() async {
-    await _waveformController.stopWaveformExtraction();
   }
 }

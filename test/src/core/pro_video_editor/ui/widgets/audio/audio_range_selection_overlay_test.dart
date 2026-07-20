@@ -5,6 +5,7 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/pro_video_editor/models/audio_audition_timing.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_range_selection_overlay.dart';
 
 void main() {
@@ -27,6 +28,39 @@ void main() {
       );
     },
   );
+
+  test('audition range normalizes source bounds and short-track looping', () {
+    final span = TrimDurationSpan(
+      start: const Duration(seconds: 2),
+      end: const Duration(seconds: 12),
+    );
+    final track = _testTrack();
+
+    final beforeStart = audioTrackForAuditionRange(
+      track,
+      playbackSpan: span,
+      sourceStart: const Duration(seconds: -2),
+    );
+    expect(beforeStart.audioStartTime, Duration.zero);
+    expect(beforeStart.audioEndTime, const Duration(seconds: 10));
+
+    final afterEnd = audioTrackForAuditionRange(
+      track,
+      playbackSpan: span,
+      sourceStart: const Duration(seconds: 40),
+    );
+    expect(afterEnd.audioStartTime, const Duration(seconds: 20));
+    expect(afterEnd.audioEndTime, const Duration(seconds: 30));
+
+    final shortTrack = audioTrackForAuditionRange(
+      track.copyWith(duration: const Duration(seconds: 5)),
+      playbackSpan: span,
+      sourceStart: const Duration(seconds: 3),
+    );
+    expect(shortTrack.audioStartTime, Duration.zero);
+    expect(shortTrack.audioEndTime, const Duration(seconds: 5));
+    expect(shortTrack.loop, isTrue);
+  });
 
   test('preview range follows the sound placement inside the edited video', () {
     final track = AudioTrack(
@@ -90,7 +124,6 @@ void main() {
     );
     expect(
       audioRangeLoopTarget(
-        isPreviewActive: true,
         isPlaybackArmed: true,
         isVideoCompleted: false,
         position: const Duration(seconds: 8),
@@ -100,7 +133,6 @@ void main() {
     );
     expect(
       audioRangeLoopTarget(
-        isPreviewActive: true,
         isPlaybackArmed: true,
         isVideoCompleted: false,
         position: const Duration(seconds: 7),
@@ -110,17 +142,6 @@ void main() {
     );
     expect(
       audioRangeLoopTarget(
-        isPreviewActive: false,
-        isPlaybackArmed: true,
-        isVideoCompleted: false,
-        position: const Duration(seconds: 8),
-        range: range,
-      ),
-      isNull,
-    );
-    expect(
-      audioRangeLoopTarget(
-        isPreviewActive: true,
         isPlaybackArmed: false,
         isVideoCompleted: false,
         position: const Duration(seconds: 8),
@@ -138,7 +159,6 @@ void main() {
 
     expect(
       audioRangeLoopTarget(
-        isPreviewActive: true,
         isPlaybackArmed: true,
         isVideoCompleted: true,
         position: Duration.zero,
@@ -148,7 +168,6 @@ void main() {
     );
     expect(
       audioRangeLoopTarget(
-        isPreviewActive: true,
         isPlaybackArmed: true,
         isVideoCompleted: false,
         position: Duration.zero,
@@ -162,9 +181,8 @@ void main() {
     tester,
   ) async {
     var scrubStartCount = 0;
-    var cancelCount = 0;
-    AudioTrack? previewedTrack;
-    AudioTrack? confirmedTrack;
+    Duration? previewedStart;
+    Duration? confirmedStart;
     final playbackProgress = ValueNotifier(0.0);
     addTearDown(playbackProgress.dispose);
     final track = AudioTrack(
@@ -190,9 +208,9 @@ void main() {
             isWaveformLoading: false,
             playbackProgress: playbackProgress,
             onScrubStarted: () => scrubStartCount++,
-            onPreviewRequested: (value) => previewedTrack = value,
-            onCancel: () => cancelCount++,
-            onDone: (value) => confirmedTrack = value,
+            onPreviewRequested: (value) => previewedStart = value,
+            onCancel: () {},
+            onDone: (value) => confirmedStart = value,
           ),
         ),
       ),
@@ -236,10 +254,6 @@ void main() {
     expect(cancelButton.minHeight, doneButton.minHeight);
     expect(cancelButton.padding, doneButton.padding);
 
-    await tester.tap(find.byKey(const ValueKey('audio-range-cancel')));
-    await tester.pump();
-    expect(cancelCount, 1);
-
     double playbackScale() => tester
         .widget<Transform>(
           find.byKey(const ValueKey('audio-range-playback-progress')),
@@ -266,19 +280,31 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(scrubStartCount, 1);
-    expect(previewedTrack, isNotNull);
-    expect(previewedTrack!.audioStartTime, greaterThan(Duration.zero));
-    expect(
-      previewedTrack!.audioEndTime! - previewedTrack!.audioStartTime!,
-      const Duration(seconds: 10),
-    );
+    expect(previewedStart, greaterThan(Duration.zero));
 
     await tester.tap(find.byKey(const ValueKey('audio-range-done')));
     await tester.pump();
 
-    expect(confirmedTrack, isNotNull);
-    expect(confirmedTrack!.audioStartTime, previewedTrack!.audioStartTime);
-    expect(confirmedTrack!.audioEndTime, previewedTrack!.audioEndTime);
+    expect(confirmedStart, previewedStart);
+  });
+
+  testWidgets('cancel removes the range overlay', (tester) async {
+    final playbackProgress = ValueNotifier(0.0);
+    addTearDown(playbackProgress.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _CancelHost(playbackProgress: playbackProgress),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('audio-range-cancel')));
+    await tester.pump();
+
+    expect(find.byType(AudioRangeSelectionOverlay), findsNothing);
   });
 
   testWidgets('blocks blank-area input and underlying editor semantics', (
@@ -316,7 +342,7 @@ void main() {
     'semantic scrolling re-previews without previewing initial positioning',
     (tester) async {
       var scrubStartCount = 0;
-      final previewedTracks = <AudioTrack>[];
+      final previewedStarts = <Duration>[];
       final playbackProgress = ValueNotifier(0.0);
       addTearDown(playbackProgress.dispose);
       final track = _testTrack().copyWith(
@@ -329,28 +355,20 @@ void main() {
           track: track,
           playbackProgress: playbackProgress,
           onScrubStarted: () => scrubStartCount++,
-          onPreviewRequested: previewedTracks.add,
+          onPreviewRequested: previewedStarts.add,
         ),
       );
       await tester.pumpAndSettle();
 
       expect(scrubStartCount, 0);
-      expect(previewedTracks, isEmpty);
+      expect(previewedStarts, isEmpty);
 
       tester.semantics.scrollLeft(scrollable: find.semantics.scrollable());
       await tester.pumpAndSettle();
 
       expect(scrubStartCount, 1);
-      expect(previewedTracks, hasLength(1));
-      expect(
-        previewedTracks.single.audioStartTime,
-        greaterThan(const Duration(seconds: 5)),
-      );
-      expect(
-        previewedTracks.single.audioEndTime! -
-            previewedTracks.single.audioStartTime!,
-        const Duration(seconds: 10),
-      );
+      expect(previewedStarts, hasLength(1));
+      expect(previewedStarts.single, greaterThan(const Duration(seconds: 5)));
     },
   );
 }
@@ -370,7 +388,7 @@ Widget _overlayHarness({
   required ValueListenable<double> playbackProgress,
   Widget? background,
   VoidCallback? onScrubStarted,
-  ValueChanged<AudioTrack>? onPreviewRequested,
+  ValueChanged<Duration>? onPreviewRequested,
 }) {
   return MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -398,4 +416,33 @@ Widget _overlayHarness({
       ),
     ),
   );
+}
+
+class _CancelHost extends StatefulWidget {
+  const _CancelHost({required this.playbackProgress});
+
+  final ValueListenable<double> playbackProgress;
+
+  @override
+  State<_CancelHost> createState() => _CancelHostState();
+}
+
+class _CancelHostState extends State<_CancelHost> {
+  bool _visible = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_visible) return const SizedBox.shrink();
+    return AudioRangeSelectionOverlay(
+      track: _testTrack(),
+      videoDuration: const Duration(seconds: 10),
+      waveformData: const [0.2, 0.8],
+      isWaveformLoading: false,
+      playbackProgress: widget.playbackProgress,
+      onScrubStarted: () {},
+      onPreviewRequested: (_) {},
+      onCancel: () => setState(() => _visible = false),
+      onDone: (_) {},
+    );
+  }
 }

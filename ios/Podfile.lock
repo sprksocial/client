@@ -1,20 +1,14 @@
 PODS:
-  - audio_waveforms (0.0.1):
-    - Flutter
   - Flutter (1.0.0)
 
 DEPENDENCIES:
-  - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
   - Flutter (from `Flutter`)
 
 EXTERNAL SOURCES:
-  audio_waveforms:
-    :path: ".symlinks/plugins/audio_waveforms/ios"
   Flutter:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
 
 PODFILE CHECKSUM: e716c32704b29904c5fe233535ab45faecf8c549

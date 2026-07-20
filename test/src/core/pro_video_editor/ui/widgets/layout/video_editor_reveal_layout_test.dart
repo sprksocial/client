@@ -2,10 +2,50 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_regular_chrome.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/layout/video_editor_reveal_layout.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 void main() {
+  test(
+    'regular chrome restores its reveal state after a fullscreen overlay',
+    () {
+      final selectedLayerId = ValueNotifier<String?>(null);
+      final timelineState = VideoTimelineState(
+        videoDuration: const Duration(seconds: 10),
+      );
+      final chrome = VideoEditorRegularChrome(
+        vsync: const TestVSync(),
+        editorKey: GlobalKey<ProImageEditorState>(),
+        previewAspectRatio: 9 / 16,
+        timelineState: timelineState,
+        selectedLayerIdListenable: selectedLayerId,
+        onSeek: (_) {},
+        onSeekStart: () {},
+        onSeekEnd: () {},
+        onTogglePlay: () {},
+        onToggleOriginalAudio: () {},
+        onToggleCustomAudio: () {},
+        onAddSound: () {},
+        onAdjustSound: () {},
+        onRemoveSound: () {},
+        onAudioTimingChanged: (_) {},
+      );
+      addTearDown(() {
+        chrome.dispose();
+        timelineState.dispose();
+        selectedLayerId.dispose();
+      });
+      chrome.reveal.value = 0.65;
+
+      chrome.setOverlayActive(true);
+      expect(chrome.reveal.value, 0);
+
+      chrome.setOverlayActive(false);
+      expect(chrome.reveal.value, 0.65);
+    },
+  );
+
   test('timed layers only intercept swipes while visible', () {
     final layer = WidgetLayer(
       widget: const SizedBox(),

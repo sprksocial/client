@@ -7,6 +7,8 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/app_button
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/pro_video_editor/models/audio_audition_timing.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_waveform.dart';
 
 const _waveformHeight = 72.0;
 const _selectionHorizontalInset = 28.0;
@@ -31,9 +33,9 @@ class AudioRangeSelectionOverlay extends StatefulWidget {
   final bool isWaveformLoading;
   final ValueListenable<double> playbackProgress;
   final VoidCallback onScrubStarted;
-  final ValueChanged<AudioTrack> onPreviewRequested;
+  final ValueChanged<Duration> onPreviewRequested;
   final VoidCallback onCancel;
-  final ValueChanged<AudioTrack> onDone;
+  final ValueChanged<Duration> onDone;
 
   @override
   State<AudioRangeSelectionOverlay> createState() =>
@@ -46,7 +48,6 @@ class _AudioRangeSelectionOverlayState
   bool _didSetInitialPosition = false;
   bool _isSettingInitialPosition = false;
   bool _isUserScrolling = false;
-  double _selectedStartFraction = 0;
 
   Duration get _selectionDuration => audioSelectionDuration(
     audioDuration: widget.track.duration,
@@ -56,22 +57,11 @@ class _AudioRangeSelectionOverlayState
   Duration get _maximumStart => widget.track.duration - _selectionDuration;
 
   @override
-  void initState() {
-    super.initState();
-    _selectedStartFraction = _fractionForStart(
-      widget.track.audioStartTime ?? Duration.zero,
-    );
-  }
-
-  @override
   void didUpdateWidget(covariant AudioRangeSelectionOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.track.id != widget.track.id ||
         oldWidget.videoDuration != widget.videoDuration) {
       _didSetInitialPosition = false;
-      _selectedStartFraction = _fractionForStart(
-        widget.track.audioStartTime ?? Duration.zero,
-      );
     }
   }
 
@@ -91,9 +81,12 @@ class _AudioRangeSelectionOverlayState
     if (_didSetInitialPosition || !_scrollController.hasClients) return;
     _didSetInitialPosition = true;
     final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    final initialFraction = _fractionForStart(
+      widget.track.audioStartTime ?? Duration.zero,
+    );
     _isSettingInitialPosition = true;
     try {
-      _scrollController.jumpTo(maxScrollExtent * _selectedStartFraction);
+      _scrollController.jumpTo(maxScrollExtent * initialFraction);
     } finally {
       _isSettingInitialPosition = false;
     }
@@ -109,37 +102,25 @@ class _AudioRangeSelectionOverlayState
       widget.onScrubStarted();
     }
 
-    if (notification is ScrollUpdateNotification ||
-        notification is OverscrollNotification) {
-      final maxScrollExtent = notification.metrics.maxScrollExtent;
-      final fraction = maxScrollExtent <= 0
-          ? 0.0
-          : (notification.metrics.pixels / maxScrollExtent)
-                .clamp(0.0, 1.0)
-                .toDouble();
-      if (fraction != _selectedStartFraction) {
-        setState(() => _selectedStartFraction = fraction);
-      }
-    }
-
     if (notification is ScrollEndNotification && _isUserScrolling) {
       _isUserScrolling = false;
-      widget.onPreviewRequested(_selectedTrack());
+      widget.onPreviewRequested(_selectedStart());
     }
     return false;
   }
 
-  AudioTrack _selectedTrack() {
+  Duration _selectedStart() {
     final maximumStartUs = _maximumStart.inMicroseconds;
-    final start = Duration(
-      microseconds: (maximumStartUs * _selectedStartFraction).round(),
-    );
-    final end = start + _selectionDuration;
-    return widget.track.copyWith(
-      audioStartTime: start,
-      audioEndTime: end,
-      loop: widget.track.duration < widget.videoDuration,
-    );
+    if (maximumStartUs <= 0 || !_scrollController.hasClients) {
+      return Duration.zero;
+    }
+    final position = _scrollController.position;
+    final fraction = position.maxScrollExtent <= 0
+        ? 0.0
+        : (position.pixels / position.maxScrollExtent)
+              .clamp(0.0, 1.0)
+              .toDouble();
+    return Duration(microseconds: (maximumStartUs * fraction).round());
   }
 
   @override
@@ -181,7 +162,7 @@ class _AudioRangeSelectionOverlayState
                       AppButton(
                         key: const ValueKey('audio-range-done'),
                         label: l10n.buttonDone,
-                        onPressed: () => widget.onDone(_selectedTrack()),
+                        onPressed: () => widget.onDone(_selectedStart()),
                         size: AppButtonSize.compact,
                         minWidth: 76,
                         minHeight: 40,
@@ -275,11 +256,14 @@ class _AudioRangeSelectionOverlayState
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: _selectionHorizontalInset,
                                 ),
-                                child: CustomPaint(
+                                child: AudioWaveform(
                                   size: Size(waveformWidth, _waveformHeight),
-                                  painter: _WaveformPainter(
-                                    samples: widget.waveformData,
+                                  samples: widget.waveformData,
+                                  color: AppColors.greyWhite.withValues(
+                                    alpha: 0.9,
                                   ),
+                                  presentation:
+                                      AudioWaveformPresentation.selection,
                                 ),
                               ),
                             ),
@@ -431,59 +415,6 @@ class _SmoothPlaybackProgressFillState
   }
 }
 
-Duration audioSelectionDuration({
-  required Duration audioDuration,
-  required Duration videoDuration,
-}) {
-  if (audioDuration <= Duration.zero || videoDuration <= Duration.zero) {
-    return Duration.zero;
-  }
-  return audioDuration < videoDuration ? audioDuration : videoDuration;
-}
-
-TrimDurationSpan audioTrackPreviewRange({
-  required AudioTrack track,
-  required Duration videoStart,
-  required Duration videoEnd,
-}) {
-  final trackStart = track.startTime ?? videoStart;
-  final trackEnd = track.endTime ?? videoEnd;
-  final previewStart = trackStart > videoStart ? trackStart : videoStart;
-  final previewEnd = trackEnd < videoEnd ? trackEnd : videoEnd;
-  if (previewEnd <= previewStart) {
-    return TrimDurationSpan(start: videoStart, end: videoEnd);
-  }
-  return TrimDurationSpan(start: previewStart, end: previewEnd);
-}
-
-double audioRangePlaybackProgress({
-  required Duration position,
-  required Duration rangeStart,
-  required Duration rangeEnd,
-}) {
-  final rangeDuration = rangeEnd - rangeStart;
-  if (rangeDuration <= Duration.zero) return 0;
-  return ((position - rangeStart).inMicroseconds / rangeDuration.inMicroseconds)
-      .clamp(0.0, 1.0)
-      .toDouble();
-}
-
-Duration? audioRangeLoopTarget({
-  required bool isPreviewActive,
-  required bool isPlaybackArmed,
-  required bool isVideoCompleted,
-  required Duration position,
-  required TrimDurationSpan range,
-}) {
-  final isOutsideRange = position < range.start || position >= range.end;
-  if (!isPreviewActive ||
-      !isPlaybackArmed ||
-      (!isVideoCompleted && !isOutsideRange)) {
-    return null;
-  }
-  return range.start;
-}
-
 class _AudioPickerScrim extends StatelessWidget {
   const _AudioPickerScrim();
 
@@ -507,47 +438,4 @@ class _AudioPickerScrim extends StatelessWidget {
       ),
     );
   }
-}
-
-class _WaveformPainter extends CustomPainter {
-  const _WaveformPainter({required this.samples});
-
-  final List<double> samples;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.greyWhite.withValues(alpha: 0.9)
-      ..strokeWidth = 2.4
-      ..strokeCap = StrokeCap.round;
-    final barCount = math.max(1, (size.width / 5).floor());
-    final centerY = size.height / 2;
-
-    for (var index = 0; index < barCount; index++) {
-      final samplePosition = barCount == 1 ? 0.0 : index / (barCount - 1);
-      final amplitude = _amplitudeAt(samplePosition);
-      final barHeight = 8 + amplitude * (size.height - 12);
-      final x = barCount == 1 ? size.width / 2 : samplePosition * size.width;
-      canvas.drawLine(
-        Offset(x, centerY - barHeight / 2),
-        Offset(x, centerY + barHeight / 2),
-        paint,
-      );
-    }
-  }
-
-  double _amplitudeAt(double position) {
-    if (samples.isEmpty) {
-      return (0.3 +
-              math.sin(position * math.pi * 13).abs() * 0.38 +
-              math.sin(position * math.pi * 29).abs() * 0.22)
-          .clamp(0.0, 1.0);
-    }
-    final sampleIndex = (position * (samples.length - 1)).round();
-    return samples[sampleIndex].abs().clamp(0.0, 1.0);
-  }
-
-  @override
-  bool shouldRepaint(covariant _WaveformPainter oldDelegate) =>
-      oldDelegate.samples != samples;
 }
