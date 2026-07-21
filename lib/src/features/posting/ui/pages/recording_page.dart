@@ -1111,8 +1111,6 @@ class _RecordingSoundPickerSheetState
         child: SoundPickerSheetScaffold(
           title: l10n.titleSelectSound,
           child: AudioTrackListSection(
-            configs: const ProImageEditorConfigs(),
-            videoDuration: const Duration(seconds: 9),
             selectedTrack: _selectedTrack,
             onTrackSelected: _handleTrackTap,
           ),

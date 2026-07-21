@@ -20,6 +20,7 @@ class VideoEditorRegularChrome {
     required this.onToggleOriginalAudio,
     required this.onToggleCustomAudio,
     required this.onAddSound,
+    required this.onAdjustSound,
     required this.onRemoveSound,
     required this.onAudioTimingChanged,
     this.onTrimChanged,
@@ -39,11 +40,14 @@ class VideoEditorRegularChrome {
   final VoidCallback onToggleOriginalAudio;
   final VoidCallback onToggleCustomAudio;
   final VoidCallback onAddSound;
+  final VoidCallback onAdjustSound;
   final VoidCallback onRemoveSound;
   final ValueChanged<AudioTrack> onAudioTimingChanged;
   final void Function(double start, double end)? onTrimChanged;
   final void Function(double start, double end, bool isStartHandle)? onTrimEnd;
   final VideoEditorRevealCoordinator reveal;
+  final _overlayActive = ValueNotifier(false);
+  double? _revealValueBeforeOverlay;
 
   Widget buildRemoveArea(Widget child) {
     return VideoEditorRevealRemoveArea(coordinator: reveal, child: child);
@@ -54,25 +58,29 @@ class VideoEditorRegularChrome {
     required ProImageEditorState editor,
     required bool visible,
   }) {
-    return VideoEditorRevealBottomBar(
+    return ValueListenableBuilder<bool>(
       key: key,
-      coordinator: reveal,
-      visible: visible,
-      child: VideoEditorBottomSection(
-        editor: editor,
-        videoTimelineState: timelineState,
-        selectedLayerIdListenable: selectedLayerIdListenable,
-        onSeek: onSeek,
-        onSeekStart: onSeekStart,
-        onSeekEnd: onSeekEnd,
-        onTogglePlay: onTogglePlay,
-        onToggleOriginalAudio: onToggleOriginalAudio,
-        onToggleCustomAudio: onToggleCustomAudio,
-        onAddSound: onAddSound,
-        onRemoveSound: onRemoveSound,
-        onAudioTimingChanged: onAudioTimingChanged,
-        onTrimChanged: onTrimChanged,
-        onTrimEnd: onTrimEnd,
+      valueListenable: _overlayActive,
+      builder: (context, isOverlayActive, _) => VideoEditorRevealBottomBar(
+        coordinator: reveal,
+        visible: visible && !isOverlayActive,
+        child: VideoEditorBottomSection(
+          editor: editor,
+          videoTimelineState: timelineState,
+          selectedLayerIdListenable: selectedLayerIdListenable,
+          onSeek: onSeek,
+          onSeekStart: onSeekStart,
+          onSeekEnd: onSeekEnd,
+          onTogglePlay: onTogglePlay,
+          onToggleOriginalAudio: onToggleOriginalAudio,
+          onToggleCustomAudio: onToggleCustomAudio,
+          onAddSound: onAddSound,
+          onAdjustSound: onAdjustSound,
+          onRemoveSound: onRemoveSound,
+          onAudioTimingChanged: onAudioTimingChanged,
+          onTrimChanged: onTrimChanged,
+          onTrimEnd: onTrimEnd,
+        ),
       ),
     );
   }
@@ -88,12 +96,18 @@ class VideoEditorRegularChrome {
       timelineState: timelineState,
       selectedLayerIdListenable: selectedLayerIdListenable,
       onPreviewTap: onTogglePlay,
-      overlay: SafeArea(
-        bottom: false,
-        child: VideoEditorHeader(
-          onBack: editor.closeEditor,
-          onNext: editor.doneEditing,
-        ),
+      overlay: ValueListenableBuilder<bool>(
+        valueListenable: _overlayActive,
+        builder: (context, isOverlayActive, _) {
+          if (isOverlayActive) return const SizedBox.shrink();
+          return SafeArea(
+            bottom: false,
+            child: VideoEditorHeader(
+              onBack: editor.closeEditor,
+              onNext: editor.doneEditing,
+            ),
+          );
+        },
       ),
       child: content,
     );
@@ -111,5 +125,21 @@ class VideoEditorRegularChrome {
     );
   }
 
-  void dispose() => reveal.dispose();
+  void setOverlayActive(bool isActive) {
+    if (_overlayActive.value == isActive) return;
+    _overlayActive.value = isActive;
+    if (isActive) {
+      _revealValueBeforeOverlay ??= reveal.value;
+      reveal.value = 0;
+      return;
+    }
+    final previousValue = _revealValueBeforeOverlay;
+    _revealValueBeforeOverlay = null;
+    if (previousValue != null) reveal.value = previousValue;
+  }
+
+  void dispose() {
+    _overlayActive.dispose();
+    reveal.dispose();
+  }
 }

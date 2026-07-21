@@ -77,7 +77,10 @@ String decodeSoundTrackAudioFileExtension(String? encoded) {
   if (encoded == null) return _fallbackAudioFileExtension;
   try {
     final map = jsonDecode(encoded) as Map<String, dynamic>;
-    return _normalizeAudioFileExtension(map['audioFileExtension'] as String?);
+    return _resolveAudioFormat(
+      extension: map['audioFileExtension'] as String?,
+      mimeType: map['audioMimeType'] as String?,
+    ).extension;
   } catch (_) {
     return _fallbackAudioFileExtension;
   }
@@ -87,10 +90,10 @@ String decodeSoundTrackAudioMimeType(String? encoded) {
   if (encoded == null) return 'audio/mpeg';
   try {
     final map = jsonDecode(encoded) as Map<String, dynamic>;
-    return _normalizeAudioMimeType(
-      map['audioMimeType'] as String?,
+    return _resolveAudioFormat(
       extension: map['audioFileExtension'] as String?,
-    );
+      mimeType: map['audioMimeType'] as String?,
+    ).mimeType;
   } catch (_) {
     return 'audio/mpeg';
   }
@@ -99,13 +102,13 @@ String decodeSoundTrackAudioMimeType(String? encoded) {
 String audioFileExtension(AudioView audio) {
   final record = audio.localRecord;
   if (record is PlyrTrackRecord) {
-    return _normalizeAudioFileExtension(
-      record.fileType,
+    return _resolveAudioFormat(
+      extension: record.fileType,
       mimeType: record.audioBlob?.mimeType,
-    );
+    ).extension;
   }
   if (record is AudioRecord) {
-    return _normalizeAudioFileExtension(null, mimeType: record.sound.mimeType);
+    return _resolveAudioFormat(mimeType: record.sound.mimeType).extension;
   }
   return _fallbackAudioFileExtension;
 }
@@ -113,13 +116,13 @@ String audioFileExtension(AudioView audio) {
 String audioMimeType(AudioView audio) {
   final record = audio.localRecord;
   if (record is PlyrTrackRecord) {
-    return _normalizeAudioMimeType(
-      record.audioBlob?.mimeType,
+    return _resolveAudioFormat(
       extension: record.fileType,
-    );
+      mimeType: record.audioBlob?.mimeType,
+    ).mimeType;
   }
   if (record is AudioRecord) {
-    return _normalizeAudioMimeType(record.sound.mimeType);
+    return _resolveAudioFormat(mimeType: record.sound.mimeType).mimeType;
   }
   return 'audio/mpeg';
 }
@@ -172,55 +175,58 @@ bool _isSparkMediaSoundUrl(String url) {
       uri.pathSegments.first == 'sound';
 }
 
-String _normalizeAudioFileExtension(String? value, {String? mimeType}) {
-  final extension = value?.trim().toLowerCase().replaceFirst('.', '');
-  if (extension != null && extension.isNotEmpty) {
-    final normalized = switch (extension) {
-      'mpeg' => 'mp3',
-      'mp4' => 'm4a',
-      'x-m4a' => 'm4a',
-      'x-wav' => 'wav',
-      _ => extension.replaceAll(RegExp(r'[^a-z0-9]'), ''),
-    };
-    if (normalized.isNotEmpty) return normalized;
-  }
-
-  final subtype = mimeType?.split('/').last.trim().toLowerCase();
-  return switch (subtype) {
-    'mpeg' => 'mp3',
-    'mp3' => 'mp3',
-    'mp4' => 'm4a',
-    'm4a' => 'm4a',
-    'x-m4a' => 'm4a',
-    'aac' => 'aac',
-    'vnd.wave' => 'wav',
-    'wave' => 'wav',
-    'wav' => 'wav',
-    'x-wav' => 'wav',
-    'flac' => 'flac',
-    'ogg' => 'ogg',
-    _ => _fallbackAudioFileExtension,
+_AudioFormat _resolveAudioFormat({String? extension, String? mimeType}) {
+  final normalizedMime = mimeType?.trim().toLowerCase();
+  final mimeFormat = switch (normalizedMime) {
+    'audio/mpeg' || 'audio/mp3' => const _AudioFormat('mp3', 'audio/mpeg'),
+    'audio/mp4' ||
+    'audio/m4a' ||
+    'audio/x-m4a' => const _AudioFormat('m4a', 'audio/mp4'),
+    'audio/aac' => const _AudioFormat('aac', 'audio/aac'),
+    'audio/vnd.wave' ||
+    'audio/wave' ||
+    'audio/wav' ||
+    'audio/x-wav' => const _AudioFormat('wav', 'audio/wav'),
+    'audio/flac' || 'audio/x-flac' => const _AudioFormat('flac', 'audio/flac'),
+    'audio/ogg' => const _AudioFormat('ogg', 'audio/ogg'),
+    _ => null,
   };
+  if (mimeFormat != null) return mimeFormat;
+
+  final normalizedExtension = extension
+      ?.trim()
+      .toLowerCase()
+      .replaceFirst('.', '')
+      .replaceAll(RegExp(r'[^a-z0-9]'), '');
+  final extensionFormat = switch (normalizedExtension) {
+    'mpeg' || 'mp3' => const _AudioFormat('mp3', 'audio/mpeg'),
+    'mp4' || 'm4a' || 'xm4a' => const _AudioFormat('m4a', 'audio/mp4'),
+    'aac' => const _AudioFormat('aac', 'audio/aac'),
+    'vndwave' ||
+    'wave' ||
+    'wav' ||
+    'xwav' => const _AudioFormat('wav', 'audio/wav'),
+    'flac' || 'xflac' => const _AudioFormat('flac', 'audio/flac'),
+    'ogg' => const _AudioFormat('ogg', 'audio/ogg'),
+    _ => null,
+  };
+  if (extensionFormat != null) return extensionFormat;
+
+  if (normalizedMime != null && normalizedMime.startsWith('audio/')) {
+    final subtype = normalizedMime
+        .substring('audio/'.length)
+        .replaceAll(RegExp(r'[^a-z0-9]'), '');
+    if (subtype.isNotEmpty) return _AudioFormat(subtype, normalizedMime);
+  }
+  if (normalizedExtension != null && normalizedExtension.isNotEmpty) {
+    return _AudioFormat(normalizedExtension, 'audio/$normalizedExtension');
+  }
+  return const _AudioFormat(_fallbackAudioFileExtension, 'audio/mpeg');
 }
 
-String _normalizeAudioMimeType(String? mimeType, {String? extension}) {
-  final normalizedMime = mimeType?.trim().toLowerCase();
-  if (normalizedMime != null && normalizedMime.startsWith('audio/')) {
-    return switch (normalizedMime) {
-      'audio/x-m4a' => 'audio/mp4',
-      'audio/vnd.wave' => 'audio/wav',
-      'audio/wave' => 'audio/wav',
-      'audio/x-wav' => 'audio/wav',
-      _ => normalizedMime,
-    };
-  }
+class _AudioFormat {
+  const _AudioFormat(this.extension, this.mimeType);
 
-  return switch (_normalizeAudioFileExtension(extension)) {
-    'm4a' => 'audio/mp4',
-    'aac' => 'audio/aac',
-    'wav' => 'audio/wav',
-    'flac' => 'audio/flac',
-    'ogg' => 'audio/ogg',
-    _ => 'audio/mpeg',
-  };
+  final String extension;
+  final String mimeType;
 }

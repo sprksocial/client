@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_waveform.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timed_track_range.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/timeline_subtrack_content.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
@@ -87,11 +88,10 @@ class AudioTimelineTrack extends StatelessWidget {
                 ),
               ),
       ),
-      child: CustomPaint(
-        painter: _AudioWaveformPainter(
-          waveformData: videoTimelineState.customWaveformData,
-          totalWidth: sourceWidth,
-        ),
+      child: AudioWaveform(
+        samples: videoTimelineState.customWaveformData,
+        color: AppColors.greyWhite.withAlpha(100),
+        presentation: AudioWaveformPresentation.timeline,
       ),
     );
   }
@@ -113,54 +113,5 @@ class AudioTimelineTrack extends StatelessWidget {
       ),
       child: const Icon(Icons.person, color: AppColors.grey300, size: 12),
     );
-  }
-}
-
-class _AudioWaveformPainter extends CustomPainter {
-  _AudioWaveformPainter({required this.waveformData, required this.totalWidth});
-
-  final List<double> waveformData;
-  final double totalWidth;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (waveformData.isEmpty) return;
-
-    final paint = Paint()
-      ..color = AppColors.greyWhite.withAlpha(100)
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    const barWidth = 2.0;
-    const barSpacing = 2.0;
-    const barStep = barWidth + barSpacing;
-    final barCount = (size.width / barStep).floor();
-    final samplesPerBar = waveformData.length / barCount;
-    final centerY = size.height / 2;
-
-    for (var i = 0; i < barCount; i++) {
-      final sampleIndex = (i * samplesPerBar).floor().clamp(
-        0,
-        waveformData.length - 1,
-      );
-      final amplitude = waveformData[sampleIndex];
-      final barHeight = (amplitude * size.height * 0.7).clamp(
-        2.0,
-        size.height - 4,
-      );
-      final x = i * barStep + barWidth / 2;
-
-      canvas.drawLine(
-        Offset(x, centerY - barHeight / 2),
-        Offset(x, centerY + barHeight / 2),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _AudioWaveformPainter oldDelegate) {
-    return oldDelegate.waveformData != waveformData ||
-        oldDelegate.totalWidth != totalWidth;
   }
 }

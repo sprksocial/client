@@ -62,6 +62,11 @@
     "description": "Replace the selected media track"
   },
 
+  "buttonAdjustClip": "Adjust clip",
+  "@buttonAdjustClip": {
+    "description": "Change which part of the selected sound is used"
+  },
+
   "buttonMute": "Mute",
   "@buttonMute": {
     "description": "Mute the selected audio track"
@@ -1101,6 +1106,16 @@
   "titleSelectSound": "Select sound",
   "@titleSelectSound": {
     "description": "Title for the recorder sound picker"
+  },
+
+  "labelSelectSoundClip": "Select sound clip",
+  "@labelSelectSoundClip": {
+    "description": "Title for choosing which section of a sound plays over a video"
+  },
+
+  "hintDragWaveform": "Drag to choose the part that plays",
+  "@hintDragWaveform": {
+    "description": "Instruction below the video editor sound waveform"
   },
 
   "hintSearchSounds": "Search sounds",

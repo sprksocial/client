@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:pro_image_editor/pro_image_editor.dart' show AudioTrack;
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -10,25 +10,25 @@ import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_pr
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_state.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
 
+const defaultAudioTrackArtworkBackground = Color(0xFF9E9E9E);
+
 /// Displays a scrollable list of audio tracks for selection.
 class AudioTrackListSection extends ConsumerStatefulWidget {
   /// Creates an [AudioTrackListSection].
   const AudioTrackListSection({
-    required this.configs,
-    required this.videoDuration,
     required this.onTrackSelected,
     this.selectedTrack,
+    this.emptyStateIcon = Icons.music_note,
+    this.artworkBackgroundColor = defaultAudioTrackArtworkBackground,
     super.key,
   });
 
-  /// Configuration settings for the editor.
-  final ProImageEditorConfigs configs;
-
-  /// Total duration of the video.
-  final Duration videoDuration;
-
   /// Currently selected track (if any).
   final AudioTrack? selectedTrack;
+
+  final IconData emptyStateIcon;
+
+  final Color artworkBackgroundColor;
 
   /// Called when a track is tapped.
   final void Function(AudioTrack track) onTrackSelected;
@@ -159,9 +159,9 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: AudioTrackSelectionTile(
-            configs: widget.configs,
             audioTrack: audioTrack,
             isSelected: audioTrack.id == widget.selectedTrack?.id,
+            artworkBackgroundColor: widget.artworkBackgroundColor,
             onTap: () => widget.onTrackSelected(audioTrack),
           ),
         );
@@ -179,7 +179,7 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              widget.configs.audioEditor.icons.audioTrackDefaultIcon,
+              widget.emptyStateIcon,
               size: 48,
               color: colorScheme.onSurfaceVariant.withAlpha(128),
             ),
@@ -201,22 +201,21 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
 
 class AudioTrackSelectionTile extends StatelessWidget {
   const AudioTrackSelectionTile({
-    required this.configs,
     required this.audioTrack,
     required this.isSelected,
+    required this.artworkBackgroundColor,
     required this.onTap,
     super.key,
   });
 
-  final ProImageEditorConfigs configs;
   final AudioTrack audioTrack;
   final bool isSelected;
+  final Color artworkBackgroundColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final imageBackground = configs.audioEditor.style.audioTrackImageBackground;
     final borderRadius = BorderRadius.circular(8);
     final backgroundColor = isSelected
         ? AppColors.primary500.withValues(alpha: 0.12)
@@ -252,7 +251,7 @@ class AudioTrackSelectionTile extends StatelessWidget {
                     imageUrl: audioTrack.image?.networkUrl,
                     size: 50,
                     borderRadius: 8,
-                    backgroundColor: imageBackground.withAlpha(80),
+                    backgroundColor: artworkBackgroundColor.withAlpha(80),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
