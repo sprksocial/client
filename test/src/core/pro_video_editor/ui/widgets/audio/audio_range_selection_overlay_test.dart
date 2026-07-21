@@ -10,19 +10,19 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_range_sel
 
 void main() {
   test(
-    'selection duration uses the video length without exceeding the sound',
+    'selection duration uses the window length without exceeding the sound',
     () {
       expect(
         audioSelectionDuration(
           audioDuration: const Duration(seconds: 30),
-          videoDuration: const Duration(seconds: 12),
+          selectionWindowDuration: const Duration(seconds: 12),
         ),
         const Duration(seconds: 12),
       );
       expect(
         audioSelectionDuration(
           audioDuration: const Duration(seconds: 8),
-          videoDuration: const Duration(seconds: 12),
+          selectionWindowDuration: const Duration(seconds: 12),
         ),
         const Duration(seconds: 8),
       );
@@ -62,7 +62,7 @@ void main() {
     expect(shortTrack.loop, isTrue);
   });
 
-  test('preview range follows the sound placement inside the edited video', () {
+  test('preview range follows the sound placement inside the host span', () {
     final track = AudioTrack(
       id: 'sound',
       title: 'Summer Loop',
@@ -75,22 +75,22 @@ void main() {
 
     final placedRange = audioTrackPreviewRange(
       track: track,
-      videoStart: Duration.zero,
-      videoEnd: const Duration(seconds: 10),
+      hostStart: Duration.zero,
+      hostEnd: const Duration(seconds: 10),
     );
     expect(placedRange.start, const Duration(seconds: 3));
     expect(placedRange.end, const Duration(seconds: 8));
 
     final trimmedRange = audioTrackPreviewRange(
       track: track,
-      videoStart: const Duration(seconds: 4),
-      videoEnd: const Duration(seconds: 6),
+      hostStart: const Duration(seconds: 4),
+      hostEnd: const Duration(seconds: 6),
     );
     expect(trimmedRange.start, const Duration(seconds: 4));
     expect(trimmedRange.end, const Duration(seconds: 6));
   });
 
-  test('playback progress is relative to the active video range', () {
+  test('playback progress is relative to the active host range', () {
     expect(
       audioRangePlaybackProgress(
         position: const Duration(seconds: 5),
@@ -125,7 +125,7 @@ void main() {
     expect(
       audioRangeLoopTarget(
         isPlaybackArmed: true,
-        isVideoCompleted: false,
+        isPlaybackCompleted: false,
         position: const Duration(seconds: 8),
         range: range,
       ),
@@ -134,7 +134,7 @@ void main() {
     expect(
       audioRangeLoopTarget(
         isPlaybackArmed: true,
-        isVideoCompleted: false,
+        isPlaybackCompleted: false,
         position: const Duration(seconds: 7),
         range: range,
       ),
@@ -143,7 +143,7 @@ void main() {
     expect(
       audioRangeLoopTarget(
         isPlaybackArmed: false,
-        isVideoCompleted: false,
+        isPlaybackCompleted: false,
         position: const Duration(seconds: 8),
         range: range,
       ),
@@ -151,7 +151,7 @@ void main() {
     );
   });
 
-  test('completed video loops to the start of a middle-to-end range', () {
+  test('completed playback loops to the start of a middle-to-end range', () {
     final range = TrimDurationSpan(
       start: const Duration(seconds: 5),
       end: const Duration(seconds: 10),
@@ -160,7 +160,7 @@ void main() {
     expect(
       audioRangeLoopTarget(
         isPlaybackArmed: true,
-        isVideoCompleted: true,
+        isPlaybackCompleted: true,
         position: Duration.zero,
         range: range,
       ),
@@ -169,7 +169,7 @@ void main() {
     expect(
       audioRangeLoopTarget(
         isPlaybackArmed: true,
-        isVideoCompleted: false,
+        isPlaybackCompleted: false,
         position: Duration.zero,
         range: range,
       ),
@@ -200,7 +200,7 @@ void main() {
         home: Scaffold(
           body: AudioRangeSelectionOverlay(
             track: track,
-            videoDuration: const Duration(seconds: 10),
+            selectionWindowDuration: const Duration(seconds: 10),
             waveformData: List<double>.generate(
               90,
               (index) => (index % 10 + 1) / 10,
@@ -400,7 +400,7 @@ Widget _overlayHarness({
           background ?? const SizedBox.expand(),
           AudioRangeSelectionOverlay(
             track: track,
-            videoDuration: const Duration(seconds: 10),
+            selectionWindowDuration: const Duration(seconds: 10),
             waveformData: List<double>.generate(
               90,
               (index) => (index % 10 + 1) / 10,
@@ -435,7 +435,7 @@ class _CancelHostState extends State<_CancelHost> {
     if (!_visible) return const SizedBox.shrink();
     return AudioRangeSelectionOverlay(
       track: _testTrack(),
-      videoDuration: const Duration(seconds: 10),
+      selectionWindowDuration: const Duration(seconds: 10),
       waveformData: const [0.2, 0.8],
       isWaveformLoading: false,
       playbackProgress: widget.playbackProgress,

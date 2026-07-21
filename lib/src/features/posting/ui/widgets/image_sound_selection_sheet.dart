@@ -20,8 +20,6 @@ class ImageSoundSelectionSheet extends StatefulWidget {
 }
 
 class _ImageSoundSelectionSheetState extends State<ImageSoundSelectionSheet> {
-  static const _previewDuration = Duration(seconds: 9);
-
   late final AudioPlayer _audioPlayer;
   AudioTrack? _selectedTrack;
   int _previewRequestId = 0;
@@ -96,8 +94,6 @@ class _ImageSoundSelectionSheetState extends State<ImageSoundSelectionSheet> {
         ),
       ),
       child: AudioTrackListSection(
-        configs: const ProImageEditorConfigs(),
-        videoDuration: _previewDuration,
         selectedTrack: _selectedTrack,
         onTrackSelected: _handleTrackSelected,
       ),

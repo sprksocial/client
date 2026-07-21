@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/pro_video_editor/models/audio_audition_timing.dart';
-import 'package:spark/src/core/pro_video_editor/ui/controllers/video_editor_media_session.dart';
-import 'package:video_player/video_player.dart';
+import 'package:spark/src/core/pro_video_editor/ui/controllers/audio_audition_playback.dart';
 
 typedef AudioAuditionErrorHandler =
     void Function(String message, Object error, StackTrace stackTrace);
@@ -15,20 +14,20 @@ enum AudioPickerPreviewStatus { idle, loading, ready, failed }
 sealed class AudioAuditionState {
   const AudioAuditionState({
     required this.previousTrack,
-    required this.editorSpan,
+    required this.hostSpan,
   });
 
   final AudioTrack? previousTrack;
-  final TrimDurationSpan editorSpan;
+  final TrimDurationSpan hostSpan;
 
-  bool get suspendsChrome;
+  bool get blocksHostInteraction;
 }
 
 @immutable
 final class AudioPickerAuditionState extends AudioAuditionState {
   const AudioPickerAuditionState({
     required super.previousTrack,
-    required super.editorSpan,
+    required super.hostSpan,
     required this.selectedTrack,
     required this.previewStatus,
   });
@@ -40,7 +39,7 @@ final class AudioPickerAuditionState extends AudioAuditionState {
       selectedTrack != null && previewStatus == AudioPickerPreviewStatus.ready;
 
   @override
-  bool get suspendsChrome => false;
+  bool get blocksHostInteraction => false;
 
   AudioPickerAuditionState copyWith({
     AudioTrack? selectedTrack,
@@ -49,7 +48,7 @@ final class AudioPickerAuditionState extends AudioAuditionState {
   }) {
     return AudioPickerAuditionState(
       previousTrack: previousTrack,
-      editorSpan: editorSpan,
+      hostSpan: hostSpan,
       selectedTrack: clearSelectedTrack
           ? null
           : selectedTrack ?? this.selectedTrack,
@@ -62,7 +61,7 @@ final class AudioPickerAuditionState extends AudioAuditionState {
 final class AudioRangeAuditionState extends AudioAuditionState {
   const AudioRangeAuditionState({
     required super.previousTrack,
-    required super.editorSpan,
+    required super.hostSpan,
     required this.draft,
     required this.playbackSpan,
     required this.waveform,
@@ -77,7 +76,7 @@ final class AudioRangeAuditionState extends AudioAuditionState {
   final bool isScrubbing;
 
   @override
-  bool get suspendsChrome => true;
+  bool get blocksHostInteraction => true;
 
   AudioRangeAuditionState copyWith({
     AudioTrack? draft,
@@ -89,7 +88,7 @@ final class AudioRangeAuditionState extends AudioAuditionState {
       draft: draft ?? this.draft,
       previousTrack: previousTrack,
       playbackSpan: playbackSpan,
-      editorSpan: editorSpan,
+      hostSpan: hostSpan,
       waveform: waveform ?? this.waveform,
       isWaveformLoading: isWaveformLoading ?? this.isWaveformLoading,
       isScrubbing: isScrubbing ?? this.isScrubbing,
@@ -101,12 +100,12 @@ final class AudioRangeAuditionState extends AudioAuditionState {
 final class AudioAuditionRestoringState extends AudioAuditionState {
   const AudioAuditionRestoringState({
     required super.previousTrack,
-    required super.editorSpan,
-    required this.suspendsChrome,
+    required super.hostSpan,
+    required this.blocksHostInteraction,
   });
 
   @override
-  final bool suspendsChrome;
+  final bool blocksHostInteraction;
 }
 
 class AudioAuditionResult {
@@ -124,7 +123,7 @@ class AudioAuditionController extends ChangeNotifier {
     this._onError,
   );
 
-  final VideoEditorAudioPlayback _playback;
+  final AudioAuditionPlayback _playback;
   final Future<List<double>> Function(AudioTrack track) _loadWaveform;
   final ValueChanged<AudioAuditionResult> _onCommit;
   final AudioAuditionErrorHandler _onError;
@@ -135,6 +134,7 @@ class AudioAuditionController extends ChangeNotifier {
   int _playbackRevision = 0;
   bool _isPlaybackArmed = false;
   bool _isDisposed = false;
+  Future<void>? _scrubPauseFuture;
 
   AudioAuditionState? get state => _state;
 
@@ -145,25 +145,27 @@ class AudioAuditionController extends ChangeNotifier {
 
   bool get isActive => _state != null;
 
-  void beginPicker({
+  Future<bool> beginPicker({
     required AudioTrack? previousTrack,
-    required TrimDurationSpan editorSpan,
-  }) {
-    _sessionRevision++;
-    _playbackRevision++;
-    _isPlaybackArmed = false;
-    playbackProgress.value = 0;
+    required TrimDurationSpan hostSpan,
+  }) async {
+    if (_state != null) return false;
+    final session = ++_sessionRevision;
+    _invalidatePlayback(clearScrubPause: true);
     _setState(
       AudioPickerAuditionState(
         previousTrack: previousTrack,
-        editorSpan: editorSpan,
+        hostSpan: hostSpan,
         selectedTrack: previousTrack,
         previewStatus: previousTrack == null
             ? AudioPickerPreviewStatus.idle
             : AudioPickerPreviewStatus.ready,
       ),
     );
-    _playback.pauseEditor();
+    await _playback.pausePreview();
+    return !_isDisposed &&
+        session == _sessionRevision &&
+        _state is AudioPickerAuditionState;
   }
 
   Future<bool> selectPickerTrack(AudioTrack track) async {
@@ -185,9 +187,9 @@ class AudioAuditionController extends ChangeNotifier {
     }
 
     try {
-      await _playback.previewPickerTrack(
+      await _playback.previewCandidate(
         track,
-        current.editorSpan,
+        current.hostSpan,
         isCurrent: isCurrent,
       );
       if (!isCurrent()) return false;
@@ -198,7 +200,7 @@ class AudioAuditionController extends ChangeNotifier {
       _onError('Failed to preview a sound picker track', error, stackTrace);
       if (!isCurrent()) return false;
       try {
-        await _playback.stopAudio();
+        await _playback.pausePreview();
       } catch (pauseError, pauseStackTrace) {
         _onError(
           'Failed to pause audio after a sound picker failure',
@@ -226,49 +228,48 @@ class AudioAuditionController extends ChangeNotifier {
     _beginRange(
       track: current.selectedTrack!,
       previousTrack: current.previousTrack,
-      playbackSpan: current.editorSpan,
-      editorSpan: current.editorSpan,
+      playbackSpan: current.hostSpan,
+      hostSpan: current.hostSpan,
     );
     return true;
   }
 
-  void beginAdjustment({
+  bool beginAdjustment({
     required AudioTrack track,
-    required TrimDurationSpan editorSpan,
+    required TrimDurationSpan hostSpan,
     required List<double> waveform,
   }) {
+    if (_state != null) return false;
     _beginRange(
       track: track,
       previousTrack: track,
       playbackSpan: audioTrackPreviewRange(
         track: track,
-        videoStart: editorSpan.start,
-        videoEnd: editorSpan.end,
+        hostStart: hostSpan.start,
+        hostEnd: hostSpan.end,
       ),
-      editorSpan: editorSpan,
+      hostSpan: hostSpan,
       waveform: waveform,
     );
+    return true;
   }
 
   void _beginRange({
     required AudioTrack track,
     required AudioTrack? previousTrack,
     required TrimDurationSpan playbackSpan,
-    required TrimDurationSpan editorSpan,
+    required TrimDurationSpan hostSpan,
     List<double> waveform = const [],
   }) {
     final session = ++_sessionRevision;
-    _playbackRevision++;
-    _isPlaybackArmed = false;
-    playbackProgress.value = 0;
+    _invalidatePlayback(clearScrubPause: true);
     final draft = audioTrackForAuditionRange(track, playbackSpan: playbackSpan);
-    _playback.setTrack(draft);
     _setState(
       AudioRangeAuditionState(
         draft: draft,
         previousTrack: previousTrack,
         playbackSpan: playbackSpan,
-        editorSpan: editorSpan,
+        hostSpan: hostSpan,
         waveform: waveform,
         isWaveformLoading: waveform.isEmpty,
         isScrubbing: false,
@@ -306,25 +307,48 @@ class AudioAuditionController extends ChangeNotifier {
     }
   }
 
-  void pauseForScrub() {
+  Future<void> pauseForScrub() async {
     final current = _state;
     if (current is! AudioRangeAuditionState) return;
-    _playbackRevision++;
-    _isPlaybackArmed = false;
-    playbackProgress.value = 0;
-    _playback.pauseEditor();
+    final request = _invalidatePlayback(clearScrubPause: false);
     _setState(current.copyWith(isScrubbing: true));
+    final previousPause = _scrubPauseFuture;
+    final pause = _pausePreviewForScrub();
+    final Future<void> barrier = previousPause == null
+        ? pause
+        : Future.wait<void>([previousPause, pause]).then<void>((_) {});
+    _scrubPauseFuture = barrier;
+    await barrier;
+    if (request == _playbackRevision && identical(_scrubPauseFuture, barrier)) {
+      _scrubPauseFuture = null;
+    }
   }
 
-  void previewRange(Duration sourceStart) {
+  Future<void> _pausePreviewForScrub() async {
+    try {
+      await _playback.pausePreview();
+    } catch (error, stackTrace) {
+      _onError('Failed to pause audio range preview', error, stackTrace);
+    }
+  }
+
+  Future<void> previewRange(Duration sourceStart) async {
+    final session = _sessionRevision;
+    final request = _playbackRevision;
+    final pause = _scrubPauseFuture;
+    await pause;
     final current = _state;
+    if (_isDisposed ||
+        session != _sessionRevision ||
+        request != _playbackRevision) {
+      return;
+    }
     if (current is! AudioRangeAuditionState) return;
     final draft = audioTrackForAuditionRange(
       current.draft,
       playbackSpan: current.playbackSpan,
       sourceStart: sourceStart,
     );
-    _playback.setTrack(draft);
     _setState(current.copyWith(draft: draft, isScrubbing: false));
     unawaited(_restartPreview());
   }
@@ -332,10 +356,8 @@ class AudioAuditionController extends ChangeNotifier {
   Future<void> _restartPreview() async {
     final current = _state;
     if (current is! AudioRangeAuditionState) return;
-    final request = ++_playbackRevision;
+    final request = _invalidatePlayback(clearScrubPause: false);
     final session = _sessionRevision;
-    _isPlaybackArmed = false;
-    playbackProgress.value = 0;
     bool isCurrent() =>
         !_isDisposed &&
         request == _playbackRevision &&
@@ -343,13 +365,18 @@ class AudioAuditionController extends ChangeNotifier {
         _state is AudioRangeAuditionState;
 
     try {
-      await _playback.preparePreview(
+      await _playback.prepareRangePreview(
         current.draft,
         current.playbackSpan,
         isCurrent: isCurrent,
       );
       if (!isCurrent()) return;
-      _playback.requestEditorPlay();
+      _isPlaybackArmed = true;
+      await _playback.startRangePreview(
+        current.draft,
+        current.playbackSpan,
+        isCurrent: isCurrent,
+      );
     } catch (error, stackTrace) {
       await _failPreview(
         request: request,
@@ -360,96 +387,42 @@ class AudioAuditionController extends ChangeNotifier {
     }
   }
 
-  bool handlePlayRequested() {
+  AudioRangeAuditionState? handlePlaybackSnapshot(
+    AudioAuditionPlaybackSnapshot snapshot,
+  ) {
     final current = _state;
-    if (current is! AudioRangeAuditionState) return false;
-    final request = _playbackRevision;
-    final session = _sessionRevision;
-    _isPlaybackArmed = true;
-    bool isCurrent() =>
-        !_isDisposed &&
-        request == _playbackRevision &&
-        session == _sessionRevision &&
-        _state is AudioRangeAuditionState;
-    unawaited(_playPreview(current, request: request, isCurrent: isCurrent));
-    return true;
-  }
-
-  Future<void> _playPreview(
-    AudioRangeAuditionState current, {
-    required int request,
-    required bool Function() isCurrent,
-  }) async {
-    try {
-      await _playback.playTrack(
-        current.draft,
-        current.playbackSpan,
-        isCurrent: isCurrent,
-      );
-    } catch (error, stackTrace) {
-      await _failPreview(
-        request: request,
-        message: 'Failed to play audio range preview',
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  bool handleVideoValue(VideoPlayerValue videoValue) {
-    final current = _state;
-    if (current == null) return false;
-    if (current is! AudioRangeAuditionState) return true;
+    if (current is! AudioRangeAuditionState) return null;
     if (!current.isScrubbing) {
       playbackProgress.value = audioRangePlaybackProgress(
-        position: videoValue.position,
+        position: snapshot.position,
         rangeStart: current.playbackSpan.start,
         rangeEnd: current.playbackSpan.end,
       );
     }
     final loopTarget = audioRangeLoopTarget(
       isPlaybackArmed: _isPlaybackArmed,
-      isVideoCompleted: videoValue.isCompleted,
-      position: videoValue.position,
+      isPlaybackCompleted: snapshot.isCompleted,
+      position: snapshot.position,
       range: current.playbackSpan,
     );
     if (loopTarget != null) {
       _isPlaybackArmed = false;
       unawaited(_restartPreview());
-      return true;
+      return null;
     }
-    unawaited(_synchronize(current, videoValue));
-    return true;
-  }
-
-  Future<void> _synchronize(
-    AudioRangeAuditionState current,
-    VideoPlayerValue videoValue,
-  ) async {
-    try {
-      await _playback.synchronize(
-        current.draft,
-        current.playbackSpan,
-        videoValue,
-      );
-    } catch (error, stackTrace) {
-      _onError('Failed to synchronize audio range preview', error, stackTrace);
-    }
+    return current;
   }
 
   bool finish(Duration sourceStart) {
     final current = _state;
     if (current is! AudioRangeAuditionState) return false;
     _sessionRevision++;
-    _playbackRevision++;
-    _isPlaybackArmed = false;
-    playbackProgress.value = 0;
+    _invalidatePlayback(clearScrubPause: true);
     final track = audioTrackForAuditionRange(
       current.draft,
       playbackSpan: current.playbackSpan,
       sourceStart: sourceStart,
     );
-    _playback.setTrack(track);
     _onCommit(AudioAuditionResult(track: track, waveform: current.waveform));
     _setState(null);
     return true;
@@ -459,16 +432,12 @@ class AudioAuditionController extends ChangeNotifier {
     final current = _state;
     if (current == null || current is AudioAuditionRestoringState) return;
     final session = ++_sessionRevision;
-    _playbackRevision++;
-    _isPlaybackArmed = false;
-    playbackProgress.value = 0;
-    _playback.pauseEditor();
-    _playback.setTrack(current.previousTrack);
+    _invalidatePlayback(clearScrubPause: true);
     _setState(
       AudioAuditionRestoringState(
         previousTrack: current.previousTrack,
-        editorSpan: current.editorSpan,
-        suspendsChrome: current.suspendsChrome,
+        hostSpan: current.hostSpan,
+        blocksHostInteraction: current.blocksHostInteraction,
       ),
     );
     bool isCurrent() =>
@@ -477,9 +446,11 @@ class AudioAuditionController extends ChangeNotifier {
         _state is AudioAuditionRestoringState;
 
     try {
-      await _playback.restore(
+      await _playback.pausePreview();
+      if (!isCurrent()) return;
+      await _playback.restorePrevious(
         current.previousTrack,
-        current.editorSpan,
+        current.hostSpan,
         isCurrent: isCurrent,
       );
     } catch (error, stackTrace) {
@@ -490,7 +461,7 @@ class AudioAuditionController extends ChangeNotifier {
       );
       if (!isCurrent()) return;
       try {
-        await _playback.stopAudio();
+        await _playback.pausePreview();
       } catch (pauseError, pauseStackTrace) {
         _onError(
           'Failed to pause audio after sound restoration failure',
@@ -515,12 +486,10 @@ class AudioAuditionController extends ChangeNotifier {
         request != _playbackRevision) {
       return;
     }
-    _isPlaybackArmed = false;
-    playbackProgress.value = 0;
-    _playback.pauseEditor();
+    _invalidatePlayback(clearScrubPause: true);
     _setState(current.copyWith(isScrubbing: true));
     try {
-      await _playback.stopAudio();
+      await _playback.pausePreview();
     } catch (pauseError, pauseStackTrace) {
       _onError(
         'Failed to pause audio after range preview failure',
@@ -536,12 +505,19 @@ class AudioAuditionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  int _invalidatePlayback({required bool clearScrubPause}) {
+    _isPlaybackArmed = false;
+    if (clearScrubPause) _scrubPauseFuture = null;
+    playbackProgress.value = 0;
+    return ++_playbackRevision;
+  }
+
   @override
   void dispose() {
     if (_isDisposed) return;
     _isDisposed = true;
     _sessionRevision++;
-    _playbackRevision++;
+    _invalidatePlayback(clearScrubPause: true);
     _state = null;
     playbackProgress.dispose();
     super.dispose();

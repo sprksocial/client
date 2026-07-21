@@ -2,12 +2,15 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 
 Duration audioSelectionDuration({
   required Duration audioDuration,
-  required Duration videoDuration,
+  required Duration selectionWindowDuration,
 }) {
-  if (audioDuration <= Duration.zero || videoDuration <= Duration.zero) {
+  if (audioDuration <= Duration.zero ||
+      selectionWindowDuration <= Duration.zero) {
     return Duration.zero;
   }
-  return audioDuration < videoDuration ? audioDuration : videoDuration;
+  return audioDuration < selectionWindowDuration
+      ? audioDuration
+      : selectionWindowDuration;
 }
 
 AudioTrack audioTrackForAuditionRange(
@@ -15,10 +18,10 @@ AudioTrack audioTrackForAuditionRange(
   required TrimDurationSpan playbackSpan,
   Duration? sourceStart,
 }) {
-  final videoDuration = playbackSpan.end - playbackSpan.start;
+  final playbackDuration = playbackSpan.end - playbackSpan.start;
   final selectionDuration = audioSelectionDuration(
     audioDuration: track.duration,
-    videoDuration: videoDuration,
+    selectionWindowDuration: playbackDuration,
   );
   final maximumStart = track.duration - selectionDuration;
   var normalizedSourceStart =
@@ -34,21 +37,21 @@ AudioTrack audioTrackForAuditionRange(
     audioEndTime: normalizedSourceStart + selectionDuration,
     startTime: playbackSpan.start,
     endTime: playbackSpan.end,
-    loop: track.duration < videoDuration,
+    loop: track.duration < playbackDuration,
   );
 }
 
 TrimDurationSpan audioTrackPreviewRange({
   required AudioTrack track,
-  required Duration videoStart,
-  required Duration videoEnd,
+  required Duration hostStart,
+  required Duration hostEnd,
 }) {
-  final trackStart = track.startTime ?? videoStart;
-  final trackEnd = track.endTime ?? videoEnd;
-  final previewStart = trackStart > videoStart ? trackStart : videoStart;
-  final previewEnd = trackEnd < videoEnd ? trackEnd : videoEnd;
+  final trackStart = track.startTime ?? hostStart;
+  final trackEnd = track.endTime ?? hostEnd;
+  final previewStart = trackStart > hostStart ? trackStart : hostStart;
+  final previewEnd = trackEnd < hostEnd ? trackEnd : hostEnd;
   if (previewEnd <= previewStart) {
-    return TrimDurationSpan(start: videoStart, end: videoEnd);
+    return TrimDurationSpan(start: hostStart, end: hostEnd);
   }
   return TrimDurationSpan(start: previewStart, end: previewEnd);
 }
@@ -67,12 +70,12 @@ double audioRangePlaybackProgress({
 
 Duration? audioRangeLoopTarget({
   required bool isPlaybackArmed,
-  required bool isVideoCompleted,
+  required bool isPlaybackCompleted,
   required Duration position,
   required TrimDurationSpan range,
 }) {
   final isOutsideRange = position < range.start || position >= range.end;
-  if (!isPlaybackArmed || (!isVideoCompleted && !isOutsideRange)) {
+  if (!isPlaybackArmed || (!isPlaybackCompleted && !isOutsideRange)) {
     return null;
   }
   return range.start;

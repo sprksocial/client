@@ -9,12 +9,56 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_provider.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_state.dart';
 import 'package:spark/src/core/pro_video_editor/ui/controllers/audio_audition_controller.dart';
-import 'package:spark/src/core/pro_video_editor/ui/controllers/video_editor_media_session.dart';
+import 'package:spark/src/core/pro_video_editor/ui/controllers/audio_audition_playback.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
-import 'package:video_player/video_player.dart';
 
 void main() {
+  testWidgets('cancel while opening does not present a stale picker', (
+    tester,
+  ) async {
+    final pause = Completer<void>();
+    final playback = _FakeAudioPlayback(onPause: () => pause.future);
+    final controller = _controller(playback);
+    addTearDown(controller.dispose);
+    await _pumpFlowHost(tester, controller: controller, autoOpen: false);
+
+    await tester.tap(find.text('Open sounds'));
+    await tester.pump();
+    expect(controller.state, isA<AudioPickerAuditionState>());
+
+    final cancellation = controller.cancel();
+    pause.complete();
+    await cancellation;
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AudioSelectionBottomSheet), findsNothing);
+    expect(controller.state, isNull);
+  });
+
+  testWidgets('an active picker ignores overlapping open requests', (
+    tester,
+  ) async {
+    final pause = Completer<void>();
+    final playback = _FakeAudioPlayback(onPause: () => pause.future);
+    final controller = _controller(playback);
+    addTearDown(controller.dispose);
+    await _pumpFlowHost(tester, controller: controller, autoOpen: false);
+
+    await tester.tap(find.text('Open sounds'));
+    await tester.pump();
+    await tester.tap(find.text('Open sounds'));
+    await tester.pump();
+
+    expect(playback.pauseCalls, 1);
+    pause.complete();
+    await tester.pumpAndSettle();
+    expect(find.byType(AudioSelectionBottomSheet), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('Continue stays disabled until the selected preview succeeds', (
     tester,
   ) async {
@@ -23,7 +67,7 @@ void main() {
     final controller = _controller(playback);
     addTearDown(controller.dispose);
     AudioTrack? result;
-    await _pumpSheetHost(
+    await _pumpFlowHost(
       tester,
       controller: controller,
       onResult: (track) => result = track,
@@ -50,12 +94,12 @@ void main() {
     final reportedErrors = <Object>[];
     final playback = _FakeAudioPlayback(
       onPreview: (_) => preview.future,
-      stopError: StateError('stop failed'),
+      failurePauseError: StateError('pause failed'),
     );
     final controller = _controller(playback, errors: reportedErrors);
     addTearDown(controller.dispose);
     AudioTrack? result;
-    await _pumpSheetHost(
+    await _pumpFlowHost(
       tester,
       controller: controller,
       onResult: (track) => result = track,
@@ -89,7 +133,7 @@ void main() {
     final controller = _controller(playback);
     addTearDown(controller.dispose);
     AudioTrack? result;
-    await _pumpSheetHost(
+    await _pumpFlowHost(
       tester,
       controller: controller,
       onResult: (track) => result = track,
@@ -123,7 +167,7 @@ void main() {
     final controller = _controller(playback);
     addTearDown(controller.dispose);
     AudioTrack? result;
-    await _pumpSheetHost(
+    await _pumpFlowHost(
       tester,
       controller: controller,
       onResult: (track) => result = track,
@@ -156,10 +200,11 @@ AudioAuditionController _controller(
   );
 }
 
-Future<void> _pumpSheetHost(
+Future<void> _pumpFlowHost(
   WidgetTester tester, {
   required AudioAuditionController controller,
-  required ValueChanged<AudioTrack?> onResult,
+  ValueChanged<AudioTrack?>? onResult,
+  bool autoOpen = true,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -175,25 +220,15 @@ Future<void> _pumpSheetHost(
           builder: (context) => Scaffold(
             body: ElevatedButton(
               onPressed: () async {
-                controller.beginPicker(previousTrack: null, editorSpan: _span);
-                final confirmed = await showModalBottomSheet<bool>(
+                await showAudioSelectionFlow(
                   context: context,
-                  isScrollControlled: true,
-                  builder: (_) => FractionallySizedBox(
-                    heightFactor: 0.9,
-                    child: AudioSelectionBottomSheet(
-                      configs: const ProImageEditorConfigs(),
-                      videoDuration: const Duration(seconds: 10),
-                      audition: controller,
-                    ),
-                  ),
+                  initialTrack: null,
+                  hostSpan: _span,
+                  audition: controller,
+                  isCurrent: () => true,
+                  onError: (_, _, _) {},
                 );
-                if (confirmed ?? false) {
-                  controller.confirmPicker();
-                } else {
-                  await controller.cancel();
-                }
-                onResult(controller.rangeState?.draft);
+                onResult?.call(controller.rangeState?.draft);
               },
               child: const Text('Open sounds'),
             ),
@@ -202,8 +237,10 @@ Future<void> _pumpSheetHost(
       ),
     ),
   );
-  await tester.tap(find.text('Open sounds'));
-  await tester.pumpAndSettle();
+  if (autoOpen) {
+    await tester.tap(find.text('Open sounds'));
+    await tester.pumpAndSettle();
+  }
 }
 
 void _selectTrack(WidgetTester tester, AudioTrack track) {
@@ -216,65 +253,55 @@ AppButton _continueButton(WidgetTester tester) {
   return tester.widget<AppButton>(find.byType(AppButton));
 }
 
-class _FakeAudioPlayback implements VideoEditorAudioPlayback {
-  _FakeAudioPlayback({required this.onPreview, this.stopError});
+class _FakeAudioPlayback implements AudioAuditionPlayback {
+  _FakeAudioPlayback({this.onPreview, this.onPause, this.failurePauseError});
 
-  final Future<void> Function(AudioTrack track) onPreview;
-  final Object? stopError;
+  final Future<void> Function(AudioTrack track)? onPreview;
+  final Future<void> Function()? onPause;
+  final Object? failurePauseError;
   final restoredTracks = <AudioTrack?>[];
+  var pauseCalls = 0;
 
   @override
-  Future<void> previewPickerTrack(
+  Future<void> previewCandidate(
     AudioTrack track,
-    TrimDurationSpan editorSpan, {
+    TrimDurationSpan hostSpan, {
     required bool Function() isCurrent,
   }) {
-    return onPreview(track);
+    return onPreview?.call(track) ?? Future<void>.value();
   }
 
   @override
-  Future<void> stopAudio() async {
-    if (stopError != null) throw stopError!;
-  }
-
-  @override
-  Future<void> restore(
+  Future<void> restorePrevious(
     AudioTrack? track,
-    TrimDurationSpan editorSpan, {
+    TrimDurationSpan hostSpan, {
     required bool Function() isCurrent,
   }) async {
     restoredTracks.add(track);
   }
 
   @override
-  void pauseEditor() {}
+  Future<void> pausePreview() async {
+    pauseCalls++;
+    await onPause?.call();
+    if (pauseCalls > 1 && failurePauseError != null) {
+      throw failurePauseError!;
+    }
+  }
 
   @override
-  void requestEditorPlay() {}
-
-  @override
-  void setTrack(AudioTrack? track) {}
-
-  @override
-  Future<void> preparePreview(
+  Future<void> prepareRangePreview(
     AudioTrack track,
     TrimDurationSpan playbackSpan, {
     required bool Function() isCurrent,
   }) async {}
 
   @override
-  Future<void> playTrack(
+  Future<void> startRangePreview(
     AudioTrack track,
     TrimDurationSpan playbackSpan, {
     required bool Function() isCurrent,
   }) async {}
-
-  @override
-  Future<void> synchronize(
-    AudioTrack track,
-    TrimDurationSpan playbackSpan,
-    VideoPlayerValue videoValue,
-  ) async {}
 }
 
 AudioTrack _track(String id) {

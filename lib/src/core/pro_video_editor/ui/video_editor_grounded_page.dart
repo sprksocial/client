@@ -14,6 +14,7 @@ import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:spark/src/core/pro_video_editor/ui/controllers/audio_audition_controller.dart';
+import 'package:spark/src/core/pro_video_editor/ui/controllers/audio_audition_playback.dart';
 import 'package:spark/src/core/pro_video_editor/ui/controllers/video_editor_export_controller.dart';
 import 'package:spark/src/core/pro_video_editor/ui/controllers/video_editor_media_session.dart';
 import 'package:spark/src/core/pro_video_editor/ui/controllers/video_editor_preview_asset_loader.dart';
@@ -312,7 +313,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
         proVideoController,
       );
       audioAudition = AudioAuditionController(
-        audioPlayback,
+        VideoEditorAudioAuditionPlayback(audioPlayback),
         _previewAssetLoader.loadCustomWaveform,
         _commitAudioAudition,
         (message, error, stackTrace) {
@@ -369,8 +370,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
   void _onAudioAuditionChanged() {
     if (!mounted) return;
+    if (_audioAudition?.isActive == true) {
+      _shouldResetOnPlaybackComplete = false;
+    }
     _regularChrome?.setOverlayActive(
-      _audioAudition?.state?.suspendsChrome ?? false,
+      _audioAudition?.state?.blocksHostInteraction ?? false,
     );
     setState(() {});
   }
@@ -421,11 +425,47 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
     // Update audio timeline progress
     media.timelineState.setProgressFromDuration(duration);
-    if (_audioAudition?.handleVideoValue(videoValue) ?? false) return;
+    final audition = _audioAudition;
+    if (audition != null && audition.isActive) {
+      final playbackSnapshot = AudioAuditionPlaybackSnapshot(
+        position: videoValue.position,
+        isPlaying: videoValue.isPlaying,
+        isCompleted: videoValue.isCompleted,
+      );
+      final rangeState = audition.handlePlaybackSnapshot(playbackSnapshot);
+      if (rangeState != null) {
+        unawaited(
+          _synchronizePlayback(
+            rangeState.draft,
+            rangeState.playbackSpan,
+            playbackSnapshot,
+            isCurrent: () =>
+                mounted &&
+                identical(_audioAudition?.rangeState, rangeState) &&
+                !rangeState.isScrubbing,
+          ),
+        );
+      }
+      return;
+    }
 
     final audioTrack = proVideoController.audioTrack;
     if (audioTrack != null) {
-      unawaited(_synchronizePlayback(audioTrack, videoValue));
+      unawaited(
+        _synchronizePlayback(
+          audioTrack,
+          _playbackSpan,
+          AudioAuditionPlaybackSnapshot(
+            position: videoValue.position,
+            isPlaying: videoValue.isPlaying,
+            isCompleted: videoValue.isCompleted,
+          ),
+          isCurrent: () =>
+              mounted &&
+              !(_audioAudition?.isActive ?? false) &&
+              identical(_proVideoController?.audioTrack, audioTrack),
+        ),
+      );
     }
 
     if (_durationSpan != null && duration < _durationSpan!.start) {
@@ -446,10 +486,17 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
 
   Future<void> _synchronizePlayback(
     AudioTrack track,
-    VideoPlayerValue videoValue,
-  ) async {
+    TrimDurationSpan playbackSpan,
+    AudioAuditionPlaybackSnapshot snapshot, {
+    required bool Function() isCurrent,
+  }) async {
     try {
-      await _audioPlayback?.synchronize(track, _playbackSpan, videoValue);
+      await _audioPlayback?.synchronize(
+        track,
+        playbackSpan,
+        snapshot,
+        isCurrent: isCurrent,
+      );
     } catch (error, stackTrace) {
       _logger.w(
         'Failed to synchronize preview audio playback',
@@ -478,20 +525,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
       videoPosition: position,
       videoStart: _playbackStart,
       videoEnd: _playbackEnd,
-    );
-  }
-
-  Future<void> _playCustomAudioForCurrentVideoPosition(AudioTrack track) async {
-    final media = _media;
-    final playback = _audioPlayback;
-    if (media == null || playback == null) return;
-    await playback.playTrack(
-      track,
-      _playbackSpan,
-      isCurrent: () =>
-          mounted &&
-          identical(_media, media) &&
-          _proVideoController?.audioTrack?.id == track.id,
     );
   }
 
@@ -691,12 +724,13 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     if (media == null || audition == null) return;
     await showAudioSelectionFlow(
       context: context,
-      configs: _configs,
-      videoDuration: _videoMetadata.duration,
       initialTrack: _proVideoController?.audioTrack,
-      editorSpan: _playbackSpan,
+      hostSpan: _playbackSpan,
       audition: audition,
       isCurrent: () => mounted && identical(_media, media),
+      emptyStateIcon: _configs.audioEditor.icons.audioTrackDefaultIcon,
+      artworkBackgroundColor:
+          _configs.audioEditor.style.audioTrackImageBackground,
       onError: (message, error, stackTrace) =>
           _logger.w(message, error: error, stackTrace: stackTrace),
     );
@@ -708,12 +742,14 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
     if (track == null || audition == null) return;
     audition.beginAdjustment(
       track: track,
-      editorSpan: _playbackSpan,
+      hostSpan: _playbackSpan,
       waveform: _videoTimelineState.customWaveformData,
     );
   }
 
   void _commitAudioAudition(AudioAuditionResult result) {
+    _shouldResetOnPlaybackComplete = _videoController.value.isPlaying;
+    _proVideoController?.audioTrack = result.track;
     _videoTimelineState.setCustomAudio(
       result.track,
       result.waveform,
@@ -829,23 +865,36 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
               videoEditorCallbacks: VideoEditorCallbacks(
                 onPause: () {
                   _shouldResetOnPlaybackComplete = false;
-                  _videoController.pause();
-                  unawaited(_audioService.pause());
-                  _videoTimelineState.setPlaying(isPlaying: false);
+                  if (audition?.isActive == true) return;
+                  final playback = _audioPlayback;
+                  if (playback != null) {
+                    unawaited(playback.pauseEditorPlayback());
+                  }
                 },
                 onPlay: () {
-                  _shouldResetOnPlaybackComplete = true;
-                  if (!(audition?.handlePlayRequested() ?? false)) {
-                    final audioTrack = _proVideoController?.audioTrack;
-                    if (audioTrack == null) {
-                      _videoController.play();
-                    } else {
-                      unawaited(
-                        _playCustomAudioForCurrentVideoPosition(audioTrack),
-                      );
-                    }
+                  final playback = _audioPlayback;
+                  if (playback == null ||
+                      playback.rejectPlayRequest(
+                        auditionActive: audition?.isActive == true,
+                      )) {
+                    return;
                   }
-                  _videoTimelineState.setPlaying(isPlaying: true);
+                  _shouldResetOnPlaybackComplete = true;
+                  final audioTrack = _proVideoController?.audioTrack;
+                  unawaited(
+                    playback.playEditorPlayback(
+                      audioTrack,
+                      _playbackSpan,
+                      isCurrent: () =>
+                          mounted &&
+                          identical(_audioPlayback, playback) &&
+                          !(_audioAudition?.isActive ?? false) &&
+                          identical(
+                            _proVideoController?.audioTrack,
+                            audioTrack,
+                          ),
+                    ),
+                  );
                 },
                 onMuteToggle: (isMuted) async {
                   _videoTimelineState
@@ -873,7 +922,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage>
           if (rangeState != null && audition != null)
             AudioRangeSelectionOverlay(
               track: rangeState.draft,
-              videoDuration:
+              selectionWindowDuration:
                   rangeState.playbackSpan.end - rangeState.playbackSpan.start,
               waveformData: rangeState.waveform,
               isWaveformLoading: rangeState.isWaveformLoading,

@@ -8,17 +8,26 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_picker_sh
 
 Future<void> showAudioSelectionFlow({
   required BuildContext context,
-  required ProImageEditorConfigs configs,
-  required Duration videoDuration,
   required AudioTrack? initialTrack,
-  required TrimDurationSpan editorSpan,
+  required TrimDurationSpan hostSpan,
   required AudioAuditionController audition,
   required bool Function() isCurrent,
   required AudioAuditionErrorHandler onError,
+  IconData emptyStateIcon = Icons.music_note,
+  Color artworkBackgroundColor = defaultAudioTrackArtworkBackground,
 }) async {
   try {
     if (!context.mounted || !isCurrent()) return;
-    audition.beginPicker(previousTrack: initialTrack, editorSpan: editorSpan);
+    final pickerIsCurrent = await audition.beginPicker(
+      previousTrack: initialTrack,
+      hostSpan: hostSpan,
+    );
+    if (!pickerIsCurrent ||
+        !context.mounted ||
+        !isCurrent() ||
+        audition.state is! AudioPickerAuditionState) {
+      return;
+    }
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -26,9 +35,9 @@ Future<void> showAudioSelectionFlow({
       builder: (context) => FractionallySizedBox(
         heightFactor: 0.9,
         child: AudioSelectionBottomSheet(
-          configs: configs,
-          videoDuration: videoDuration,
           audition: audition,
+          emptyStateIcon: emptyStateIcon,
+          artworkBackgroundColor: artworkBackgroundColor,
         ),
       ),
     );
@@ -46,15 +55,15 @@ Future<void> showAudioSelectionFlow({
 
 class AudioSelectionBottomSheet extends StatelessWidget {
   const AudioSelectionBottomSheet({
-    required this.configs,
-    required this.videoDuration,
     required this.audition,
+    this.emptyStateIcon = Icons.music_note,
+    this.artworkBackgroundColor = defaultAudioTrackArtworkBackground,
     super.key,
   });
 
-  final ProImageEditorConfigs configs;
-  final Duration videoDuration;
   final AudioAuditionController audition;
+  final IconData emptyStateIcon;
+  final Color artworkBackgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +83,9 @@ class AudioSelectionBottomSheet extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(true),
           ),
           child: AudioTrackListSection(
-            configs: configs,
-            videoDuration: videoDuration,
             selectedTrack: state.selectedTrack,
+            emptyStateIcon: emptyStateIcon,
+            artworkBackgroundColor: artworkBackgroundColor,
             onTrackSelected: (track) => _selectTrack(context, track),
           ),
         );

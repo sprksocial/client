@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/pro_video_editor/ui/controllers/audio_audition_controller.dart';
-import 'package:spark/src/core/pro_video_editor/ui/controllers/video_editor_media_session.dart';
-import 'package:video_player/video_player.dart';
+import 'package:spark/src/core/pro_video_editor/ui/controllers/audio_audition_playback.dart';
 
 void main() {
   test(
@@ -20,10 +19,10 @@ void main() {
         (_, _, _) {},
       );
       addTearDown(controller.dispose);
-      final editorSpan = _span(2, 12);
+      final hostSpan = _span(2, 12);
       final track = _track('selected');
 
-      controller.beginPicker(previousTrack: null, editorSpan: editorSpan);
+      await controller.beginPicker(previousTrack: null, hostSpan: hostSpan);
       expect(controller.state, isA<AudioPickerAuditionState>());
       expect(await controller.selectPickerTrack(track), isTrue);
       expect(controller.confirmPicker(), isTrue);
@@ -33,8 +32,8 @@ void main() {
         const Duration(seconds: 10),
       );
       await Future<void>.delayed(Duration.zero);
-      expect(playback.preparedSpans, [editorSpan]);
-      expect(playback.playRequestCount, 1);
+      expect(playback.preparedSpans, [hostSpan]);
+      expect(playback.startCount, 1);
 
       waveform.complete([0.2, 0.8]);
       await Future<void>.delayed(Duration.zero);
@@ -48,7 +47,7 @@ void main() {
     },
   );
 
-  test('ignores waveform results from an obsolete audition', () async {
+  test('does not replace an active audition session', () async {
     final playback = _FakeAudioPlayback();
     final waveforms = <String, Completer<List<double>>>{};
     final controller = AudioAuditionController(
@@ -60,25 +59,54 @@ void main() {
     addTearDown(controller.dispose);
     final span = _span(0, 10);
 
-    controller.beginAdjustment(
-      track: _track('first'),
-      editorSpan: span,
-      waveform: const [],
+    expect(
+      controller.beginAdjustment(
+        track: _track('first'),
+        hostSpan: span,
+        waveform: const [],
+      ),
+      isTrue,
     );
-    controller.beginAdjustment(
-      track: _track('second'),
-      editorSpan: span,
-      waveform: const [],
+    expect(
+      controller.beginAdjustment(
+        track: _track('second'),
+        hostSpan: span,
+        waveform: const [],
+      ),
+      isFalse,
     );
+
+    expect(controller.rangeState?.draft.id, 'first');
+    expect(waveforms, contains('first'));
+    expect(waveforms, isNot(contains('second')));
 
     waveforms['first']!.complete([0.1]);
     await Future<void>.delayed(Duration.zero);
-    expect(controller.rangeState?.draft.id, 'second');
-    expect(controller.rangeState?.waveform, isEmpty);
+    expect(controller.rangeState?.waveform, [0.1]);
+  });
 
-    waveforms['second']!.complete([0.9]);
-    await Future<void>.delayed(Duration.zero);
-    expect(controller.rangeState?.waveform, [0.9]);
+  test('does not start a second picker while the first is pausing', () async {
+    final pause = Completer<void>();
+    final playback = _FakeAudioPlayback(onPause: () => pause.future);
+    final controller = AudioAuditionController(
+      playback,
+      (_) async => [0.5],
+      (_) {},
+      (_, _, _) {},
+    );
+    addTearDown(controller.dispose);
+    final first = controller.beginPicker(
+      previousTrack: null,
+      hostSpan: _span(0, 10),
+    );
+
+    expect(
+      await controller.beginPicker(previousTrack: null, hostSpan: _span(1, 11)),
+      isFalse,
+    );
+    pause.complete();
+    expect(await first, isTrue);
+    expect(controller.state?.hostSpan, _span(0, 10));
   });
 
   test('keeps cancellation restoring until the prior track is ready', () async {
@@ -92,17 +120,16 @@ void main() {
     );
     addTearDown(controller.dispose);
     final previousTrack = _track('previous');
-    final editorSpan = _span(0, 12);
+    final hostSpan = _span(0, 12);
     controller.beginAdjustment(
       track: previousTrack,
-      editorSpan: editorSpan,
+      hostSpan: hostSpan,
       waveform: const [0.5],
     );
 
     final cancellation = controller.cancel();
     expect(controller.state, isA<AudioAuditionRestoringState>());
-    expect(controller.state?.suspendsChrome, isTrue);
-    expect(playback.assignedTrack, same(previousTrack));
+    expect(controller.state?.blocksHostInteraction, isTrue);
 
     restore.complete();
     await cancellation;
@@ -111,7 +138,7 @@ void main() {
   });
 
   test(
-    'stale preview preparation cannot request playback after cancel',
+    'stale preview preparation cannot start playback after cancel',
     () async {
       final prepare = Completer<void>();
       final playback = _FakeAudioPlayback(onPrepare: () => prepare.future);
@@ -124,7 +151,7 @@ void main() {
       addTearDown(controller.dispose);
       controller.beginAdjustment(
         track: _track('selected'),
-        editorSpan: _span(0, 10),
+        hostSpan: _span(0, 10),
         waveform: const [0.5],
       );
       await Future<void>.delayed(Duration.zero);
@@ -134,7 +161,7 @@ void main() {
       await cancellation;
       await Future<void>.delayed(Duration.zero);
 
-      expect(playback.playRequestCount, 0);
+      expect(playback.startCount, 0);
       expect(controller.state, isNull);
     },
   );
@@ -152,7 +179,7 @@ void main() {
     addTearDown(controller.dispose);
     controller.beginAdjustment(
       track: _track('selected'),
-      editorSpan: _span(0, 10),
+      hostSpan: _span(0, 10),
       waveform: const [],
     );
     await Future<void>.delayed(Duration.zero);
@@ -162,7 +189,7 @@ void main() {
     prepare.complete();
     await Future<void>.delayed(Duration.zero);
 
-    expect(playback.playRequestCount, 1);
+    expect(playback.startCount, 1);
     expect(controller.rangeState?.waveform, [0.4]);
   });
 
@@ -179,12 +206,10 @@ void main() {
     addTearDown(controller.dispose);
     controller.beginAdjustment(
       track: _track('selected'),
-      editorSpan: _span(0, 10),
+      hostSpan: _span(0, 10),
       waveform: const [],
     );
     await Future<void>.delayed(Duration.zero);
-    expect(controller.handlePlayRequested(), isTrue);
-
     waveform.complete([0.4]);
     await Future<void>.delayed(Duration.zero);
     play.complete();
@@ -193,7 +218,31 @@ void main() {
     expect(playback.playWasCurrent, isTrue);
   });
 
-  test('picker phase consumes video updates without synchronization', () {
+  test('preview failure invalidates the failed transport request', () async {
+    final playback = _FakeAudioPlayback(
+      onPlay: () async => throw StateError('play failed'),
+    );
+    final controller = AudioAuditionController(
+      playback,
+      (_) async => [0.5],
+      (_) {},
+      (_, _, _) {},
+    );
+    addTearDown(controller.dispose);
+
+    controller.beginAdjustment(
+      track: _track('selected'),
+      hostSpan: _span(0, 10),
+      waveform: const [0.5],
+    );
+    await Future<void>.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.rangeState?.isScrubbing, isTrue);
+    expect(playback.lastPlayIsCurrent?.call(), isFalse);
+  });
+
+  test('picker phase ignores host playback snapshots', () async {
     final playback = _FakeAudioPlayback();
     final controller = AudioAuditionController(
       playback,
@@ -202,16 +251,21 @@ void main() {
       (_, _, _) {},
     );
     addTearDown(controller.dispose);
-    controller.beginPicker(previousTrack: null, editorSpan: _span(0, 10));
+    await controller.beginPicker(previousTrack: null, hostSpan: _span(0, 10));
 
     expect(
-      controller.handleVideoValue(VideoPlayerValue.uninitialized()),
-      isTrue,
+      controller.handlePlaybackSnapshot(
+        const AudioAuditionPlaybackSnapshot(
+          position: Duration.zero,
+          isPlaying: false,
+          isCompleted: false,
+        ),
+      ),
+      isNull,
     );
-    expect(playback.synchronizeCount, 0);
   });
 
-  test('range boundary restarts before scheduling synchronization', () async {
+  test('host snapshot updates progress and exposes the active range', () async {
     final playback = _FakeAudioPlayback();
     final controller = AudioAuditionController(
       playback,
@@ -222,59 +276,162 @@ void main() {
     addTearDown(controller.dispose);
     controller.beginAdjustment(
       track: _track('selected'),
-      editorSpan: _span(2, 10),
+      hostSpan: _span(2, 10),
       waveform: const [0.5],
     );
     await Future<void>.delayed(Duration.zero);
-    expect(controller.handlePlayRequested(), isTrue);
+    const snapshot = AudioAuditionPlaybackSnapshot(
+      position: Duration(seconds: 6),
+      isPlaying: true,
+      isCompleted: false,
+    );
 
-    controller.handleVideoValue(
-      VideoPlayerValue(
-        duration: const Duration(seconds: 10),
-        position: const Duration(seconds: 10),
+    expect(
+      controller.handlePlaybackSnapshot(snapshot),
+      same(controller.rangeState),
+    );
+
+    expect(controller.playbackProgress.value, 0.5);
+  });
+
+  test('range preview waits for an asynchronous scrub pause', () async {
+    final pause = Completer<void>();
+    final playback = _FakeAudioPlayback(onPause: () => pause.future);
+    final controller = AudioAuditionController(
+      playback,
+      (_) async => [0.5],
+      (_) {},
+      (_, _, _) {},
+    );
+    addTearDown(controller.dispose);
+    controller.beginAdjustment(
+      track: _track('selected'),
+      hostSpan: _span(0, 10),
+      waveform: const [0.5],
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(playback.startCount, 1);
+
+    final pauseFuture = controller.pauseForScrub();
+    final previewFuture = controller.previewRange(const Duration(seconds: 5));
+    await Future<void>.delayed(Duration.zero);
+    expect(playback.startCount, 1);
+
+    pause.complete();
+    await Future.wait([pauseFuture, previewFuture]);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(playback.startCount, 2);
+    expect(
+      controller.rangeState?.draft.audioStartTime,
+      const Duration(seconds: 5),
+    );
+  });
+
+  test('only the latest overlapping scrub can restart playback', () async {
+    final pauses = [Completer<void>(), Completer<void>()];
+    var pauseIndex = 0;
+    final playback = _FakeAudioPlayback(
+      onPause: () => pauses[pauseIndex++].future,
+    );
+    final controller = AudioAuditionController(
+      playback,
+      (_) async => [0.5],
+      (_) {},
+      (_, _, _) {},
+    );
+    addTearDown(controller.dispose);
+    controller.beginAdjustment(
+      track: _track('selected'),
+      hostSpan: _span(0, 10),
+      waveform: const [0.5],
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(playback.startCount, 1);
+
+    final firstPause = controller.pauseForScrub();
+    final firstPreview = controller.previewRange(const Duration(seconds: 3));
+    final secondPause = controller.pauseForScrub();
+    final secondPreview = controller.previewRange(const Duration(seconds: 5));
+
+    pauses.last.complete();
+    await Future<void>.delayed(Duration.zero);
+    expect(playback.startCount, 1);
+
+    pauses.first.complete();
+    await Future.wait([firstPause, firstPreview, secondPause, secondPreview]);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(playback.startCount, 2);
+    expect(
+      controller.rangeState?.draft.audioStartTime,
+      const Duration(seconds: 5),
+    );
+  });
+
+  test('range boundary restarts without exposing a stale range', () async {
+    final playback = _FakeAudioPlayback();
+    final controller = AudioAuditionController(
+      playback,
+      (_) async => [0.5],
+      (_) {},
+      (_, _, _) {},
+    );
+    addTearDown(controller.dispose);
+    controller.beginAdjustment(
+      track: _track('selected'),
+      hostSpan: _span(2, 10),
+      waveform: const [0.5],
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(
+      controller.handlePlaybackSnapshot(
+        const AudioAuditionPlaybackSnapshot(
+          position: Duration(seconds: 10),
+          isPlaying: false,
+          isCompleted: true,
+        ),
       ),
+      isNull,
     );
     await Future<void>.delayed(Duration.zero);
 
     expect(playback.preparedSpans, hasLength(2));
-    expect(playback.synchronizeCount, 0);
   });
 }
 
-class _FakeAudioPlayback implements VideoEditorAudioPlayback {
-  _FakeAudioPlayback({this.onPrepare, this.onPlay, this.onRestore});
+class _FakeAudioPlayback implements AudioAuditionPlayback {
+  _FakeAudioPlayback({
+    this.onPause,
+    this.onPrepare,
+    this.onPlay,
+    this.onRestore,
+  });
 
+  final Future<void> Function()? onPause;
   final Future<void> Function()? onPrepare;
   final Future<void> Function()? onPlay;
   final Future<void> Function()? onRestore;
-  AudioTrack? assignedTrack;
   final preparedSpans = <TrimDurationSpan>[];
   final restoredTracks = <AudioTrack?>[];
-  var playRequestCount = 0;
-  var synchronizeCount = 0;
+  var startCount = 0;
   bool? playWasCurrent;
+  bool Function()? lastPlayIsCurrent;
 
   @override
-  void setTrack(AudioTrack? track) => assignedTrack = track;
+  Future<void> pausePreview() async {
+    await onPause?.call();
+  }
 
   @override
-  void pauseEditor() {}
-
-  @override
-  void requestEditorPlay() => playRequestCount++;
-
-  @override
-  Future<void> previewPickerTrack(
+  Future<void> previewCandidate(
     AudioTrack track,
-    TrimDurationSpan editorSpan, {
+    TrimDurationSpan hostSpan, {
     required bool Function() isCurrent,
   }) async {}
 
   @override
-  Future<void> stopAudio() async {}
-
-  @override
-  Future<void> preparePreview(
+  Future<void> prepareRangePreview(
     AudioTrack track,
     TrimDurationSpan playbackSpan, {
     required bool Function() isCurrent,
@@ -284,32 +441,25 @@ class _FakeAudioPlayback implements VideoEditorAudioPlayback {
   }
 
   @override
-  Future<void> playTrack(
+  Future<void> startRangePreview(
     AudioTrack track,
     TrimDurationSpan playbackSpan, {
     required bool Function() isCurrent,
   }) async {
+    startCount++;
+    lastPlayIsCurrent = isCurrent;
     await onPlay?.call();
     playWasCurrent = isCurrent();
   }
 
   @override
-  Future<void> restore(
+  Future<void> restorePrevious(
     AudioTrack? track,
-    TrimDurationSpan editorSpan, {
+    TrimDurationSpan hostSpan, {
     required bool Function() isCurrent,
   }) async {
     restoredTracks.add(track);
     await onRestore?.call();
-  }
-
-  @override
-  Future<void> synchronize(
-    AudioTrack track,
-    TrimDurationSpan playbackSpan,
-    VideoPlayerValue videoValue,
-  ) async {
-    synchronizeCount++;
   }
 }
 

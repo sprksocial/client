@@ -16,7 +16,7 @@ const _selectionHorizontalInset = 28.0;
 class AudioRangeSelectionOverlay extends StatefulWidget {
   const AudioRangeSelectionOverlay({
     required this.track,
-    required this.videoDuration,
+    required this.selectionWindowDuration,
     required this.waveformData,
     required this.isWaveformLoading,
     required this.playbackProgress,
@@ -28,7 +28,7 @@ class AudioRangeSelectionOverlay extends StatefulWidget {
   });
 
   final AudioTrack track;
-  final Duration videoDuration;
+  final Duration selectionWindowDuration;
   final List<double> waveformData;
   final bool isWaveformLoading;
   final ValueListenable<double> playbackProgress;
@@ -51,7 +51,7 @@ class _AudioRangeSelectionOverlayState
 
   Duration get _selectionDuration => audioSelectionDuration(
     audioDuration: widget.track.duration,
-    videoDuration: widget.videoDuration,
+    selectionWindowDuration: widget.selectionWindowDuration,
   );
 
   Duration get _maximumStart => widget.track.duration - _selectionDuration;
@@ -60,7 +60,7 @@ class _AudioRangeSelectionOverlayState
   void didUpdateWidget(covariant AudioRangeSelectionOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.track.id != widget.track.id ||
-        oldWidget.videoDuration != widget.videoDuration) {
+        oldWidget.selectionWindowDuration != widget.selectionWindowDuration) {
       _didSetInitialPosition = false;
     }
   }
