@@ -65,6 +65,13 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   int _guideAudioPrepareRequestId = 0;
   int _soundPickerSessionId = 0;
 
+  ResolutionPreset get _cameraResolutionPreset =>
+      widget.captureMode == CaptureMode.videoOnly
+      ? ResolutionPreset.veryHigh
+      : ResolutionPreset.max;
+
+  CameraProvider get _cameraProvider => cameraProvider(_cameraResolutionPreset);
+
   @override
   void initState() {
     super.initState();
@@ -99,13 +106,13 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   }
 
   bool _hasCameras() {
-    final cameraAsync = ref.read(cameraProvider);
+    final cameraAsync = ref.read(_cameraProvider);
     final cameraState = cameraAsync.value;
     return cameraState != null && cameraState.cameras.isNotEmpty;
   }
 
   bool _isCameraReady() {
-    final cameraAsync = ref.read(cameraProvider);
+    final cameraAsync = ref.read(_cameraProvider);
     if (cameraAsync.hasError) return false;
     final cameraState = cameraAsync.value;
     return cameraState != null &&
@@ -167,7 +174,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   Future<void> _takePhoto() async {
     if (_isProcessing) return;
 
-    final cameraNotifier = ref.read(cameraProvider.notifier);
+    final cameraNotifier = ref.read(_cameraProvider.notifier);
     setState(() {
       _isProcessing = true;
     });
@@ -238,7 +245,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       setState(() {
         _isProcessing = false;
       });
-      await ref.read(cameraProvider.notifier).reinitializeCamera();
+      await ref.read(_cameraProvider.notifier).reinitializeCamera();
     } catch (e, stackTrace) {
       _logger.e(
         'Error processing multiple photos',
@@ -322,7 +329,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           _isProcessing = false;
         });
         // Reinitialize camera after returning from editor
-        ref.read(cameraProvider.notifier).reinitializeCamera();
+        ref.read(_cameraProvider.notifier).reinitializeCamera();
       }
     } catch (e, stackTrace) {
       _logger.e('Error processing photo', error: e, stackTrace: stackTrace);
@@ -356,7 +363,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         !recordingState.hasSegments &&
         recordingState.elapsedDuration == Duration.zero;
 
-    final cameraNotifier = ref.read(cameraProvider.notifier);
+    final cameraNotifier = ref.read(_cameraProvider.notifier);
     final recordingNotifier = ref.read(recordingProvider.notifier);
 
     setState(() {
@@ -430,7 +437,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       _isProcessing = true;
     });
 
-    final cameraNotifier = ref.read(cameraProvider.notifier);
+    final cameraNotifier = ref.read(_cameraProvider.notifier);
     final recordingNotifier = ref.read(recordingProvider.notifier)
       ..stopRecording();
     unawaited(_pauseSelectedSoundGuide());
@@ -536,7 +543,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         });
       }
 
-      final cameraNotifier = ref.read(cameraProvider.notifier);
+      final cameraNotifier = ref.read(_cameraProvider.notifier);
       await cameraNotifier.disposeCamera();
 
       if (!mounted || !context.mounted) return;
@@ -650,7 +657,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
   }
 
   Future<void> _handleFlipCamera() async {
-    final cameraNotifier = ref.read(cameraProvider.notifier);
+    final cameraNotifier = ref.read(_cameraProvider.notifier);
     await cameraNotifier.flipCamera();
   }
 
@@ -849,7 +856,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cameraAsync = ref.watch(cameraProvider);
+    final cameraAsync = ref.watch(_cameraProvider);
     final recordingState = ref.watch(recordingProvider);
 
     if (recordingState.hasReachedMaxDuration &&

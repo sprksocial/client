@@ -20,7 +20,7 @@ class Camera extends _$Camera {
   bool _wasDisposedByLifecycle = false;
 
   @override
-  FutureOr<CameraState> build() async {
+  FutureOr<CameraState> build(ResolutionPreset resolutionPreset) async {
     _logger = GetIt.instance<LogService>().getLogger('Camera');
 
     // Only dispose lifecycle listener when provider is permanently disposed
@@ -110,7 +110,7 @@ class Camera extends _$Camera {
 
     final controller = CameraController(
       camera,
-      ResolutionPreset.max,
+      resolutionPreset,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
