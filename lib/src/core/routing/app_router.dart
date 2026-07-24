@@ -119,7 +119,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: NewChatSearchRoute.page, path: '/messages/new'),
 
     // Modal bottom sheet routes
-    CustomRoute(
+    CustomRoute<void>(
       page: CommentsRoute
           .page, // doesn't need to be a child of post route because it's a
       //modal bottom sheet
@@ -134,7 +134,7 @@ class AppRouter extends RootStackRouter {
         ),
       ],
     ),
-    CustomRoute(
+    CustomRoute<void>(
       page: LabelerLabelSettingsRoute.page,
       path: '/labeler/:did/labels',
       customRouteBuilder: feedSettingsBuilder,

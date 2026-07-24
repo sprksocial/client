@@ -14,6 +14,8 @@ import 'package:spark/src/core/storage/preferences/local_storage_interface.dart'
 import 'package:spark/src/core/storage/preferences/storage_constants.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
+import '../../../../../support/in_memory_storage.dart';
+
 void main() {
   group('AuthRepositoryImpl', () {
     test('startup with valid cached PDS session does not call AIP', () async {
@@ -37,7 +39,7 @@ void main() {
         return http.Response('unexpected request', 500);
       });
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: client,
         logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -87,7 +89,7 @@ void main() {
         return http.Response('unexpected request', 500);
       });
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: client,
         logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -124,7 +126,7 @@ void main() {
           ).toJsonString(),
         );
 
-        final repository = AuthRepositoryImpl(
+        final repository = _createAuthRepository(
           secureStorage: storage,
           httpClient: MockClient((_) async => http.Response('unexpected', 500)),
           logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -177,7 +179,7 @@ void main() {
         return http.Response('unexpected request', 500);
       });
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: client,
         logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -216,7 +218,7 @@ void main() {
       );
       final storedBefore = await storage.getString(StorageKeys.account);
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: MockClient(
           (_) async => http.Response('temporary outage', 503),
@@ -288,7 +290,7 @@ void main() {
           return http.Response('unexpected request', 500);
         });
 
-        final repository = AuthRepositoryImpl(
+        final repository = _createAuthRepository(
           secureStorage: storage,
           httpClient: client,
           logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -341,7 +343,7 @@ void main() {
         (await storage.getString(StorageKeys.account))!,
       );
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: MockClient(
           (_) async => http.Response('temporary outage', 503),
@@ -425,7 +427,7 @@ void main() {
         return http.Response('unexpected request', 500);
       });
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: client,
         logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -506,7 +508,7 @@ void main() {
         return http.Response('unexpected request', 500);
       });
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: client,
         logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -573,7 +575,7 @@ void main() {
         return http.Response('unexpected request', 500);
       });
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: client,
         logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -621,7 +623,7 @@ void main() {
         (await storage.getString(StorageKeys.account))!,
       );
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: MockClient(
           (_) async => http.Response('temporary outage', 503),
@@ -671,7 +673,7 @@ void main() {
           ),
         );
 
-        final repository = AuthRepositoryImpl(
+        final repository = _createAuthRepository(
           secureStorage: storage,
           httpClient: MockClient((_) async => http.Response('unexpected', 500)),
           logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -755,7 +757,7 @@ void main() {
           }
         });
 
-        final repository = AuthRepositoryImpl(
+        final repository = _createAuthRepository(
           secureStorage: storage,
           httpClient: client,
           logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -839,7 +841,7 @@ void main() {
         }
       });
 
-      final repository = AuthRepositoryImpl(
+      final repository = _createAuthRepository(
         secureStorage: storage,
         httpClient: client,
         logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -915,7 +917,7 @@ void main() {
           }
         });
 
-        final repository = AuthRepositoryImpl(
+        final repository = _createAuthRepository(
           secureStorage: storage,
           httpClient: client,
           logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -966,7 +968,7 @@ void main() {
           }
         });
 
-        final repository = AuthRepositoryImpl(
+        final repository = _createAuthRepository(
           secureStorage: storage,
           httpClient: client,
           logger: SparkLogger(name: 'AuthRepositoryTest'),
@@ -983,6 +985,23 @@ void main() {
     );
   });
 }
+
+AuthRepositoryImpl _createAuthRepository({
+  required LocalStorageInterface secureStorage,
+  required http.Client httpClient,
+  required SparkLogger logger,
+  AtprotoSessionFetcher? fetchSessionInfo,
+}) {
+  return AuthRepositoryImpl(
+    secureStorage: secureStorage,
+    httpClient: httpClient,
+    logger: logger,
+    now: _fixedNow,
+    fetchSessionInfo: fetchSessionInfo,
+  );
+}
+
+DateTime _fixedNow() => DateTime.utc(2026, 1, 1);
 
 const String _redirectUri = 'sprk://oauth-callback';
 
@@ -1048,71 +1067,7 @@ String _base64UrlNoPadding(List<int> value) {
   return base64Url.encode(value).replaceAll('=', '');
 }
 
-class _InMemoryStorage implements LocalStorageInterface {
-  final Map<String, Object?> _values = <String, Object?>{};
-
-  @override
-  Future<void> clear() async {
-    _values.clear();
-  }
-
-  @override
-  Future<bool> containsKey(String key) async => _values.containsKey(key);
-
-  @override
-  Future<bool?> getBool(String key) async => _values[key] as bool?;
-
-  @override
-  Future<double?> getDouble(String key) async => _values[key] as double?;
-
-  @override
-  Future<int?> getInt(String key) async => _values[key] as int?;
-
-  @override
-  Future<T?> getObject<T>(String key) async => _values[key] as T?;
-
-  @override
-  Future<String?> getString(String key) async => _values[key] as String?;
-
-  @override
-  Future<List<String>?> getStringList(String key) async =>
-      (_values[key] as List<dynamic>?)?.cast<String>();
-
-  @override
-  Future<void> remove(String key) async {
-    _values.remove(key);
-  }
-
-  @override
-  Future<void> setBool(String key, bool value) async {
-    _values[key] = value;
-  }
-
-  @override
-  Future<void> setDouble(String key, double value) async {
-    _values[key] = value;
-  }
-
-  @override
-  Future<void> setInt(String key, int value) async {
-    _values[key] = value;
-  }
-
-  @override
-  Future<void> setObject<T>(String key, T value) async {
-    _values[key] = value;
-  }
-
-  @override
-  Future<void> setString(String key, String value) async {
-    _values[key] = value;
-  }
-
-  @override
-  Future<void> setStringList(String key, List<String> value) async {
-    _values[key] = List<String>.from(value);
-  }
-}
+class _InMemoryStorage extends InMemoryStorage {}
 
 class _CloseAwareMockClient extends MockClient {
   _CloseAwareMockClient(super.fn);

@@ -1,0 +1,87 @@
+name: native checks
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths:
+      - "lib/**"
+      - "assets/**"
+      - "fonts/**"
+      - "integration_test/**"
+      - "test_driver/**"
+      - "android/**"
+      - "ios/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/native-checks.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.0
+          cache: true
+
+      - name: Prepare project
+        run: |
+          touch .env
+          flutter pub get --enforce-lockfile
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Compile debug APK
+        run: flutter build apk --debug
+
+  ios:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.0
+          cache: true
+
+      - name: Prepare project
+        run: |
+          touch .env
+          flutter pub get --enforce-lockfile
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Compile iOS simulator app
+        run: flutter build ios --simulator --debug
+
+      - name: Run iOS integration smoke test
+        timeout-minutes: 20
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/ { print $2; exit }')
+          test -n "$DEVICE_ID"
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          flutter test integration_test/app_smoke_test.dart -d "$DEVICE_ID" --reporter=expanded

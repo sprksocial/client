@@ -10,11 +10,13 @@ import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_provider.dart';
+import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_state.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:sprk_poptart/so/sprk/sound/defs/audio_details.dart';
 
 void main() {
   late _FakeSoundRepository soundRepository;
+  late _ManualDebounceScheduler debounceScheduler;
 
   AudioView audio(String id) {
     final blob = Blob.fromJson({
@@ -40,7 +42,13 @@ void main() {
   }
 
   ProviderContainer createContainer() {
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: [
+        soundPickerSearchDebounceSchedulerProvider.overrideWithValue(
+          debounceScheduler.schedule,
+        ),
+      ],
+    );
     addTearDown(container.dispose);
     final subscription = container.listen(
       soundPickerSearchProvider,
@@ -54,6 +62,7 @@ void main() {
   setUp(() async {
     await GetIt.I.reset();
     soundRepository = _FakeSoundRepository();
+    debounceScheduler = _ManualDebounceScheduler();
     GetIt.I
       ..registerSingleton<LogService>(LogService())
       ..registerSingleton<SoundRepository>(soundRepository);
@@ -72,7 +81,7 @@ void main() {
     );
 
     final container = createContainer();
-    await Future<void>.delayed(Duration.zero);
+    await _waitForState(container, (state) => !state.isLoading);
 
     expect(
       container.read(soundPickerSearchProvider).audios.single.title,
@@ -80,7 +89,7 @@ void main() {
     );
 
     container.read(soundPickerSearchProvider.notifier).updateQuery('   ');
-    await Future<void>.delayed(Duration.zero);
+    await _waitForState(container, (state) => !state.isLoading);
 
     final state = container.read(soundPickerSearchProvider);
     expect(state.query, isEmpty);
@@ -97,10 +106,10 @@ void main() {
     );
 
     final container = createContainer();
-    await Future<void>.delayed(Duration.zero);
+    await _waitForState(container, (state) => !state.isLoading);
 
     container.read(soundPickerSearchProvider.notifier).updateQuery('lofi');
-    await Future<void>.delayed(const Duration(milliseconds: 375));
+    await debounceScheduler.runPending();
 
     final state = container.read(soundPickerSearchProvider);
     expect(soundRepository.searchCalls.single.query, 'lofi');
@@ -119,17 +128,17 @@ void main() {
       ..['fast'] = fast;
 
     final container = createContainer();
-    await Future<void>.delayed(Duration.zero);
+    await _waitForState(container, (state) => !state.isLoading);
 
     container.read(soundPickerSearchProvider.notifier).updateQuery('slow');
-    await Future<void>.delayed(const Duration(milliseconds: 375));
+    final slowRequest = debounceScheduler.runPending();
     container.read(soundPickerSearchProvider.notifier).updateQuery('fast');
-    await Future<void>.delayed(const Duration(milliseconds: 375));
+    final fastRequest = debounceScheduler.runPending();
 
     fast.complete(SearchAudiosResponse(audios: [audio('fast')]));
-    await Future<void>.delayed(Duration.zero);
+    await fastRequest;
     slow.complete(SearchAudiosResponse(audios: [audio('slow')]));
-    await Future<void>.delayed(Duration.zero);
+    await slowRequest;
 
     final state = container.read(soundPickerSearchProvider);
     expect(state.query, 'fast');
@@ -152,7 +161,7 @@ void main() {
     );
 
     final container = createContainer();
-    await Future<void>.delayed(Duration.zero);
+    await _waitForState(container, (state) => !state.isLoading);
 
     await container.read(soundPickerSearchProvider.notifier).loadMore();
     expect(soundRepository.trendingCursors, [null, 'trend-2']);
@@ -167,6 +176,50 @@ void main() {
     ]);
     expect(container.read(soundPickerSearchProvider).audios, hasLength(2));
   });
+}
+
+Future<void> _waitForState(
+  ProviderContainer container,
+  bool Function(SoundPickerSearchState state) predicate,
+) async {
+  final completer = Completer<void>();
+  final subscription = container.listen(soundPickerSearchProvider, (
+    previous,
+    next,
+  ) {
+    if (!completer.isCompleted && predicate(next)) {
+      completer.complete();
+    }
+  }, fireImmediately: true);
+  await completer.future;
+  subscription.close();
+}
+
+class _ManualDebounceScheduler {
+  _PendingDebounce? _pending;
+
+  void Function() schedule(Duration delay, Future<void> Function() action) {
+    expect(delay, const Duration(milliseconds: 350));
+    final pending = _PendingDebounce(action);
+    _pending = pending;
+    return () => pending.isCanceled = true;
+  }
+
+  Future<void> runPending() {
+    final pending = _pending;
+    _pending = null;
+    if (pending == null || pending.isCanceled) {
+      throw StateError('No active debounce is pending');
+    }
+    return pending.action();
+  }
+}
+
+class _PendingDebounce {
+  _PendingDebounce(this.action);
+
+  final Future<void> Function() action;
+  bool isCanceled = false;
 }
 
 class _FakeSoundRepository implements SoundRepository {

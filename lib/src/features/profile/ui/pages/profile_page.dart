@@ -337,7 +337,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               IconButton(
                 onPressed: () => OptionsPanel.show(
                   context: context,
-                  onReport: () => showDialog(
+                  onReport: () => showDialog<void>(
                     context: context,
                     useRootNavigator: false,
                     builder: (dContext) => ReportDialog(

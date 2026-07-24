@@ -10,13 +10,12 @@ import 'package:sprk_poptart/so/sprk/labeler/get_services.dart'
 import 'package:sprk_poptart/so/sprk/labeler/get_services/union_main_views.dart';
 
 class LabelerRepositoryImpl extends LabelerRepository {
-  LabelerRepositoryImpl(this._client) {
+  LabelerRepositoryImpl(this._client, {SparkLogger? logger})
+    : _logger = logger ?? GetIt.instance<LogService>().getLogger('LabelerAPI') {
     _logger.v('LabelerAPI initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'LabelerAPI',
-  );
+  final SparkLogger _logger;
 
   @override
   Future<LabelerView> getServices(List<String> dids) async {

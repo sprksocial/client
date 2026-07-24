@@ -34,18 +34,41 @@ jobs:
         run: touch .env
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Run code generation
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Run tests
-        run: flutter test --reporter=expanded
+        run: >-
+          flutter test
+          --coverage
+          --test-randomize-ordering-seed=random
+          --reporter=expanded
+          --file-reporter=json:test-results.json
+
+      - name: Summarize coverage
+        if: always() && hashFiles('coverage/lcov.info') != ''
+        run: >-
+          dart run tool/coverage_summary.dart
+          coverage/lcov.info
+          --enforce-critical
+          >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: test/
+          path: test-results.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          if-no-files-found: error
           retention-days: 7

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart'
@@ -11,16 +12,31 @@ import 'package:spark/src/features/notifications/providers/unread_count_provider
 
 part 'notification_provider.g.dart';
 
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  return GetIt.instance<SprkRepository>().notification;
+});
+
+final notificationLoggerProvider = Provider<SparkLogger>((ref) {
+  return GetIt.instance<LogService>().getLogger('NotificationNotifier');
+});
+
+final notificationUnreadCountRefresherProvider =
+    Provider<Future<void> Function()>((ref) {
+      return () => ref.read(unreadCountProvider().notifier).refresh();
+    });
+
 @riverpod
 class NotificationNotifier extends _$NotificationNotifier {
   late final NotificationRepository _notificationRepository;
   late final SparkLogger _logger;
+  late final Future<void> Function() _refreshUnreadCount;
   bool _isLoading = false;
 
   @override
   NotificationState build({bool? priority, List<String>? reasons}) {
-    _notificationRepository = GetIt.instance<SprkRepository>().notification;
-    _logger = GetIt.instance<LogService>().getLogger('NotificationNotifier');
+    _notificationRepository = ref.read(notificationRepositoryProvider);
+    _logger = ref.read(notificationLoggerProvider);
+    _refreshUnreadCount = ref.read(notificationUnreadCountRefresherProvider);
 
     // Schedule initial load after build completes
     Future.microtask(() {
@@ -136,7 +152,7 @@ class NotificationNotifier extends _$NotificationNotifier {
       final mostRecent = state.notifications.first;
       await _notificationRepository.updateSeen(mostRecent.indexedAt);
       // Refresh the unread count
-      await ref.read(unreadCountProvider().notifier).refresh();
+      await _refreshUnreadCount();
     } catch (e, stackTrace) {
       _logger.e(
         'Error marking notifications as seen: $e',
@@ -160,7 +176,7 @@ class NotificationNotifier extends _$NotificationNotifier {
       // Use this notification's indexedAt as the seenAt timestamp
       await _notificationRepository.updateSeen(notification.indexedAt);
       // Refresh the unread count
-      await ref.read(unreadCountProvider().notifier).refresh();
+      await _refreshUnreadCount();
     } catch (e, stackTrace) {
       _logger.e(
         'Error marking notification as viewed: $e',

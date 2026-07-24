@@ -307,7 +307,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
   void _handleReport() {
     final currentPost = _currentPost ?? widget.post;
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
         postUri: currentPost.uri.toString(),

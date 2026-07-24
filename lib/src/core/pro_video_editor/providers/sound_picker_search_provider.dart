@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
@@ -9,11 +10,22 @@ import 'package:spark/src/core/utils/logging/logger.dart';
 
 part 'sound_picker_search_provider.g.dart';
 
+typedef SoundPickerSearchDebounceScheduler =
+    void Function() Function(Duration delay, Future<void> Function() action);
+
+final soundPickerSearchDebounceSchedulerProvider =
+    Provider<SoundPickerSearchDebounceScheduler>((ref) {
+      return (delay, action) {
+        final timer = Timer(delay, () => unawaited(action()));
+        return timer.cancel;
+      };
+    });
+
 @riverpod
 class SoundPickerSearch extends _$SoundPickerSearch {
   static const int _limit = 25;
 
-  Timer? _debounce;
+  void Function()? _cancelDebounce;
   int _activeRequestToken = 0;
 
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
@@ -24,7 +36,7 @@ class SoundPickerSearch extends _$SoundPickerSearch {
   @override
   SoundPickerSearchState build() {
     ref.onDispose(() {
-      _debounce?.cancel();
+      _cancelDebounce?.call();
     });
 
     final requestToken = ++_activeRequestToken;
@@ -34,7 +46,7 @@ class SoundPickerSearch extends _$SoundPickerSearch {
 
   void updateQuery(String query) {
     final trimmedQuery = query.trim();
-    _debounce?.cancel();
+    _cancelDebounce?.call();
 
     if (trimmedQuery.isEmpty) {
       final requestToken = ++_activeRequestToken;
@@ -53,16 +65,16 @@ class SoundPickerSearch extends _$SoundPickerSearch {
       error: null,
     );
 
-    _debounce = Timer(const Duration(milliseconds: 350), () {
-      unawaited(
-        _searchAudios(trimmedQuery, requestToken: requestToken, reset: true),
-      );
-    });
+    _cancelDebounce = ref.read(soundPickerSearchDebounceSchedulerProvider)(
+      const Duration(milliseconds: 350),
+      () =>
+          _searchAudios(trimmedQuery, requestToken: requestToken, reset: true),
+    );
   }
 
   Future<void> submitQuery(String query) async {
     final trimmedQuery = query.trim();
-    _debounce?.cancel();
+    _cancelDebounce?.call();
 
     if (trimmedQuery.isEmpty) {
       final requestToken = ++_activeRequestToken;

@@ -34,16 +34,28 @@ final GetIt sl = GetIt.instance;
 
 /// Initializes the service locator with all required dependencies
 /// sl.registerSingleton < Interface > (Implementation)
-Future<void> initServiceLocator() async {
+Future<void> initServiceLocator({
+  LocalStorageInterface? preferencesStorage,
+  LocalStorageInterface? secureStorage,
+  Future<DownloadManagerInterface> Function()? initializeDownloadManager,
+  Future<PushNotificationService> Function()? initializePushNotifications,
+}) async {
   // Register LogService
   sl.registerSingleton<LogService>(LogService());
 
   // Register storage dependencies
   // Initialize storage manager
   final storageManager = StorageManager.instance;
-  await storageManager.init();
+  await storageManager.init(
+    preferences: preferencesStorage,
+    secureStorage: secureStorage,
+  );
+  final identityRepository = await IdentityRepositoryImpl.create(
+    storageManager,
+  );
 
-  final downloadManager = DownloadManagerImpl();
+  final downloadManager =
+      await (initializeDownloadManager ?? _initializeDownloadManager)();
   sl
     ..registerSingleton<DownloadManagerInterface>(downloadManager)
     ..registerSingleton<StorageManager>(storageManager)
@@ -60,9 +72,7 @@ Future<void> initServiceLocator() async {
     ..registerSingleton<PrefRepository>(
       PrefRepositoryImpl(sl<SprkRepository>()),
     )
-    ..registerSingleton<IdentityRepository>(
-      IdentityRepositoryImpl(sl<StorageManager>()),
-    )
+    ..registerSingleton<IdentityRepository>(identityRepository)
     ..registerSingleton<ThemeRepository>(
       ThemeRepositoryImpl(sl<StorageManager>()),
     )
@@ -79,8 +89,6 @@ Future<void> initServiceLocator() async {
       SoundRepositoryImpl(sl.get<SprkRepository>()),
     );
 
-  await downloadManager.init();
-
   sl
     ..registerLazySingleton<OnboardingRepository>(
       () => OnboardingRepositoryImpl(
@@ -95,8 +103,19 @@ Future<void> initServiceLocator() async {
       NotificationRepositoryImpl(sl<SprkRepository>()),
     );
 
-  // Initialize push notification service asynchronously
+  final pushService =
+      await (initializePushNotifications ?? _initializePushNotifications)();
+  sl.registerSingleton<PushNotificationService>(pushService);
+}
+
+Future<DownloadManagerInterface> _initializeDownloadManager() async {
+  final downloadManager = DownloadManagerImpl();
+  await downloadManager.init();
+  return downloadManager;
+}
+
+Future<PushNotificationService> _initializePushNotifications() async {
   final pushService = PushNotificationService();
   await pushService.initialize();
-  sl.registerSingleton<PushNotificationService>(pushService);
+  return pushService;
 }

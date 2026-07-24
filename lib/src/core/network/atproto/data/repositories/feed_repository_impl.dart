@@ -78,20 +78,37 @@ import 'package:sprk_poptart/so/sprk/feed/search_posts.dart'
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
-  FeedRepositoryImpl(this._client) {
+  FeedRepositoryImpl(
+    this._client, {
+    SparkLogger? logger,
+    DateTime Function()? now,
+    http.Client? videoHttpClient,
+    Future<void> Function(Duration)? videoProcessingDelay,
+    File Function(String)? videoFile,
+    Future<String> Function(PoptartClient)? videoServiceAuthTokenRequest,
+  }) : _logger =
+           logger ?? GetIt.instance<LogService>().getLogger('FeedRepository'),
+       _now = now ?? DateTime.now,
+       _videoHttpClient = videoHttpClient ?? http.Client(),
+       _videoProcessingDelay = videoProcessingDelay ?? Future<void>.delayed,
+       _videoFile = videoFile ?? File.new,
+       _requestVideoServiceAuthTokenOverride = videoServiceAuthTokenRequest {
     _logger.v('FeedRepository initialized');
   }
   final SprkRepository _client;
+  final SparkLogger _logger;
+  final DateTime Function() _now;
+  final http.Client _videoHttpClient;
+  final Future<void> Function(Duration) _videoProcessingDelay;
+  final File Function(String) _videoFile;
+  final Future<String> Function(PoptartClient)?
+  _requestVideoServiceAuthTokenOverride;
 
   /// Formats labeler DIDs into the atproto-accept-labelers header format
   /// Format: "did1,did2,did3" (comma-separated list)
   String _formatLabelerHeader(List<String> labelerDids) {
     return labelerDids.join(',');
   }
-
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'FeedRepository',
-  );
 
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
 
@@ -818,7 +835,7 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       final subject = RepoStrongRef(uri: postUri, cid: postCid);
-      final createdAt = DateTime.now().toUtc();
+      final createdAt = _now().toUtc();
       final likeRecord = isBskyPost
           ? bsky_like.FeedLikeRecord(
               subject: subject,
@@ -870,7 +887,7 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       final subject = RepoStrongRef(uri: postUri, cid: postCid);
-      final createdAt = DateTime.now().toUtc();
+      final createdAt = _now().toUtc();
       final repostRecord = isBskyPost
           ? bsky_repost.FeedRepostRecord(
               subject: subject,
@@ -948,7 +965,7 @@ class FeedRepositoryImpl implements FeedRepository {
     }
 
     // Create the correct record JSON depending on the target platform.
-    final isSprk = parentUri.toString().contains('sprk');
+    final isSprk = parentUri.collection == NSID.parse('so.sprk.feed.post');
 
     final Map<String, dynamic> recordJson;
     final NSID collection;
@@ -968,7 +985,7 @@ class FeedRepositoryImpl implements FeedRepository {
           root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
           parent: RepoStrongRef(uri: parentUri, cid: parentCid),
         ),
-        createdAt: DateTime.now().toUtc(),
+        createdAt: _now().toUtc(),
         media: media,
       );
       recordJson = sprkReplyRecordFromLocal(sprkRecord).toJson();
@@ -1013,7 +1030,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final bskyRecord = bskyFeedAdapter.createCommentRecord(
         text: text,
-        createdAt: DateTime.now().toUtc(),
+        createdAt: _now().toUtc(),
         reply: RecordReplyRef(
           root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
           parent: RepoStrongRef(uri: parentUri, cid: parentCid),
@@ -1068,7 +1085,7 @@ class FeedRepositoryImpl implements FeedRepository {
     final record = PostRecord(
       caption: CaptionRef(text: text, facets: facets),
       media: Media.images(images: uploadedImageMaps),
-      createdAt: DateTime.now().toUtc(),
+      createdAt: _now().toUtc(),
       sound: soundRef,
     );
 
@@ -1255,7 +1272,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       // Validate the video file
-      final file = File(cleanVideoPath);
+      final file = _videoFile(cleanVideoPath);
       if (!file.existsSync()) {
         throw Exception('Video file not found: $cleanVideoPath');
       }
@@ -1323,7 +1340,7 @@ class FeedRepositoryImpl implements FeedRepository {
             });
 
       onUploadProgress?.call(0);
-      final uploadResponseFuture = uploadRequest.send();
+      final uploadResponseFuture = _videoHttpClient.send(uploadRequest);
       try {
         await uploadRequest.sink.addStream(
           _trackUploadProgress(
@@ -1369,7 +1386,7 @@ class FeedRepositoryImpl implements FeedRepository {
           jobState == 'JOB_STATE_PROCESSING') {
         _logger.d('Video upload in progress, status: $jobState');
         // Small backoff to avoid hammering the service
-        await Future.delayed(const Duration(seconds: 2));
+        await _videoProcessingDelay(const Duration(seconds: 2));
         attempts++;
         if (attempts > maxAttempts) {
           throw const VideoUploadException(
@@ -1378,7 +1395,7 @@ class FeedRepositoryImpl implements FeedRepository {
         }
 
         try {
-          response = await http.get(
+          response = await _videoHttpClient.get(
             Uri.parse(
               '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus',
             ).replace(
@@ -1396,7 +1413,7 @@ class FeedRepositoryImpl implements FeedRepository {
             serviceToken = await _createVideoServiceAuthToken(
               refreshPdsSessionOnFailure: true,
             );
-            response = await http.get(
+            response = await _videoHttpClient.get(
               Uri.parse(
                 '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus',
               ).replace(
@@ -1554,13 +1571,17 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   Future<String> _requestVideoServiceAuthToken(PoptartClient atproto) async {
+    final override = _requestVideoServiceAuthTokenOverride;
+    if (override != null) {
+      return override(atproto);
+    }
     final serviceTokenRes = await atproto.call(
       server_get_service_auth.comAtprotoServerGetServiceAuth,
       parameters: server_get_service_auth.ServerGetServiceAuthInput(
         aud: 'did:web:${atproto.service}',
         lxm: 'com.atproto.repo.uploadBlob',
         exp:
-            DateTime.now()
+            _now()
                 .toUtc()
                 .add(const Duration(minutes: 5))
                 .millisecondsSinceEpoch ~/
@@ -1638,7 +1659,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
     final bskyPost = bskyFeedAdapter.createPostRecord(
       text: crosspostText.text,
-      createdAt: DateTime.now().toUtc(),
+      createdAt: _now().toUtc(),
       images: bskyImages,
       facets: bskyFacets.isNotEmpty ? bskyFacets : null,
     );
@@ -1683,7 +1704,7 @@ class FeedRepositoryImpl implements FeedRepository {
     final record = PostRecord(
       caption: CaptionRef(text: text, facets: facets),
       media: Media.video(video: blob, alt: alt, aspectRatio: aspectRatio),
-      createdAt: DateTime.now().toUtc(),
+      createdAt: _now().toUtc(),
       langs: langs,
       selfLabels: selfLabels,
       tags: tags,

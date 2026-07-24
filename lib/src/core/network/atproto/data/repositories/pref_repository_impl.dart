@@ -12,13 +12,13 @@ import 'package:sprk_poptart/so/sprk/actor/put_preferences.dart'
     as sprk_put_preferences;
 
 class PrefRepositoryImpl implements PrefRepository {
-  PrefRepositoryImpl(this._client) {
+  PrefRepositoryImpl(this._client, {SparkLogger? logger})
+    : _logger =
+          logger ?? GetIt.instance<LogService>().getLogger('PrefRepository') {
     _logger.v('PrefRepository initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'PrefRepository',
-  );
+  final SparkLogger _logger;
 
   @override
   Future<Preferences> getPreferences() async {

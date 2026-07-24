@@ -20,13 +20,18 @@ import 'package:sprk_poptart/so/sprk/graph/get_known_followers.dart'
 
 /// Implementation of Graph-related API endpoints
 class GraphRepositoryImpl implements GraphRepository {
-  GraphRepositoryImpl(this._client) {
+  GraphRepositoryImpl(
+    this._client, {
+    SparkLogger? logger,
+    DateTime Function()? now,
+  }) : _logger =
+           logger ?? GetIt.instance<LogService>().getLogger('GraphRepository'),
+       _now = now ?? DateTime.now {
     _logger.v('GraphRepository initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'GraphRepository',
-  );
+  final SparkLogger _logger;
+  final DateTime Function() _now;
 
   @override
   Future<sprk_get_followers.GraphGetFollowersOutput> getFollowers(
@@ -187,7 +192,7 @@ class GraphRepositoryImpl implements GraphRepository {
           throw Exception('Already following this user');
         }
 
-        final createdAt = DateTime.now().toUtc();
+        final createdAt = _now().toUtc();
         final followRecord = bsky
             ? bsky_follow.GraphFollowRecord(
                 subject: did,
@@ -306,7 +311,7 @@ class GraphRepositoryImpl implements GraphRepository {
 
         final blockRecord = sprk_block.GraphBlockRecord(
           subject: did,
-          createdAt: DateTime.now().toUtc(),
+          createdAt: _now().toUtc(),
         ).toJson();
 
         final result = await _client.repo.createRecord(

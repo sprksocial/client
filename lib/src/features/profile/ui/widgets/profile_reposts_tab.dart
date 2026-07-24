@@ -66,7 +66,7 @@ class ProfileRepostsTab extends ProfileTabBase {
     required BuildContext context,
     required WidgetRef ref,
     required String actor,
-    required Function(BuildContext, WidgetRef, AtUri) onPostTap,
+    required void Function(BuildContext, WidgetRef, AtUri) onPostTap,
   }) {
     final repostsState = ref.watch(profileRepostsProvider(actor, bsky));
 

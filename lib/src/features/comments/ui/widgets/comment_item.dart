@@ -95,7 +95,7 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
 
   void _handleReportComment() {
     final sprkRepository = GetIt.instance<SprkRepository>();
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
         postUri: commentState.thread.post.uri.toString(),
@@ -119,7 +119,7 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
 
   void _handleDeleteComment() {
     final l10n = AppLocalizations.of(context);
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.dialogDeleteComment),
