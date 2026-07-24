@@ -1,4 +1,4 @@
-name: native checks
+name: integration tests
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ on:
       - "ios/**"
       - "pubspec.yaml"
       - "pubspec.lock"
-      - ".github/workflows/native-checks.yml"
+      - ".github/workflows/integration-tests.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -51,8 +51,21 @@ jobs:
           flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
 
-      - name: Compile debug APK
-        run: flutter build apk --debug
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run Android integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 30
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          script: flutter test integration_test -d emulator-5554 --reporter=expanded
 
   ios:
     runs-on: blacksmith-6vcpu-macos-26
@@ -74,9 +87,6 @@ jobs:
           flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
 
-      - name: Compile iOS simulator app
-        run: flutter build ios --simulator --debug
-
       - name: Run iOS integration tests
         timeout-minutes: 20
         run: |
@@ -84,6 +94,4 @@ jobs:
           test -n "$DEVICE_ID"
           xcrun simctl boot "$DEVICE_ID" || true
           xcrun simctl bootstatus "$DEVICE_ID" -b
-          for TEST_FILE in integration_test/*_test.dart; do
-            flutter test "$TEST_FILE" -d "$DEVICE_ID" --reporter=expanded
-          done
+          flutter test integration_test -d "$DEVICE_ID" --reporter=expanded
