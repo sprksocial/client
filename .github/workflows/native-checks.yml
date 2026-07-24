@@ -47,7 +47,7 @@ jobs:
 
       - name: Prepare project
         run: |
-          touch .env
+          cp .env.example .env
           flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
 
@@ -70,7 +70,7 @@ jobs:
 
       - name: Prepare project
         run: |
-          touch .env
+          cp .env.example .env
           flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
 
