@@ -57,3 +57,4 @@ app.*.map.json
 *.gr.dart
 assets/build
 test/src/core/design_system/templates/explore_page_template_test.dart
+/coverage/
