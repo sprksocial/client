@@ -7,7 +7,7 @@ class EmojiPicker extends StatelessWidget {
     required this.isDarkMode,
     super.key,
   });
-  final Function(String) onEmojiSelected;
+  final ValueChanged<String> onEmojiSelected;
   final bool isDarkMode;
   static const List<String> _emojis = [
     '❤️',
@@ -63,7 +63,7 @@ class _EmojiItem extends StatelessWidget {
   const _EmojiItem({required this.emoji, required this.onEmojiSelected});
 
   final String emoji;
-  final Function(String) onEmojiSelected;
+  final ValueChanged<String> onEmojiSelected;
 
   @override
   Widget build(BuildContext context) {

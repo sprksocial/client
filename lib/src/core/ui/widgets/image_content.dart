@@ -17,7 +17,7 @@ class ImageContent extends StatelessWidget {
   final double thumbnailSize;
 
   void _showImageCarousel(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 217),
       builder: (BuildContext context) {

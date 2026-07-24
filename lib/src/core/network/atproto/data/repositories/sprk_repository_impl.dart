@@ -24,17 +24,17 @@ import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Client for interacting with Spark API endpoints
 class SprkRepositoryImpl implements SprkRepository {
-  SprkRepositoryImpl(this._authRepository)
+  SprkRepositoryImpl(this._authRepository, {SparkLogger? logger})
     : _sprkDid = _getSprkDid(),
-      _bskyDid = _getBskyDid() {
+      _bskyDid = _getBskyDid(),
+      _logger =
+          logger ?? GetIt.instance<LogService>().getLogger('SprkRepository') {
     _logger.d('SprkRepository initialized with DID: $_sprkDid');
   }
   final AuthRepository _authRepository;
   final String _sprkDid;
   final String _bskyDid;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'SprkRepository',
-  );
+  final SparkLogger _logger;
 
   // Cached repository instances
   ActorRepository? _actor;

@@ -13,7 +13,7 @@ class LabelSettingTile extends StatelessWidget {
   });
   final String label;
   final LabelPreference preference;
-  final Function(
+  final Future<void> Function(
     String label, {
     Setting? setting,
     Blurs? blurs,

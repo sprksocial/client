@@ -1,22 +1,21 @@
-import 'package:poptart/poptart.dart';
-import 'package:poptart_lex/com/atproto/repo/list_records.dart'
-    as repo_list_records;
-import 'package:get_it/get_it.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/storage/preferences/storage_constants.dart';
-import 'package:spark/src/core/storage/preferences/storage_manager.dart';
-import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
+import 'package:spark/src/features/stories/providers/story_provider_dependencies.dart';
 
 part 'story_auto_delete_provider.g.dart';
+
+final storyManagerRefresherProvider = Provider<Future<void> Function()>((ref) {
+  return () => ref.read(storyManagerProvider.notifier).refresh();
+});
 
 /// Holds the auto delete preference state (bool)
 @riverpod
 class StoryAutoDeletePref extends _$StoryAutoDeletePref {
   @override
   Future<bool> build() async {
-    final prefs = StorageManager.instance.preferences;
+    final prefs = ref.read(storyAutoDeletePreferencesProvider);
     var stored = await prefs.getBool(StorageKeys.storyAutoDeleteEnabled);
     if (stored == null) {
       stored = true;
@@ -26,7 +25,7 @@ class StoryAutoDeletePref extends _$StoryAutoDeletePref {
   }
 
   Future<void> setEnabled(bool value) async {
-    final prefs = StorageManager.instance.preferences;
+    final prefs = ref.read(storyAutoDeletePreferencesProvider);
     await prefs.setBool(StorageKeys.storyAutoDeleteEnabled, value);
     // Update state immutably
     state = AsyncData(value);
@@ -40,57 +39,44 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
   final enabledAsync = await ref.watch(storyAutoDeletePrefProvider.future);
   if (!enabledAsync) return;
 
-  final sprk = GetIt.I<SprkRepository>();
-  final logger = GetIt.I<LogService>().getLogger('StoryAutoDeleteExec');
-  final atproto = sprk.authRepository.atproto;
-  final did = sprk.authRepository.did;
-  if (atproto == null || did == null) return;
+  final dependencies = ref.read(storyProviderDependenciesProvider);
+  final logger = dependencies.loggerFor('StoryAutoDeleteExec');
+  final did = dependencies.did;
+  if (!dependencies.atprotoAvailable || did == null) return;
 
   try {
-    const collection = 'so.sprk.story.post';
     String? cursor;
-    final expiredUris = <AtUri>[];
-    final now = DateTime.now().toUtc();
+    final expiredUris = <StoryRecordEntry>[];
+    final now = ref.read(storyClockProvider)().toUtc();
     do {
-      final page = await atproto.call(
-        repo_list_records.comAtprotoRepoListRecords,
-        parameters: repo_list_records.RepoListRecordsInput(
-          repo: did,
-          collection: collection,
-          cursor: cursor,
-          limit: 100,
-        ),
-      );
-      for (final rec in page.data.records) {
+      final page = await dependencies.loadRecordPage(did: did, cursor: cursor);
+      for (final rec in page.records) {
         final createdAt = rec.value['createdAt'];
         DateTime? ts;
         if (createdAt is String) {
           ts = DateTime.tryParse(createdAt)?.toUtc();
         }
         if (ts != null && now.difference(ts) > const Duration(hours: 24)) {
-          expiredUris.add(rec.uri);
+          expiredUris.add(rec);
         }
       }
-      cursor = page.data.cursor;
+      cursor = page.cursor;
     } while (cursor != null);
 
     if (expiredUris.isEmpty) return;
 
-    for (final uri in expiredUris) {
+    for (final record in expiredUris) {
       try {
-        await sprk.repo.deleteRecord(uri: uri);
+        await dependencies.deleteRecord(record.uri);
       } catch (e) {
-        logger.w('Failed deleting expired story $uri', error: e);
+        logger.w('Failed deleting expired story ${record.uri}', error: e);
       }
     }
 
     // Refresh manager state if it's already loaded
     // Refresh story manager provider so UI reflects deletions
-    final manager = ref.read(storyManagerProvider.notifier);
-    await manager.refresh();
+    await ref.read(storyManagerRefresherProvider)();
   } catch (e, s) {
-    GetIt.I<LogService>()
-        .getLogger('StoryAutoDeleteExec')
-        .e('Auto delete failed', error: e, stackTrace: s);
+    logger.e('Auto delete failed', error: e, stackTrace: s);
   }
 }

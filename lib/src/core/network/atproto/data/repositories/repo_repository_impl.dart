@@ -18,17 +18,18 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/repo_adapter.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Repository-related API endpoints implementation
 class RepoRepositoryImpl implements RepoRepository {
-  RepoRepositoryImpl(this._client) {
+  RepoRepositoryImpl(this._client, {SparkLogger? logger})
+    : _logger = logger ?? GetIt.instance<LogService>().getLogger('RepoAPI') {
     _logger.v('RepoAPI initialized');
   }
-  final SprkRepositoryImpl _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('RepoAPI');
+  final SprkRepository _client;
+  final SparkLogger _logger;
 
   @override
   Future<({Record record, RepoStrongRef strongRef})> getRecord({

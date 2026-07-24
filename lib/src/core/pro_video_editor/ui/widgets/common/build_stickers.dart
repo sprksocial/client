@@ -113,7 +113,7 @@ class _DemoBuildStickersState extends State<DemoBuildStickers> {
 
   Future<void> _switchCategory(int index) async {
     setState(() => _isSwitchingCategory = true);
-    await Future.delayed(const Duration(milliseconds: 120));
+    await Future<void>.delayed(const Duration(milliseconds: 120));
     if (!mounted) return;
 
     setState(() {

@@ -22,12 +22,23 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   OnboardingRepositoryImpl({
     required this._repoRepository,
     required this._authRepository,
-  });
+    SparkLogger? logger,
+    DateTime Function()? now,
+    PoptartClient Function(OAuthSession session)? oauthClient,
+    PoptartClient Function()? anonymousBskyClient,
+  }) : _logger =
+           logger ??
+           GetIt.instance<LogService>().getLogger('OnboardingRepository'),
+       _now = now ?? DateTime.now,
+       _oauthClient = oauthClient ?? PoptartClient.fromOAuthSession,
+       _anonymousBskyClient =
+           anonymousBskyClient ?? (() => PoptartClient.anonymous());
   final RepoRepository _repoRepository;
   final AuthRepository _authRepository;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'OnboardingRepository',
-  );
+  final SparkLogger _logger;
+  final DateTime Function() _now;
+  final PoptartClient Function(OAuthSession session) _oauthClient;
+  final PoptartClient Function() _anonymousBskyClient;
 
   String? get _did => _authRepository.did;
   PoptartClient? get _atproto => _authRepository.atproto;
@@ -120,7 +131,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
         return null;
       }
 
-      final bluesky = PoptartClient.fromOAuthSession(oauthSession);
+      final bluesky = _oauthClient(oauthSession);
       final profile = await bluesky.call(
         bsky_actor_get_profile.appBskyActorGetProfile,
         parameters: bsky_actor_get_profile.ActorGetProfileInput(actor: _did!),
@@ -194,8 +205,8 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
     // Use the PoptartClient client's OAuth session if available, otherwise anonymous
     final bsky = _atproto!.oAuthSession != null
-        ? PoptartClient.fromOAuthSession(_atproto!.oAuthSession!)
-        : PoptartClient.anonymous();
+        ? _oauthClient(_atproto!.oAuthSession!)
+        : _anonymousBskyClient();
 
     final response = await bsky.call(
       bsky_graph_get_follows.appBskyGraphGetFollows,
@@ -229,7 +240,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     final record = <String, dynamic>{
       r'$type': 'so.sprk.graph.follow',
       'subject': subject,
-      'createdAt': DateTime.now().toUtc().toIso8601String(),
+      'createdAt': _now().toUtc().toIso8601String(),
     };
 
     final response = await _repoRepository.createRecord(

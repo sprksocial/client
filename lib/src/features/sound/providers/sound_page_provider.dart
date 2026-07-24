@@ -1,5 +1,6 @@
-import 'package:poptart/poptart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:poptart/poptart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -8,16 +9,24 @@ import 'package:spark/src/features/sound/providers/sound_page_state.dart';
 
 part 'sound_page_provider.g.dart';
 
+final soundPageRepositoryProvider = Provider<SoundRepository>((ref) {
+  return GetIt.instance<SoundRepository>();
+});
+
+final soundPageLoggerProvider = Provider<SparkLogger>((ref) {
+  return GetIt.instance<LogService>().getLogger('SoundPage');
+});
+
 @riverpod
 class SoundPage extends _$SoundPage {
-  final SoundRepository _soundRepository = GetIt.instance<SoundRepository>();
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'SoundPage',
-  );
+  late SoundRepository _soundRepository;
+  late SparkLogger _logger;
   bool _isLoading = false;
 
   @override
   Future<SoundPageState> build(AtUri audioUri) async {
+    _soundRepository = ref.read(soundPageRepositoryProvider);
+    _logger = ref.read(soundPageLoggerProvider);
     try {
       final response = await _soundRepository.getAudioPosts(
         audioUri,

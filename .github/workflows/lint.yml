@@ -21,22 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get changed Dart files
-        id: changed_files
-        uses: tj-actions/changed-files@v46
-        with:
-          files: |
-            **/*.dart
-
-      - name: Get changed widgetbook Dart files
-        id: widgetbook_changed_files
-        uses: tj-actions/changed-files@v46
-        with:
-          files: |
-            widgetbook/**/*.dart
-
       - name: Set up Flutter
-        if: steps.changed_files.outputs.any_changed == 'true'
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
@@ -44,35 +29,22 @@ jobs:
           cache: true
 
       - name: Codegen (app)
-        if: steps.changed_files.outputs.any_changed == 'true'
         run: |
           touch .env
-          flutter pub get
+          flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Codegen (widgetbook)
-        if: steps.widgetbook_changed_files.outputs.any_changed == 'true'
         run: |
           cd widgetbook
           dart run build_runner build --delete-conflicting-outputs
 
-      - name: Determine analyze targets
-        id: analyze_targets
-        if: steps.changed_files.outputs.any_changed == 'true'
-        run: |
-          if [ "${{ steps.widgetbook_changed_files.outputs.any_changed }}" = "true" ]; then
-            echo "targets=." >> "$GITHUB_OUTPUT"
-          else
-            echo "targets=lib" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Run Flutter Analyze
         id: analyze_step
-        if: steps.changed_files.outputs.any_changed == 'true'
-        run: flutter analyze --write=flutter_analyze.log ${{ steps.analyze_targets.outputs.targets }}
+        run: flutter analyze --write=flutter_analyze.log .
 
       - name: Flutter Analyze Commenter
-        if: ${{ !cancelled() && steps.changed_files.outputs.any_changed == 'true' && github.event_name == 'pull_request' }} # Run only when analyze executed and on PRs
+        if: ${{ !cancelled() && steps.analyze_step.outcome != 'skipped' && github.event_name == 'pull_request' }}
         uses: yorifuji/flutter-analyze-commenter@v1
         with:
           analyze-log: flutter_analyze.log

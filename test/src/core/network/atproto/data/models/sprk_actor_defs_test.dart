@@ -50,7 +50,7 @@ void main() {
           'blocking': 'at://did:plc:viewer/app.bsky.graph.block/1',
           'following': 'at://did:plc:viewer/app.bsky.graph.follow/2',
           'followedBy': 'at://did:plc:profile/app.bsky.graph.follow/3',
-          'knownFollowers': {'count': 0, 'followers': []},
+          'knownFollowers': {'count': 0, 'followers': <dynamic>[]},
         },
       });
 

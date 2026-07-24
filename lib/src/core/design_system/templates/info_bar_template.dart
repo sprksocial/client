@@ -49,7 +49,7 @@ class InfoBarTemplate extends StatefulWidget {
   final VoidCallback? onTitleTap;
   final VoidCallback? onHandleTap;
   final VoidCallback? onAvatarTap;
-  final Function(bool isExpanded)? onDescriptionExpandToggle;
+  final ValueChanged<bool>? onDescriptionExpandToggle;
 
   /// ALT metadata affordance.
   final bool altAvailable;

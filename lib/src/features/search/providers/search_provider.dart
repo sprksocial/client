@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,14 +8,16 @@ import 'package:spark/src/core/network/atproto/data/repositories/graph_repositor
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/search/providers/search_state.dart';
+import 'package:spark/src/features/search/providers/search_debounce_scheduler.dart';
 
 part 'search_provider.g.dart';
 
 /// Search provider for user search functionality
 @riverpod
 class Search extends _$Search {
-  Timer? _debounce;
+  void Function()? _cancelDebounce;
   int _activeSearchToken = 0;
+  final Set<String> _pendingFollows = {};
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
     'SearchProvider',
   );
@@ -28,7 +28,7 @@ class Search extends _$Search {
   @override
   SearchState build() {
     ref.onDispose(() {
-      _debounce?.cancel();
+      _cancelDebounce?.call();
     });
 
     return SearchState.initial();
@@ -60,18 +60,19 @@ class Search extends _$Search {
     }
 
     // Debounce the search
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _cancelDebounce?.call();
     final requestToken = ++_activeSearchToken;
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      _searchUsers(trimmedQuery, requestToken: requestToken);
-    });
+    _cancelDebounce = ref.read(searchDebounceSchedulerProvider)(
+      const Duration(milliseconds: 500),
+      () => _searchUsers(trimmedQuery, requestToken: requestToken),
+    );
   }
 
   /// Submit the search query and run search immediately.
   Future<void> submitQuery(String query) async {
     final trimmedQuery = query.trim();
 
-    _debounce?.cancel();
+    _cancelDebounce?.call();
 
     state = state.copyWith(
       query: trimmedQuery,
@@ -176,72 +177,66 @@ class Search extends _$Search {
 
   /// Handle following a user
   Future<void> followUser(String userDid) async {
+    final authRepo = _authRepository;
+    if (!authRepo.isAuthenticated || !_pendingFollows.add(userDid)) return;
+
     try {
-      final authRepo = _authRepository;
-      if (!authRepo.isAuthenticated) {
-        return;
-      }
+      final response = await _graphRepository.followUser(userDid);
 
-      final graphRepo = _graphRepository;
-      final response = await graphRepo.followUser(userDid);
-
-      if (!ref.mounted) {
-        return;
-      }
-
-      // Update the user in the search results with the follow URI
-      final updatedResults = [...state.searchResults];
-      final userIndex = updatedResults.indexWhere(
-        (user) => user.did == userDid,
-      );
-
-      if (userIndex != -1) {
-        final user = updatedResults[userIndex];
-
-        final updatedUser = user.copyWith(
-          viewer: ViewerState(following: response.uri),
+      if (!ref.mounted) return;
+      final current = state.searchResults
+          .where((user) => user.did == userDid)
+          .firstOrNull;
+      if (current != null && current.viewer?.following == null) {
+        _replaceUser(
+          current.copyWith(viewer: ViewerState(following: response.uri)),
         );
-
-        updatedResults[userIndex] = updatedUser;
-        state = state.copyWith(searchResults: updatedResults);
       }
     } catch (e) {
       _logger.e('Failed to follow user', error: e);
+    } finally {
+      _pendingFollows.remove(userDid);
     }
   }
 
   /// Handle unfollowing a user
   Future<void> unfollowUser(String userDid, AtUri followUri) async {
+    final authRepo = _authRepository;
+    if (!authRepo.isAuthenticated) return;
+
+    final userIndex = state.searchResults.indexWhere(
+      (user) => user.did == userDid,
+    );
+    final originalUser = userIndex == -1
+        ? null
+        : state.searchResults[userIndex];
+    if (originalUser != null) {
+      _replaceUser(originalUser.copyWith(viewer: const ViewerState()));
+    }
+
     try {
-      final authRepo = _authRepository;
-      if (!authRepo.isAuthenticated) {
-        return;
-      }
-
-      final graphRepo = _graphRepository;
-      await graphRepo.unfollowUser(followUri);
-
-      if (!ref.mounted) {
-        return;
-      }
-
-      // Update the user in the search results to remove the follow URI
-      final updatedResults = [...state.searchResults];
-      final userIndex = updatedResults.indexWhere(
-        (user) => user.did == userDid,
-      );
-
-      if (userIndex != -1) {
-        final user = updatedResults[userIndex];
-
-        final updatedUser = user.copyWith(viewer: const ViewerState());
-
-        updatedResults[userIndex] = updatedUser;
-        state = state.copyWith(searchResults: updatedResults);
-      }
+      await _graphRepository.unfollowUser(followUri);
     } catch (e) {
       _logger.e('Failed to unfollow user', error: e);
+      if (ref.mounted && originalUser != null) {
+        final current = state.searchResults
+            .where((user) => user.did == userDid)
+            .firstOrNull;
+        if (current?.viewer?.following == null) {
+          _replaceUser(originalUser);
+        }
+      }
     }
+  }
+
+  void _replaceUser(ProfileView updatedUser) {
+    final updatedResults = [...state.searchResults];
+    final index = updatedResults.indexWhere(
+      (user) => user.did == updatedUser.did,
+    );
+    if (index == -1) return;
+    updatedResults[index] = updatedUser;
+    state = state.copyWith(searchResults: updatedResults);
   }
 
   bool isCurrentUser(String did) {

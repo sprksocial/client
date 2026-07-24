@@ -45,7 +45,7 @@ class SuggestedFeeds extends _$SuggestedFeeds {
         error: e,
         stackTrace: stackTrace,
       );
-      state = AsyncValue.error(e, StackTrace.current);
+      state = AsyncValue.error(e, stackTrace);
     }
   }
 }

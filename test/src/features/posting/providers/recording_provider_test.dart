@@ -19,7 +19,12 @@ void main() {
     }
 
     test('accumulates elapsed time across resumed segments', () async {
-      final container = ProviderContainer();
+      final scheduler = _ManualRecordingTickScheduler();
+      final container = ProviderContainer(
+        overrides: [
+          recordingTickSchedulerProvider.overrideWithValue(scheduler.schedule),
+        ],
+      );
       addTearDown(container.dispose);
       final subscription = container.listen(
         recordingProvider,
@@ -30,29 +35,23 @@ void main() {
       final notifier = container.read(recordingProvider.notifier);
 
       notifier.startRecording();
-      await Future<void>.delayed(const Duration(milliseconds: 350));
+      scheduler.tick(3);
       notifier.stopRecording();
       notifier.addSegment(XFile('/tmp/segment-1.mp4'));
 
       final pausedState = container.read(recordingProvider);
       expect(pausedState.isRecording, isFalse);
-      expect(
-        pausedState.elapsedDuration,
-        greaterThanOrEqualTo(const Duration(milliseconds: 300)),
-      );
+      expect(pausedState.elapsedDuration, const Duration(milliseconds: 300));
       expect(pausedState.canFinalize, isTrue);
 
       notifier.startRecording();
-      await Future<void>.delayed(const Duration(milliseconds: 250));
+      scheduler.tick(2);
       notifier.stopRecording();
       notifier.addSegment(XFile('/tmp/segment-2.mp4'));
 
       final resumedState = container.read(recordingProvider);
       expect(resumedState.isRecording, isFalse);
-      expect(
-        resumedState.elapsedDuration,
-        greaterThanOrEqualTo(const Duration(milliseconds: 500)),
-      );
+      expect(resumedState.elapsedDuration, const Duration(milliseconds: 500));
       expect(resumedState.segmentPaths, [
         '/tmp/segment-1.mp4',
         '/tmp/segment-2.mp4',
@@ -195,15 +194,37 @@ void main() {
       final segmentFile = File('${tempDir.path}/segment.mp4')
         ..writeAsStringSync('segment');
 
-      container
-          .read(recordingProvider.notifier)
-          .addSegment(XFile(segmentFile.path));
+      final notifier = container.read(recordingProvider.notifier)
+        ..addSegment(XFile(segmentFile.path));
+      final cleanupComplete = notifier.disposalCleanupComplete;
 
       subscription.close();
       container.dispose();
-      await Future<void>.delayed(Duration.zero);
+      await cleanupComplete;
 
       expect(await segmentFile.exists(), isFalse);
     });
   });
+}
+
+class _ManualRecordingTickScheduler {
+  Duration? interval;
+  void Function()? _onTick;
+  bool _isCanceled = false;
+
+  void Function() schedule(Duration interval, void Function() onTick) {
+    this.interval = interval;
+    _onTick = onTick;
+    _isCanceled = false;
+    return () => _isCanceled = true;
+  }
+
+  void tick(int count) {
+    expect(interval, const Duration(milliseconds: 100));
+    for (var index = 0; index < count; index += 1) {
+      if (!_isCanceled) {
+        _onTick?.call();
+      }
+    }
+  }
 }

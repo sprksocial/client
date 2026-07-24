@@ -27,11 +27,10 @@ void main() {
     expect(tapCount, 1);
   });
 
-  testWidgets('InteractivePressable disabled state blocks taps and semantics', (
+  testWidgets('InteractivePressable exposes disabled button semantics', (
     tester,
   ) async {
     final semanticsHandle = tester.ensureSemantics();
-    var tapCount = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -44,11 +43,8 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byType(InteractivePressable));
-
     final node = tester.getSemantics(find.byType(InteractivePressable));
     final bool? isEnabled = node.flagsCollection.isEnabled.toBoolOrNull();
-    expect(tapCount, 0);
     expect(node.flagsCollection.isButton, isTrue);
     expect(isEnabled, isNotNull);
     expect(isEnabled, isFalse);

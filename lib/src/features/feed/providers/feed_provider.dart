@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider, Ref;
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
@@ -17,6 +18,44 @@ import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 part 'feed_provider.g.dart';
 
+abstract interface class FeedSettingsGateway {
+  Future<List<String>> getLabelers();
+
+  Future<LabelPreference> getLabelPreference(String value);
+}
+
+class _RiverpodFeedSettingsGateway implements FeedSettingsGateway {
+  const _RiverpodFeedSettingsGateway(this.ref, this.sprkRepository);
+
+  final Ref ref;
+  final SprkRepository sprkRepository;
+
+  @override
+  Future<List<String>> getLabelers() async {
+    try {
+      return await ref
+          .read(settingsProvider.notifier)
+          .getLabelers()
+          .timeout(const Duration(seconds: 5), onTimeout: _fallbackLabelers);
+    } catch (_) {
+      return _fallbackLabelers();
+    }
+  }
+
+  List<String> _fallbackLabelers() {
+    return [sprkRepository.modDid.split('#').first];
+  }
+
+  @override
+  Future<LabelPreference> getLabelPreference(String value) {
+    return ref.read(settingsProvider.notifier).getLabelPreference(value);
+  }
+}
+
+final feedSettingsGatewayProvider = Provider<FeedSettingsGateway>((ref) {
+  return _RiverpodFeedSettingsGateway(ref, GetIt.instance<SprkRepository>());
+});
+
 @Riverpod(keepAlive: true)
 class FeedNotifier extends _$FeedNotifier {
   bool _isLoadingInProgress = false;
@@ -28,6 +67,8 @@ class FeedNotifier extends _$FeedNotifier {
   late final SprkRepository _sprkRepository;
   late final SparkLogger _logger;
   late final DownloadManagerInterface _downloadManager;
+  late final FeedSettingsGateway _settingsGateway;
+  Completer<void>? _fetchCompletion;
 
   // Track active fetch operation for cancellation
   int _fetchGeneration = 0;
@@ -56,6 +97,7 @@ class FeedNotifier extends _$FeedNotifier {
       _sprkRepository = GetIt.instance<SprkRepository>();
       _feedRepository = _sprkRepository.feed;
       _downloadManager = GetIt.instance<DownloadManagerInterface>();
+      _settingsGateway = ref.read(feedSettingsGatewayProvider);
       _logger = GetIt.instance<LogService>().getLogger(
         'FeedNotifier ${feed.config.id}',
       );
@@ -152,7 +194,7 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 
-  Future<void> _processFetchedPosts(
+  Future<bool> _processFetchedPosts(
     List<PostView> posts, {
     String? cursor,
     bool replaceExisting = false,
@@ -161,7 +203,7 @@ class FeedNotifier extends _$FeedNotifier {
     // Check if generation has changed
     if (generation != null && generation != _fetchGeneration) {
       _logger.d('Process posts superseded by newer generation');
-      return;
+      return false;
     }
 
     if (posts.isEmpty) {
@@ -169,7 +211,7 @@ class FeedNotifier extends _$FeedNotifier {
           (generation == null || generation == _fetchGeneration)) {
         state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
       }
-      return;
+      return false;
     }
 
     try {
@@ -241,12 +283,12 @@ class FeedNotifier extends _$FeedNotifier {
         extraInfo,
       );
 
-      if (!ref.mounted) return;
+      if (!ref.mounted) return false;
 
       // Check generation after async operation
       if (generation != null && generation != _fetchGeneration) {
         _logger.d('Process posts superseded after filtering');
-        return;
+        return false;
       }
 
       if (filteredPosts.isEmpty) {
@@ -257,7 +299,7 @@ class FeedNotifier extends _$FeedNotifier {
             loadingFirstLoad: false,
           );
         }
-        return;
+        return false;
       }
 
       final updatedPosts = replaceExisting
@@ -287,6 +329,7 @@ class FeedNotifier extends _$FeedNotifier {
           ),
         );
       }
+      return true;
     } catch (e, stackTrace) {
       _logger.e(
         'Error while processing fetched posts: $e',
@@ -296,6 +339,7 @@ class FeedNotifier extends _$FeedNotifier {
       if (ref.mounted) {
         state = state.copyWith(loadingFirstLoad: false, error: true);
       }
+      return false;
     }
   }
 
@@ -304,23 +348,7 @@ class FeedNotifier extends _$FeedNotifier {
   }) async {
     final pageLimit = limit ?? FeedState.fetchLimit;
 
-    // Get labelers for the header
-    final settings = ref.read(settingsProvider.notifier);
-    List<String> labelerDids;
-    try {
-      labelerDids = await settings.getLabelers().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          // Use modDid from repository as fallback
-          final modDid = _sprkRepository.modDid.split('#').first;
-          return [modDid];
-        },
-      );
-    } catch (e) {
-      // Use modDid from repository as fallback
-      final modDid = _sprkRepository.modDid.split('#').first;
-      labelerDids = [modDid];
-    }
+    final labelerDids = await _settingsGateway.getLabelers();
 
     final feedView = await _feedRepository.getFeed(
       _feed,
@@ -346,11 +374,29 @@ class FeedNotifier extends _$FeedNotifier {
     bool replaceExisting = false,
     int? generation,
   }) async {
-    if (_isFetching || state.isEndOfNetworkFeed) {
+    if (state.isEndOfNetworkFeed) {
+      return;
+    }
+
+    final activeGeneration = generation ?? _fetchGeneration;
+    if (_isFetching) {
+      final fetchCompletion = _fetchCompletion;
+      if (generation != null && fetchCompletion != null) {
+        await fetchCompletion.future;
+        if (ref.mounted && activeGeneration == _fetchGeneration) {
+          await _maybeFetchNextBatch(
+            limit: limit,
+            replaceExisting: replaceExisting,
+            generation: activeGeneration,
+          );
+        }
+      }
       return;
     }
 
     _isFetching = true;
+    final fetchCompletion = Completer<void>();
+    _fetchCompletion = fetchCompletion;
     try {
       var attempts = 0;
       var consecutiveEmptyResults = 0;
@@ -360,7 +406,7 @@ class FeedNotifier extends _$FeedNotifier {
         attempts++;
 
         // Check if generation has changed (fetch was superseded)
-        if (generation != null && generation != _fetchGeneration) {
+        if (activeGeneration != _fetchGeneration) {
           _logger.d('Fetch superseded by newer generation, cancelling');
           return;
         }
@@ -368,7 +414,7 @@ class FeedNotifier extends _$FeedNotifier {
         final (:count, :posts, :cursor) = await fetch(limit: limit);
 
         // Check again after await
-        if (generation != null && generation != _fetchGeneration) {
+        if (activeGeneration != _fetchGeneration) {
           _logger.d('Fetch superseded after network call, discarding results');
           return;
         }
@@ -378,8 +424,7 @@ class FeedNotifier extends _$FeedNotifier {
         if (fetchedPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            if (ref.mounted &&
-                (generation == null || generation == _fetchGeneration)) {
+            if (ref.mounted && activeGeneration == _fetchGeneration) {
               state = state.copyWith(
                 loadingFirstLoad: false,
                 isEndOfNetworkFeed: true,
@@ -391,8 +436,7 @@ class FeedNotifier extends _$FeedNotifier {
             consecutiveEmptyResults++;
             if (consecutiveEmptyResults >= maxConsecutiveEmpty) {
               await endOfNetworkFeed();
-              if (ref.mounted &&
-                  (generation == null || generation == _fetchGeneration)) {
+              if (ref.mounted && activeGeneration == _fetchGeneration) {
                 state = state.copyWith(
                   loadingFirstLoad: false,
                   isEndOfNetworkFeed: true,
@@ -401,47 +445,34 @@ class FeedNotifier extends _$FeedNotifier {
               break;
             }
           }
-          if (ref.mounted &&
-              (generation == null || generation == _fetchGeneration)) {
+          if (ref.mounted && activeGeneration == _fetchGeneration) {
             state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
           }
           continue;
         }
 
-        consecutiveEmptyResults = 0;
-        final newPosts = fetchedPosts;
-
-        if (newPosts.isEmpty) {
-          if (fetchedCount == 0 || cursor == null) {
-            await endOfNetworkFeed();
-            if (ref.mounted &&
-                (generation == null || generation == _fetchGeneration)) {
-              state = state.copyWith(
-                loadingFirstLoad: false,
-                isEndOfNetworkFeed: true,
-              );
-            }
-            break;
-          }
-          if (ref.mounted &&
-              (generation == null || generation == _fetchGeneration)) {
-            state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
-          }
-          continue;
-        }
-
-        await _processFetchedPosts(
-          newPosts,
+        final addedPosts = await _processFetchedPosts(
+          fetchedPosts,
           cursor: cursor,
           replaceExisting: replaceExisting,
-          generation: generation,
+          generation: activeGeneration,
         );
-        break;
+        if (activeGeneration != _fetchGeneration) return;
+        if (state.error) return;
+        if (addedPosts) {
+          if (cursor == null) await endOfNetworkFeed();
+          break;
+        }
+
+        consecutiveEmptyResults++;
+        if (cursor == null || consecutiveEmptyResults >= maxConsecutiveEmpty) {
+          await endOfNetworkFeed();
+          break;
+        }
       }
     } catch (e, stackTrace) {
       // Only update error state if this generation is still current
-      if (ref.mounted &&
-          (generation == null || generation == _fetchGeneration)) {
+      if (ref.mounted && activeGeneration == _fetchGeneration) {
         _logger.e('Error prefetching feed: $e', stackTrace: stackTrace);
         _lastErrorTime = DateTime.now();
         state = state.copyWith(error: true, loadingFirstLoad: false);
@@ -449,6 +480,10 @@ class FeedNotifier extends _$FeedNotifier {
       rethrow;
     } finally {
       _isFetching = false;
+      if (!fetchCompletion.isCompleted) fetchCompletion.complete();
+      if (identical(_fetchCompletion, fetchCompletion)) {
+        _fetchCompletion = null;
+      }
     }
   }
 
@@ -509,9 +544,12 @@ class FeedNotifier extends _$FeedNotifier {
         LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(state.extraInfo)
           ..remove(postToRemove.uri);
 
-    // Adjust current index: if we removed a post before current position,
-    // decrement index to stay on the same visual post
-    final newIndex = state.index > index ? state.index - 1 : state.index;
+    // Keep the same visual post when removing before the current position,
+    // and keep the index in bounds when removing the final visible post.
+    final shiftedIndex = state.index > index ? state.index - 1 : state.index;
+    final newIndex = updatedPosts.isEmpty
+        ? 0
+        : shiftedIndex.clamp(0, updatedPosts.length - 1);
 
     state = state.copyWith(
       loadedPosts: updatedPosts,
@@ -522,10 +560,11 @@ class FeedNotifier extends _$FeedNotifier {
 
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
-    final settings = ref.read(settingsProvider.notifier);
     for (final label in postLabels) {
       try {
-        final labelPreference = await settings.getLabelPreference(label.val);
+        final labelPreference = await _settingsGateway.getLabelPreference(
+          label.val,
+        );
         if (labelPreference.setting == Setting.hide ||
             labelPreference.adultOnly) {
           return true;

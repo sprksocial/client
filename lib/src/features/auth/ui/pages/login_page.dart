@@ -5,7 +5,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -14,6 +13,7 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
+import 'package:spark/src/features/auth/providers/oauth_browser_launcher.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
@@ -22,6 +22,8 @@ import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 @RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
+
+  static const backButtonKey = ValueKey<String>('login.back');
 
   @override
   ConsumerState<LoginPage> createState() => _LoginPageState();
@@ -133,10 +135,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         // Open the browser for OAuth authentication
         String callbackUrl;
         try {
-          callbackUrl = await FlutterWebAuth2.authenticate(
-            url: authUrl,
-            callbackUrlScheme: 'sprk',
-          );
+          callbackUrl = await ref
+              .read(oauthBrowserLauncherProvider)
+              .authenticate(url: authUrl, callbackUrlScheme: 'sprk');
         } on PlatformException catch (e) {
           if (e.code == 'CANCELED') {
             // User cancelled the OAuth flow - reset loading state
@@ -389,7 +390,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           Positioned(
             top: 0,
             left: 0,
-            child: AppOverlayBackButton(color: colorScheme.onSurface),
+            child: AppOverlayBackButton(
+              key: LoginPage.backButtonKey,
+              color: colorScheme.onSurface,
+            ),
           ),
           if (showHandleSuggestions)
             Positioned.fill(

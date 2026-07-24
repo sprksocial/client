@@ -14,8 +14,10 @@ import 'package:sprk_poptart/so/sprk/story/get_timeline.dart'
 
 /// Implementation of Story-related API endpoints
 class StoryRepositoryImpl implements StoryRepository {
-  StoryRepositoryImpl(this._client);
+  StoryRepositoryImpl(this._client, {DateTime Function()? now})
+    : _now = now ?? DateTime.now;
   final SprkRepository _client;
+  final DateTime Function() _now;
 
   /// Fixes story media JSON to match generated sprk_poptart view models.
   void _fixMediaStructure(Map<String, dynamic> storyJson) {
@@ -50,11 +52,6 @@ class StoryRepositoryImpl implements StoryRepository {
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         throw Exception('AtProto not initialized');
-      }
-
-      final parameters = <String, dynamic>{'limit': limit};
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
       }
 
       final rawResponse = await atproto.call(
@@ -188,7 +185,7 @@ class StoryRepositoryImpl implements StoryRepository {
     return _client.repo.createRecord(
       collection: 'so.sprk.story.post',
       record: sprkStoryRecordFromLocal(
-        createdAt: DateTime.now().toUtc(),
+        createdAt: _now().toUtc(),
         media: media,
         labels: normalizedLabels,
         sound: soundRef,
