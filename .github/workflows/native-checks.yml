@@ -55,7 +55,7 @@ jobs:
         run: flutter build apk --debug
 
   ios:
-    runs-on: macos-15
+    runs-on: blacksmith-6vcpu-macos-15
 
     steps:
       - name: Checkout Repository
@@ -77,11 +77,13 @@ jobs:
       - name: Compile iOS simulator app
         run: flutter build ios --simulator --debug
 
-      - name: Run iOS integration smoke test
+      - name: Run iOS integration tests
         timeout-minutes: 20
         run: |
           DEVICE_ID=$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/ { print $2; exit }')
           test -n "$DEVICE_ID"
           xcrun simctl boot "$DEVICE_ID" || true
           xcrun simctl bootstatus "$DEVICE_ID" -b
-          flutter test integration_test/app_smoke_test.dart -d "$DEVICE_ID" --reporter=expanded
+          for TEST_FILE in integration_test/*_test.dart; do
+            flutter test "$TEST_FILE" -d "$DEVICE_ID" --reporter=expanded
+          done

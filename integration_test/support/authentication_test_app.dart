@@ -1,40 +1,39 @@
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:integration_test/integration_test.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/main.dart' as app;
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/notifications/push_notification_service.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
 import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/oauth_browser_launcher.dart';
-import 'package:spark/src/features/auth/ui/pages/login_page.dart';
-import 'package:spark/src/features/auth/ui/pages/register_page.dart';
 
-void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+class AuthenticationTestApp {
+  AuthenticationTestApp()
+    : authRepository = FakeAuthRepository(),
+      oauthLauncher = FakeOAuthBrowserLauncher();
 
-  testWidgets('isolated launch supports auth routing and OAuth callback', (
-    tester,
-  ) async {
-    final authRepository = _FakeAuthRepository();
-    final oauthLauncher = _FakeOAuthBrowserLauncher();
+  final FakeAuthRepository authRepository;
+  final FakeOAuthBrowserLauncher oauthLauncher;
+  ProviderContainer? _providerContainer;
+
+  int downloadInitializations = 0;
+  int pushInitializations = 0;
+
+  Future<void> launch() async {
     final providerContainer = ProviderContainer(
       overrides: [
         authRepositoryProvider.overrideWithValue(authRepository),
         oauthBrowserLauncherProvider.overrideWithValue(oauthLauncher),
       ],
     );
-    addTearDown(providerContainer.dispose);
-    var downloadInitializations = 0;
-    var pushInitializations = 0;
+    _providerContainer = providerContainer;
 
     await app.runSparkApp(
       preferencesStorage: _InMemoryStorage(),
@@ -49,34 +48,79 @@ void main() {
         return _initializeFakePushNotifications();
       },
     );
-    await _pumpUntilVisible(tester, find.byType(RegisterPage));
+  }
 
-    expect(find.byType(RegisterPage), findsOneWidget);
-    expect(find.text('Get Started'), findsOneWidget);
+  void dispose() {
+    _providerContainer?.dispose();
+    _providerContainer = null;
+  }
+}
 
-    await tester.tap(find.byKey(RegisterPage.haveAccountButtonKey));
-    await _pumpUntilVisible(tester, find.byType(LoginPage));
+Future<void> pumpUntilVisible(
+  WidgetTester tester,
+  Finder finder, {
+  Duration timeout = const Duration(seconds: 30),
+}) async {
+  final stopwatch = Stopwatch()..start();
 
-    expect(find.byType(LoginPage), findsOneWidget);
+  while (finder.evaluate().isEmpty && stopwatch.elapsed < timeout) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 
-    await tester.tap(find.byKey(LoginPage.backButtonKey));
-    await _pumpUntilVisible(tester, find.byType(RegisterPage));
-    await tester.pumpAndSettle();
+  stopwatch.stop();
+  expect(
+    finder,
+    findsWidgets,
+    reason: 'Expected $finder to appear within $timeout.',
+  );
+}
 
-    final getStartedButton = find.byKey(RegisterPage.getStartedButtonKey);
-    await tester.ensureVisible(getStartedButton);
-    await tester.tap(getStartedButton);
-    await tester.pumpAndSettle();
+class FakeOAuthBrowserLauncher implements OAuthBrowserLauncher {
+  final List<String> requestedUrls = [];
+  final List<String> callbackSchemes = [];
 
-    expect(authRepository.completedCallbacks, [
-      'sprk://oauth-callback?code=isolated-code',
-    ]);
-    expect(oauthLauncher.requestedUrls, ['https://auth.example/register']);
-    expect(downloadInitializations, 1);
-    expect(pushInitializations, 1);
-    expect(find.text('Callback rejected by test server'), findsOneWidget);
-    expect(find.widgetWithText(AppButton, 'Get Started'), findsOneWidget);
-  });
+  @override
+  Future<String> authenticate({
+    required String url,
+    required String callbackUrlScheme,
+  }) async {
+    requestedUrls.add(url);
+    callbackSchemes.add(callbackUrlScheme);
+    return 'sprk://oauth-callback?code=isolated-code';
+  }
+}
+
+class FakeAuthRepository implements AuthRepository {
+  final List<String> completedCallbacks = [];
+
+  @override
+  Future<void> get initializationComplete => Future<void>.value();
+
+  @override
+  bool get isAuthenticated => false;
+
+  @override
+  String? get did => null;
+
+  @override
+  String? get handle => null;
+
+  @override
+  PoptartClient? get atproto => null;
+
+  @override
+  Future<String> initiateOAuthWithoutLoginHint() async {
+    return 'https://auth.example/register';
+  }
+
+  @override
+  Future<LoginResult> completeOAuth(String callbackUrl) async {
+    completedCallbacks.add(callbackUrl);
+    return LoginResult.failed('Callback rejected by test server');
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 Future<PushNotificationService> _initializeFakePushNotifications() async {
@@ -104,13 +148,14 @@ class _FakeDownloadManager implements DownloadManagerInterface {
 
 class _FakePushMessagingClient implements PushMessagingClient {
   @override
-  Stream<RemoteMessage> get onMessage => const Stream.empty();
+  Stream<RemoteMessage> get onMessage => const Stream<RemoteMessage>.empty();
 
   @override
-  Stream<RemoteMessage> get onMessageOpenedApp => const Stream.empty();
+  Stream<RemoteMessage> get onMessageOpenedApp =>
+      const Stream<RemoteMessage>.empty();
 
   @override
-  Stream<String> get onTokenRefresh => const Stream.empty();
+  Stream<String> get onTokenRefresh => const Stream<String>.empty();
 
   @override
   Future<RemoteMessage?> getInitialMessage() async => null;
@@ -125,25 +170,6 @@ class _FakePushMessagingClient implements PushMessagingClient {
   @override
   Future<PushAuthorizationStatus> requestPermission() async =>
       PushAuthorizationStatus.denied;
-}
-
-Future<void> _pumpUntilVisible(
-  WidgetTester tester,
-  Finder finder, {
-  Duration timeout = const Duration(seconds: 30),
-}) async {
-  final stopwatch = Stopwatch()..start();
-
-  while (finder.evaluate().isEmpty && stopwatch.elapsed < timeout) {
-    await tester.pump(const Duration(milliseconds: 100));
-  }
-
-  stopwatch.stop();
-  expect(
-    finder,
-    findsWidgets,
-    reason: 'Expected $finder to appear within $timeout.',
-  );
 }
 
 class _InMemoryStorage implements LocalStorageInterface {
@@ -216,51 +242,4 @@ class _InMemoryStorage implements LocalStorageInterface {
   @override
   Future<void> setStringList(String key, List<String> value) async =>
       _values[key] = List<String>.of(value);
-}
-
-class _FakeOAuthBrowserLauncher implements OAuthBrowserLauncher {
-  final List<String> requestedUrls = [];
-
-  @override
-  Future<String> authenticate({
-    required String url,
-    required String callbackUrlScheme,
-  }) async {
-    requestedUrls.add(url);
-    expect(callbackUrlScheme, 'sprk');
-    return 'sprk://oauth-callback?code=isolated-code';
-  }
-}
-
-class _FakeAuthRepository implements AuthRepository {
-  final List<String> completedCallbacks = [];
-
-  @override
-  Future<void> get initializationComplete => Future.value();
-
-  @override
-  bool get isAuthenticated => false;
-
-  @override
-  String? get did => null;
-
-  @override
-  String? get handle => null;
-
-  @override
-  PoptartClient? get atproto => null;
-
-  @override
-  Future<String> initiateOAuthWithoutLoginHint() async {
-    return 'https://auth.example/register';
-  }
-
-  @override
-  Future<LoginResult> completeOAuth(String callbackUrl) async {
-    completedCallbacks.add(callbackUrl);
-    return LoginResult.failed('Callback rejected by test server');
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

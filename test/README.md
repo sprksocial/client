@@ -55,5 +55,13 @@ flutter test --coverage
 dart run tool/coverage_summary.dart coverage/lcov.info --enforce-critical
 ```
 
-The app integration smoke test lives under `integration_test/` and must keep its
-storage and external-service boundaries isolated from real user data.
+Integration tests live under `integration_test/`, with one file per major user
+journey and shared fakes under `integration_test/support/`. Run a journey on a
+device with:
+
+```sh
+flutter test integration_test/registration_test.dart -d <device-id>
+```
+
+Every journey must keep storage and external-service boundaries isolated from
+real user data.
