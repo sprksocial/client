@@ -27,10 +27,11 @@ unrepresented high-risk area rather than deepen an already mature area. In
 particular, the video editor suite should grow only for a new gesture, timing,
 race, or media-boundary regression.
 
-The coverage summary groups results by `core/<area>` and `features/<area>` so
-large imbalances remain visible. CI requires every core auth and network
-repository implementation to execute at least one line; this is a floor, not a
-claim that one exercised line is sufficient.
+The optional local coverage summary groups results by `core/<area>` and
+`features/<area>` so large imbalances remain visible. Passing
+`--enforce-critical` makes the local command fail when a core auth or network
+repository implementation has no executed lines. CI runs the test suite without
+collecting or enforcing coverage.
 
 ## Test quality
 
