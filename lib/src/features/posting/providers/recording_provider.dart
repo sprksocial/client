@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -8,10 +9,23 @@ import 'package:spark/src/features/posting/providers/recording_state.dart';
 
 part 'recording_provider.g.dart';
 
+typedef RecordingTickScheduler =
+    void Function() Function(Duration interval, void Function() onTick);
+
+final recordingTickSchedulerProvider = Provider<RecordingTickScheduler>((ref) {
+  return (interval, onTick) {
+    final timer = Timer.periodic(interval, (_) => onTick());
+    return timer.cancel;
+  };
+});
+
 @riverpod
 class Recording extends _$Recording {
-  Timer? _timer;
+  void Function()? _cancelTimer;
   final List<String> _segmentPaths = [];
+  final Completer<void> _disposalCleanupCompleter = Completer<void>();
+
+  Future<void> get disposalCleanupComplete => _disposalCleanupCompleter.future;
 
   @override
   RecordingState build() {
@@ -26,24 +40,27 @@ class Recording extends _$Recording {
 
     state = state.copyWith(isRecording: true, error: null);
 
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      // Guard against accessing state after provider disposal
-      if (!ref.mounted) {
-        timer.cancel();
-        return;
-      }
+    _cancelTimer = ref.read(recordingTickSchedulerProvider)(
+      const Duration(milliseconds: 100),
+      () {
+        // Guard against accessing state after provider disposal
+        if (!ref.mounted) {
+          stopTimer();
+          return;
+        }
 
-      final newDuration =
-          state.elapsedDuration + const Duration(milliseconds: 100);
+        final newDuration =
+            state.elapsedDuration + const Duration(milliseconds: 100);
 
-      if (newDuration >= state.maxDuration) {
-        stopTimer();
-        state = state.copyWith(elapsedDuration: state.maxDuration);
-        return;
-      }
+        if (newDuration >= state.maxDuration) {
+          stopTimer();
+          state = state.copyWith(elapsedDuration: state.maxDuration);
+          return;
+        }
 
-      state = state.copyWith(elapsedDuration: newDuration);
-    });
+        state = state.copyWith(elapsedDuration: newDuration);
+      },
+    );
   }
 
   void stopRecording() {
@@ -130,14 +147,18 @@ class Recording extends _$Recording {
   }
 
   void stopTimer() {
-    _timer?.cancel();
-    _timer = null;
+    _cancelTimer?.call();
+    _cancelTimer = null;
   }
 
   void _dispose() {
     final pathsToDelete = List<String>.of(_segmentPaths);
     _segmentPaths.clear();
     stopTimer();
-    unawaited(_deleteTemporaryFiles(pathsToDelete));
+    unawaited(
+      _deleteTemporaryFiles(
+        pathsToDelete,
+      ).whenComplete(_disposalCleanupCompleter.complete),
+    );
   }
 }

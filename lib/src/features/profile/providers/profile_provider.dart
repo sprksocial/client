@@ -35,9 +35,11 @@ class ProfileNotifier extends _$ProfileNotifier {
     logger.d('Building ProfileNotifier for did: $did, bsky: $bsky');
     final initialState = ProfileState(currentViewDid: did);
     await loadProfileData(did, initialState);
-    // Return the state value if available, otherwise return initial state
-    // This handles edge cases where loadProfileData sets an error/auth prompt
-    return state.asData?.value ?? initialState;
+    final loadedState = state;
+    if (loadedState case AsyncError(:final error, :final stackTrace)) {
+      Error.throwWithStackTrace(error, stackTrace);
+    }
+    return loadedState.asData?.value ?? initialState;
   }
 
   Future<void> loadProfileData(

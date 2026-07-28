@@ -12,6 +12,13 @@ import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
+typedef ReportSubmitCallback =
+    void Function(
+      UModerationCreateReportSubject subject,
+      ReasonType reasonType,
+      String? reason,
+    );
+
 enum ReportCategory {
   violence('Violence'),
   sexual('Sexual Content'),
@@ -52,12 +59,7 @@ class ReportDialog extends ConsumerStatefulWidget {
 
   /// Callback for report submission. Uses [ReasonType] directly to support
   /// known & unknown reason types.
-  final Function(
-    UModerationCreateReportSubject subject,
-    ReasonType reasonType,
-    String? reason,
-  )?
-  onSubmit;
+  final ReportSubmitCallback? onSubmit;
 
   @override
   ConsumerState<ReportDialog> createState() => _ReportDialogState();

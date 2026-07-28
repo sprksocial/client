@@ -18,7 +18,7 @@ class OptionsPanel {
         ? theme.colorScheme.surface
         : Colors.white;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: menuBackgroundColor,
       shape: const RoundedRectangleBorder(

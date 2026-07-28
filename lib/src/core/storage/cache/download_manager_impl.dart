@@ -105,19 +105,19 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               // (either success or failure handled within _executeTask).
               // It's mainly for pool resource management.
             })
-            .catchError((e, s) {
+            .catchError((Object error, StackTrace stackTrace) {
               // This is for unexpected errors from _pool.withResource itself,
               // or if _executeTask re-throws an error not caught internally.
               _logger.e(
-                'Error from pool for task ${task.uri}: $e',
-                error: e,
-                stackTrace: s as StackTrace,
+                'Error from pool for task ${task.uri}: $error',
+                error: error,
+                stackTrace: stackTrace,
               );
               // Ensure task is marked as failed and removed if not already
               if (task.status != DownloadTaskStatus.failed &&
                   task.status != DownloadTaskStatus.completed) {
                 task.status = DownloadTaskStatus.failed;
-                task.onError(task, e, s);
+                task.onError(task, error, stackTrace);
               }
               _tasks.remove(task); // Ensure removal on unhandled pool error
             });

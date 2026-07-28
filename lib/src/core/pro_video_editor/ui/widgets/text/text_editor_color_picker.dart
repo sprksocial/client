@@ -25,7 +25,7 @@ class TextEditorColorPicker extends StatelessWidget {
   final Color primaryColor;
 
   /// Callback triggered when the color is updated.
-  final Function(Color color) onUpdateColor;
+  final ValueChanged<Color> onUpdateColor;
 
   /// Stream that triggers rebuilds.
   final Stream<void> rebuildStream;

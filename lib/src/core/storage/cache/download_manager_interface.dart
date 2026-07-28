@@ -21,8 +21,9 @@ class DownloadTask {
   final PostView post;
   final Feed feed;
   final DateTime submittedAt;
-  final Function(DownloadTask) onComplete;
-  final Function(DownloadTask, dynamic error, StackTrace stackTrace) onError;
+  final void Function(DownloadTask task) onComplete;
+  final void Function(DownloadTask task, Object error, StackTrace stackTrace)
+  onError;
   DownloadTaskStatus status;
   int priority; // lower number = higher priority
 

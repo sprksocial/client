@@ -1,10 +1,12 @@
-import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 
 void main() {
+  final indexedAt = DateTime.utc(2026, 1, 1);
+
   group('LabelUtils', () {
     group('getLabelPreferenceFromPrefs', () {
       test('maps visibility to correct blurs/severity/setting/adultOnly', () {
@@ -47,7 +49,15 @@ void main() {
       });
 
       test('returns null when label not found', () {
-        final prefs = Preferences(preferences: []);
+        final prefs = Preferences(
+          preferences: [
+            contentLabelPreference(
+              labelerDid: 'did:plc:labeler',
+              label: 'gore',
+              visibility: 'warn',
+            ),
+          ],
+        );
         expect(
           LabelUtils.getLabelPreferenceFromPrefs(prefs, 'unknown'),
           isNull,
@@ -86,7 +96,7 @@ void main() {
           src: 'did:plc:l',
           uri: 'at://test',
           val: 'porn',
-          cts: DateTime.now(),
+          cts: indexedAt,
         );
 
         expect(LabelUtils.shouldShowWarning(warnPrefs, [label]), isTrue);
@@ -126,12 +136,8 @@ void main() {
           ],
         );
 
-        Label label(String val) => Label(
-          src: 'did:plc:l',
-          uri: 'at://test',
-          val: val,
-          cts: DateTime.now(),
-        );
+        Label label(String val) =>
+            Label(src: 'did:plc:l', uri: 'at://test', val: val, cts: indexedAt);
 
         expect(
           LabelUtils.shouldBlurContent(hidePrefs, [label('porn')]),
@@ -178,12 +184,8 @@ void main() {
           ],
         );
 
-        Label label(String val) => Label(
-          src: 'did:plc:l',
-          uri: 'at://test',
-          val: val,
-          cts: DateTime.now(),
-        );
+        Label label(String val) =>
+            Label(src: 'did:plc:l', uri: 'at://test', val: val, cts: indexedAt);
 
         expect(
           LabelUtils.shouldHideContent(hidePrefs, [label('gore')]),
@@ -232,14 +234,13 @@ void main() {
                 src: 'did:plc:l',
                 uri: 'at://test',
                 val: v,
-                cts: DateTime.now(),
+                cts: indexedAt,
               ),
             )
             .toList();
 
         final result = LabelUtils.getWarningLabels(prefs, labels);
-        expect(result, containsAll(['gore', 'porn']));
-        expect(result, isNot(contains('nudity')));
+        expect(result, ['gore', 'porn']);
       });
     });
   });

@@ -154,7 +154,7 @@ void showTextEditorFontScaleSheet({
   required ProImageEditorConfigs configs,
   required StreamController<void> rebuildController,
 }) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     backgroundColor: configs.textEditor.style.fontScaleBottomSheetBackground,
     builder: (BuildContext context) => TextEditorFontScaleSheet(

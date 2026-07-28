@@ -23,7 +23,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _handleLogout() async {
     try {
       // Show loading indicator
-      showDialog(
+      showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),

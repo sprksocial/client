@@ -21,7 +21,7 @@ class ProfileInfo extends StatelessWidget {
   final List<String>? links;
   final bool isEarlySupporter;
   final VoidCallback? onEarlySupporterTap;
-  final Function(String username)? onMentionTap;
+  final ValueChanged<String>? onMentionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class _ProfileDescriptionText extends StatelessWidget {
 
   final String text;
   final TextStyle style;
-  final Function(String username)? onMentionTap;
+  final ValueChanged<String>? onMentionTap;
 
   List<Match> _findUsernameMatches(String text) {
     final usernameRegex = RegExp(

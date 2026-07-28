@@ -51,7 +51,7 @@ void main() {
 
       test('finds multiple @mentions', () {
         final matches = TextFormatter.findUsernameMatches('@alice and @bob');
-        expect(matches.length, 2);
+        expect(matches.map((match) => match.group(0)), ['@alice', '@bob']);
       });
 
       test('returns empty list when no mentions', () {
@@ -68,14 +68,14 @@ void main() {
         final urls = TextFormatter.extractUrls(
           'visit https://example.com for more',
         );
-        expect(urls, contains('https://example.com'));
+        expect(urls, ['https://example.com']);
       });
 
       test('extracts http URLs', () {
         final urls = TextFormatter.extractUrls(
           'visit http://example.com for more',
         );
-        expect(urls, contains('http://example.com'));
+        expect(urls, ['http://example.com']);
       });
 
       test('does not extract emails as URLs', () {
@@ -88,28 +88,39 @@ void main() {
 
       test('extracts known-TLD domains without http prefix', () {
         final urls = TextFormatter.extractUrls('visit example.com today');
-        expect(urls, contains('example.com'));
+        expect(urls, ['example.com']);
       });
     });
 
     group('charIndexToByteIndex / byteIndexToCharIndex', () {
-      test('round-trips correctly for ASCII', () {
-        const text = 'hello world';
-        for (int i = 0; i <= text.length; i++) {
-          final byteIndex = TextFormatter.charIndexToByteIndex(text, i);
-          final charIndex = TextFormatter.byteIndexToCharIndex(text, byteIndex);
-          expect(charIndex, i);
-        }
+      test('maps UTF-16 character boundaries to known UTF-8 offsets', () {
+        const text = 'Aé🎉Z';
+
+        expect(
+          [
+            0,
+            1,
+            2,
+            4,
+            5,
+          ].map((index) => TextFormatter.charIndexToByteIndex(text, index)),
+          [0, 1, 3, 7, 8],
+        );
       });
 
-      test('round-trips correctly for multi-byte text', () {
-        const text = 'café';
-        // c=0, a=1, f=2, é=3 (char indices) → 0,1,2,4 (byte indices)
-        for (final i in [0, 1, 2, 3, 4]) {
-          final byteIndex = TextFormatter.charIndexToByteIndex(text, i);
-          final charIndex = TextFormatter.byteIndexToCharIndex(text, byteIndex);
-          expect(charIndex, i);
-        }
+      test('maps known UTF-8 offsets to UTF-16 character boundaries', () {
+        const text = 'Aé🎉Z';
+
+        expect(
+          [
+            0,
+            1,
+            3,
+            7,
+            8,
+          ].map((index) => TextFormatter.byteIndexToCharIndex(text, index)),
+          [0, 1, 2, 4, 5],
+        );
       });
 
       test('handles boundary conditions', () {

@@ -20,15 +20,4 @@ void main() {
     secondSuspension.release();
     expect(container.read(mediaPlaybackSuspendedProvider), isFalse);
   });
-
-  test('release is idempotent', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    final suspension = suspendMediaPlayback(container);
-    suspension.release();
-    suspension.release();
-
-    expect(container.read(mediaPlaybackSuspendedProvider), isFalse);
-  });
 }

@@ -7,12 +7,23 @@ import 'package:fvp/fvp.dart' as fvp;
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:spark/src/core/di/service_locator.dart';
+import 'package:spark/src/core/notifications/push_notification_service.dart';
+import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
+import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/core/utils/logging/riverpod_logger.dart';
 import 'package:spark/src/sprk_app.dart';
 
-void main() async {
+Future<void> main() => runSparkApp();
+
+Future<void> runSparkApp({
+  LocalStorageInterface? preferencesStorage,
+  LocalStorageInterface? secureStorage,
+  riverpod.ProviderContainer? providerContainer,
+  Future<DownloadManagerInterface> Function()? initializeDownloadManager,
+  Future<PushNotificationService> Function()? initializePushNotifications,
+}) async {
   final binding = WidgetsFlutterBinding.ensureInitialized();
   binding.deferFirstFrame();
   var didAllowFirstFrame = false;
@@ -37,7 +48,12 @@ void main() async {
 
     fvp.registerWith();
 
-    await initServiceLocator();
+    await initServiceLocator(
+      preferencesStorage: preferencesStorage,
+      secureStorage: secureStorage,
+      initializeDownloadManager: initializeDownloadManager,
+      initializePushNotifications: initializePushNotifications,
+    );
 
     // Setup logging for production/debug
     _setupLogging();
@@ -46,9 +62,9 @@ void main() async {
     await _initializeAuth();
 
     // Create a ProviderContainer with the Riverpod logger
-    final container = riverpod.ProviderContainer(
-      observers: [SparkRiverpodLogger()],
-    );
+    final container =
+        providerContainer ??
+        riverpod.ProviderContainer(observers: [SparkRiverpodLogger()]);
     runApp(
       riverpod.UncontrolledProviderScope(
         container: container,

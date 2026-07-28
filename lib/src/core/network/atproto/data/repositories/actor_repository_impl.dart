@@ -23,13 +23,12 @@ import 'package:sprk_poptart/so/sprk/actor/search_actors_typeahead.dart';
 
 /// Actor-related API endpoints implementation
 class ActorRepositoryImpl implements ActorRepository {
-  ActorRepositoryImpl(this._client) {
+  ActorRepositoryImpl(this._client, {SparkLogger? logger})
+    : _logger = logger ?? GetIt.instance<LogService>().getLogger('ActorAPI') {
     _logger.v('ActorAPI initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'ActorAPI',
-  );
+  final SparkLogger _logger;
 
   @override
   Future<ProfileViewDetailed> getProfile(

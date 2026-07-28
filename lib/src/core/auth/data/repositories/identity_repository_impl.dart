@@ -15,41 +15,69 @@ import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Implementation of [IdentityRepository] with caching capabilities
 class IdentityRepositoryImpl implements IdentityRepository {
-  /// Creates a new [IdentityRepositoryImpl] instance and loads the cache
-  IdentityRepositoryImpl(this._storageManager) {
-    _loadCache();
+  IdentityRepositoryImpl._(
+    StorageManager storageManager, {
+    LocalStorageInterface? preferences,
+    SparkLogger? logger,
+    DateTime Function()? now,
+    http.Client? httpClient,
+    Future<String> Function(String handle)? handleResolver,
+  }) : _preferences = preferences ?? storageManager.preferences,
+       _logger =
+           logger ??
+           GetIt.instance<LogService>().getLogger('IdentityRepository'),
+       _now = now ?? DateTime.now,
+       _didHttpClient = httpClient,
+       _resolveHandleOverride = handleResolver;
+
+  /// Creates a fully initialized repository after restoring persisted caches.
+  static Future<IdentityRepositoryImpl> create(
+    StorageManager storageManager, {
+    LocalStorageInterface? preferences,
+    SparkLogger? logger,
+    DateTime Function()? now,
+    http.Client? httpClient,
+    Future<String> Function(String handle)? handleResolver,
+  }) async {
+    final repository = IdentityRepositoryImpl._(
+      storageManager,
+      preferences: preferences,
+      logger: logger,
+      now: now,
+      httpClient: httpClient,
+      handleResolver: handleResolver,
+    );
+    await repository._loadCache();
+    return repository;
   }
+
   final Map<String, String> _didToHandleCache = {};
   final Map<String, String> _handleToDidCache = {};
   final Map<String, Map<String, dynamic>> _didDocCache = {};
 
   static const Duration _cacheExpiration = Duration(hours: 2);
 
-  final StorageManager _storageManager;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'IdentityRepository',
-  );
+  final LocalStorageInterface _preferences;
+  final SparkLogger _logger;
+  final DateTime Function() _now;
+  final http.Client? _didHttpClient;
+  final Future<String> Function(String handle)? _resolveHandleOverride;
 
   Future<void> _loadCache() async {
     try {
-      final cacheTtl = await _storageManager.preferences.getInt(
-        StorageKeys.identityCacheTtl,
-      );
-      if (cacheTtl != null &&
-          DateTime.now().millisecondsSinceEpoch > cacheTtl) {
+      final cacheTtl = await _preferences.getInt(StorageKeys.identityCacheTtl);
+      if (cacheTtl != null && _now().millisecondsSinceEpoch > cacheTtl) {
         await clearCache();
         return;
       }
 
-      final didToHandleJson = await _storageManager.preferences.getString(
+      final didToHandleJson = await _preferences.getString(
         StorageKeys.didToHandleCache,
       );
-      final handleToDidJson = await _storageManager.preferences.getString(
+      final handleToDidJson = await _preferences.getString(
         StorageKeys.handleToDidCache,
       );
-      final didDocJson = await _storageManager.preferences.getString(
-        StorageKeys.didDocCache,
-      );
+      final didDocJson = await _preferences.getString(StorageKeys.didDocCache);
 
       if (didToHandleJson != null) {
         _loadDidToHandleCache(didToHandleJson);
@@ -103,22 +131,22 @@ class IdentityRepositoryImpl implements IdentityRepository {
 
   Future<void> _saveCache() async {
     try {
-      await _storageManager.preferences.setInt(
+      await _preferences.setInt(
         StorageKeys.identityCacheTtl,
-        DateTime.now().add(_cacheExpiration).millisecondsSinceEpoch,
+        _now().add(_cacheExpiration).millisecondsSinceEpoch,
       );
 
-      await _storageManager.preferences.setString(
+      await _preferences.setString(
         StorageKeys.didToHandleCache,
         json.encode(_didToHandleCache),
       );
 
-      await _storageManager.preferences.setString(
+      await _preferences.setString(
         StorageKeys.handleToDidCache,
         json.encode(_handleToDidCache),
       );
 
-      await _storageManager.preferences.setString(
+      await _preferences.setString(
         StorageKeys.didDocCache,
         json.encode(_didDocCache),
       );
@@ -134,10 +162,10 @@ class IdentityRepositoryImpl implements IdentityRepository {
     _didDocCache.clear();
 
     try {
-      await _storageManager.preferences.remove(StorageKeys.didToHandleCache);
-      await _storageManager.preferences.remove(StorageKeys.handleToDidCache);
-      await _storageManager.preferences.remove(StorageKeys.didDocCache);
-      await _storageManager.preferences.remove(StorageKeys.identityCacheTtl);
+      await _preferences.remove(StorageKeys.didToHandleCache);
+      await _preferences.remove(StorageKeys.handleToDidCache);
+      await _preferences.remove(StorageKeys.didDocCache);
+      await _preferences.remove(StorageKeys.identityCacheTtl);
     } catch (e) {
       _logger.e('Error clearing identity cache', error: e);
     }
@@ -202,7 +230,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
 
   Future<Map<String, dynamic>?> _fetchAndCacheDidDoc(String did) async {
     final url = DidUtils.buildDidDocumentUrl(did);
-    final response = await http.get(url);
+    final response = await (_didHttpClient?.get(url) ?? http.get(url));
 
     if (response.statusCode != 200) {
       _logger.e('Failed to fetch DID document: ${response.statusCode}');
@@ -245,15 +273,20 @@ class IdentityRepositoryImpl implements IdentityRepository {
   }
 
   Future<String?> _fetchAndCacheDid(String handle) async {
-    final atProto = PoptartClient.anonymous(service: 'public.api.bsky.app');
-
-    final resolveResult = await atProto.call(
-      identity_resolve_handle.comAtprotoIdentityResolveHandle,
-      parameters: identity_resolve_handle.IdentityResolveHandleInput(
-        handle: handle,
-      ),
-    );
-    final did = resolveResult.data.did;
+    final override = _resolveHandleOverride;
+    final String did;
+    if (override != null) {
+      did = await override(handle);
+    } else {
+      final atProto = PoptartClient.anonymous(service: 'public.api.bsky.app');
+      final resolveResult = await atProto.call(
+        identity_resolve_handle.comAtprotoIdentityResolveHandle,
+        parameters: identity_resolve_handle.IdentityResolveHandleInput(
+          handle: handle,
+        ),
+      );
+      did = resolveResult.data.did;
+    }
 
     _handleToDidCache[handle] = did;
     _didToHandleCache[did] = handle;

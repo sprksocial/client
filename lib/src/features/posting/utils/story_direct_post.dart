@@ -27,7 +27,7 @@ class StoryDirectPost {
     // Show loading overlay
     final navigator = Navigator.of(context);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (_) => _PostingOverlay(
@@ -91,7 +91,7 @@ class StoryDirectPost {
     // Show loading overlay
     final navigator = Navigator.of(context);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (_) => _PostingOverlay(

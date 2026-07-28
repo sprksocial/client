@@ -91,7 +91,7 @@ class TextFormatter {
     BuildContext context,
     String text,
     bool expandDescription,
-    Function(String) onUsernameTap,
+    ValueChanged<String> onUsernameTap,
   ) {
     return MentionedText(
       text: text,

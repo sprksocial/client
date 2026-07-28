@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +11,12 @@ import 'package:spark/src/features/comments/providers/comments_page_state.dart';
 import 'package:spark/src/features/feed/providers/post_updates.dart';
 
 part 'comments_page_provider.g.dart';
+
+typedef CommentsReplicationDelay = Future<void> Function(Duration duration);
+
+final commentsReplicationDelayProvider = Provider<CommentsReplicationDelay>(
+  (ref) => Future<void>.delayed,
+);
 
 @riverpod
 class CommentsPage extends _$CommentsPage {
@@ -68,7 +77,9 @@ class CommentsPage extends _$CommentsPage {
     );
 
     // Short delay to account for server-side replication lag.
-    await Future.delayed(const Duration(milliseconds: 700));
+    await ref.read(commentsReplicationDelayProvider)(
+      const Duration(milliseconds: 700),
+    );
 
     // Refresh the thread using the provider's own postUri to ensure we're
     // refreshing the correct data.

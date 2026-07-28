@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/components/atoms/tags/feed_tag.dart';
 
+typedef FeedTagReorderCallback = void Function(int oldIndex, int newIndex);
+
 /// Data class representing a feed tag with additional metadata for operations
 class FeedTagData {
   const FeedTagData({
@@ -37,9 +39,9 @@ class FeedTagList extends StatefulWidget {
 
   final List<FeedTagData> tags;
   final String? selectedTagId;
-  final Function(String tagId)? onTagTap;
-  final Function(int oldIndex, int newIndex)? onReorder;
-  final Function(FeedTagData tag)? onLongPress;
+  final ValueChanged<String>? onTagTap;
+  final FeedTagReorderCallback? onReorder;
+  final ValueChanged<FeedTagData>? onLongPress;
   final bool enableReordering;
   final double leadingSpacing;
   final bool enableRightFade;

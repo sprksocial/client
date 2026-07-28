@@ -30,15 +30,44 @@ import 'package:sprk_poptart/chat/sprk/convo/update_read/output.dart'
 
 /// XRPC-based implementation of MessagesRepository using service auth
 class MessagesRepositoryXrpc implements MessagesRepository {
-  MessagesRepositoryXrpc(this._serviceAuthHelper) {
-    _logger = GetIt.I<LogService>().getLogger('MessagesRepositoryXrpc');
-  }
+  MessagesRepositoryXrpc(
+    ServiceAuthHelper serviceAuthHelper, {
+    http.Client? httpClient,
+    String? baseUrl,
+    SparkLogger? logger,
+  }) : this._(
+         serviceToken: serviceAuthHelper.getServiceToken,
+         httpClient: httpClient,
+         baseUrl: baseUrl,
+         logger: logger,
+       );
 
-  final ServiceAuthHelper _serviceAuthHelper;
-  late final SparkLogger _logger;
+  MessagesRepositoryXrpc.withServiceToken({
+    required Future<String> Function(String) serviceToken,
+    http.Client? httpClient,
+    String? baseUrl,
+    SparkLogger? logger,
+  }) : this._(
+         serviceToken: serviceToken,
+         httpClient: httpClient,
+         baseUrl: baseUrl,
+         logger: logger,
+       );
 
-  /// Base URL for the chat service XRPC endpoints
-  String get _baseUrl => AppConfig.messagesServiceUrl;
+  MessagesRepositoryXrpc._({
+    required this._serviceToken,
+    http.Client? httpClient,
+    String? baseUrl,
+    SparkLogger? logger,
+  }) : _xrpcHttpClient = httpClient,
+       _baseUrl = baseUrl ?? AppConfig.messagesServiceUrl,
+       _logger =
+           logger ?? GetIt.I<LogService>().getLogger('MessagesRepositoryXrpc');
+
+  final http.Client? _xrpcHttpClient;
+  final String _baseUrl;
+  final SparkLogger _logger;
+  final Future<String> Function(String) _serviceToken;
 
   static const _listConvosNsid = 'chat.sprk.convo.listConvos';
   static const _getConvoNsid = 'chat.sprk.convo.getConvo';
@@ -55,18 +84,18 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     Map<String, String> params,
   ) async {
     try {
-      final token = await _serviceAuthHelper.getServiceToken(nsid);
+      final token = await _serviceToken(nsid);
       final url = Uri.parse(
         '$_baseUrl/xrpc/$nsid',
       ).replace(queryParameters: params.isEmpty ? null : params);
 
-      final response = await http.get(
-        url,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+      final headers = {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+      final response =
+          await (_xrpcHttpClient?.get(url, headers: headers) ??
+              http.get(url, headers: headers));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
@@ -87,18 +116,22 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     Map<String, dynamic> body,
   ) async {
     try {
-      final token = await _serviceAuthHelper.getServiceToken(nsid);
+      final token = await _serviceToken(nsid);
       final url = Uri.parse('$_baseUrl/xrpc/$nsid');
 
-      final response = await http.post(
-        url,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-        body: jsonEncode(body),
-      );
+      final headers = {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json; charset=utf-8',
+      };
+      final encodedBody = jsonEncode(body);
+      final response =
+          await (_xrpcHttpClient?.post(
+                url,
+                headers: headers,
+                body: encodedBody,
+              ) ??
+              http.post(url, headers: headers, body: encodedBody));
 
       if (response.statusCode == 204) {
         // No content, but considered success
@@ -160,14 +193,15 @@ class MessagesRepositoryXrpc implements MessagesRepository {
         .join('&');
     final url = Uri.parse('$baseUri?$queryParts');
 
-    final token = await _serviceAuthHelper.getServiceToken(
-      _getConvoForMembersNsid,
-    );
+    final token = await _serviceToken(_getConvoForMembersNsid);
 
-    final response = await http.get(
-      url,
-      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
-    );
+    final headers = {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    final response =
+        await (_xrpcHttpClient?.get(url, headers: headers) ??
+            http.get(url, headers: headers));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;

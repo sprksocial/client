@@ -31,7 +31,7 @@ class PaintEditorBar extends StatefulWidget {
   final String i18nColor;
 
   /// Function that shows the color picker when called.
-  final Function(Color currentColor) showColorPicker;
+  final ValueChanged<Color> showColorPicker;
 
   @override
   State<PaintEditorBar> createState() => _PaintEditorBarState();

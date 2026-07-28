@@ -67,6 +67,7 @@ class ProfileFeed extends _$ProfileFeed {
         profileUri,
         limit: ProfileFeedState.fetchLimit,
         cursor: cursor,
+        videosOnly: videosOnly,
         bluesky: bsky,
       ),
       sparkCursor,

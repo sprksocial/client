@@ -255,7 +255,7 @@ class StandalonePostNavigationResolver {
         return networkPost.first;
       }
       if (i < maxRetries - 1) {
-        await Future.delayed(delay);
+        await Future<void>.delayed(delay);
       }
     }
 

@@ -32,8 +32,8 @@ class FeedsBarTemplate extends StatelessWidget implements PreferredSizeWidget {
   final List<FeedTagData> tags;
   final String? selectedTagId;
   final ValueChanged<String>? onTagTap;
-  final Function(int oldIndex, int newIndex)? onReorder;
-  final Function(FeedTagData tag)? onLongPress;
+  final FeedTagReorderCallback? onReorder;
+  final ValueChanged<FeedTagData>? onLongPress;
   final bool enableReordering;
 
   /// Callback when the leading (create post) button is pressed.

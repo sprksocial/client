@@ -20,16 +20,16 @@ class CropRotateEditorBottomActionBar extends StatelessWidget {
   final ProImageEditorConfigs configs;
 
   /// Function to handle completion of editing.
-  final Function() done;
+  final VoidCallback done;
 
   /// Function to handle closing the editor.
-  final Function() close;
+  final VoidCallback close;
 
   /// Function to handle undo action.
-  final Function()? undo;
+  final VoidCallback? undo;
 
   /// Function to handle redo action.
-  final Function()? redo;
+  final VoidCallback? redo;
 
   /// Boolean flag to enable or disable the undo action.
   final bool enableUndo;

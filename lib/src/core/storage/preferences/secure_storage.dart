@@ -116,9 +116,7 @@ class SecureStorage implements LocalStorageInterface {
       return;
     }
     final jsonString = jsonEncode(value);
-    await _lock.synchronized(() async {
-      await setString(key, jsonString);
-    });
+    await setString(key, jsonString);
   }
 
   @override

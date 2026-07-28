@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,7 +9,10 @@ import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/features/settings/ui/widgets/settings_feed_card.dart';
 
 void main() {
-  testWidgets('only pinned feeds can be selected', (tester) async {
+  testWidgets('only pinned feeds expose a selection action', (tester) async {
+    const feedUri = 'at://did:plc:feed/app.bsky.feed.generator/test';
+    final semanticsHandle = tester.ensureSemantics();
+
     Future<void> pumpCard({required bool pinned}) {
       return tester.pumpWidget(
         ProviderScope(
@@ -20,7 +25,7 @@ void main() {
                   type: 'feed',
                   config: makeSavedFeed(
                     type: 'feed',
-                    value: 'at://did:plc:feed/app.bsky.feed.generator/test',
+                    value: feedUri,
                     pinned: pinned,
                   ),
                 ),
@@ -34,9 +39,23 @@ void main() {
     }
 
     await pumpCard(pinned: false);
-    expect(tester.widget<InkWell>(find.byType(InkWell)).onTap, isNull);
+    expect(
+      tester
+          .getSemantics(find.bySemanticsLabel(feedUri))
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isFalse,
+    );
 
     await pumpCard(pinned: true);
-    expect(tester.widget<InkWell>(find.byType(InkWell)).onTap, isNotNull);
+    expect(
+      tester
+          .getSemantics(find.bySemanticsLabel(feedUri))
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+
+    semanticsHandle.dispose();
   });
 }

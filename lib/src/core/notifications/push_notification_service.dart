@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:app_badge_plus/app_badge_plus.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
@@ -11,14 +12,52 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
+enum PushAuthorizationStatus { authorized, provisional, denied }
+
+abstract interface class PushMessagingClient {
+  Stream<String> get onTokenRefresh;
+  Stream<RemoteMessage> get onMessageOpenedApp;
+  Stream<RemoteMessage> get onMessage;
+
+  Future<RemoteMessage?> getInitialMessage();
+  Future<PushAuthorizationStatus> getPermissionStatus();
+  Future<PushAuthorizationStatus> requestPermission();
+  Future<String?> getToken();
+}
+
+typedef PushMessagingInitializer = Future<PushMessagingClient> Function();
+typedef NotificationRoutePusher = void Function(PageRouteInfo route);
+
 /// Service for managing push notifications via Firebase Cloud Messaging
 class PushNotificationService {
-  PushNotificationService();
+  PushNotificationService({
+    PushMessagingInitializer? initializeMessaging,
+    Future<bool> Function()? isBadgeSupported,
+    Future<void> Function(int count)? updateBadge,
+    bool Function()? isRouterAvailable,
+    NotificationRoutePusher? pushRoute,
+    SparkLogger? logger,
+  }) : _initializeMessaging =
+           initializeMessaging ?? _initializeFirebaseMessaging,
+       _isBadgeSupported = isBadgeSupported ?? AppBadgePlus.isSupported,
+       _updateBadge = updateBadge ?? AppBadgePlus.updateBadge,
+       _isRouterAvailable =
+           isRouterAvailable ??
+           (() => GetIt.instance.isRegistered<AppRouter>()),
+       _pushRoute =
+           pushRoute ?? ((route) => GetIt.instance<AppRouter>().push(route)),
+       _logger =
+           logger ??
+           GetIt.instance<LogService>().getLogger('PushNotificationService');
 
-  late final FirebaseMessaging _messaging;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'PushNotificationService',
-  );
+  final PushMessagingInitializer _initializeMessaging;
+  final Future<bool> Function() _isBadgeSupported;
+  final Future<void> Function(int count) _updateBadge;
+  final bool Function() _isRouterAvailable;
+  final NotificationRoutePusher _pushRoute;
+  final SparkLogger _logger;
+
+  late final PushMessagingClient _messaging;
 
   String? _currentToken;
   bool _badgeSupported = false;
@@ -32,16 +71,13 @@ class PushNotificationService {
   /// Permissions should be requested via [requestPermissionAndGetToken]
   Future<void> initialize() async {
     try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      _messaging = FirebaseMessaging.instance;
+      _messaging = await _initializeMessaging();
 
       // Listen for token refresh
       _messaging.onTokenRefresh.listen(_onTokenRefresh);
 
       // Check if badge is supported on this device
-      _badgeSupported = await AppBadgePlus.isSupported();
+      _badgeSupported = await _isBadgeSupported();
 
       _initialized = true;
 
@@ -59,10 +95,10 @@ class PushNotificationService {
   /// Sets up FCM message handlers for deep linking
   Future<void> _setupMessageHandlers() async {
     // Handle notification tap when app is in background
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+    _messaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
     // Handle foreground messages (for badge updates)
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    _messaging.onMessage.listen(_handleForegroundMessage);
 
     // Handle notification tap when app was terminated
     try {
@@ -101,25 +137,23 @@ class PushNotificationService {
       payload: data,
     );
 
-    if (!GetIt.instance.isRegistered<AppRouter>()) {
+    if (!_isRouterAvailable()) {
       _pendingNotification = message;
       return;
     }
 
-    final router = GetIt.instance<AppRouter>();
-
     if (reason == 'follow' && authorDid != null) {
       // Navigate to profile for follow notifications
-      router.push(ProfileRoute(did: authorDid));
+      _pushRoute(ProfileRoute(did: authorDid));
     } else if (replyTarget != null) {
-      router.push(
+      _pushRoute(
         StandalonePostRoute(
           postUri: replyTarget.postUri,
           highlightedReplyUri: replyTarget.highlightedReplyUri,
         ),
       );
     } else if (postRouteUri != null) {
-      router.push(StandalonePostRoute(postUri: postRouteUri));
+      _pushRoute(StandalonePostRoute(postUri: postRouteUri));
     }
   }
 
@@ -134,10 +168,11 @@ class PushNotificationService {
 
   /// Processes pending notification navigation (call after auth completes)
   void processPendingNotification() {
-    if (_pendingNotification != null) {
-      _handleNotificationTap(_pendingNotification!);
-      _pendingNotification = null;
-    }
+    final pendingNotification = _pendingNotification;
+    if (pendingNotification == null) return;
+
+    _pendingNotification = null;
+    _handleNotificationTap(pendingNotification);
   }
 
   /// Returns true if notification permissions are already granted
@@ -145,9 +180,9 @@ class PushNotificationService {
     if (!_initialized) return false;
 
     try {
-      final settings = await _messaging.getNotificationSettings();
-      return settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
+      final status = await _messaging.getPermissionStatus();
+      return status == PushAuthorizationStatus.authorized ||
+          status == PushAuthorizationStatus.provisional;
     } catch (e) {
       _logger.e('Failed to check permission status', error: e);
       return false;
@@ -160,10 +195,10 @@ class PushNotificationService {
     if (!_initialized) return false;
 
     try {
-      final settings = await _messaging.requestPermission();
+      final status = await _messaging.requestPermission();
 
-      return settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
+      return status == PushAuthorizationStatus.authorized ||
+          status == PushAuthorizationStatus.provisional;
     } catch (e, stackTrace) {
       _logger.e(
         'Failed to request permission',
@@ -220,7 +255,7 @@ class PushNotificationService {
     if (!_badgeSupported) return;
 
     try {
-      await AppBadgePlus.updateBadge(0);
+      await _updateBadge(0);
     } catch (e, stackTrace) {
       _logger.e('Failed to clear badge', error: e, stackTrace: stackTrace);
     }
@@ -231,9 +266,60 @@ class PushNotificationService {
     if (!_badgeSupported) return;
 
     try {
-      await AppBadgePlus.updateBadge(count);
+      await _updateBadge(count);
     } catch (e, stackTrace) {
       _logger.e('Failed to update badge', error: e, stackTrace: stackTrace);
     }
+  }
+
+  static Future<PushMessagingClient> _initializeFirebaseMessaging() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    return _FirebasePushMessagingClient(FirebaseMessaging.instance);
+  }
+}
+
+class _FirebasePushMessagingClient implements PushMessagingClient {
+  const _FirebasePushMessagingClient(this._messaging);
+
+  final FirebaseMessaging _messaging;
+
+  @override
+  Stream<RemoteMessage> get onMessage => FirebaseMessaging.onMessage;
+
+  @override
+  Stream<RemoteMessage> get onMessageOpenedApp =>
+      FirebaseMessaging.onMessageOpenedApp;
+
+  @override
+  Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
+
+  @override
+  Future<RemoteMessage?> getInitialMessage() => _messaging.getInitialMessage();
+
+  @override
+  Future<PushAuthorizationStatus> getPermissionStatus() async {
+    final settings = await _messaging.getNotificationSettings();
+    return _authorizationStatus(settings.authorizationStatus);
+  }
+
+  @override
+  Future<PushAuthorizationStatus> requestPermission() async {
+    final settings = await _messaging.requestPermission();
+    return _authorizationStatus(settings.authorizationStatus);
+  }
+
+  @override
+  Future<String?> getToken() => _messaging.getToken();
+
+  PushAuthorizationStatus _authorizationStatus(
+    AuthorizationStatus authorizationStatus,
+  ) {
+    return switch (authorizationStatus) {
+      AuthorizationStatus.authorized => PushAuthorizationStatus.authorized,
+      AuthorizationStatus.provisional => PushAuthorizationStatus.provisional,
+      _ => PushAuthorizationStatus.denied,
+    };
   }
 }

@@ -1,15 +1,20 @@
-import 'package:poptart/poptart.dart';
-import 'package:poptart_lex/com/atproto/repo/list_records.dart'
-    as repo_list_records;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:poptart/poptart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
+import 'package:spark/src/features/stories/providers/story_repository_provider.dart';
 
 part 'story_manager_provider.g.dart';
+
+final storyManagerLoggerProvider = Provider<SparkLogger>((ref) {
+  return GetIt.instance<LogService>().getLogger('StoryManager');
+});
 
 /// Simple state holder for the story manager
 class StoryManagerState {
@@ -37,55 +42,46 @@ class StoryManagerState {
 
 @riverpod
 class StoryManager extends _$StoryManager {
-  late final SprkRepository _sprk;
-  late final StoryRepository _storyRepo;
-  late final SparkLogger _logger;
+  late final StoryRepository _repository = ref.read(storyRepositoryProvider);
+  late final SparkLogger _logger = ref.read(storyManagerLoggerProvider);
 
   @override
   Future<StoryManagerState> build() async {
-    _sprk = GetIt.I<SprkRepository>();
-    _storyRepo = GetIt.I<StoryRepository>();
-    _logger = GetIt.I<LogService>().getLogger('StoryManager');
+    ref.watch(currentDidProvider);
+    ref.watch(atprotoProvider);
     ref.read(storyAutoDeleteExecutorProvider.future).ignore();
     return _loadInitial();
   }
 
   Future<StoryManagerState> _loadInitial() async {
     try {
-      final did = _sprk.authRepository.did;
+      final did = ref.read(currentDidProvider);
       if (did == null) {
         return StoryManagerState(stories: const [], error: 'Not authenticated');
       }
       // Page through all story records directly via atproto to include expired
-      final atproto = _sprk.authRepository.atproto;
-      if (atproto == null) {
+      if (ref.read(atprotoProvider) == null) {
         return StoryManagerState(
           stories: const [],
           error: 'AtProto not initialized',
         );
       }
-      const collection = 'so.sprk.story.post';
       String? cursor;
       final uris = <AtUri>[];
       do {
-        final result = await atproto.call(
-          repo_list_records.comAtprotoRepoListRecords,
-          parameters: repo_list_records.RepoListRecordsInput(
-            repo: did,
-            collection: collection,
-            cursor: cursor,
-            limit: 100,
-          ),
+        final result = await _repository.listStoryRecords(
+          did: did,
+          cursor: cursor,
         );
-        for (final record in result.data.records) {
+        for (final record in result.records) {
           uris.add(record.uri);
         }
-        cursor = result.data.cursor;
+        cursor = result.cursor;
       } while (cursor != null);
       if (uris.isEmpty) {
         return StoryManagerState(stories: const []);
       }
-      final storyViews = await _storyRepo.getStoryViews(uris);
+      final storyViews = await _repository.getStoryViews(uris);
 
       storyViews.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
 
@@ -109,7 +105,7 @@ class StoryManager extends _$StoryManager {
       final updatedList = List<StoryView>.from(current.stories)
         ..removeWhere((s) => s.uri == story.uri);
       state = AsyncData(current.copyWith(stories: updatedList));
-      await _sprk.repo.deleteRecord(uri: story.uri);
+      await _repository.deleteStoryRecord(story.uri);
     } catch (e, s) {
       _logger.e('Error deleting story', error: e, stackTrace: s);
       // Revert by refreshing fully

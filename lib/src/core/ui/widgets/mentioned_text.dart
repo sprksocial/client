@@ -21,7 +21,7 @@ class MentionedText extends StatelessWidget {
   final String text;
 
   /// Called when a username is tapped
-  final Function(String username) onUsernameTap;
+  final ValueChanged<String> onUsernameTap;
 
   /// Whether to show the full text or truncate it
   final bool expandText;

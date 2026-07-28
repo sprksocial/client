@@ -5,6 +5,20 @@ import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
+class StoryRecordEntry {
+  const StoryRecordEntry({required this.uri, required this.value});
+
+  final AtUri uri;
+  final Map<String, dynamic> value;
+}
+
+class StoryRecordPage {
+  const StoryRecordPage({required this.records, this.cursor});
+
+  final List<StoryRecordEntry> records;
+  final String? cursor;
+}
+
 /// Interface for Story-related API endpoints
 abstract class StoryRepository {
   /// Post a story to the user's feed
@@ -33,4 +47,11 @@ abstract class StoryRepository {
   ///
   /// [storyUris] List of story URIs to fetch
   Future<List<StoryView>> getStoryViews(List<AtUri> storyUris);
+
+  Future<StoryRecordPage> listStoryRecords({
+    required String did,
+    String? cursor,
+  });
+
+  Future<void> deleteStoryRecord(AtUri uri);
 }

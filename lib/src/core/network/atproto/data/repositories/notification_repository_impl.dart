@@ -18,13 +18,21 @@ import 'package:sprk_poptart/so/sprk/notification/unregister_push.dart'
 
 /// Notification-related API endpoints implementation
 class NotificationRepositoryImpl implements NotificationRepository {
-  NotificationRepositoryImpl(this._client) {
+  NotificationRepositoryImpl(
+    this._client, {
+    SparkLogger? logger,
+    Future<void> Function()? clearBadge,
+  }) : _logger =
+           logger ??
+           GetIt.instance<LogService>().getLogger('NotificationRepository'),
+       _clearBadge =
+           clearBadge ??
+           (() => GetIt.instance<PushNotificationService>().clearBadge()) {
     _logger.v('NotificationRepository initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'NotificationRepository',
-  );
+  final SparkLogger _logger;
+  final Future<void> Function() _clearBadge;
 
   @override
   Future<ListNotificationsResponse> listNotifications({
@@ -49,24 +57,13 @@ class NotificationRepositoryImpl implements NotificationRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{'limit': limit.toString()};
-      if (cursor != null && cursor.isNotEmpty) {
-        parameters['cursor'] = cursor;
-      }
-      if (priority != null) {
-        parameters['priority'] = priority.toString();
-      }
-      if (reasons != null && reasons.isNotEmpty) {
-        parameters['reasons'] = reasons;
-      }
-
       final result = await atproto.call(
         sprk_list_notifications.soSprkNotificationListNotifications,
         parameters: sprk_list_notifications.NotificationListNotificationsInput(
           limit: limit,
-          cursor: cursor,
+          cursor: cursor == null || cursor.isEmpty ? null : cursor,
           priority: priority,
-          reasons: reasons,
+          reasons: reasons == null || reasons.isEmpty ? null : reasons,
         ),
         headers: {'atproto-proxy': _client.sprkDid},
       );
@@ -89,11 +86,6 @@ class NotificationRepositoryImpl implements NotificationRepository {
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
-      }
-
-      final parameters = <String, String>{};
-      if (priority != null) {
-        parameters['priority'] = priority.toString();
       }
 
       final result = await atproto.call(
@@ -133,7 +125,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
 
       // Clear app badge locally (server also sends silent push for background)
       try {
-        await GetIt.instance<PushNotificationService>().clearBadge();
+        await _clearBadge();
       } catch (e) {
         _logger.w('Failed to clear badge: $e');
       }

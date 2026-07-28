@@ -17,9 +17,12 @@ class StorageManager {
   static StorageManager get instance => _instance;
 
   /// Initialize the storage manager
-  Future<void> init() async {
-    _preferences = await SharedPrefsStorage.create();
-    _secureStorage = SecureStorage();
+  Future<void> init({
+    LocalStorageInterface? preferences,
+    LocalStorageInterface? secureStorage,
+  }) async {
+    _preferences = preferences ?? await SharedPrefsStorage.create();
+    _secureStorage = secureStorage ?? SecureStorage();
   }
 
   /// Access to shared preferences storage for non-sensitive data

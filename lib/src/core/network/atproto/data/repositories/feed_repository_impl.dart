@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -26,17 +23,12 @@ import 'package:bluesky_poptart/app/bsky/feed/repost.dart' as bsky_repost;
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart_lex/com/atproto/repo/upload_blob.dart'
     as repo_upload_blob;
-import 'package:poptart_lex/com/atproto/server/get_service_auth.dart'
-    as server_get_service_auth;
 import 'package:poptart/poptart.dart';
 import 'package:bluesky_poptart/app/bsky/richtext/facet.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
-import 'package:spark/src/core/config/app_config.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
@@ -44,11 +36,11 @@ import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_write_adapters.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/network/atproto/data/services/video_upload_service.dart';
 import 'package:spark/src/core/utils/bluesky_crosspost_text.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/utils/share_urls.dart';
-import 'package:spark/src/core/utils/video_upload_exception.dart';
 import 'package:sprk_poptart/so/sprk/feed/like.dart' as sprk_like;
 import 'package:sprk_poptart/so/sprk/feed/get_author_feed.dart'
     as sprk_get_author_feed;
@@ -72,26 +64,34 @@ import 'package:sprk_poptart/so/sprk/feed/get_suggested_feeds.dart'
 import 'package:sprk_poptart/so/sprk/feed/get_timeline.dart'
     as sprk_get_timeline;
 import 'package:sprk_poptart/so/sprk/feed/repost.dart' as sprk_repost;
-import 'package:sprk_poptart/so/sprk/sound/defs/audio_details.dart';
 import 'package:sprk_poptart/so/sprk/feed/search_posts.dart'
     as sprk_search_posts;
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
-  FeedRepositoryImpl(this._client) {
+  FeedRepositoryImpl(
+    this._client, {
+    SparkLogger? logger,
+    DateTime Function()? now,
+    VideoUploadService? videoUploadService,
+  }) : _logger =
+           logger ?? GetIt.instance<LogService>().getLogger('FeedRepository'),
+       _now = now ?? DateTime.now {
+    _videoUploadService =
+        videoUploadService ??
+        VideoUploadClient(_client.authRepository, logger: _logger, now: _now);
     _logger.v('FeedRepository initialized');
   }
   final SprkRepository _client;
+  final SparkLogger _logger;
+  final DateTime Function() _now;
+  late final VideoUploadService _videoUploadService;
 
   /// Formats labeler DIDs into the atproto-accept-labelers header format
   /// Format: "did1,did2,did3" (comma-separated list)
   String _formatLabelerHeader(List<String> labelerDids) {
     return labelerDids.join(',');
   }
-
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'FeedRepository',
-  );
 
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
 
@@ -818,7 +818,7 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       final subject = RepoStrongRef(uri: postUri, cid: postCid);
-      final createdAt = DateTime.now().toUtc();
+      final createdAt = _now().toUtc();
       final likeRecord = isBskyPost
           ? bsky_like.FeedLikeRecord(
               subject: subject,
@@ -870,7 +870,7 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       final subject = RepoStrongRef(uri: postUri, cid: postCid);
-      final createdAt = DateTime.now().toUtc();
+      final createdAt = _now().toUtc();
       final repostRecord = isBskyPost
           ? bsky_repost.FeedRepostRecord(
               subject: subject,
@@ -948,7 +948,7 @@ class FeedRepositoryImpl implements FeedRepository {
     }
 
     // Create the correct record JSON depending on the target platform.
-    final isSprk = parentUri.toString().contains('sprk');
+    final isSprk = parentUri.collection == NSID.parse('so.sprk.feed.post');
 
     final Map<String, dynamic> recordJson;
     final NSID collection;
@@ -968,7 +968,7 @@ class FeedRepositoryImpl implements FeedRepository {
           root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
           parent: RepoStrongRef(uri: parentUri, cid: parentCid),
         ),
-        createdAt: DateTime.now().toUtc(),
+        createdAt: _now().toUtc(),
         media: media,
       );
       recordJson = sprkReplyRecordFromLocal(sprkRecord).toJson();
@@ -1013,7 +1013,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final bskyRecord = bskyFeedAdapter.createCommentRecord(
         text: text,
-        createdAt: DateTime.now().toUtc(),
+        createdAt: _now().toUtc(),
         reply: RecordReplyRef(
           root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
           parent: RepoStrongRef(uri: parentUri, cid: parentCid),
@@ -1068,7 +1068,7 @@ class FeedRepositoryImpl implements FeedRepository {
     final record = PostRecord(
       caption: CaptionRef(text: text, facets: facets),
       media: Media.images(images: uploadedImageMaps),
-      createdAt: DateTime.now().toUtc(),
+      createdAt: _now().toUtc(),
       sound: soundRef,
     );
 
@@ -1235,349 +1235,13 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<VideoUploadResult> uploadVideo(
     String videoPath, {
     void Function(double progress)? onUploadProgress,
-  }) async {
-    _logger.d('Uploading video from path: $videoPath');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-      final authAtProto = _client.authRepository.atproto;
-      if (authAtProto == null || authAtProto.oAuthSession == null) {
-        throw Exception('AtProto not initialized');
-      }
-
-      // Handle file:// URL scheme
-      var cleanVideoPath = videoPath;
-      if (videoPath.startsWith('file://')) {
-        cleanVideoPath = videoPath.replaceFirst('file://', '');
-      }
-
-      // Validate the video file
-      final file = File(cleanVideoPath);
-      if (!file.existsSync()) {
-        throw Exception('Video file not found: $cleanVideoPath');
-      }
-
-      // Check if the video is in a compatible format
-      // Use BigInt to avoid overflow for very large files (>2GB)
-      final videoSizeBigInt = BigInt.from(await file.length());
-      if (videoSizeBigInt == BigInt.zero) {
-        throw Exception('Video file is empty');
-      }
-
-      // Check for integer overflow (files > 2GB could overflow int on 32-bit)
-      if (videoSizeBigInt > BigInt.from(2 * 1024 * 1024 * 1024)) {
-        _logger.w(
-          'Video file exceeds 2GB, may cause issues: $videoSizeBigInt bytes',
-        );
-        throw VideoUploadException(
-          'Video is too large. Maximum supported size is 2GB.',
-          statusCode: 413,
-          uploadSizeBytes: videoSizeBigInt.toInt(),
-          limitBytes: 2 * 1024 * 1024 * 1024,
-        );
-      }
-
-      final videoSizeBytes = videoSizeBigInt.toInt();
-      _logger.i('Video file size: $videoSizeBytes bytes');
-      final maxUploadSizeBytes = (AppConfig.maxUploadSizeMB * 1024 * 1024)
-          .round();
-      if (maxUploadSizeBytes > 0 && videoSizeBytes > maxUploadSizeBytes) {
-        _logger.w(
-          'Video file exceeds upload limit: $videoSizeBytes bytes '
-          '(limit: $maxUploadSizeBytes bytes)',
-        );
-        throw VideoUploadException(
-          'Video is too large to upload.',
-          statusCode: 413,
-          uploadSizeBytes: videoSizeBytes,
-          limitBytes: maxUploadSizeBytes,
-        );
-      }
-
-      // Validate content length will fit in HTTP header (max ~2GB for int32)
-      if (videoSizeBytes > 2147483647) {
-        _logger.e('Video file too large for HTTP content-length header');
-        throw VideoUploadException(
-          'Video is too large to upload.',
-          statusCode: 413,
-          uploadSizeBytes: videoSizeBytes,
-          limitBytes: 2147483647,
-        );
-      }
-
-      var serviceToken = await _createVideoServiceAuthToken();
-      final uploadRequest =
-          http.StreamedRequest(
-              'POST',
-              Uri.parse(
-                '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo',
-              ),
-            )
-            ..contentLength = videoSizeBytes
-            ..headers.addAll({
-              'Authorization': 'Bearer $serviceToken',
-              'Content-Type': _getContentType(cleanVideoPath),
-            });
-
-      onUploadProgress?.call(0);
-      final uploadResponseFuture = uploadRequest.send();
-      try {
-        await uploadRequest.sink.addStream(
-          _trackUploadProgress(
-            file.openRead(),
-            totalBytes: videoSizeBytes,
-            onUploadProgress: onUploadProgress,
-          ),
-        );
-      } finally {
-        unawaited(uploadRequest.sink.close());
-      }
-      var response = await http.Response.fromStream(await uploadResponseFuture);
-
-      if (response.statusCode != 200) {
-        _logger.e(
-          'Video upload failed: ${response.statusCode} ${response.body}',
-        );
-        throw VideoUploadException(
-          _buildVideoUploadFailureMessage(
-            fallback: response.statusCode == 413
-                ? 'Video is too large to upload.'
-                : 'Failed to upload video.',
-            detail: response.body,
-          ),
-          statusCode: response.statusCode,
-          uploadSizeBytes: videoSizeBytes,
-          limitBytes: maxUploadSizeBytes > 0 ? maxUploadSizeBytes : null,
-          responseBody: response.body,
-        );
-      }
-
-      // Parse the response
-      dynamic responseData = jsonDecode(response.body);
-      _logger.d('Video upload response: $responseData');
-
-      // Poll job status until it finishes (handles both QUEUED and PROCESSING)
-      var jobState = responseData['jobStatus']?['state'] as String?;
-      var attempts = 0;
-      var consecutivePollErrors = 0;
-      const maxAttempts = 120; // ~4 minutes at 2s interval
-      const maxConsecutivePollErrors = 3; // Allow 3 consecutive polling errors
-      while (jobState == 'JOB_STATE_QUEUED' ||
-          jobState == 'JOB_STATE_PROCESSING') {
-        _logger.d('Video upload in progress, status: $jobState');
-        // Small backoff to avoid hammering the service
-        await Future.delayed(const Duration(seconds: 2));
-        attempts++;
-        if (attempts > maxAttempts) {
-          throw const VideoUploadException(
-            'Video processing timed out. Please try again.',
-          );
-        }
-
-        try {
-          response = await http.get(
-            Uri.parse(
-              '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus',
-            ).replace(
-              queryParameters: {'jobId': responseData['jobStatus']?['jobId']},
-            ),
-            headers: {
-              'Authorization': 'Bearer $serviceToken',
-              'Content-Type': _getContentType(cleanVideoPath),
-            },
-          );
-          if (_isExpiredVideoServiceTokenResponse(response)) {
-            _logger.i(
-              'Video service token expired while polling; minting a new token',
-            );
-            serviceToken = await _createVideoServiceAuthToken(
-              refreshPdsSessionOnFailure: true,
-            );
-            response = await http.get(
-              Uri.parse(
-                '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus',
-              ).replace(
-                queryParameters: {'jobId': responseData['jobStatus']?['jobId']},
-              ),
-              headers: {
-                'Authorization': 'Bearer $serviceToken',
-                'Content-Type': _getContentType(cleanVideoPath),
-              },
-            );
-          }
-          if (response.statusCode != 200) {
-            throw Exception(
-              'Failed to check video upload status: ${response.statusCode} '
-              '${response.body}',
-            );
-          }
-          responseData = jsonDecode(response.body);
-          _logger.d('Video upload status response: $responseData');
-          jobState = responseData['jobStatus']?['state'] as String?;
-          // Reset consecutive errors on success
-          consecutivePollErrors = 0;
-        } catch (e) {
-          // Network or parsing error during polling - log and retry
-          consecutivePollErrors++;
-          _logger.w(
-            'Error polling video upload status on attempt '
-            '$attempts/$maxAttempts '
-            '(consecutive errors: $consecutivePollErrors/$maxConsecutivePollErrors): '
-            '$e',
-          );
-
-          // Only fail if we've had too many consecutive errors
-          if (consecutivePollErrors >= maxConsecutivePollErrors) {
-            _logger.e(
-              'Too many consecutive polling errors, giving up: $e',
-              error: e,
-            );
-            throw VideoUploadException(
-              _buildVideoUploadFailureMessage(
-                fallback: 'Failed to check video processing status.',
-                detail: e.toString(),
-              ),
-              responseBody: e.toString(),
-            );
-          }
-
-          // Continue polling on transient errors
-          _logger.d('Retrying poll after error...');
-          jobState =
-              'JOB_STATE_PROCESSING'; // Assume still processing and retry
-        }
-      }
-
-      if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
-        final failureMessage = _buildVideoUploadFailureMessage(
-          fallback: 'Video processing failed.',
-          detail: responseData['jobStatus'] ?? responseData,
-        );
-        _logger.e(
-          'Video processing job failed: $failureMessage',
-          error: responseData,
-        );
-        throw VideoUploadException(
-          failureMessage,
-          responseBody: jsonEncode(responseData),
-        );
-      }
-
-      // Parse video blob
-      Map<String, dynamic> videoBlobData;
-      if (responseData case {'jobStatus': {'blob': final blobData}}) {
-        videoBlobData = blobData as Map<String, dynamic>;
-      } else if (responseData case {'blobRef': final blobRef}) {
-        videoBlobData = blobRef as Map<String, dynamic>;
-      } else {
-        throw Exception('Unexpected response format: $responseData');
-      }
-      final videoBlob = Blob.fromJson(videoBlobData);
-
-      // Parse audio blob if present
-      Blob? audioBlob;
-      AudioDetails? audioDetails;
-      if (responseData case {'jobStatus': {'audio': final audioData}}) {
-        final audio = audioData as Map<String, dynamic>;
-        if (audio['blob'] != null) {
-          audioBlob = Blob.fromJson(audio['blob'] as Map<String, dynamic>);
-          _logger.d('Extracted audio blob: ${audioBlob.size} bytes');
-        }
-        if (audio['details'] != null) {
-          audioDetails = AudioDetails.fromJson(
-            audio['details'] as Map<String, dynamic>,
-          );
-        }
-      }
-
-      return VideoUploadResult(
-        videoBlob: videoBlob,
-        audioBlob: audioBlob,
-        audioDetails: audioDetails,
-      );
-    });
-  }
-
-  Stream<List<int>> _trackUploadProgress(
-    Stream<List<int>> chunks, {
-    required int totalBytes,
-    void Function(double progress)? onUploadProgress,
-  }) async* {
-    var uploadedBytes = 0;
-
-    await for (final chunk in chunks) {
-      uploadedBytes += chunk.length;
-      if (totalBytes > 0) {
-        onUploadProgress?.call(
-          (uploadedBytes / totalBytes).clamp(0, 1).toDouble(),
-        );
-      }
-      yield chunk;
-    }
-
-    onUploadProgress?.call(1);
-  }
-
-  Future<String> _createVideoServiceAuthToken({
-    bool refreshPdsSessionOnFailure = false,
-  }) async {
-    final atproto = _client.authRepository.atproto;
-    if (atproto == null) {
-      throw Exception('AtProto not initialized');
-    }
-
-    try {
-      return await _requestVideoServiceAuthToken(atproto);
-    } catch (e) {
-      if (!refreshPdsSessionOnFailure) {
-        rethrow;
-      }
-
-      _logger.i(
-        'Refreshing PDS session before minting video service token',
-        error: e,
-      );
-      final refreshed = await _client.authRepository.refreshToken();
-      if (!refreshed) {
-        throw Exception('Session expired. Please log in again.');
-      }
-
-      final refreshedAtproto = _client.authRepository.atproto;
-      if (refreshedAtproto == null) {
-        throw Exception('AtProto not initialized after refresh');
-      }
-      return _requestVideoServiceAuthToken(refreshedAtproto);
-    }
-  }
-
-  Future<String> _requestVideoServiceAuthToken(PoptartClient atproto) async {
-    final serviceTokenRes = await atproto.call(
-      server_get_service_auth.comAtprotoServerGetServiceAuth,
-      parameters: server_get_service_auth.ServerGetServiceAuthInput(
-        aud: 'did:web:${atproto.service}',
-        lxm: 'com.atproto.repo.uploadBlob',
-        exp:
-            DateTime.now()
-                .toUtc()
-                .add(const Duration(minutes: 5))
-                .millisecondsSinceEpoch ~/
-            1000,
+  }) {
+    return _client.executeWithRetry(
+      () => _videoUploadService.uploadVideo(
+        videoPath,
+        onUploadProgress: onUploadProgress,
       ),
     );
-
-    return serviceTokenRes.data.token;
-  }
-
-  bool _isExpiredVideoServiceTokenResponse(http.Response response) {
-    if (response.statusCode != 401) {
-      return false;
-    }
-
-    final body = response.body.toLowerCase();
-    return body.contains('jwt has expired') || body.contains('invalidtoken');
   }
 
   /// Crosspost images to Bluesky using adapter to handle Bluesky-specific model
@@ -1638,7 +1302,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
     final bskyPost = bskyFeedAdapter.createPostRecord(
       text: crosspostText.text,
-      createdAt: DateTime.now().toUtc(),
+      createdAt: _now().toUtc(),
       images: bskyImages,
       facets: bskyFacets.isNotEmpty ? bskyFacets : null,
     );
@@ -1683,7 +1347,7 @@ class FeedRepositoryImpl implements FeedRepository {
     final record = PostRecord(
       caption: CaptionRef(text: text, facets: facets),
       media: Media.video(video: blob, alt: alt, aspectRatio: aspectRatio),
-      createdAt: DateTime.now().toUtc(),
+      createdAt: _now().toUtc(),
       langs: langs,
       selfLabels: selfLabels,
       tags: tags,
@@ -2101,128 +1765,5 @@ class FeedRepositoryImpl implements FeedRepository {
       'getActorLikes is not available for Bluesky API, returning empty',
     );
     return (posts: <FeedViewPost>[], cursor: null);
-  }
-
-  /// Helper method to determine content type based on file extension
-  String _getContentType(String videoPath) {
-    final extension = path.extension(videoPath).toLowerCase();
-
-    switch (extension) {
-      case '.mp4':
-        return 'video/mp4';
-      case '.mov':
-        return 'video/quicktime';
-      case '.avi':
-        return 'video/x-msvideo';
-      case '.webm':
-        return 'video/webm';
-      default:
-        return 'video/mp4'; // Default to mp4
-    }
-  }
-
-  String _buildVideoUploadFailureMessage({
-    required String fallback,
-    dynamic detail,
-  }) {
-    final normalizedDetail = _extractVideoUploadFailureDetail(detail);
-    if (normalizedDetail == null) {
-      return fallback;
-    }
-
-    final normalizedFallback = fallback.trim();
-    if (normalizedDetail.toLowerCase() == normalizedFallback.toLowerCase()) {
-      return normalizedFallback;
-    }
-    if (normalizedDetail.toLowerCase().startsWith(
-      normalizedFallback.toLowerCase(),
-    )) {
-      return normalizedDetail;
-    }
-
-    final separator = normalizedFallback.endsWith('.') ? ' ' : ': ';
-    return '$normalizedFallback$separator$normalizedDetail';
-  }
-
-  String? _extractVideoUploadFailureDetail(dynamic value) {
-    if (value == null) {
-      return null;
-    }
-
-    if (value is String) {
-      final trimmed = value.trim();
-      if (trimmed.isEmpty) {
-        return null;
-      }
-
-      try {
-        final decoded = jsonDecode(trimmed);
-        final decodedDetail = _extractVideoUploadFailureDetail(decoded);
-        if (decodedDetail != null) {
-          return decodedDetail;
-        }
-      } catch (_) {
-        // Fall back to the raw string when the response is not JSON.
-      }
-
-      return _sanitizeVideoUploadFailureText(trimmed);
-    }
-
-    if (value is Map) {
-      for (final key in const [
-        'message',
-        'status',
-        'detail',
-        'reason',
-        'description',
-        'error',
-      ]) {
-        final nestedDetail = _extractVideoUploadFailureDetail(value[key]);
-        if (nestedDetail != null) {
-          return nestedDetail;
-        }
-      }
-
-      final jobStatusDetail = _extractVideoUploadFailureDetail(
-        value['jobStatus'],
-      );
-      if (jobStatusDetail != null) {
-        return jobStatusDetail;
-      }
-
-      return null;
-    }
-
-    if (value is Iterable) {
-      for (final item in value) {
-        final itemDetail = _extractVideoUploadFailureDetail(item);
-        if (itemDetail != null) {
-          return itemDetail;
-        }
-      }
-      return null;
-    }
-
-    return _sanitizeVideoUploadFailureText(value.toString());
-  }
-
-  String? _sanitizeVideoUploadFailureText(String text) {
-    final sanitized = text
-        .replaceFirst(
-          RegExp(r'^(exception|error):\s*', caseSensitive: false),
-          '',
-        )
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-
-    if (sanitized.isEmpty ||
-        sanitized == '{}' ||
-        sanitized == '[]' ||
-        sanitized.startsWith('<!DOCTYPE html') ||
-        sanitized.startsWith('<html')) {
-      return null;
-    }
-
-    return sanitized;
   }
 }

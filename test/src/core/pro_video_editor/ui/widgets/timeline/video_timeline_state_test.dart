@@ -51,7 +51,7 @@ void main() {
         authorAvatarUrl: 'https://example.com/avatar.jpg',
       );
 
-    expect(state.customAudioTrack, same(editedTrack));
+    expect(state.customAudioTrack, editedTrack);
     expect(state.customWaveformData, const [0.1, 0.7]);
     expect(state.authorAvatarUrl, 'https://example.com/avatar.jpg');
   });
@@ -72,7 +72,7 @@ void main() {
       waveformData: const [0.9],
     );
 
-    expect(state.customAudioTrack, same(currentTrack));
+    expect(state.customAudioTrack, currentTrack);
     expect(state.customWaveformData, const [0.2]);
   });
 }

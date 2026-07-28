@@ -16,13 +16,18 @@ import 'package:sprk_poptart/so/sprk/sound/search_audios.dart'
     as sprk_search_audios;
 
 class SoundRepositoryImpl implements SoundRepository {
-  SoundRepositoryImpl(this._client) {
+  SoundRepositoryImpl(
+    this._client, {
+    SparkLogger? logger,
+    DateTime Function()? now,
+  }) : _logger =
+           logger ?? GetIt.instance<LogService>().getLogger('SoundRepository'),
+       _now = now ?? DateTime.now {
     _logger.v('SoundRepository initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
-    'SoundRepository',
-  );
+  final SparkLogger _logger;
+  final DateTime Function() _now;
 
   @override
   Future<RepoStrongRef> createSound({
@@ -35,7 +40,7 @@ class SoundRepositoryImpl implements SoundRepository {
     final audioRecord = sprk_audio.SoundAudioRecord(
       sound: sound,
       title: title,
-      createdAt: DateTime.now().toUtc(),
+      createdAt: _now().toUtc(),
       details: details,
     );
 
@@ -67,14 +72,6 @@ class SoundRepositoryImpl implements SoundRepository {
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
-      }
-
-      final parameters = <String, dynamic>{
-        'uri': uri.toString(),
-        'limit': limit,
-      };
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
       }
 
       final result = await atproto.call(
@@ -110,11 +107,6 @@ class SoundRepositoryImpl implements SoundRepository {
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
-      }
-
-      final parameters = <String, dynamic>{'limit': limit};
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
       }
 
       final result = await atproto.call(
@@ -157,11 +149,6 @@ class SoundRepositoryImpl implements SoundRepository {
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
-      }
-
-      final parameters = <String, dynamic>{'q': trimmedQuery, 'limit': limit};
-      if (cursor != null) {
-        parameters['cursor'] = cursor;
       }
 
       final result = await atproto.call(

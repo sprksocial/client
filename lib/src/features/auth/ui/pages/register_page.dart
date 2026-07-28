@@ -3,19 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
+import 'package:spark/src/features/auth/providers/oauth_browser_launcher.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 /// Registration page that uses OAuth to create an account
 @RoutePage()
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
+
+  static const getStartedButtonKey = ValueKey<String>('register.getStarted');
+  static const haveAccountButtonKey = ValueKey<String>('register.haveAccount');
 
   @override
   ConsumerState<RegisterPage> createState() => _RegisterPageState();
@@ -37,10 +40,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       // Open the browser for OAuth authentication
       String callbackUrl;
       try {
-        callbackUrl = await FlutterWebAuth2.authenticate(
-          url: authUrl,
-          callbackUrlScheme: 'sprk',
-        );
+        callbackUrl = await ref
+            .read(oauthBrowserLauncherProvider)
+            .authenticate(url: authUrl, callbackUrlScheme: 'sprk');
       } on PlatformException catch (e) {
         if (e.code == 'CANCELED') {
           // User cancelled the OAuth flow - reset loading state
@@ -197,6 +199,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 Opacity(
                   opacity: isLoading ? 0.5 : 1.0,
                   child: AppButton(
+                    key: RegisterPage.getStartedButtonKey,
                     label: l10n.buttonGetStarted,
                     onPressed: isLoading ? null : _initiateOAuth,
                     size: AppButtonSize.medium,
@@ -205,6 +208,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
                 const SizedBox(height: 12),
                 AppButton(
+                  key: RegisterPage.haveAccountButtonKey,
                   label: l10n.buttonHaveAccount,
                   variant: AppButtonVariant.neutral,
                   onPressed: () => context.router.push(const LoginRoute()),

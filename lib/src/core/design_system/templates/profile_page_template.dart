@@ -74,13 +74,13 @@ class ProfilePageTemplate extends StatelessWidget {
   final VoidCallback? onUnblockTap;
   final VoidCallback? onEarlySupporterTap;
   final VoidCallback? onKnownFollowersTap;
-  final Function(String username)? onMentionTap;
+  final ValueChanged<String>? onMentionTap;
   final VoidCallback? onAddStoryTap;
   final String? appBarTitle;
   final List<Widget>? appBarActions;
   final Widget tabsWidget;
   final int selectedTabIndex;
-  final Function(int)? onTabChanged;
+  final ValueChanged<int>? onTabChanged;
   final Widget contentWidget;
   final List<Widget>? contentSlivers;
   final Future<void> Function()? onRefresh;
@@ -206,7 +206,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final VoidCallback? onUnblockTap;
   final VoidCallback? onEarlySupporterTap;
   final VoidCallback? onKnownFollowersTap;
-  final Function(String username)? onMentionTap;
+  final ValueChanged<String>? onMentionTap;
   final VoidCallback? onAddStoryTap;
 
   @override

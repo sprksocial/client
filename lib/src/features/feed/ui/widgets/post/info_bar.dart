@@ -32,8 +32,8 @@ class InfoBar extends StatelessWidget {
   final String? altText;
   final VoidCallback? onUsernameTap;
   final VoidCallback? onAvatarTap;
-  final Function(String)? onHashtagTap;
-  final Function(bool isExpanded)? onDescriptionExpandToggle;
+  final ValueChanged<String>? onHashtagTap;
+  final ValueChanged<bool>? onDescriptionExpandToggle;
   final AudioView? audio;
 
   @override
@@ -52,7 +52,7 @@ class InfoBar extends StatelessWidget {
       altAvailable: altText != null && altText!.trim().isNotEmpty,
       onAltTap: (altText != null && altText!.trim().isNotEmpty)
           ? () {
-              showModalBottomSheet(
+              showModalBottomSheet<void>(
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,

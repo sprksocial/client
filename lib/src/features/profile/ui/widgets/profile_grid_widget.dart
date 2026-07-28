@@ -14,7 +14,7 @@ List<Widget> buildProfileGridSlivers({
   required WidgetRef ref,
   required AtUri profileUri,
   required bool videosOnly,
-  required Function(BuildContext, WidgetRef, AtUri) onPostTap,
+  required void Function(BuildContext, WidgetRef, AtUri) onPostTap,
   bool both = false,
   bool bsky = false,
 }) {
