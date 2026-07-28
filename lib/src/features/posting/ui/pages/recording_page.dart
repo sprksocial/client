@@ -634,9 +634,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           ),
         );
 
-        if (mounted) {
-          context.router.pop();
-        }
+        if (!mounted) return;
+        // Exit the recording flow by dropping this page only; posting already
+        // unwinds the stack, so popping here would remove the page below.
+        context.router.removeRoute(context.routeData);
       }
     } catch (e, stackTrace) {
       _logger.e('Error processing video', error: e, stackTrace: stackTrace);
