@@ -1,11 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
+import 'package:spark/src/core/storage/preferences/local_storage_interface.dart';
 import 'package:spark/src/core/storage/preferences/storage_constants.dart';
+import 'package:spark/src/core/storage/preferences/storage_manager.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
-import 'package:spark/src/features/stories/providers/story_provider_dependencies.dart';
+import 'package:spark/src/features/stories/providers/story_repository_provider.dart';
 
 part 'story_auto_delete_provider.g.dart';
+
+final storyAutoDeletePreferencesProvider = Provider<LocalStorageInterface>((
+  ref,
+) {
+  return StorageManager.instance.preferences;
+});
+
+final storyAutoDeleteClockProvider = Provider<DateTime Function()>((ref) {
+  return DateTime.now;
+});
+
+final storyAutoDeleteLoggerProvider = Provider<SparkLogger>((ref) {
+  return GetIt.instance<LogService>().getLogger('StoryAutoDeleteExec');
+});
 
 final storyManagerRefresherProvider = Provider<Future<void> Function()>((ref) {
   return () => ref.read(storyManagerProvider.notifier).refresh();
@@ -41,14 +61,14 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
   if (!enabledAsync) return;
 
   final repository = ref.read(storyRepositoryProvider);
-  final logger = ref.read(storyLoggerProvider('StoryAutoDeleteExec'));
-  final did = ref.read(storyCurrentDidProvider);
-  if (!ref.read(storyAtprotoAvailableProvider) || did == null) return;
+  final logger = ref.read(storyAutoDeleteLoggerProvider);
+  final did = ref.watch(currentDidProvider);
+  if (ref.watch(atprotoProvider) == null || did == null) return;
 
   try {
     String? cursor;
     final expiredUris = <StoryRecordEntry>[];
-    final now = ref.read(storyClockProvider)().toUtc();
+    final now = ref.read(storyAutoDeleteClockProvider)().toUtc();
     do {
       final page = await repository.listStoryRecords(did: did, cursor: cursor);
       for (final rec in page.records) {

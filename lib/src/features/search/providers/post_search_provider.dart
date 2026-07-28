@@ -1,120 +1,25 @@
-import 'package:bluesky_poptart/app/bsky/feed/defs.dart' as bsky_feed_defs;
-import 'package:poptart/poptart.dart';
-import 'package:bluesky_poptart/app/bsky/feed/search_posts.dart'
-    as bsky_feed_search_posts;
-
 import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/search/data/repositories/post_search_repository.dart';
 import 'package:spark/src/features/search/providers/post_search_state.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 part 'post_search_provider.g.dart';
 
-typedef PostSearchPage = ({List<PostView> posts, String? cursor});
-typedef InitialPostSearchResult = ({PostSearchPage sprk, PostSearchPage bsky});
-
-abstract interface class PostSearchBackend {
-  Future<InitialPostSearchResult> search(String query);
-
-  Future<PostSearchPage> searchSprk(String query, {required String cursor});
-
-  Future<PostSearchPage> searchBsky(String query, {required String cursor});
-}
-
-class _DefaultPostSearchBackend implements PostSearchBackend {
-  _DefaultPostSearchBackend({
-    required this.feedRepository,
-    required this.authRepository,
-    required this.logger,
-  });
-
-  final FeedRepository feedRepository;
-  final AuthRepository authRepository;
-  final SparkLogger logger;
-
-  @override
-  Future<InitialPostSearchResult> search(String query) async {
-    final sprkFuture = feedRepository.searchPosts(query);
-    final bskyFuture = _searchBsky(query, sort: 'top');
-    final pages = await Future.wait<PostSearchPage>([sprkFuture, bskyFuture]);
-    return (sprk: pages[0], bsky: pages[1]);
-  }
-
-  @override
-  Future<PostSearchPage> searchSprk(String query, {required String cursor}) {
-    return feedRepository.searchPosts(query, cursor: cursor);
-  }
-
-  @override
-  Future<PostSearchPage> searchBsky(String query, {required String cursor}) {
-    return _searchBsky(query, cursor: cursor, sort: 'latest');
-  }
-
-  Future<PostSearchPage> _searchBsky(
-    String query, {
-    String? cursor,
-    required String sort,
-  }) async {
-    final atproto = authRepository.atproto;
-    if (atproto?.oAuthSession == null) {
-      throw StateError('Post search requires an authenticated session');
-    }
-    final api = PoptartClient.fromOAuthSession(atproto!.oAuthSession!);
-    final response = await api.call(
-      bsky_feed_search_posts.appBskyFeedSearchPosts,
-      parameters: bsky_feed_search_posts.FeedSearchPostsInput(
-        q: query,
-        sort: bsky_feed_search_posts.FeedSearchPostsSort.unknown(data: sort),
-        cursor: cursor,
-      ),
-    );
-    return (
-      posts: _convertBskyPosts(response.data.posts),
-      cursor: response.data.cursor,
-    );
-  }
-
-  List<PostView> _convertBskyPosts(List<bsky_feed_defs.PostView> posts) {
-    return posts
-        .asMap()
-        .entries
-        .map((entry) {
-          final post = entry.value;
-          try {
-            final postJson = post.toJson();
-            if (postJson['record']['reply'] != null || post.embed == null) {
-              return null;
-            }
-            return PostView.fromJson(postJson);
-          } catch (error, stackTrace) {
-            logger.e(
-              'Failed to convert bsky post ${entry.key + 1}/${posts.length}',
-              error: error,
-              stackTrace: stackTrace,
-            );
-            return null;
-          }
-        })
-        .whereType<PostView>()
-        .where((post) => post.hasSupportedMedia)
-        .toList();
-  }
-}
-
-final postSearchBackendProvider = Provider<PostSearchBackend>((ref) {
-  return _DefaultPostSearchBackend(
-    feedRepository: GetIt.instance<SprkRepository>().feed,
-    authRepository: GetIt.instance<AuthRepository>(),
-    logger: GetIt.instance<LogService>().getLogger('PostSearchBackend'),
+final postSearchRepositoryProvider = Provider<PostSearchRepository>((ref) {
+  return PostSearchRepositoryImpl(
+    GetIt.instance<SprkRepository>().feed,
+    GetIt.instance<AuthRepository>(),
+    GetIt.instance<LogService>().getLogger('PostSearchRepository'),
   );
 });
 
@@ -130,11 +35,11 @@ class PostSearch extends _$PostSearch {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
     'PostSearchProvider',
   );
-  late final PostSearchBackend _backend;
+  late final PostSearchRepository _repository;
 
   @override
   PostSearchState build() {
-    _backend = ref.read(postSearchBackendProvider);
+    _repository = ref.read(postSearchRepositoryProvider);
     ref.onDispose(() {
       _cancelDebounce?.call();
     });
@@ -209,7 +114,7 @@ class PostSearch extends _$PostSearch {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final response = await _backend.search(query);
+      final response = await _repository.search(query);
 
       if (!ref.mounted ||
           requestToken != _activeSearchToken ||
@@ -283,7 +188,7 @@ class PostSearch extends _$PostSearch {
 
     final sprkCursor = state.sprkNextCursor;
     if (sprkCursor != null && sprkCursor.isNotEmpty) {
-      final response = await _backend.searchSprk(query, cursor: sprkCursor);
+      final response = await _repository.searchSprk(query, cursor: sprkCursor);
 
       if (!ref.mounted ||
           requestToken != _activeSearchToken ||
@@ -307,7 +212,7 @@ class PostSearch extends _$PostSearch {
 
     final bskyCursor = state.bskyNextCursor;
     if (bskyCursor != null && bskyCursor.isNotEmpty) {
-      final response = await _backend.searchBsky(query, cursor: bskyCursor);
+      final response = await _repository.searchBsky(query, cursor: bskyCursor);
 
       if (!ref.mounted ||
           requestToken != _activeSearchToken ||
