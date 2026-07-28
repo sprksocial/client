@@ -1,4 +1,6 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:poptart_lex/com/atproto/repo/list_records.dart'
+    as repo_list_records;
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
@@ -18,6 +20,40 @@ class StoryRepositoryImpl implements StoryRepository {
     : _now = now ?? DateTime.now;
   final SprkRepository _client;
   final DateTime Function() _now;
+
+  @override
+  Future<StoryRecordPage> listStoryRecords({
+    required String did,
+    String? cursor,
+  }) {
+    return _client.executeWithRetry(() async {
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        throw StateError('AtProto not initialized');
+      }
+      final result = await atproto.call(
+        repo_list_records.comAtprotoRepoListRecords,
+        parameters: repo_list_records.RepoListRecordsInput(
+          repo: did,
+          collection: 'so.sprk.story.post',
+          cursor: cursor,
+          limit: 100,
+        ),
+      );
+      return StoryRecordPage(
+        records: [
+          for (final record in result.data.records)
+            StoryRecordEntry(uri: record.uri, value: record.value),
+        ],
+        cursor: result.data.cursor,
+      );
+    });
+  }
+
+  @override
+  Future<void> deleteStoryRecord(AtUri uri) {
+    return _client.repo.deleteRecord(uri: uri);
+  }
 
   /// Fixes story media JSON to match generated sprk_poptart view models.
   void _fixMediaStructure(Map<String, dynamic> storyJson) {

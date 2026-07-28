@@ -25,19 +25,31 @@ void main() {
           recordingTickSchedulerProvider.overrideWithValue(scheduler.schedule),
         ],
       );
-      addTearDown(container.dispose);
       final subscription = container.listen(
         recordingProvider,
         (previous, next) {},
       );
-      addTearDown(subscription.close);
+      final tempDir = await Directory.systemTemp.createTemp(
+        'recording-provider-timing-test',
+      );
 
       final notifier = container.read(recordingProvider.notifier);
+      final cleanupComplete = notifier.disposalCleanupComplete;
+      addTearDown(() async {
+        subscription.close();
+        container.dispose();
+        await cleanupComplete;
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      });
+      final firstSegmentPath = '${tempDir.path}/segment-1.mp4';
+      final secondSegmentPath = '${tempDir.path}/segment-2.mp4';
 
       notifier.startRecording();
       scheduler.tick(3);
       notifier.stopRecording();
-      notifier.addSegment(XFile('/tmp/segment-1.mp4'));
+      notifier.addSegment(XFile(firstSegmentPath));
 
       final pausedState = container.read(recordingProvider);
       expect(pausedState.isRecording, isFalse);
@@ -47,15 +59,12 @@ void main() {
       notifier.startRecording();
       scheduler.tick(2);
       notifier.stopRecording();
-      notifier.addSegment(XFile('/tmp/segment-2.mp4'));
+      notifier.addSegment(XFile(secondSegmentPath));
 
       final resumedState = container.read(recordingProvider);
       expect(resumedState.isRecording, isFalse);
       expect(resumedState.elapsedDuration, const Duration(milliseconds: 500));
-      expect(resumedState.segmentPaths, [
-        '/tmp/segment-1.mp4',
-        '/tmp/segment-2.mp4',
-      ]);
+      expect(resumedState.segmentPaths, [firstSegmentPath, secondSegmentPath]);
       expect(resumedState.canFinalize, isTrue);
     });
 

@@ -10,8 +10,8 @@ FutureOr<
   ({Map<ProfileViewBasic, List<StoryView>> storiesByAuthor, String? cursor})
 >
 storiesByAuthor(Ref ref, {int limit = 30, String? cursor}) async {
-  final dependencies = ref.read(storyProviderDependenciesProvider);
-  final result = await dependencies.storyRepository.getStoriesTimeline(
+  final repository = ref.read(storyRepositoryProvider);
+  final result = await repository.getStoriesTimeline(
     limit: limit,
     cursor: cursor,
   );

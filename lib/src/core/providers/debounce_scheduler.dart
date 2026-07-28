@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-typedef SearchDebounceScheduler =
+typedef DebounceScheduler =
     void Function() Function(Duration delay, Future<void> Function() action);
 
-final searchDebounceSchedulerProvider = Provider<SearchDebounceScheduler>((
-  ref,
-) {
+final debounceSchedulerProvider = Provider<DebounceScheduler>((ref) {
   return (delay, action) {
     final timer = Timer(delay, () => unawaited(action()));
     return timer.cancel;

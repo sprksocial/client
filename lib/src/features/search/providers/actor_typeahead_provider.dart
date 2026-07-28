@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
-import 'package:spark/src/features/search/providers/search_debounce_scheduler.dart';
 
 part 'actor_typeahead_provider.g.dart';
 
@@ -40,7 +40,7 @@ class ActorTypeahead extends _$ActorTypeahead {
     state = state.copyWith(query: trimmedQuery, isLoading: true, error: null);
 
     final requestToken = ++_activeRequestToken;
-    _cancelDebounce = ref.read(searchDebounceSchedulerProvider)(
+    _cancelDebounce = ref.read(debounceSchedulerProvider)(
       const Duration(milliseconds: 300),
       () => _searchTypeahead(
         trimmedQuery,

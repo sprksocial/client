@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:spark/src/core/storage/preferences/storage_constants.dart';
 import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
 import 'package:spark/src/features/stories/providers/story_provider_dependencies.dart';
@@ -39,17 +40,17 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
   final enabledAsync = await ref.watch(storyAutoDeletePrefProvider.future);
   if (!enabledAsync) return;
 
-  final dependencies = ref.read(storyProviderDependenciesProvider);
-  final logger = dependencies.loggerFor('StoryAutoDeleteExec');
-  final did = dependencies.did;
-  if (!dependencies.atprotoAvailable || did == null) return;
+  final repository = ref.read(storyRepositoryProvider);
+  final logger = ref.read(storyLoggerProvider('StoryAutoDeleteExec'));
+  final did = ref.read(storyCurrentDidProvider);
+  if (!ref.read(storyAtprotoAvailableProvider) || did == null) return;
 
   try {
     String? cursor;
     final expiredUris = <StoryRecordEntry>[];
     final now = ref.read(storyClockProvider)().toUtc();
     do {
-      final page = await dependencies.loadRecordPage(did: did, cursor: cursor);
+      final page = await repository.listStoryRecords(did: did, cursor: cursor);
       for (final rec in page.records) {
         final createdAt = rec.value['createdAt'];
         DateTime? ts;
@@ -67,7 +68,7 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
 
     for (final record in expiredUris) {
       try {
-        await dependencies.deleteRecord(record.uri);
+        await repository.deleteStoryRecord(record.uri);
       } catch (e) {
         logger.w('Failed deleting expired story ${record.uri}', error: e);
       }

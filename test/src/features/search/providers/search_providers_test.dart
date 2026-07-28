@@ -15,13 +15,13 @@ import 'package:spark/src/core/network/atproto/data/repositories/actor_repositor
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/utils/logging/log_level.dart';
 import 'package:spark/src/core/utils/logging/log_output.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/post_search_provider.dart';
-import 'package:spark/src/features/search/providers/search_debounce_scheduler.dart';
 import 'package:spark/src/features/search/providers/search_provider.dart';
 import 'package:spark/src/features/search/providers/suggested_feeds_provider.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
@@ -58,7 +58,7 @@ void main() {
     final result = ProviderContainer.test(
       retry: (retryCount, error) => null,
       overrides: [
-        searchDebounceSchedulerProvider.overrideWithValue(scheduler.schedule),
+        debounceSchedulerProvider.overrideWithValue(scheduler.schedule),
         ...overrides,
       ],
     );

@@ -9,6 +9,7 @@ import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_provider.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_state.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -44,9 +45,7 @@ void main() {
   ProviderContainer createContainer() {
     final container = ProviderContainer(
       overrides: [
-        soundPickerSearchDebounceSchedulerProvider.overrideWithValue(
-          debounceScheduler.schedule,
-        ),
+        debounceSchedulerProvider.overrideWithValue(debounceScheduler.schedule),
       ],
     );
     addTearDown(container.dispose);

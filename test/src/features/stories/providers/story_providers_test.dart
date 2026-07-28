@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -396,13 +397,11 @@ void main() {
       );
     final container = ProviderContainer(
       overrides: [
-        storyProviderDependenciesProvider.overrideWithValue(
-          _dependencies(
-            did: 'did:plc:me',
-            atprotoAvailable: true,
-            repository: repository,
-          ),
-        ),
+        ..._dependencies(
+          did: 'did:plc:me',
+          atprotoAvailable: true,
+          repository: repository,
+        ).values,
       ],
     );
     addTearDown(container.dispose);
@@ -419,10 +418,10 @@ void main() {
   });
 }
 
-ProviderContainer _managerContainer(StoryProviderDependencies dependencies) {
+ProviderContainer _managerContainer(_StoryOverrides dependencies) {
   final container = ProviderContainer(
     overrides: [
-      storyProviderDependenciesProvider.overrideWithValue(dependencies),
+      ...dependencies.values,
       storyAutoDeleteExecutorProvider.overrideWith((ref) async {}),
     ],
   );
@@ -432,14 +431,14 @@ ProviderContainer _managerContainer(StoryProviderDependencies dependencies) {
 
 ProviderContainer _autoDeleteContainer({
   required LocalStorageInterface storage,
-  required StoryProviderDependencies dependencies,
+  required _StoryOverrides dependencies,
   DateTime? now,
   Future<void> Function()? refresh,
 }) {
   final container = ProviderContainer(
     overrides: [
       storyAutoDeletePreferencesProvider.overrideWithValue(storage),
-      storyProviderDependenciesProvider.overrideWithValue(dependencies),
+      ...dependencies.values,
       storyClockProvider.overrideWithValue(
         () => now ?? DateTime.utc(2026, 7, 22, 12),
       ),
@@ -450,23 +449,42 @@ ProviderContainer _autoDeleteContainer({
   return container;
 }
 
-StoryProviderDependencies _dependencies({
+_StoryOverrides _dependencies({
   required String? did,
   required bool atprotoAvailable,
   required _FakeStoryRepository repository,
-  StoryRecordPageLoader? loadRecordPage,
+  Future<StoryRecordPage> Function({required String did, String? cursor})?
+  loadRecordPage,
   Future<void> Function(AtUri uri)? deleteRecord,
 }) {
-  return StoryProviderDependencies(
-    readDid: () => did,
-    readAtprotoAvailable: () => atprotoAvailable,
-    loadRecordPage:
-        loadRecordPage ??
-        ({required did, cursor}) async => const StoryRecordPage(records: []),
-    storyRepository: repository,
-    deleteRecord: deleteRecord ?? (_) async {},
-    loggerFor: (name) => SparkLogger(name: name),
+  repository.recordPageLoader =
+      loadRecordPage ??
+      ({required did, cursor}) async => const StoryRecordPage(records: []);
+  repository.deleteRecord = deleteRecord ?? (_) async {};
+  return _StoryOverrides(
+    did: did,
+    atprotoAvailable: atprotoAvailable,
+    repository: repository,
   );
+}
+
+class _StoryOverrides {
+  const _StoryOverrides({
+    required this.did,
+    required this.atprotoAvailable,
+    required this.repository,
+  });
+
+  final String? did;
+  final bool atprotoAvailable;
+  final StoryRepository repository;
+
+  List<Override> get values => [
+    storyCurrentDidProvider.overrideWithValue(did),
+    storyAtprotoAvailableProvider.overrideWithValue(atprotoAvailable),
+    storyRepositoryProvider.overrideWithValue(repository),
+    storyLoggerProvider.overrideWith((ref, name) => SparkLogger(name: name)),
+  ];
 }
 
 StoryRecordEntry _record(String id, {required DateTime createdAt}) {
@@ -487,6 +505,9 @@ StoryView _story(String id, {required int hour, ProfileViewBasic? author}) {
 }
 
 class _FakeStoryRepository implements StoryRepository {
+  Future<StoryRecordPage> Function({required String did, String? cursor})?
+  recordPageLoader;
+  Future<void> Function(AtUri uri)? deleteRecord;
   List<StoryView> storyViews = [];
   final List<List<AtUri>> storyViewCalls = [];
   ({Map<ProfileViewBasic, List<StoryView>> storiesByAuthor, String? cursor})
@@ -495,6 +516,19 @@ class _FakeStoryRepository implements StoryRepository {
     cursor: null,
   );
   final List<({int limit, String? cursor})> timelineCalls = [];
+
+  @override
+  Future<StoryRecordPage> listStoryRecords({
+    required String did,
+    String? cursor,
+  }) {
+    return recordPageLoader!(did: did, cursor: cursor);
+  }
+
+  @override
+  Future<void> deleteStoryRecord(AtUri uri) {
+    return deleteRecord!(uri);
+  }
 
   @override
   Future<List<StoryView>> getStoryViews(List<AtUri> storyUris) async {

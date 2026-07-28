@@ -43,6 +43,37 @@ void main() {
       ]);
     });
 
+    test('listStoryRecords owns record paging parameters', () async {
+      final harness = RepositoryHarness(
+        getResponse: const {'records': <dynamic>[], 'cursor': 'next-page'},
+      );
+      final repository = StoryRepositoryImpl(harness.sprk);
+
+      final result = await repository.listStoryRecords(
+        did: 'did:plc:viewer',
+        cursor: 'current-page',
+      );
+
+      expect(result.records, isEmpty);
+      expect(result.cursor, 'next-page');
+      final request = harness.transport.singleRequest;
+      expect(request.uri.path, '/xrpc/com.atproto.repo.listRecords');
+      expect(request.uri.queryParameters['repo'], 'did:plc:viewer');
+      expect(request.uri.queryParameters['collection'], 'so.sprk.story.post');
+      expect(request.uri.queryParameters['cursor'], 'current-page');
+      expect(request.uri.queryParameters['limit'], '100');
+    });
+
+    test('deleteStoryRecord delegates to the record repository', () async {
+      final harness = RepositoryHarness();
+      final repository = StoryRepositoryImpl(harness.sprk);
+      final uri = AtUri('at://did:plc:viewer/so.sprk.story.post/story');
+
+      await repository.deleteStoryRecord(uri);
+
+      expect(harness.repo.deleteCalls.single.uri, uri);
+    });
+
     test(
       'postStory normalizes empty optionals and uses injected time',
       () async {

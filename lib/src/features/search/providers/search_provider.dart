@@ -5,10 +5,10 @@ import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
+import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/search/providers/search_state.dart';
-import 'package:spark/src/features/search/providers/search_debounce_scheduler.dart';
 
 part 'search_provider.g.dart';
 
@@ -62,7 +62,7 @@ class Search extends _$Search {
     // Debounce the search
     _cancelDebounce?.call();
     final requestToken = ++_activeSearchToken;
-    _cancelDebounce = ref.read(searchDebounceSchedulerProvider)(
+    _cancelDebounce = ref.read(debounceSchedulerProvider)(
       const Duration(milliseconds: 500),
       () => _searchUsers(trimmedQuery, requestToken: requestToken),
     );

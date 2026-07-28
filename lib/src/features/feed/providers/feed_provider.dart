@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider, Ref;
@@ -59,7 +58,7 @@ final feedSettingsGatewayProvider = Provider<FeedSettingsGateway>((ref) {
 @Riverpod(keepAlive: true)
 class FeedNotifier extends _$FeedNotifier {
   bool _isLoadingInProgress = false;
-  bool _isFetching = false;
+  Future<void>? _inFlightFetch;
   DateTime? _lastErrorTime;
   static const _errorCooldown = Duration(seconds: 10);
   late Feed _feed;
@@ -68,7 +67,6 @@ class FeedNotifier extends _$FeedNotifier {
   late final SparkLogger _logger;
   late final DownloadManagerInterface _downloadManager;
   late final FeedSettingsGateway _settingsGateway;
-  Completer<void>? _fetchCompletion;
 
   // Track active fetch operation for cancellation
   int _fetchGeneration = 0;
@@ -374,29 +372,42 @@ class FeedNotifier extends _$FeedNotifier {
     bool replaceExisting = false,
     int? generation,
   }) async {
-    if (state.isEndOfNetworkFeed) {
-      return;
-    }
-
     final activeGeneration = generation ?? _fetchGeneration;
-    if (_isFetching) {
-      final fetchCompletion = _fetchCompletion;
-      if (generation != null && fetchCompletion != null) {
-        await fetchCompletion.future;
-        if (ref.mounted && activeGeneration == _fetchGeneration) {
-          await _maybeFetchNextBatch(
-            limit: limit,
-            replaceExisting: replaceExisting,
-            generation: activeGeneration,
-          );
+    while (!state.isEndOfNetworkFeed) {
+      final inFlightFetch = _inFlightFetch;
+      if (inFlightFetch != null) {
+        if (generation == null) {
+          return;
+        }
+        await inFlightFetch;
+        if (!ref.mounted || activeGeneration != _fetchGeneration) {
+          return;
+        }
+        continue;
+      }
+
+      final fetch = _fetchNextBatch(
+        limit: limit,
+        replaceExisting: replaceExisting,
+        generation: activeGeneration,
+      );
+      _inFlightFetch = fetch;
+      try {
+        await fetch;
+      } finally {
+        if (identical(_inFlightFetch, fetch)) {
+          _inFlightFetch = null;
         }
       }
       return;
     }
+  }
 
-    _isFetching = true;
-    final fetchCompletion = Completer<void>();
-    _fetchCompletion = fetchCompletion;
+  Future<void> _fetchNextBatch({
+    required int? limit,
+    required bool replaceExisting,
+    required int generation,
+  }) async {
     try {
       var attempts = 0;
       var consecutiveEmptyResults = 0;
@@ -405,16 +416,13 @@ class FeedNotifier extends _$FeedNotifier {
       while (attempts < maxAttempts && !state.isEndOfNetworkFeed) {
         attempts++;
 
-        // Check if generation has changed (fetch was superseded)
-        if (activeGeneration != _fetchGeneration) {
+        if (generation != _fetchGeneration) {
           _logger.d('Fetch superseded by newer generation, cancelling');
           return;
         }
 
         final (:count, :posts, :cursor) = await fetch(limit: limit);
-
-        // Check again after await
-        if (activeGeneration != _fetchGeneration) {
+        if (generation != _fetchGeneration) {
           _logger.d('Fetch superseded after network call, discarding results');
           return;
         }
@@ -424,7 +432,7 @@ class FeedNotifier extends _$FeedNotifier {
         if (fetchedPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            if (ref.mounted && activeGeneration == _fetchGeneration) {
+            if (ref.mounted && generation == _fetchGeneration) {
               state = state.copyWith(
                 loadingFirstLoad: false,
                 isEndOfNetworkFeed: true,
@@ -436,7 +444,7 @@ class FeedNotifier extends _$FeedNotifier {
             consecutiveEmptyResults++;
             if (consecutiveEmptyResults >= maxConsecutiveEmpty) {
               await endOfNetworkFeed();
-              if (ref.mounted && activeGeneration == _fetchGeneration) {
+              if (ref.mounted && generation == _fetchGeneration) {
                 state = state.copyWith(
                   loadingFirstLoad: false,
                   isEndOfNetworkFeed: true,
@@ -445,7 +453,7 @@ class FeedNotifier extends _$FeedNotifier {
               break;
             }
           }
-          if (ref.mounted && activeGeneration == _fetchGeneration) {
+          if (ref.mounted && generation == _fetchGeneration) {
             state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
           }
           continue;
@@ -455,9 +463,9 @@ class FeedNotifier extends _$FeedNotifier {
           fetchedPosts,
           cursor: cursor,
           replaceExisting: replaceExisting,
-          generation: activeGeneration,
+          generation: generation,
         );
-        if (activeGeneration != _fetchGeneration) return;
+        if (generation != _fetchGeneration) return;
         if (state.error) return;
         if (addedPosts) {
           if (cursor == null) await endOfNetworkFeed();
@@ -472,18 +480,12 @@ class FeedNotifier extends _$FeedNotifier {
       }
     } catch (e, stackTrace) {
       // Only update error state if this generation is still current
-      if (ref.mounted && activeGeneration == _fetchGeneration) {
+      if (ref.mounted && generation == _fetchGeneration) {
         _logger.e('Error prefetching feed: $e', stackTrace: stackTrace);
         _lastErrorTime = DateTime.now();
         state = state.copyWith(error: true, loadingFirstLoad: false);
       }
       rethrow;
-    } finally {
-      _isFetching = false;
-      if (!fetchCompletion.isCompleted) fetchCompletion.complete();
-      if (identical(_fetchCompletion, fetchCompletion)) {
-        _fetchCompletion = null;
-      }
     }
   }
 

@@ -1,25 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/pro_video_editor/providers/sound_picker_search_state.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
 part 'sound_picker_search_provider.g.dart';
-
-typedef SoundPickerSearchDebounceScheduler =
-    void Function() Function(Duration delay, Future<void> Function() action);
-
-final soundPickerSearchDebounceSchedulerProvider =
-    Provider<SoundPickerSearchDebounceScheduler>((ref) {
-      return (delay, action) {
-        final timer = Timer(delay, () => unawaited(action()));
-        return timer.cancel;
-      };
-    });
 
 @riverpod
 class SoundPickerSearch extends _$SoundPickerSearch {
@@ -65,7 +54,7 @@ class SoundPickerSearch extends _$SoundPickerSearch {
       error: null,
     );
 
-    _cancelDebounce = ref.read(soundPickerSearchDebounceSchedulerProvider)(
+    _cancelDebounce = ref.read(debounceSchedulerProvider)(
       const Duration(milliseconds: 350),
       () =>
           _searchAudios(trimmedQuery, requestToken: requestToken, reset: true),

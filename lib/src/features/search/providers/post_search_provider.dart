@@ -10,11 +10,11 @@ import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/search/providers/post_search_state.dart';
-import 'package:spark/src/features/search/providers/search_debounce_scheduler.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 part 'post_search_provider.g.dart';
@@ -168,7 +168,7 @@ class PostSearch extends _$PostSearch {
     // Debounce the search
     _cancelDebounce?.call();
     final requestToken = ++_activeSearchToken;
-    _cancelDebounce = ref.read(searchDebounceSchedulerProvider)(
+    _cancelDebounce = ref.read(debounceSchedulerProvider)(
       const Duration(milliseconds: 500),
       () => _searchPosts(trimmedQuery, requestToken: requestToken),
     );

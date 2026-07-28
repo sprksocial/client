@@ -11,24 +11,42 @@ class RepositoryHarness {
   RepositoryHarness({
     bool authenticated = true,
     bool atprotoInitialized = true,
+    bool oauth = false,
     String? did = 'did:plc:viewer',
     Map<String, dynamic>? getResponse,
+    int getStatusCode = 200,
   }) : transport = TestTransport() {
+    final atproto = oauth
+        ? PoptartClient.fromOAuthSession(
+            restoreOAuthSession(
+              accessToken: 'opaque-access-token',
+              refreshToken: 'opaque-refresh-token',
+              scope: 'atproto',
+              expiresAt: DateTime.utc(2030),
+              sub: 'did:plc:viewer',
+              clientId: 'https://spark.test/client-metadata.json',
+              pdsEndpoint: 'pds.test',
+              publicKey: 'unused-public-key',
+              privateKey: 'unused-private-key',
+            ),
+            service: 'pds.test',
+            getClient: transport.get,
+            postClient: transport.post,
+          )
+        : PoptartClient.anonymous(
+            service: 'pds.test',
+            getClient: transport.get,
+            postClient: transport.post,
+          );
     auth = FakeAuthRepository(
       authenticated: authenticated,
       did: did,
-      atproto: atprotoInitialized
-          ? PoptartClient.anonymous(
-              service: 'pds.test',
-              getClient: transport.get,
-              postClient: transport.post,
-            )
-          : null,
+      atproto: atprotoInitialized ? atproto : null,
     );
     repo = FakeRepoRepository();
     sprk = FakeSprkRepository(auth: auth, repo: repo);
     if (atprotoInitialized && getResponse != null) {
-      transport.enqueueGet(getResponse);
+      transport.enqueueGet(getResponse, statusCode: getStatusCode);
     }
   }
 
@@ -139,6 +157,8 @@ class FakeAuthRepository implements AuthRepository {
   });
 
   final bool authenticated;
+  int refreshTokenCalls = 0;
+  bool refreshTokenResult = true;
 
   @override
   final String? did;
@@ -153,7 +173,10 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> get initializationComplete => Future<void>.value();
 
   @override
-  Future<bool> refreshToken() async => true;
+  Future<bool> refreshToken() async {
+    refreshTokenCalls++;
+    return refreshTokenResult;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -161,6 +184,9 @@ class FakeAuthRepository implements AuthRepository {
 
 class FakeSprkRepository implements SprkRepository {
   FakeSprkRepository({required this.auth, required this.repo});
+
+  static const testSprkDid = 'did:web:sprk.test#sprk_appview';
+  static const testBskyDid = 'did:web:bsky.test#bsky_appview';
 
   final FakeAuthRepository auth;
 
@@ -171,10 +197,10 @@ class FakeSprkRepository implements SprkRepository {
   AuthRepository get authRepository => auth;
 
   @override
-  String get sprkDid => 'did:web:sprk.test#sprk_appview';
+  String get sprkDid => testSprkDid;
 
   @override
-  String get bskyDid => 'did:web:bsky.test#bsky_appview';
+  String get bskyDid => testBskyDid;
 
   @override
   String get modDid => 'did:web:mod.sprk.test';
@@ -192,6 +218,7 @@ class FakeSprkRepository implements SprkRepository {
 class FakeRepoRepository implements RepoRepository {
   final List<CreateRecordCall> createCalls = [];
   final List<DeleteRecordCall> deleteCalls = [];
+  Object? createError;
 
   @override
   Future<RepoStrongRef> createRecord({
@@ -208,6 +235,9 @@ class FakeRepoRepository implements RepoRepository {
         repo: repo,
       ),
     );
+    if (createError case final Object error) {
+      throw error;
+    }
     return RepoStrongRef(
       uri: AtUri('at://did:plc:viewer/$collection/result'),
       cid: 'result-cid',
