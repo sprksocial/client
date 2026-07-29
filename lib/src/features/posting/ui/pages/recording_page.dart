@@ -113,11 +113,12 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   bool _isCameraReady() {
     final cameraAsync = ref.read(_cameraProvider);
+    final controller = ref.read(_cameraProvider.notifier).controller;
     if (cameraAsync.hasError) return false;
     final cameraState = cameraAsync.value;
     return cameraState != null &&
         cameraState.isInitialized &&
-        cameraState.controller != null &&
+        controller != null &&
         cameraState.cameras.isNotEmpty;
   }
 
@@ -871,6 +872,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
     return cameraAsync.when(
       data: (cameraState) {
+        final controller = ref.read(_cameraProvider.notifier).controller;
+
         if (cameraState.error != null) {
           return Scaffold(
             backgroundColor: Colors.black,
@@ -925,7 +928,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         }
 
         // No cameras available - show placeholder with library picker
-        if (!hasCameras || cameraState.controller == null) {
+        if (!hasCameras || controller == null) {
           return RecordingPageTemplate(
             cameraPreview: Container(
               color: Colors.black,
@@ -975,7 +978,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             availableLensDirections.contains(CameraLensDirection.back) &&
             !_isStartingRecording &&
             !cameraState.isFlipping;
-        final aspectRatio = cameraState.controller!.value.aspectRatio;
+        final aspectRatio = controller.value.aspectRatio;
         final canFinalizeSession =
             recordingState.canFinalize &&
             !_isProcessing &&
@@ -994,9 +997,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             : _handleTap;
 
         return RecordingPageTemplate(
-          cameraPreview: RepaintBoundary(
-            child: CameraPreview(cameraState.controller!),
-          ),
+          cameraPreview: RepaintBoundary(child: CameraPreview(controller)),
           aspectRatio: aspectRatio,
           isRecording: recordingState.isRecording,
           elapsedDuration: recordingState.elapsedDuration,

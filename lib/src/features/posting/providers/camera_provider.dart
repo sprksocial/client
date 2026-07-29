@@ -14,7 +14,12 @@ part 'camera_provider.g.dart';
 class Camera extends _$Camera {
   late final SparkLogger _logger;
   AppLifecycleListener? _lifecycleListener;
+  CameraController? _controller;
   bool _isFlippingCamera = false;
+
+  /// The controller is owned by this provider. Callers may borrow it for the
+  /// preview, but must not dispose it.
+  CameraController? get controller => _controller;
 
   // Track if camera was disposed due to app lifecycle (not user navigation)
   bool _wasDisposedByLifecycle = false;
@@ -23,10 +28,10 @@ class Camera extends _$Camera {
   FutureOr<CameraState> build(ResolutionPreset resolutionPreset) async {
     _logger = GetIt.instance<LogService>().getLogger('Camera');
 
-    // Only dispose lifecycle listener when provider is permanently disposed
-    // Don't use _disposeCamera here - we need to keep lifecycle listener
-    // active so we can detect when app returns to foreground
-    ref.onDispose(_disposeLifecycleListener);
+    ref.onDispose(() {
+      _disposeLifecycleListener();
+      unawaited(_disposeOwnedCamera());
+    });
 
     // Listen to app lifecycle to pause/resume camera
     // Note: onHide is for app fully backgrounded (not transient inactive states)
@@ -86,13 +91,9 @@ class Camera extends _$Camera {
 
       _logger.i('Found ${cameras.length} cameras');
 
-      final controller = await _createCameraController(cameras.first);
+      await _createCameraController(cameras.first);
 
-      return CameraState(
-        controller: controller,
-        cameras: cameras,
-        isInitialized: true,
-      );
+      return CameraState(cameras: cameras, isInitialized: true);
     } catch (e, stackTrace) {
       _logger.e(
         'Camera initialization failed',
@@ -113,15 +114,27 @@ class Camera extends _$Camera {
       resolutionPreset,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
+    _controller = controller;
 
-    await controller.initialize();
+    try {
+      await controller.initialize();
 
-    if (controller.value.isInitialized) {
-      _logger.i('Camera controller successfully initialized');
-      return controller;
-    } else {
+      if (!ref.mounted) {
+        throw StateError('Camera provider disposed during initialization');
+      }
+      if (controller.value.isInitialized) {
+        _logger.i('Camera controller successfully initialized');
+        return controller;
+      }
+
       _logger.e('Camera controller initialization incomplete');
       throw Exception('Camera controller initialized but camera not ready');
+    } catch (_) {
+      if (identical(_controller, controller)) {
+        _controller = null;
+      }
+      await controller.dispose();
+      rethrow;
     }
   }
 
@@ -168,7 +181,7 @@ class Camera extends _$Camera {
       0,
       currentState.cameras.length - 1,
     );
-    final currentCamera = currentState.controller?.description;
+    final currentCamera = _controller?.description;
     final currentLensDirection =
         currentCamera?.lensDirection ??
         currentState.cameras[fallbackIndex].lensDirection;
@@ -199,7 +212,7 @@ class Camera extends _$Camera {
 
     _logger.d('Flipping camera');
     final newCamera = currentState.cameras[newIndex];
-    final controller = currentState.controller;
+    final controller = _controller;
     _isFlippingCamera = true;
     state = AsyncValue.data(
       currentState.copyWith(isFlipping: true, error: null),
@@ -217,7 +230,6 @@ class Camera extends _$Camera {
 
         state = AsyncValue.data(
           currentState.copyWith(
-            controller: newController,
             selectedCameraIndex: newIndex,
             isInitialized: true,
             isFlipping: false,
@@ -230,7 +242,6 @@ class Camera extends _$Camera {
 
         state = AsyncValue.data(
           currentState.copyWith(
-            controller: controller,
             selectedCameraIndex: newIndex,
             isInitialized: true,
             isFlipping: false,
@@ -254,12 +265,13 @@ class Camera extends _$Camera {
 
   Future<XFile?> takePhoto() async {
     final currentState = state.value;
+    final controller = _controller;
     if (currentState == null) {
       _logger.w('Cannot take photo - no current state');
       return null;
     }
 
-    if (currentState.controller == null || !currentState.isInitialized) {
+    if (controller == null || !currentState.isInitialized) {
       _logger.w('Cannot take photo - camera not initialized');
       return null;
     }
@@ -267,7 +279,7 @@ class Camera extends _$Camera {
     _logger.d('Taking photo');
 
     try {
-      final file = await currentState.controller!.takePicture();
+      final file = await controller.takePicture();
       _logger.i('Photo taken successfully: ${file.path}');
       return file;
     } catch (e, stackTrace) {
@@ -279,12 +291,13 @@ class Camera extends _$Camera {
 
   Future<bool> startVideoRecording() async {
     final currentState = state.value;
+    final controller = _controller;
     if (currentState == null) {
       _logger.w('Cannot start recording - no current state');
       return false;
     }
 
-    if (currentState.controller == null ||
+    if (controller == null ||
         !currentState.isInitialized ||
         currentState.isRecording) {
       _logger.w(
@@ -299,10 +312,8 @@ class Camera extends _$Camera {
     state = AsyncValue.data(currentState.copyWith(isRecording: true));
 
     try {
-      await currentState.controller!.prepareForVideoRecording();
-      await currentState.controller!.startVideoRecording(
-        enablePersistentRecording: true,
-      );
+      await controller.prepareForVideoRecording();
+      await controller.startVideoRecording(enablePersistentRecording: true);
       _logger.i('Video recording started successfully');
       return true;
     } catch (e, stackTrace) {
@@ -321,12 +332,13 @@ class Camera extends _$Camera {
 
   Future<XFile?> stopVideoRecording() async {
     final currentState = state.value;
+    final controller = _controller;
     if (currentState == null) {
       _logger.w('Cannot stop recording - no current state');
       return null;
     }
 
-    if (currentState.controller == null ||
+    if (controller == null ||
         !currentState.isInitialized ||
         !currentState.isRecording) {
       _logger.w('Cannot stop recording - not currently recording');
@@ -339,7 +351,7 @@ class Camera extends _$Camera {
     state = AsyncValue.data(currentState.copyWith(isRecording: false));
 
     try {
-      final file = await currentState.controller!.stopVideoRecording();
+      final file = await controller.stopVideoRecording();
       _logger.i('Video recording stopped successfully: ${file.path}');
       return file;
     } catch (e, stackTrace) {
@@ -356,14 +368,18 @@ class Camera extends _$Camera {
   Future<void> _disposeCamera() async {
     _logger.d('Disposing camera');
 
+    if (!ref.mounted) {
+      await _disposeOwnedCamera();
+      return;
+    }
+
     try {
       final currentState = state.value;
-      final controller = currentState?.controller;
-      final wasRecording = currentState?.isRecording ?? false;
+      final controller = _controller;
+      _controller = null;
 
       state = AsyncValue.data(
         currentState?.copyWith(
-              controller: null,
               isInitialized: false,
               isRecording: false,
               isFlipping: false,
@@ -373,32 +389,47 @@ class Camera extends _$Camera {
 
       if (controller != null) {
         await _waitForPreviewDetach();
-
-        if (wasRecording) {
-          _logger.d('Stopping recording before disposal');
-          try {
-            if (controller.value.isRecordingVideo) {
-              await controller.stopVideoRecording();
-            }
-          } catch (e, stackTrace) {
-            _logger.e(
-              'Error stopping recording during disposal',
-              error: e,
-              stackTrace: stackTrace,
-            );
-          }
-        }
-
-        await controller.dispose();
-        _logger.i('Camera controller disposed successfully');
+        await _disposeController(controller);
       }
     } catch (e, stackTrace) {
       _logger.e('Error disposing camera', error: e, stackTrace: stackTrace);
     }
   }
 
-  /// Disposes the lifecycle listener. Should only be called when provider
-  /// is being permanently disposed (not for lifecycle pauses).
+  Future<void> _disposeOwnedCamera() async {
+    final controller = _controller;
+    _controller = null;
+    if (controller != null) {
+      await _disposeController(controller);
+    }
+  }
+
+  Future<void> _disposeController(CameraController controller) async {
+    if (controller.value.isRecordingVideo) {
+      _logger.d('Stopping recording before disposal');
+      try {
+        await controller.stopVideoRecording();
+      } catch (e, stackTrace) {
+        _logger.e(
+          'Error stopping recording during disposal',
+          error: e,
+          stackTrace: stackTrace,
+        );
+      }
+    }
+
+    try {
+      await controller.dispose();
+      _logger.i('Camera controller disposed successfully');
+    } catch (e, stackTrace) {
+      _logger.e(
+        'Error disposing camera controller',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   void _disposeLifecycleListener() {
     _lifecycleListener?.dispose();
     _lifecycleListener = null;

@@ -6,7 +6,6 @@ part 'camera_state.freezed.dart';
 @freezed
 abstract class CameraState with _$CameraState {
   const factory CameraState({
-    CameraController? controller,
     @Default([]) List<CameraDescription> cameras,
     @Default(0) int selectedCameraIndex,
     @Default(false) bool isInitialized,
