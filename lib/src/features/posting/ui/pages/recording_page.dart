@@ -237,16 +237,15 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     }
 
     try {
+      await ref.read(_cameraProvider.notifier).disposeCamera();
+      if (!mounted) return;
+
       await context.router.push(
         ImageReviewRoute(imageFiles: photos, storyMode: widget.storyMode),
       );
 
       if (!mounted) return;
-
-      setState(() {
-        _isProcessing = false;
-      });
-      await ref.read(_cameraProvider.notifier).reinitializeCamera();
+      await _resumeCameraAfterPhotoFlow();
     } catch (e, stackTrace) {
       _logger.e(
         'Error processing multiple photos',
@@ -254,9 +253,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         stackTrace: stackTrace,
       );
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        await _resumeCameraAfterPhotoFlow();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -272,6 +270,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (!mounted) return;
 
     try {
+      await ref.read(_cameraProvider.notifier).disposeCamera();
+      if (!mounted) return;
+
       // Open the story image editor
       final editedImage = await GetIt.I<ProVideoEditorRepository>()
           .openStoryImageEditor(context, photoFile);
@@ -324,20 +325,12 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         }
       }
 
-      // Reset processing state and reinitialize camera
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-        // Reinitialize camera after returning from editor
-        ref.read(_cameraProvider.notifier).reinitializeCamera();
-      }
+      await _resumeCameraAfterPhotoFlow();
     } catch (e, stackTrace) {
       _logger.e('Error processing photo', error: e, stackTrace: stackTrace);
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        await _resumeCameraAfterPhotoFlow();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -347,6 +340,15 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         );
       }
     }
+  }
+
+  Future<void> _resumeCameraAfterPhotoFlow() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isProcessing = false;
+    });
+    await ref.read(_cameraProvider.notifier).reinitializeCamera();
   }
 
   void _startRecording() {
