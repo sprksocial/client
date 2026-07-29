@@ -113,11 +113,12 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
   bool _isCameraReady() {
     final cameraAsync = ref.read(_cameraProvider);
+    final controller = ref.read(_cameraProvider.notifier).controller;
     if (cameraAsync.hasError) return false;
     final cameraState = cameraAsync.value;
     return cameraState != null &&
         cameraState.isInitialized &&
-        cameraState.controller != null &&
+        controller != null &&
         cameraState.cameras.isNotEmpty;
   }
 
@@ -236,16 +237,15 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     }
 
     try {
+      await ref.read(_cameraProvider.notifier).disposeCamera();
+      if (!mounted) return;
+
       await context.router.push(
         ImageReviewRoute(imageFiles: photos, storyMode: widget.storyMode),
       );
 
       if (!mounted) return;
-
-      setState(() {
-        _isProcessing = false;
-      });
-      await ref.read(_cameraProvider.notifier).reinitializeCamera();
+      await _resumeCameraAfterPhotoFlow();
     } catch (e, stackTrace) {
       _logger.e(
         'Error processing multiple photos',
@@ -253,9 +253,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         stackTrace: stackTrace,
       );
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        await _resumeCameraAfterPhotoFlow();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -271,6 +270,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     if (!mounted) return;
 
     try {
+      await ref.read(_cameraProvider.notifier).disposeCamera();
+      if (!mounted) return;
+
       // Open the story image editor
       final editedImage = await GetIt.I<ProVideoEditorRepository>()
           .openStoryImageEditor(context, photoFile);
@@ -323,20 +325,12 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         }
       }
 
-      // Reset processing state and reinitialize camera
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-        // Reinitialize camera after returning from editor
-        ref.read(_cameraProvider.notifier).reinitializeCamera();
-      }
+      await _resumeCameraAfterPhotoFlow();
     } catch (e, stackTrace) {
       _logger.e('Error processing photo', error: e, stackTrace: stackTrace);
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        await _resumeCameraAfterPhotoFlow();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -346,6 +340,15 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         );
       }
     }
+  }
+
+  Future<void> _resumeCameraAfterPhotoFlow() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isProcessing = false;
+    });
+    await ref.read(_cameraProvider.notifier).reinitializeCamera();
   }
 
   void _startRecording() {
@@ -872,6 +875,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
     return cameraAsync.when(
       data: (cameraState) {
+        final controller = ref.read(_cameraProvider.notifier).controller;
+
         if (cameraState.error != null) {
           return Scaffold(
             backgroundColor: Colors.black,
@@ -926,7 +931,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         }
 
         // No cameras available - show placeholder with library picker
-        if (!hasCameras || cameraState.controller == null) {
+        if (!hasCameras || controller == null) {
           return RecordingPageTemplate(
             cameraPreview: Container(
               color: Colors.black,
@@ -976,7 +981,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             availableLensDirections.contains(CameraLensDirection.back) &&
             !_isStartingRecording &&
             !cameraState.isFlipping;
-        final aspectRatio = cameraState.controller!.value.aspectRatio;
+        final aspectRatio = controller.value.aspectRatio;
         final canFinalizeSession =
             recordingState.canFinalize &&
             !_isProcessing &&
@@ -995,9 +1000,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             : _handleTap;
 
         return RecordingPageTemplate(
-          cameraPreview: RepaintBoundary(
-            child: CameraPreview(cameraState.controller!),
-          ),
+          cameraPreview: RepaintBoundary(child: CameraPreview(controller)),
           aspectRatio: aspectRatio,
           isRecording: recordingState.isRecording,
           elapsedDuration: recordingState.elapsedDuration,
