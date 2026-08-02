@@ -31,13 +31,6 @@ MESSAGES_SERVICE_URL=https://api.sprk.chat
 SHOWCASES_LICENSE_FLUTTER=$SHOWCASES_LICENSE_FLUTTER
 EOL
 
-# Install CocoaPods using Homebrew.
-HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
-brew install cocoapods
-
-# Install CocoaPods dependencies.
-cd ios && pod install # run `pod install` in the `ios` directory.
-
 flutter doctor
 
 exit 0
