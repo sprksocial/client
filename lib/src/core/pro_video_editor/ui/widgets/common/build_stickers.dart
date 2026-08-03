@@ -38,48 +38,48 @@ class _DemoBuildStickersState extends State<DemoBuildStickers> {
 
   @override
   Widget build(BuildContext context) {
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const _DragHandle(),
+        _SheetHeader(
+          title: AppLocalizations.of(context).labelStickers,
+          onClose: () => Navigator.of(context).pop(),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: _CategoryChips(
+            titles: _titles,
+            selectedIndex: _selectedCategoryIndex,
+            onSelected: _onSelectCategory,
+          ),
+        ),
+        Flexible(
+          child: AnimatedSlide(
+            offset: _isSwitchingCategory ? const Offset(0, 0.03) : Offset.zero,
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.easeOut,
+            child: AnimatedOpacity(
+              opacity: _isSwitchingCategory ? 0 : 1,
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              child: _StickerGrid(
+                categoryIndex: _selectedCategoryIndex,
+                scrollController: widget.scrollController,
+                onPickSticker: _onPickSticker,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.grey900,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const _DragHandle(),
-          _SheetHeader(
-            title: AppLocalizations.of(context).labelStickers,
-            onClose: () => Navigator.of(context).pop(),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: _CategoryChips(
-              titles: _titles,
-              selectedIndex: _selectedCategoryIndex,
-              onSelected: _onSelectCategory,
-            ),
-          ),
-          Flexible(
-            child: AnimatedSlide(
-              offset: _isSwitchingCategory
-                  ? const Offset(0, 0.03)
-                  : Offset.zero,
-              duration: const Duration(milliseconds: 160),
-              curve: Curves.easeOut,
-              child: AnimatedOpacity(
-                opacity: _isSwitchingCategory ? 0 : 1,
-                duration: const Duration(milliseconds: 160),
-                curve: Curves.easeOut,
-                child: _StickerGrid(
-                  categoryIndex: _selectedCategoryIndex,
-                  scrollController: widget.scrollController,
-                  onPickSticker: _onPickSticker,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      child: SafeArea(top: false, child: content),
     );
   }
 

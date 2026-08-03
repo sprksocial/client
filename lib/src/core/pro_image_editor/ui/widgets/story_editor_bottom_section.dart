@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_toolbar.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 
-/// Bottom section for the Story Image Editor.
+/// Bottom section for Story image and video editors.
 ///
-/// Contains the toolbar with editing tools.
+/// Keeps contextual video controls above an Instagram-style share action.
 class StoryEditorBottomSection extends StatelessWidget {
   const StoryEditorBottomSection({
-    required this.editor,
-    this.onMention,
+    required this.onShare,
     this.contextualControl,
     super.key,
   });
 
-  final ProImageEditorState editor;
-  final Future<void> Function()? onMention;
+  final VoidCallback onShare;
   final Widget? contextualControl;
 
   @override
@@ -28,14 +26,16 @@ class StoryEditorBottomSection extends StatelessWidget {
           ?contextualControl,
           SafeArea(
             top: false,
-            child: StoryEditorToolbar(
-              onMention: onMention,
-              onPaint: editor.openPaintEditor,
-              onText: editor.openTextEditor,
-              onFilter: editor.openFilterEditor,
-              onBlur: editor.openBlurEditor,
-              onEmoji: editor.openEmojiEditor,
-              onStickers: editor.openStickerEditor,
+            minimum: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+            child: AppButton(
+              key: const ValueKey('story-editor-share-button'),
+              label: AppLocalizations.of(context).buttonShare,
+              onPressed: onShare,
+              size: AppButtonSize.large,
+              fullWidth: true,
+              minHeight: 54,
+              borderRadius: BorderRadius.circular(999),
+              trailing: const Icon(Icons.arrow_forward_rounded, size: 22),
             ),
           ),
         ],

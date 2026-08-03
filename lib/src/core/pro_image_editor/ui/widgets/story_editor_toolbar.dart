@@ -4,7 +4,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 
 /// Toolbar widget for the Story Image Editor.
 ///
-/// Displays horizontal list of editing tools optimized for stories.
+/// Displays a compact vertical action rail over the story canvas.
 class StoryEditorToolbar extends StatelessWidget {
   const StoryEditorToolbar({
     this.onMention,
@@ -29,51 +29,64 @@ class StoryEditorToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final items = <Widget>[
-      if (onMention != null)
-        _ToolbarItem(
-          icon: Icons.alternate_email_rounded,
-          label: l10n.labelMention,
-          onTap: () => onMention!.call(),
-        ),
       _ToolbarItem(
-        icon: Icons.brush_rounded,
-        label: l10n.labelDraw,
-        onTap: onPaint,
-      ),
-      _ToolbarItem(
+        key: const ValueKey('story-editor-tool-text'),
         icon: Icons.text_fields_rounded,
         label: l10n.labelText,
         onTap: onText,
       ),
       _ToolbarItem(
-        icon: Icons.auto_awesome_rounded,
-        label: l10n.labelFilter,
-        onTap: onFilter,
+        key: const ValueKey('story-editor-tool-stickers'),
+        icon: Icons.sticky_note_2_rounded,
+        label: l10n.labelStickers,
+        onTap: onStickers,
       ),
       _ToolbarItem(
-        icon: Icons.blur_on_rounded,
-        label: l10n.labelBlur,
-        onTap: onBlur,
+        key: const ValueKey('story-editor-tool-draw'),
+        icon: Icons.brush_rounded,
+        label: l10n.labelDraw,
+        onTap: onPaint,
       ),
+      if (onMention != null)
+        _ToolbarItem(
+          key: const ValueKey('story-editor-tool-mention'),
+          icon: Icons.alternate_email_rounded,
+          label: l10n.labelMention,
+          onTap: () => onMention!.call(),
+        ),
       _ToolbarItem(
+        key: const ValueKey('story-editor-tool-emoji'),
         icon: Icons.emoji_emotions_rounded,
         label: l10n.labelEmoji,
         onTap: onEmoji,
       ),
       _ToolbarItem(
-        icon: Icons.sticky_note_2_rounded,
-        label: l10n.labelStickers,
-        onTap: onStickers,
+        key: const ValueKey('story-editor-tool-filter'),
+        icon: Icons.auto_awesome_rounded,
+        label: l10n.labelFilter,
+        onTap: onFilter,
+      ),
+      _ToolbarItem(
+        key: const ValueKey('story-editor-tool-blur'),
+        icon: Icons.blur_on_rounded,
+        label: l10n.labelBlur,
+        onTap: onBlur,
       ),
     ];
 
+    const itemExtent = 42.0;
+    const itemSpacing = 8.0;
+    final naturalHeight =
+        items.length * itemExtent + (items.length - 1) * itemSpacing;
+    final availableHeight = MediaQuery.sizeOf(context).height * 0.55;
+
     return SizedBox(
-      height: 80,
+      width: itemExtent,
+      height: naturalHeight.clamp(0, availableHeight).toDouble(),
       child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.zero,
         itemCount: items.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(height: itemSpacing),
         itemBuilder: (context, index) => items[index],
       ),
     );
@@ -85,6 +98,7 @@ class _ToolbarItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    super.key,
   });
 
   final IconData icon;
@@ -93,27 +107,23 @@ class _ToolbarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 56,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppColors.greyWhite, size: 26),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppColors.grey300,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+    return Semantics(
+      label: label,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Tooltip(
+          message: label,
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.grey900.withAlpha(150),
             ),
-          ],
+            child: Icon(icon, color: AppColors.greyWhite, size: 22),
+          ),
         ),
       ),
     );
