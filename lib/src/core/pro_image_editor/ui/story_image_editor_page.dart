@@ -136,11 +136,7 @@ class _StoryImageEditorPageState extends State<StoryImageEditorPage>
     }
   }
 
-  void _onCloseEditor(EditorMode editorMode) {
-    if (editorMode == EditorMode.main) {
-      Navigator.of(context).pop();
-    }
-  }
+  void _onCloseEditor(EditorMode _) => Navigator.of(context).pop();
 
   @override
   Widget build(BuildContext context) {
@@ -323,11 +319,7 @@ class _StoryBlankCanvasEditorPageState extends State<StoryBlankCanvasEditorPage>
     }
   }
 
-  void _onCloseEditor(EditorMode editorMode) {
-    if (editorMode == EditorMode.main) {
-      Navigator.of(context).pop();
-    }
-  }
+  void _onCloseEditor(EditorMode _) => Navigator.of(context).pop();
 
   double _computeInitialBackgroundScale(Size previewSize) {
     final imageSize = _imageSize;
@@ -439,10 +431,8 @@ class _StoryBlankCanvasEditorPageState extends State<StoryBlankCanvasEditorPage>
                 initStateHistory: _initialStateHistory,
               ),
               mainEditor: _configs.mainEditor.copyWith(
-                style: MainEditorStyle(
+                style: _configs.mainEditor.style.copyWith(
                   background: widget.backgroundColor,
-                  bottomBarBackground:
-                      _configs.mainEditor.style.bottomBarBackground,
                 ),
               ),
             ),

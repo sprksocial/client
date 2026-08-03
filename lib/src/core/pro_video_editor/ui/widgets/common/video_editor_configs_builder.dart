@@ -7,8 +7,7 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/design_system/theme/color_scheme.dart';
 import 'package:spark/src/core/design_system/theme/text_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_bottom_section.dart';
-import 'package:spark/src/core/pro_image_editor/ui/widgets/story_editor_header.dart';
+import 'package:spark/src/core/pro_image_editor/story_editor_profile.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
@@ -24,23 +23,8 @@ import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeli
 import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/story_video_timeline_controls.dart';
 import 'package:spark/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
 
-const _storyEditorBorderRadius = BorderRadius.vertical(
-  top: Radius.circular(20),
-  bottom: Radius.circular(20),
-);
-
 class VideoEditorConfigsBuilder {
   const VideoEditorConfigsBuilder._();
-
-  /// Tools available in story mode (matches story image editor).
-  static const _storyModeTools = [
-    SubEditorMode.paint,
-    SubEditorMode.text,
-    SubEditorMode.filter,
-    SubEditorMode.blur,
-    SubEditorMode.emoji,
-    SubEditorMode.sticker,
-  ];
 
   /// Full set of tools for regular video editing.
   static const _fullTools = [
@@ -78,66 +62,22 @@ class VideoEditorConfigsBuilder {
       taskId: taskId,
       useMaterialDesign: useMaterialDesign,
       videoPlayerBuilder: videoPlayerBuilder,
-      tools: _storyModeTools,
+      tools: StoryEditorProfile.tools,
       enableZoom: false,
-      mainEditorWidgets: MainEditorWidgets(
-        removeLayerArea:
-            (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
-                VideoEditorRemoveArea(
-                  removeAreaKey: removeAreaKey,
-                  editor: editor,
-                  rebuildStream: rebuildStream,
-                  isLayerBeingTransformed: isLayerBeingTransformed,
-                ),
-        appBar: (editor, rebuildStream) => null,
-        bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
-          key: key,
-          stream: rebuildStream,
-          builder: (_) => StoryEditorBottomSection(
-            editor: editor,
-            onMention: onMention,
-            contextualControl: StoryVideoTimelineControls(
-              editor: editor,
-              timelineState: timelineState,
-              onTogglePlay: onTogglePlay,
-              onSeek: onSeek,
-              onSeekStart: onSeekStart,
-              onSeekEnd: onSeekEnd,
-            ),
-          ),
+      safeArea: StoryEditorProfile.safeArea,
+      outsideCaptureAreaLayerOpacity:
+          StoryEditorProfile.outsideCaptureAreaLayerOpacity,
+      mainEditorWidgets: StoryEditorProfile.buildMainEditorWidgets(
+        onMention: onMention,
+        onDone: onDone,
+        contextualControlBuilder: (editor) => StoryVideoTimelineControls(
+          editor: editor,
+          timelineState: timelineState,
+          onTogglePlay: onTogglePlay,
+          onSeek: onSeek,
+          onSeekStart: onSeekStart,
+          onSeekEnd: onSeekEnd,
         ),
-        wrapBody: (editor, rebuildStream, content) => ClipRRect(
-          borderRadius: _storyEditorBorderRadius,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: Colors.black,
-            child: content,
-          ),
-        ),
-        bodyItems: (editor, rebuildStream) => [
-          ReactiveWidget(
-            stream: rebuildStream,
-            builder: (_) => Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                bottom: false,
-                child: StoryEditorHeader(
-                  onBack: editor.closeEditor,
-                  onDone: onDone != null
-                      ? () => onDone(editor)
-                      : editor.doneEditing,
-                  canUndo: editor.canUndo,
-                  canRedo: editor.canRedo,
-                  onUndo: editor.undoAction,
-                  onRedo: editor.redoAction,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       videoEditorConfigs: videoEditorConfigs,
     );
@@ -194,6 +134,8 @@ class VideoEditorConfigsBuilder {
     required bool enableZoom,
     required MainEditorWidgets mainEditorWidgets,
     required VideoEditorConfigs videoEditorConfigs,
+    EditorSafeArea safeArea = const EditorSafeArea(),
+    double outsideCaptureAreaLayerOpacity = 0.5,
   }) {
     return ProImageEditorConfigs(
       designMode: platformDesignMode,
@@ -213,18 +155,21 @@ class VideoEditorConfigsBuilder {
         initialSelected: true,
       ),
       mainEditor: MainEditorConfigs(
+        safeArea: safeArea,
         enableZoom: enableZoom,
         enableDoubleTapZoom: false,
         editorMinScale: 0.1,
         tools: tools,
         captureLayersOnDone: true,
         widgets: mainEditorWidgets,
-        style: const MainEditorStyle(
+        style: MainEditorStyle(
           background: AppColors.greyBlack,
           bottomBarBackground: AppColors.grey800,
+          outsideCaptureAreaLayerOpacity: outsideCaptureAreaLayerOpacity,
         ),
       ),
       paintEditor: PaintEditorConfigs(
+        safeArea: safeArea,
         style: const PaintEditorStyle(
           background: AppColors.greyBlack,
           bottomBarBackground: AppColors.grey800,
@@ -254,6 +199,7 @@ class VideoEditorConfigsBuilder {
       ),
 
       textEditor: TextEditorConfigs(
+        safeArea: safeArea,
         customTextStyles: [
           GoogleFonts.roboto(),
           GoogleFonts.averiaLibre(),
@@ -311,6 +257,7 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       cropRotateEditor: CropRotateEditorConfigs(
+        safeArea: safeArea,
         style: CropRotateEditorStyle(
           cropCornerColor: AppColors.greyWhite,
           cropCornerThickness: 4,
@@ -334,6 +281,7 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       filterEditor: FilterEditorConfigs(
+        safeArea: safeArea,
         style: const FilterEditorStyle(
           filterListSpacing: 7,
           filterListMargin: EdgeInsets.fromLTRB(8, 0, 8, 8),
@@ -367,6 +315,7 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       tuneEditor: TuneEditorConfigs(
+        safeArea: safeArea,
         style: const TuneEditorStyle(
           background: AppColors.greyBlack,
           bottomBarBackground: AppColors.grey800,
@@ -388,6 +337,7 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       blurEditor: BlurEditorConfigs(
+        safeArea: safeArea,
         maxBlur: 25,
         style: const BlurEditorStyle(background: AppColors.greyBlack),
         widgets: BlurEditorWidgets(
@@ -434,6 +384,7 @@ class VideoEditorConfigsBuilder {
         textEditor: I18nTextEditor(backgroundMode: 'Mode', textAlign: 'Align'),
       ),
       clipsEditor: ClipsEditorConfigs(
+        safeArea: safeArea,
         style: const ClipsEditorStyle(reversedClipsList: true),
         widgets: ClipsEditorWidgets(
           appBar: (editorState, rebuildStream) => null,

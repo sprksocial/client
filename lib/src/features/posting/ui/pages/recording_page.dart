@@ -12,6 +12,7 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/design_system/templates/recording_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
 import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
@@ -24,6 +25,7 @@ import 'package:spark/src/features/posting/providers/camera_provider.dart';
 import 'package:spark/src/features/posting/providers/recording_provider.dart';
 import 'package:spark/src/features/posting/ui/models/media_selection.dart';
 import 'package:spark/src/features/posting/ui/pages/media_picker_page.dart';
+import 'package:spark/src/features/posting/utils/captured_photo_flow.dart';
 import 'package:spark/src/features/posting/utils/story_direct_post.dart';
 
 export 'package:spark/src/core/design_system/templates/recording_page_template.dart'
@@ -273,56 +275,28 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       await ref.read(_cameraProvider.notifier).disposeCamera();
       if (!mounted) return;
 
-      // Open the story image editor
-      final editedImage = await GetIt.I<ProVideoEditorRepository>()
-          .openStoryImageEditor(context, photoFile);
+      final outcome =
+          await CapturedPhotoFlow(
+            openPostReview: (photo) async {
+              await context.router.push(
+                ImageReviewRoute(imageFiles: [photo], storyMode: false),
+              );
+            },
+            openStoryEditor: (photo) => GetIt.I<ProVideoEditorRepository>()
+                .openStoryImageEditor(context, photo),
+            publishStory: _publishEditedStoryPhoto,
+          ).run(
+            profile: widget.storyMode
+                ? CapturedPhotoProfile.story
+                : CapturedPhotoProfile.post,
+            photo: photoFile,
+          );
 
       if (!mounted) return;
 
-      if (editedImage != null) {
-        if (widget.storyMode) {
-          // For stories, post directly without review
-          // Show exiting state to prevent camera rendering issues
-          setState(() {
-            _isExiting = true;
-          });
-
-          try {
-            final result = await StoryDirectPost.postPhotoStory(
-              context,
-              ref,
-              editedImage.image,
-              embeds: editedImage.embeds,
-            );
-            if (result != null && mounted) {
-              // Exit the recording flow completely
-              if (mounted) context.router.maybePop();
-              return;
-            }
-          } catch (e, stackTrace) {
-            _logger.e('Error posting story', error: e, stackTrace: stackTrace);
-            if (mounted) {
-              setState(() {
-                _isExiting = false;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    ErrorMessages.getOperationErrorMessage('post', e),
-                  ),
-                ),
-              );
-            }
-          }
-        } else {
-          // For posts, go to review page
-          await context.router.push(
-            ImageReviewRoute(
-              imageFiles: [editedImage.image],
-              storyMode: widget.storyMode,
-            ),
-          );
-        }
+      if (outcome == CapturedPhotoFlowOutcome.exitedRecorder) {
+        context.router.maybePop();
+        return;
       }
 
       await _resumeCameraAfterPhotoFlow();
@@ -339,6 +313,36 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           ),
         );
       }
+    }
+  }
+
+  Future<bool> _publishEditedStoryPhoto(
+    StoryImageEditorResult editedPhoto,
+  ) async {
+    if (!mounted) return false;
+    setState(() => _isExiting = true);
+
+    try {
+      final result = await StoryDirectPost.postPhotoStory(
+        context,
+        ref,
+        editedPhoto.image,
+        embeds: editedPhoto.embeds,
+      );
+      final posted = result != null;
+      if (!posted && mounted) setState(() => _isExiting = false);
+      return posted;
+    } catch (e, stackTrace) {
+      _logger.e('Error posting story', error: e, stackTrace: stackTrace);
+      if (mounted) {
+        setState(() => _isExiting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ErrorMessages.getOperationErrorMessage('post', e)),
+          ),
+        );
+      }
+      return false;
     }
   }
 
