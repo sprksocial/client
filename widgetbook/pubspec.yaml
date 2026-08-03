@@ -10,7 +10,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  widgetbook: ^3.24.0
+  widgetbook: ^3.25.0
   widgetbook_annotation: ^3.11.0
   spark:
     path: ../
@@ -26,7 +26,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   widgetbook_generator: ^3.24.0
-  build_runner: ^2.15.0
+  build_runner: ^2.15.1
 
 flutter:
   uses-material-design: true
