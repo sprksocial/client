@@ -22,6 +22,7 @@ import 'package:spark/src/features/feed/providers/repost_post.dart';
 import 'package:spark/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post_likes_sheet.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/features/sound/ui/widgets/sound_artwork.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
   const SideActionBar({
@@ -441,7 +442,14 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       shareCount: widget.shareCount,
       isLiked: _isLiked,
       isReposted: _isReposted,
-      soundCover: currentPost.sound?.coverArt.toString(),
+      soundArtwork: currentPost.sound == null
+          ? null
+          : SoundArtwork(
+              imageUrl: currentPost.sound?.coverArt.toString(),
+              size: 35,
+              borderRadius: 17.5,
+              backgroundColor: Colors.grey.shade800,
+            ),
     );
   }
 }

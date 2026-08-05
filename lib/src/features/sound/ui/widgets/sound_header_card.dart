@@ -6,8 +6,8 @@ import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
-import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
+import 'package:spark/src/features/sound/models/sound_audio_track.dart';
+import 'package:spark/src/features/sound/ui/widgets/sound_artwork.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 
 class SoundHeaderCard extends StatefulWidget {

@@ -8,7 +8,7 @@ import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_tab_bar.dart';
 import 'package:spark/src/core/design_system/templates/profile_page_template.dart';
-import 'package:spark/src/core/media/create_media_actions.dart';
+import 'package:spark/src/features/posting/utils/create_media_actions.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';

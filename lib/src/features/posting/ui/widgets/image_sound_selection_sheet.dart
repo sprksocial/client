@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_picker_sheet_scaffold.dart';
+import 'package:spark/src/features/sound/models/sound_audio_track.dart';
+import 'package:spark/src/features/sound/ui/widgets/audio_track_list_section.dart';
+import 'package:spark/src/features/sound/ui/widgets/sound_picker_sheet_scaffold.dart';
 
 class ImageSoundSelectionSheet extends StatefulWidget {
   const ImageSoundSelectionSheet({super.key, this.initialSelectedTrack});

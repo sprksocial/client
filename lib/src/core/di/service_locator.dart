@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository_impl.dart';
+import 'package:spark/src/core/media_processing/video/pro_video_processing_service.dart';
+import 'package:spark/src/core/media_processing/video/video_processing_service.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
@@ -17,8 +19,6 @@ import 'package:spark/src/core/network/messages/data/repository/messages_reposit
 import 'package:spark/src/core/network/messages/data/repository/messages_repository_xrpc.dart';
 import 'package:spark/src/core/network/xrpc/service_auth_helper.dart';
 import 'package:spark/src/core/notifications/push_notification_service.dart';
-import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
-import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository_impl.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
 import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/core/ui/theme/data/repositories/theme_repository.dart';
@@ -96,8 +96,8 @@ Future<void> initServiceLocator({
         authRepository: sl<AuthRepository>(),
       ),
     )
-    ..registerSingleton<ProVideoEditorRepository>(
-      const ProVideoEditorRepositoryImpl(),
+    ..registerSingleton<VideoProcessingService>(
+      const ProVideoProcessingService(),
     )
     ..registerSingleton<NotificationRepository>(
       NotificationRepositoryImpl(sl<SprkRepository>()),

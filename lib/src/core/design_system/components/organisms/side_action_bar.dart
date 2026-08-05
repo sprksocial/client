@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_artwork.dart';
 
 class SparkSideActionBar extends StatefulWidget {
   const SparkSideActionBar({
@@ -20,7 +19,7 @@ class SparkSideActionBar extends StatefulWidget {
     this.shareCount,
     this.isLiked = false,
     this.isReposted = false,
-    this.soundCover,
+    this.soundArtwork,
   });
 
   final VoidCallback? onLike;
@@ -39,7 +38,7 @@ class SparkSideActionBar extends StatefulWidget {
 
   final bool isLiked;
   final bool isReposted;
-  final String? soundCover;
+  final Widget? soundArtwork;
 
   @override
   State<SparkSideActionBar> createState() => _SparkSideActionBarState();
@@ -100,10 +99,10 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       ]);
     }
 
-    if (widget.onSoundTap != null) {
+    if (widget.onSoundTap != null && widget.soundArtwork != null) {
       children.addAll([
         const SizedBox(height: 13),
-        _SoundItem(cover: widget.soundCover, onTap: widget.onSoundTap),
+        _SoundItem(onTap: widget.onSoundTap, child: widget.soundArtwork!),
       ]);
     }
 
@@ -222,26 +221,17 @@ class _ActionItemState extends State<_ActionItem>
 }
 
 class _SoundItem extends StatelessWidget {
-  const _SoundItem({this.cover, this.onTap});
+  const _SoundItem({required this.child, this.onTap});
 
-  final String? cover;
+  final Widget child;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    const albumSize = 35.0;
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: ClipOval(
-        child: SoundArtwork(
-          imageUrl: cover,
-          size: albumSize,
-          borderRadius: albumSize / 2,
-          backgroundColor: Colors.grey.shade800,
-        ),
-      ),
+      child: ClipOval(child: child),
     );
   }
 }

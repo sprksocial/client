@@ -1,5 +1,5 @@
 import 'package:image_picker/image_picker.dart';
-import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
+import 'package:spark/src/features/media_editor/story/models/story_image_editor_result.dart';
 
 enum CapturedPhotoProfile { story, post }
 

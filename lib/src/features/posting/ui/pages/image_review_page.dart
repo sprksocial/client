@@ -10,15 +10,15 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/image_review_page_template.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
-import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
-import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/pages/post_image_editor_page.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/posting/ui/widgets/image_sound_selection_sheet.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/features/sound/models/sound_audio_track.dart';
 
 @RoutePage()
 class ImageReviewPage extends ConsumerStatefulWidget {
@@ -47,10 +47,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   late final FeedRepository _feedRepository;
 
   Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
-    final newImage = await GetIt.I<ProVideoEditorRepository>().openImageEditor(
-      context,
-      imageFile,
-    );
+    final newImage = await PostImageEditorPage.open(context, imageFile);
     // If the user edited the image, replace the original file in the list
     if (newImage != null) {
       if (!mounted) return;

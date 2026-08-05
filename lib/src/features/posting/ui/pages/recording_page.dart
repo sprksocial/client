@@ -11,22 +11,25 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/design_system/templates/recording_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/media_processing/video/video_processing_service.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
-import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
-import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
-import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
-import 'package:spark/src/core/pro_video_editor/pro_video_editor_repository.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
-import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/sound_picker_sheet_scaffold.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/media_editor/models/media_editor_profile.dart';
+import 'package:spark/src/features/media_editor/story/models/story_image_editor_result.dart';
+import 'package:spark/src/features/media_editor/story/ui/pages/story_image_editor_page.dart';
+import 'package:spark/src/features/media_editor/video/models/video_editor_result.dart';
+import 'package:spark/src/features/media_editor/video/ui/pages/video_editor_page.dart';
 import 'package:spark/src/features/posting/providers/camera_provider.dart';
 import 'package:spark/src/features/posting/providers/recording_provider.dart';
 import 'package:spark/src/features/posting/ui/models/media_selection.dart';
 import 'package:spark/src/features/posting/ui/pages/media_picker_page.dart';
 import 'package:spark/src/features/posting/utils/captured_photo_flow.dart';
 import 'package:spark/src/features/posting/utils/story_direct_post.dart';
+import 'package:spark/src/features/sound/models/sound_audio_track.dart';
+import 'package:spark/src/features/sound/ui/widgets/audio_track_list_section.dart';
+import 'package:spark/src/features/sound/ui/widgets/sound_picker_sheet_scaffold.dart';
 
 export 'package:spark/src/core/design_system/templates/recording_page_template.dart'
     show CaptureMode;
@@ -282,8 +285,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
                 ImageReviewRoute(imageFiles: [photo], storyMode: false),
               );
             },
-            openStoryEditor: (photo) => GetIt.I<ProVideoEditorRepository>()
-                .openStoryImageEditor(context, photo),
+            openStoryEditor: (photo) => StoryImageEditorPage.open(
+              context,
+              backgroundImage: File(photo.path),
+            ),
             publishStory: _publishEditedStoryPhoto,
           ).run(
             profile: widget.storyMode
@@ -501,10 +506,10 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     }
 
     final segments = recordingState.segmentPaths.map(XFile.new).toList();
-    final repository = GetIt.I<ProVideoEditorRepository>();
+    final processingService = GetIt.I<VideoProcessingService>();
 
     try {
-      final stitchedVideo = await repository.stitchVideoSegments(segments);
+      final stitchedVideo = await processingService.stitchSegments(segments);
       if (!mounted) return;
 
       final selectedSound = recordingState.selectedSound;
@@ -556,25 +561,18 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       if (!mounted || !context.mounted) return;
 
       final editorVideo = EditorVideo.file(File(videoFile.path));
-      final repository = GetIt.I<ProVideoEditorRepository>();
-      VideoEditorResult? result;
-      if (widget.storyMode) {
-        if (!context.mounted) return;
-        result = await repository.openStoryVideoEditor(
-          context,
-          editorVideo,
-          initialAudioTrack:
-              initialAudioTrack ?? ref.read(recordingProvider).selectedSound,
-        );
-      } else {
-        if (!context.mounted) return;
-        result = await repository.openVideoEditor(
-          context,
-          editorVideo,
-          initialAudioTrack:
-              initialAudioTrack ?? ref.read(recordingProvider).selectedSound,
-        );
-      }
+      final processingService = GetIt.I<VideoProcessingService>();
+      if (!context.mounted) return;
+      final VideoEditorResult? result = await VideoEditorPage.open(
+        context,
+        video: editorVideo,
+        profile: widget.storyMode
+            ? MediaEditorProfile.story
+            : MediaEditorProfile.post,
+        processingService: processingService,
+        initialAudioTrack:
+            initialAudioTrack ?? ref.read(recordingProvider).selectedSound,
+      );
 
       if (!mounted) return;
 

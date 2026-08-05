@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:spark/src/core/pro_image_editor/models/story_image_editor_result.dart';
+import 'package:spark/src/features/media_editor/story/models/story_image_editor_result.dart';
 import 'package:spark/src/features/posting/utils/captured_photo_flow.dart';
 
 void main() {

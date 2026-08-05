@@ -1,0 +1,129 @@
+import 'package:flutter/material.dart';
+import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/features/sound/controllers/audio_audition_controller.dart';
+import 'package:spark/src/features/sound/ui/widgets/audio_track_list_section.dart';
+import 'package:spark/src/features/sound/ui/widgets/sound_picker_sheet_scaffold.dart';
+
+Future<void> showAudioSelectionFlow({
+  required BuildContext context,
+  required AudioTrack? initialTrack,
+  required TrimDurationSpan hostSpan,
+  required AudioAuditionController audition,
+  required bool Function() isCurrent,
+  required AudioAuditionErrorHandler onError,
+  IconData emptyStateIcon = Icons.music_note,
+  Color artworkBackgroundColor = defaultAudioTrackArtworkBackground,
+}) async {
+  try {
+    if (!context.mounted || !isCurrent()) return;
+    final pickerIsCurrent = await audition.beginPicker(
+      previousTrack: initialTrack,
+      hostSpan: hostSpan,
+    );
+    if (!pickerIsCurrent ||
+        !context.mounted ||
+        !isCurrent() ||
+        audition.state is! AudioPickerAuditionState) {
+      return;
+    }
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FractionallySizedBox(
+        heightFactor: 0.9,
+        child: AudioSelectionBottomSheet(
+          audition: audition,
+          emptyStateIcon: emptyStateIcon,
+          artworkBackgroundColor: artworkBackgroundColor,
+        ),
+      ),
+    );
+    if (!isCurrent()) return;
+    if (confirmed ?? false) {
+      audition.confirmPicker();
+    } else {
+      await audition.cancel();
+    }
+  } catch (error, stackTrace) {
+    onError('Failed to complete the sound picker workflow', error, stackTrace);
+    if (isCurrent()) await audition.cancel();
+  }
+}
+
+class AudioSelectionBottomSheet extends StatelessWidget {
+  const AudioSelectionBottomSheet({
+    required this.audition,
+    this.emptyStateIcon = Icons.music_note,
+    this.artworkBackgroundColor = defaultAudioTrackArtworkBackground,
+    super.key,
+  });
+
+  final AudioAuditionController audition;
+  final IconData emptyStateIcon;
+  final Color artworkBackgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: audition,
+      builder: (context, _) {
+        final state = audition.state;
+        if (state is! AudioPickerAuditionState) {
+          return const SizedBox.shrink();
+        }
+        final l10n = AppLocalizations.of(context);
+        return SoundPickerSheetScaffold(
+          title: l10n.titleSelectSound,
+          onClose: () => Navigator.of(context).pop(false),
+          footer: _ContinueButton(
+            enabled: state.canContinue,
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+          child: AudioTrackListSection(
+            selectedTrack: state.selectedTrack,
+            emptyStateIcon: emptyStateIcon,
+            artworkBackgroundColor: artworkBackgroundColor,
+            onTrackSelected: (track) => _selectTrack(context, track),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectTrack(BuildContext context, AudioTrack track) async {
+    final succeeded = await audition.selectPickerTrack(track);
+    if (!context.mounted || succeeded) return;
+    final state = audition.state;
+    if (state is AudioPickerAuditionState &&
+        state.previewStatus == AudioPickerPreviewStatus.failed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).errorLoadingSound)),
+      );
+    }
+  }
+}
+
+class _ContinueButton extends StatelessWidget {
+  const _ContinueButton({required this.enabled, required this.onPressed});
+
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        child: AppButton(
+          label: AppLocalizations.of(context).buttonContinue,
+          onPressed: enabled ? onPressed : null,
+          fullWidth: true,
+        ),
+      ),
+    );
+  }
+}

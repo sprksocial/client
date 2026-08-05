@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_tag_list.dart';
 import 'package:spark/src/core/design_system/templates/feeds_bar_template.dart';
-import 'package:spark/src/core/media/create_media_actions.dart';
+import 'package:spark/src/features/posting/utils/create_media_actions.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';

@@ -5,7 +5,7 @@ import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/media/media_playback_gate.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_video_aspect_ratio.dart';
-import 'package:spark/src/core/pro_video_editor/models/sound_audio_track.dart';
+import 'package:spark/src/features/sound/models/sound_audio_track.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/static_media_sound_player.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
