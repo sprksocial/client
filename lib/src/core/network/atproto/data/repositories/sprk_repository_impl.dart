@@ -19,6 +19,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/sound_repositor
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/services/appview_labeler_headers.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -27,6 +28,9 @@ class SprkRepositoryImpl implements SprkRepository {
   SprkRepositoryImpl(this._authRepository, {SparkLogger? logger})
     : _sprkDid = _getSprkDid(),
       _bskyDid = _getBskyDid(),
+      _labelerHeaders = AppViewLabelerHeaders(
+        defaultLabelerDid: AppConfig.modDid,
+      ),
       _logger =
           logger ?? GetIt.instance<LogService>().getLogger('SprkRepository') {
     _logger.d('SprkRepository initialized with DID: $_sprkDid');
@@ -34,6 +38,7 @@ class SprkRepositoryImpl implements SprkRepository {
   final AuthRepository _authRepository;
   final String _sprkDid;
   final String _bskyDid;
+  final AppViewLabelerHeaders _labelerHeaders;
   final SparkLogger _logger;
 
   // Cached repository instances
@@ -62,6 +67,20 @@ class SprkRepositoryImpl implements SprkRepository {
 
   @override
   String get bskyModDid => AppConfig.bskyModDid;
+
+  @override
+  List<String> get labelerDids => _labelerHeaders.labelerDids;
+
+  @override
+  void configureLabelers(Iterable<String> labelerDids) {
+    _labelerHeaders.configure(labelerDids);
+  }
+
+  @override
+  Map<String, String> appViewHeaders(
+    String? proxyDid, {
+    Iterable<String>? labelerDids,
+  }) => _labelerHeaders.forAppView(proxyDid, labelerDids: labelerDids);
 
   static String _getSprkDid() {
     final sprkAppView = Uri.parse(AppConfig.appViewUrl);

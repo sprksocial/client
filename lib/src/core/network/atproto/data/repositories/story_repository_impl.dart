@@ -96,7 +96,7 @@ class StoryRepositoryImpl implements StoryRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final response = (() {
         final jsonMap = rawResponse.data.toJson();
@@ -174,7 +174,7 @@ class StoryRepositoryImpl implements StoryRepository {
       final rawResponse = await atproto.call(
         sprk_get_stories.soSprkStoryGetStories,
         parameters: sprk_get_stories.StoryGetStoriesInput(uris: storyUris),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final response = (() {
         final jsonMap = rawResponse.data.toJson();

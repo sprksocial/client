@@ -274,6 +274,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get pageTitleSettings;
 
+  /// Moderation settings page title
+  ///
+  /// In en, this message translates to:
+  /// **'Moderation'**
+  String get pageTitleModeration;
+
   /// Story manager page title
   ///
   /// In en, this message translates to:
@@ -1729,6 +1735,234 @@ abstract class AppLocalizations {
     String secondName,
     int count,
   );
+
+  /// Heading for author-applied media content warnings
+  ///
+  /// In en, this message translates to:
+  /// **'Content warnings'**
+  String get labelContentWarnings;
+
+  /// Explanation shown above author self-label controls
+  ///
+  /// In en, this message translates to:
+  /// **'Add any warnings that apply to the media you are posting.'**
+  String get messageContentWarningsDescription;
+
+  /// Heading for mutually exclusive adult-content warnings
+  ///
+  /// In en, this message translates to:
+  /// **'Adult Content'**
+  String get labelAdultContent;
+
+  /// Heading over content concealed by moderation
+  ///
+  /// In en, this message translates to:
+  /// **'Content warning'**
+  String get moderationContentWarning;
+
+  /// Generic fallback for a labeler notice with no localized label strings
+  ///
+  /// In en, this message translates to:
+  /// **'Content notice'**
+  String get moderationContentNotice;
+
+  /// Button that reveals moderated content
+  ///
+  /// In en, this message translates to:
+  /// **'View content'**
+  String get buttonViewContent;
+
+  /// Button that opens moderation label details
+  ///
+  /// In en, this message translates to:
+  /// **'Why am I seeing this?'**
+  String get buttonModerationDetails;
+
+  /// Message for an imperative or age-gated moderation decision
+  ///
+  /// In en, this message translates to:
+  /// **'This restriction cannot be overridden.'**
+  String get moderationCannotOverride;
+
+  /// Title of the moderation details sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Moderation details'**
+  String get moderationDetailsTitle;
+
+  /// Label before the DID of the labeler that applied a label
+  ///
+  /// In en, this message translates to:
+  /// **'Applied by'**
+  String get moderationAppliedBy;
+
+  /// Label before a moderation label expiration timestamp
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get moderationExpires;
+
+  /// Button for appealing a moderation label applied to the current user
+  ///
+  /// In en, this message translates to:
+  /// **'Appeal label'**
+  String get buttonAppealLabel;
+
+  /// Default text sent with a label appeal
+  ///
+  /// In en, this message translates to:
+  /// **'I am appealing this label.'**
+  String get moderationAppealReason;
+
+  /// Confirmation after a moderation label appeal succeeds
+  ///
+  /// In en, this message translates to:
+  /// **'Appeal sent'**
+  String get moderationAppealSent;
+
+  /// Error after a moderation label appeal fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the appeal'**
+  String get moderationAppealFailed;
+
+  /// Settings toggle for allowing configurable adult-only labels
+  ///
+  /// In en, this message translates to:
+  /// **'Show adult content'**
+  String get settingAdultContent;
+
+  /// Explanation for the adult content setting
+  ///
+  /// In en, this message translates to:
+  /// **'When off, adult-only labels are hidden and cannot be overridden.'**
+  String get settingAdultContentDescription;
+
+  /// Moderation preference that shows labeled content
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get labelShow;
+
+  /// Moderation preference that turns off treatment for a label
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get labelOff;
+
+  /// Moderation preference that warns before showing labeled content
+  ///
+  /// In en, this message translates to:
+  /// **'Warn'**
+  String get labelWarn;
+
+  /// Moderation preference that shows an informational badge on labeled content
+  ///
+  /// In en, this message translates to:
+  /// **'Badge'**
+  String get labelBadge;
+
+  /// Moderation preference that hides labeled content
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get labelHide;
+
+  /// Explanation for a global label shown on a labeler settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Configured in Moderation settings.'**
+  String get moderationConfiguredGlobally;
+
+  /// Name of the built-in porn moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Adult Content'**
+  String get moderationLabelPornName;
+
+  /// Description of the built-in porn moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Explicit sexual images.'**
+  String get moderationLabelPornDescription;
+
+  /// Name of the built-in sexually suggestive moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Sexually Suggestive'**
+  String get moderationLabelSexualName;
+
+  /// Description of the built-in sexually suggestive moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Does not include nudity.'**
+  String get moderationLabelSexualDescription;
+
+  /// Name of the built-in non-sexual nudity moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Non-sexual Nudity'**
+  String get moderationLabelNudityName;
+
+  /// Description of the built-in non-sexual nudity moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'For example, artistic nudes.'**
+  String get moderationLabelNudityDescription;
+
+  /// Name of the built-in graphic media moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Graphic Media'**
+  String get moderationLabelGraphicMediaName;
+
+  /// Description of the built-in graphic media moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Explicit or potentially disturbing media.'**
+  String get moderationLabelGraphicMediaDescription;
+
+  /// Name of the built-in gore moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Gore'**
+  String get moderationLabelGoreName;
+
+  /// Description of the built-in gore moderation label
+  ///
+  /// In en, this message translates to:
+  /// **'Graphic depictions of severe injury, blood, or death.'**
+  String get moderationLabelGoreDescription;
+
+  /// Error shown when a labeler cannot be resolved, validated, or saved
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add that labeler. Check the DID or handle and try again.'**
+  String get errorAddingLabeler;
+
+  /// Label for choosing the service that receives a moderation report
+  ///
+  /// In en, this message translates to:
+  /// **'Moderation service'**
+  String get moderationService;
+
+  /// Fallback name for the app's default moderation service
+  ///
+  /// In en, this message translates to:
+  /// **'Default moderation service'**
+  String get moderationDefaultService;
+
+  /// Message when no subscribed moderation service supports a report
+  ///
+  /// In en, this message translates to:
+  /// **'None of your moderation services accepts this type of report.'**
+  String get moderationNoCompatibleService;
+
+  /// Error shown when compatible moderation services cannot be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load moderation services.'**
+  String get moderationServiceLoadFailed;
 
   /// Send button text
   ///

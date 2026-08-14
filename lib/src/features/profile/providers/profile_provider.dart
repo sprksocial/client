@@ -292,6 +292,7 @@ class ProfileNotifier extends _$ProfileNotifier {
     required String did,
     required ReasonType reasonType,
     String? reason,
+    String? serviceDid,
   }) async {
     if (!authRepository.isAuthenticated) {
       logger.w('Cannot create report, user not authenticated');
@@ -313,6 +314,7 @@ class ProfileNotifier extends _$ProfileNotifier {
           reasonType: reasonType,
           reason: reason,
         ),
+        serviceDid: serviceDid,
       );
       logger.i('Report created successfully for $did');
       return result;

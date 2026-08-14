@@ -3,6 +3,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/search/providers/search_provider.dart';
@@ -187,51 +189,57 @@ class _UserResultsState extends ConsumerState<UserResults>
         final isFollowing = actor.viewer?.following != null;
         final hasStories = actor.stories?.isNotEmpty ?? false;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: ProfileCard(
-            imageUrl: actor.avatar?.toString() ?? '',
-            userName: actor.displayName ?? actor.handle,
-            userHandle: '@${actor.handle}',
-            description: actor.description ?? '',
-            isFollowing: isFollowing,
-            onFollowingChanged: (shouldFollow) {
-              final notifier = ref.read(searchProvider.notifier);
-              if (shouldFollow) {
-                notifier.followUser(actor.did);
-              } else {
-                notifier.unfollowUser(
-                  actor.did,
-                  actor.viewer?.following ?? AtUri.parse(''),
-                );
-              }
-            },
-            showFollowButton: !ref
-                .read(searchProvider.notifier)
-                .isCurrentUser(actor.did),
-            hasStories: hasStories,
-            onAvatarTap: hasStories
-                ? () => openStoriesForProfile(
-                    context,
-                    actor,
-                    source: 'user search',
-                  )
-                : null,
-            onTap: () {
-              if (actor.did.isNotEmpty) {
-                context.router.push(
-                  ProfileRoute(
-                    did: actor.did,
-                    initialProfile: ProfileViewBasic(
+        return ModeratedContent(
+          labels: actor.labels ?? const [],
+          target: ModerationTarget.account,
+          context: ModerationContext.profileList,
+          subjectDid: actor.did,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: ProfileCard(
+              imageUrl: actor.avatar?.toString() ?? '',
+              userName: actor.displayName ?? actor.handle,
+              userHandle: '@${actor.handle}',
+              description: actor.description ?? '',
+              isFollowing: isFollowing,
+              onFollowingChanged: (shouldFollow) {
+                final notifier = ref.read(searchProvider.notifier);
+                if (shouldFollow) {
+                  notifier.followUser(actor.did);
+                } else {
+                  notifier.unfollowUser(
+                    actor.did,
+                    actor.viewer?.following ?? AtUri.parse(''),
+                  );
+                }
+              },
+              showFollowButton: !ref
+                  .read(searchProvider.notifier)
+                  .isCurrentUser(actor.did),
+              hasStories: hasStories,
+              onAvatarTap: hasStories
+                  ? () => openStoriesForProfile(
+                      context,
+                      actor,
+                      source: 'user search',
+                    )
+                  : null,
+              onTap: () {
+                if (actor.did.isNotEmpty) {
+                  context.router.push(
+                    ProfileRoute(
                       did: actor.did,
-                      handle: actor.handle,
-                      displayName: actor.displayName,
-                      avatar: actor.avatar,
+                      initialProfile: ProfileViewBasic(
+                        did: actor.did,
+                        handle: actor.handle,
+                        displayName: actor.displayName,
+                        avatar: actor.avatar,
+                      ),
                     ),
-                  ),
-                );
-              }
-            },
+                  );
+                }
+              },
+            ),
           ),
         );
       },

@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/design_system/templates/explore_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_state.dart';
@@ -154,7 +156,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 }
 
-class _ActorTypeaheadSuggestions extends StatelessWidget {
+class _ActorTypeaheadSuggestions extends ConsumerWidget {
   const _ActorTypeaheadSuggestions({
     required this.state,
     required this.onSuggestionSelected,
@@ -164,7 +166,7 @@ class _ActorTypeaheadSuggestions extends StatelessWidget {
   final ValueChanged<ProfileViewBasic> onSuggestionSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
     if (state.isLoading && state.results.isEmpty) {
@@ -212,15 +214,21 @@ class _ActorTypeaheadSuggestions extends StatelessWidget {
       itemBuilder: (context, index) {
         final actor = state.results[index];
 
-        return ListTile(
-          onTap: () => onSuggestionSelected(actor),
-          contentPadding: const EdgeInsets.symmetric(vertical: 4),
-          leading: UserAvatar(
-            imageUrl: actor.avatar?.toString() ?? '',
-            size: 36,
+        return ModeratedContent(
+          labels: actor.labels ?? const [],
+          target: ModerationTarget.account,
+          context: ModerationContext.profileList,
+          subjectDid: actor.did,
+          child: ListTile(
+            onTap: () => onSuggestionSelected(actor),
+            contentPadding: const EdgeInsets.symmetric(vertical: 4),
+            leading: UserAvatar(
+              imageUrl: actor.avatar?.toString() ?? '',
+              size: 36,
+            ),
+            title: Text(actor.displayName ?? actor.handle),
+            subtitle: Text('@${actor.handle}'),
           ),
-          title: Text(actor.displayName ?? actor.handle),
-          subtitle: Text('@${actor.handle}'),
         );
       },
     );

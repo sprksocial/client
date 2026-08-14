@@ -81,7 +81,7 @@ class SoundRepositoryImpl implements SoundRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final response = AudioPostsResponse.fromJson(result.data.toJson());
 
@@ -115,7 +115,7 @@ class SoundRepositoryImpl implements SoundRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final response = TrendingAudiosResponse.fromJson(result.data.toJson());
 
@@ -158,7 +158,7 @@ class SoundRepositoryImpl implements SoundRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final response = SearchAudiosResponse.fromJson(result.data.toJson());
 

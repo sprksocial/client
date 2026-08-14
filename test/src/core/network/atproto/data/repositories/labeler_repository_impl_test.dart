@@ -34,6 +34,10 @@ void main() {
           request.headers['atproto-proxy'],
           'did:web:sprk.test#sprk_appview',
         );
+        expect(
+          request.headers['atproto-accept-labelers'],
+          'did:web:mod.sprk.test',
+        );
         expect(service.creator.did, 'did:plc:labeler-one');
       },
     );
@@ -56,6 +60,64 @@ void main() {
       expect(request.uri.queryParameters['detailed'], 'true');
       expect(service.creator.did, 'did:plc:labeler-one');
       expect(service.policies.labelValues, isEmpty);
+    });
+
+    test(
+      'resolveIdentifier resolves handles directly through the PDS',
+      () async {
+        final harness = RepositoryHarness(
+          getResponse: const {'did': 'did:plc:resolved'},
+        );
+        final repository = LabelerRepositoryImpl(
+          harness.sprk,
+          logger: SparkLogger(),
+        );
+
+        final did = await repository.resolveIdentifier('@labeler.test');
+
+        final request = harness.transport.singleRequest;
+        expect(request.uri.path, '/xrpc/com.atproto.identity.resolveHandle');
+        expect(request.uri.queryParameters['handle'], 'labeler.test');
+        expect(request.headers, isNot(contains('atproto-proxy')));
+        expect(request.headers, isNot(contains('atproto-accept-labelers')));
+        expect(did, 'did:plc:resolved');
+      },
+    );
+
+    test('resolveIdentifier normalizes DIDs without transport', () async {
+      final harness = RepositoryHarness();
+      final repository = LabelerRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+
+      expect(
+        await repository.resolveIdentifier(' did:plc:labeler#service '),
+        'did:plc:labeler',
+      );
+      expect(harness.transport.requests, isEmpty);
+    });
+
+    test('validateService rejects a mismatched returned service', () {
+      final harness = RepositoryHarness();
+      harness.transport.enqueueGet({
+        'views': [_detailedLabeler],
+      });
+      final repository = LabelerRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+
+      expect(
+        repository.validateService('did:plc:different'),
+        throwsA(
+          isA<Exception>().having(
+            (error) => error.toString(),
+            'message',
+            contains('does not match'),
+          ),
+        ),
+      );
     });
 
     test('getServices rejects an empty server result', () {

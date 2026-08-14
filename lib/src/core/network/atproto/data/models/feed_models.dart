@@ -589,6 +589,11 @@ sealed class ThreadPost with _$ThreadPost {
     ThreadReplyView(:final reply) => reply.indexedAt,
   };
 
+  List<Label>? get labels => switch (this) {
+    ThreadPostView(:final post) => post.labels,
+    ThreadReplyView(:final reply) => reply.labels,
+  };
+
   String get videoUrl => switch (this) {
     ThreadPostView(:final post) => post.videoUrl,
     ThreadReplyView() => '', // Replies cannot have videos

@@ -189,6 +189,7 @@ class FakeSprkRepository implements SprkRepository {
   static const testBskyDid = 'did:web:bsky.test#bsky_appview';
 
   final FakeAuthRepository auth;
+  List<String> _labelerDids = ['did:web:mod.sprk.test'];
 
   @override
   final RepoRepository repo;
@@ -207,6 +208,26 @@ class FakeSprkRepository implements SprkRepository {
 
   @override
   String get bskyModDid => 'did:web:mod.bsky.test';
+
+  @override
+  List<String> get labelerDids => List.unmodifiable(_labelerDids);
+
+  @override
+  void configureLabelers(Iterable<String> labelerDids) {
+    _labelerDids = labelerDids.toSet().toList();
+  }
+
+  @override
+  Map<String, String> appViewHeaders(
+    String? proxyDid, {
+    Iterable<String>? labelerDids,
+  }) {
+    final accepted = labelerDids?.toList() ?? _labelerDids;
+    return {
+      'atproto-proxy': ?proxyDid,
+      if (accepted.isNotEmpty) 'atproto-accept-labelers': accepted.join(','),
+    };
+  }
 
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) => apiCall();

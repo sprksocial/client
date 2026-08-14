@@ -5,6 +5,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart' as flutter_widgets show Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
@@ -14,6 +17,7 @@ import 'package:video_player/video_player.dart';
 class StoryPage extends ConsumerStatefulWidget {
   const StoryPage({
     required this.story,
+    required this.isActive,
     super.key,
     this.onLoadingStateChanged,
     this.onStoryDurationChanged,
@@ -24,6 +28,7 @@ class StoryPage extends ConsumerStatefulWidget {
   });
 
   final StoryView story;
+  final bool isActive;
   final ValueChanged<bool>? onLoadingStateChanged;
   final ValueChanged<Duration>? onStoryDurationChanged;
   final VoidCallback? onPauseRequested;
@@ -42,6 +47,7 @@ class _StoryPageState extends ConsumerState<StoryPage>
   bool _isVideoInitialized = false;
   bool _isImageLoaded = false;
   bool _isLoading = true;
+  bool? _moderationConcealed;
 
   @override
   void initState() {
@@ -61,6 +67,14 @@ class _StoryPageState extends ConsumerState<StoryPage>
   @override
   void didUpdateWidget(covariant StoryPage oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.isActive != widget.isActive) {
+      if (widget.isActive) {
+        _applyModerationPlaybackState();
+      } else {
+        _videoController?.pause();
+      }
+    }
 
     // If this page becomes active after being prebuilt, ensure the parent gets
     // the latest loading state immediately.
@@ -106,7 +120,9 @@ class _StoryPageState extends ConsumerState<StoryPage>
           await _videoController!.initialize();
           await _videoController!.setLooping(true);
           widget.onStoryDurationChanged?.call(_resolvedStoryDuration());
-          await _videoController!.play();
+          if (widget.isActive && _moderationConcealed == false) {
+            await _videoController!.play();
+          }
           if (mounted) {
             setState(() {
               _isVideoInitialized = true;
@@ -244,88 +260,107 @@ class _StoryPageState extends ConsumerState<StoryPage>
       );
     }
 
-    // Wrap the media in a Stack to overlay gradient shadows for readability.
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final destinationRect = _resolveMediaRect(
-            containerSize: constraints.biggest,
-            sourceSize: sourceSize,
-          );
+    final selfLabels = widget.story.localRecord?.selfLabels ?? const [];
+    final labels = [
+      for (final selfLabel in selfLabels)
+        Label(
+          src: widget.story.author.did,
+          uri: widget.story.uri.toString(),
+          val: selfLabel.val,
+          cts: widget.story.indexedAt,
+        ),
+    ];
 
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              mediaContent,
-              Positioned(
-                top: 80,
-                bottom: 0,
-                left: 0,
-                width: constraints.maxWidth * 0.3,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: widget.onPrevious,
-                  child: const SizedBox.expand(),
+    // Story labels are stored on the record rather than StoryView itself.
+    return ModeratedContent(
+      labels: labels,
+      authorLabels: widget.story.author.labels ?? const [],
+      target: ModerationTarget.content,
+      context: ModerationContext.contentView,
+      subjectDid: widget.story.author.did,
+      onConcealChanged: _onModerationConcealChanged,
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final destinationRect = _resolveMediaRect(
+              containerSize: constraints.biggest,
+              sourceSize: sourceSize,
+            );
+
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                mediaContent,
+                Positioned(
+                  top: 80,
+                  bottom: 0,
+                  left: 0,
+                  width: constraints.maxWidth * 0.3,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: widget.onPrevious,
+                    child: const SizedBox.expand(),
+                  ),
                 ),
-              ),
-              Positioned(
-                top: 80,
-                bottom: 0,
-                right: 0,
-                width: constraints.maxWidth * 0.3,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: widget.onNext,
-                  child: const SizedBox.expand(),
+                Positioned(
+                  top: 80,
+                  bottom: 0,
+                  right: 0,
+                  width: constraints.maxWidth * 0.3,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: widget.onNext,
+                    child: const SizedBox.expand(),
+                  ),
                 ),
-              ),
-              ..._buildMentionEmbeds(destinationRect),
-              // Top shadow overlay
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: IgnorePointer(
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black87.withAlpha(100),
-                          Colors.transparent,
-                        ],
+                ..._buildMentionEmbeds(destinationRect),
+                // Top shadow overlay
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black87.withAlpha(100),
+                            Colors.transparent,
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              // Bottom shadow overlay
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: IgnorePointer(
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black87.withAlpha(100),
-                          Colors.transparent,
-                        ],
+                // Bottom shadow overlay
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black87.withAlpha(100),
+                            Colors.transparent,
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -406,5 +441,20 @@ class _StoryPageState extends ConsumerState<StoryPage>
   bool _isValidMentionEmbed(StoryEmbedPlacement placement) {
     final frame = placement.frame;
     return frame.w > 0 && frame.h > 0;
+  }
+
+  void _onModerationConcealChanged(bool concealed) {
+    _moderationConcealed = concealed;
+    if (widget.isActive) _applyModerationPlaybackState();
+  }
+
+  void _applyModerationPlaybackState() {
+    if (_moderationConcealed != false) {
+      _videoController?.pause();
+      widget.onPauseRequested?.call();
+    } else {
+      _videoController?.play();
+      widget.onResumeRequested?.call();
+    }
   }
 }

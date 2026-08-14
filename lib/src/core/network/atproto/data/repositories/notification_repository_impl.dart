@@ -65,7 +65,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
           priority: priority,
           reasons: reasons == null || reasons.isEmpty ? null : reasons,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
 
       _logger.d('Notifications retrieved successfully');
@@ -93,7 +93,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         parameters: sprk_get_unread_count.NotificationGetUnreadCountInput(
           priority: priority,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
 
       final output = result.data;

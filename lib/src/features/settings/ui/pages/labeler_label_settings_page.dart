@@ -1,20 +1,21 @@
-import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
-import 'package:sprk_poptart/so/sprk/labeler/get_services.dart'
-    as sprk_get_services;
 
 @RoutePage()
 class LabelerLabelSettingsPage extends ConsumerStatefulWidget {
@@ -35,7 +36,7 @@ class _LabelerLabelSettingsPageState
 
   ProfileViewDetailed? _labelerProfile;
   Map<String, LabelPreference> _labelPreferences = {};
-  Map<String, Map<String, dynamic>> _labelDefinitions = {};
+  Map<String, ModerationLabelDefinition> _labelDefinitions = {};
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -75,94 +76,70 @@ class _LabelerLabelSettingsPageState
         _logger.w('Could not fetch labeler profile: $e');
       }
 
-      // Fetch labeler policies
-      final rawResponse = await _sprkRepository.executeWithRetry(() async {
-        if (!_sprkRepository.authRepository.isAuthenticated) {
-          throw Exception('Not authenticated');
-        }
-        final atproto = _sprkRepository.authRepository.atproto;
-        if (atproto == null) {
-          throw Exception('AtProto not initialized');
-        }
-        final result = await atproto.call(
-          sprk_get_services.soSprkLabelerGetServices,
-          parameters: sprk_get_services.LabelerGetServicesInput(
-            dids: [widget.did],
-            detailed: true,
-          ),
-          headers: {'atproto-proxy': _sprkRepository.sprkDid},
-        );
-        if (result.status != HttpStatus.ok) {
-          throw Exception('Failed to retrieve labeler services');
-        }
-        return result.data.toJson();
-      });
-
-      final viewsJson = rawResponse['views'] as List<dynamic>?;
-      if (viewsJson == null || viewsJson.isEmpty) {
-        throw Exception('No labeler views returned');
-      }
-
-      final viewJson = viewsJson.first as Map<String, dynamic>;
-      final policiesJson = viewJson['policies'] as Map<String, dynamic>?;
-
-      if (policiesJson == null) {
-        throw Exception('No policies found for labeler');
-      }
-
+      final service = await _sprkRepository.labeler.getServicesDetailed([
+        widget.did,
+      ]);
+      final policiesJson = service.policies.toJson();
       final labelValuesJson = policiesJson['labelValues'] as List<dynamic>?;
       if (labelValuesJson == null || labelValuesJson.isEmpty) {
         throw Exception('No label values found for labeler');
       }
 
-      final labelValues = labelValuesJson.map((v) => v as String).toList();
+      final labelValues = labelValuesJson.cast<String>();
 
-      // Extract labelValueDefinitions
-      final labelValueDefinitionsJson =
-          policiesJson['labelValueDefinitions'] as List<dynamic>?;
-      final labelDefinitionMap = <String, Map<String, dynamic>>{};
-      if (labelValueDefinitionsJson != null) {
-        for (final defJson in labelValueDefinitionsJson) {
-          final def = defJson as Map<String, dynamic>;
-          final identifier = def['identifier'] as String?;
-          if (identifier != null) {
-            labelDefinitionMap[identifier] = def;
-          }
-        }
-      }
+      final definitions = ModerationLabelDefinitions.fromLabelers({
+        widget.did:
+            service.policies.labelValueDefinitions ??
+            const <LabelValueDefinition>[],
+      });
+      final labelDefinitionMap = <String, ModerationLabelDefinition>{
+        for (final labelValue in labelValues)
+          labelValue:
+              ?definitions.bySource[widget.did]?[labelValue] ??
+              definitions.global[labelValue],
+      };
 
       // Get existing preferences for this labeler
       final settings = ref.read(settingsProvider.notifier);
-      final existingPrefs = await settings.getLabelPreferencesForLabeler(
+      final existingSettings = await settings.getLabelSettingsForLabeler(
         widget.did,
       );
+      final globalSettings = <String, Setting>{
+        for (final preference
+            in (await ref.read(
+                  userPreferencesProvider.future,
+                )).contentLabelPrefs ??
+                const <ContentLabelPref>[])
+          if (preference.labelerDid == null)
+            preference.label: _visibilityToSetting(
+              preference.visibility.toJson(),
+            ),
+      };
       final preferences = <String, LabelPreference>{};
 
       // Create preferences for all label values
       for (final labelValue in labelValues) {
-        if (existingPrefs.containsKey(labelValue)) {
-          preferences[labelValue] = existingPrefs[labelValue]!;
-        } else {
-          // Create default preference
-          String defaultVisibility;
-          final definition = labelDefinitionMap[labelValue];
-          if (definition != null) {
-            defaultVisibility =
-                definition['defaultSetting'] as String? ?? 'warn';
-          } else {
-            defaultVisibility = _getDefaultVisibilityForLabel(labelValue);
-          }
-
-          final defaultPref = LabelPreference(
-            value: labelValue,
-            blurs: _visibilityToBlurs(defaultVisibility),
-            severity: _visibilityToSeverity(defaultVisibility),
-            defaultSetting: _visibilityToSetting(defaultVisibility),
-            setting: _visibilityToSetting(defaultVisibility),
-            adultOnly: _isAdultOnlyLabel(labelValue),
-          );
-          preferences[labelValue] = defaultPref;
-        }
+        final definition = labelDefinitionMap[labelValue];
+        final defaultSetting = definition == null
+            ? _visibilityToSetting(_getDefaultVisibilityForLabel(labelValue))
+            : Setting.fromValue(definition.defaultSetting.name);
+        final savedSetting = globalAdultContentLabelValues.contains(labelValue)
+            ? globalSettings[labelValue] ??
+                  existingSettings[labelValue] ??
+                  defaultSetting
+            : existingSettings[labelValue] ?? defaultSetting;
+        preferences[labelValue] = LabelPreference(
+          value: labelValue,
+          blurs: definition == null
+              ? _visibilityToBlurs(_getDefaultVisibilityForLabel(labelValue))
+              : Blurs.fromValue(definition.blurs.name),
+          severity: definition == null
+              ? _visibilityToSeverity(_getDefaultVisibilityForLabel(labelValue))
+              : Severity.fromValue(definition.severity.name),
+          defaultSetting: defaultSetting,
+          setting: savedSetting,
+          adultOnly: definition?.adultOnly ?? false,
+        );
       }
 
       setState(() {
@@ -241,40 +218,21 @@ class _LabelerLabelSettingsPageState
     }
   }
 
-  bool _isAdultOnlyLabel(String label) {
-    const adultOnlyLabels = {'porn', 'sexual', 'nsfl'};
-    return adultOnlyLabels.contains(label);
-  }
-
-  Future<void> _updateLabelPreference(
-    String label, {
-    Setting? setting,
-    Blurs? blurs,
-    Severity? severity,
-  }) async {
+  Future<void> _updateLabelPreference(String label, {Setting? setting}) async {
     try {
       final currentPref = _labelPreferences[label];
       if (currentPref != null) {
         final newSetting = setting ?? currentPref.setting;
-        final newBlurs = blurs ?? currentPref.blurs;
-        final newSeverity = severity ?? currentPref.severity;
 
         final settings = ref.read(settingsProvider.notifier);
         await settings.setLabelPreferenceForLabeler(
           widget.did,
           label,
-          newBlurs,
-          newSeverity,
-          currentPref.adultOnly,
           newSetting,
         );
 
         setState(() {
-          _labelPreferences[label] = currentPref.copyWith(
-            setting: newSetting,
-            blurs: newBlurs,
-            severity: newSeverity,
-          );
+          _labelPreferences[label] = currentPref.copyWith(setting: newSetting);
         });
       }
     } catch (e) {
@@ -287,6 +245,9 @@ class _LabelerLabelSettingsPageState
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final adultContentEnabled =
+        ref.watch(userPreferencesProvider).asData?.value.adultContentEnabled ??
+        false;
 
     if (_isLoading) {
       return Scaffold(
@@ -502,28 +463,35 @@ class _LabelerLabelSettingsPageState
                   .where((entry) => !entry.key.startsWith('!'))
                   .map((entry) {
                     final definition = _labelDefinitions[entry.key];
-                    String? labelName;
-                    String? labelDescription;
-
-                    if (definition != null) {
-                      final locales = definition['locales'] as List<dynamic>?;
-                      if (locales != null && locales.isNotEmpty) {
-                        // TODO: match user's locale instead of first
-                        final firstLocale =
-                            locales.first as Map<String, dynamic>;
-                        labelName = firstLocale['name'] as String?;
-                        labelDescription =
-                            firstLocale['description'] as String?;
-                      }
-                    }
+                    final configuredGlobally = globalAdultContentLabelValues
+                        .contains(entry.key);
+                    final strings = definition?.localizedStrings(
+                      l10n,
+                      preferredLocales: [
+                        Localizations.localeOf(context).toLanguageTag(),
+                      ],
+                    );
 
                     return LabelSettingTile(
                       label: entry.key,
-                      preference: entry.value,
-                      onPreferenceUpdate: _updateLabelPreference,
-                      labelName: labelName,
-                      labelDescription: labelDescription,
-                      showSeverity: false,
+                      controlContext: entry.value.severity == Severity.inform
+                          ? LabelSettingTileContext.informLabel
+                          : LabelSettingTileContext.label,
+                      setting: ModerationSetting.values.byName(
+                        entry.value.setting.name,
+                      ),
+                      onChanged: (setting) => _updateLabelPreference(
+                        entry.key,
+                        setting: Setting.values.byName(setting.name),
+                      ),
+                      labelName: strings?.name,
+                      labelDescription: strings?.description,
+                      disabledMessage: configuredGlobally
+                          ? l10n.moderationConfiguredGlobally
+                          : null,
+                      enabled:
+                          !configuredGlobally &&
+                          (!entry.value.adultOnly || adultContentEnabled),
                     );
                   }),
 

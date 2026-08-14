@@ -46,6 +46,7 @@ class ImageReviewPageTemplate extends StatelessWidget {
     this.mentionController,
     this.onMentionsChanged,
     this.showCrossPostWarning = false,
+    this.contentWarningSection,
     this.backgroundColor,
     this.isOverLimit = false,
   });
@@ -70,6 +71,7 @@ class ImageReviewPageTemplate extends StatelessWidget {
   final bool crossPostValue;
   final ValueChanged<bool> onCrossPostChanged;
   final bool showCrossPostWarning;
+  final Widget? contentWarningSection;
   final String? selectedSoundTitle;
   final String? selectedSoundSubtitle;
   final VoidCallback? onAddSound;
@@ -148,6 +150,10 @@ class ImageReviewPageTemplate extends StatelessWidget {
                         onMentionsChanged: onMentionsChanged,
                         maxChars: descriptionMaxChars,
                       ),
+                      if (contentWarningSection != null) ...[
+                        const SizedBox(height: 20),
+                        contentWarningSection!,
+                      ],
                       const SizedBox(height: 20),
                       _CrossPostSection(
                         value: crossPostValue,

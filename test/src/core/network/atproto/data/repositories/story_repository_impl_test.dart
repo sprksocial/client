@@ -26,6 +26,10 @@ void main() {
         'limit': '5',
         'cursor': 'page',
       });
+      expect(
+        harness.transport.singleRequest.headers['atproto-accept-labelers'],
+        'did:web:mod.sprk.test',
+      );
     });
 
     test('getStoryViews maps an empty story list', () async {
@@ -41,6 +45,10 @@ void main() {
       expect(harness.transport.singleRequest.uri.queryParametersAll['uris'], [
         uri.toString(),
       ]);
+      expect(
+        harness.transport.singleRequest.headers['atproto-accept-labelers'],
+        'did:web:mod.sprk.test',
+      );
     });
 
     test('listStoryRecords owns record paging parameters', () async {

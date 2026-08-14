@@ -37,6 +37,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
     this.uploadIndeterminate = false,
     this.hasUploadError = false,
     this.onUploadRetry,
+    this.contentWarningSection,
     super.key,
   });
 
@@ -63,6 +64,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
   final bool uploadIndeterminate;
   final bool hasUploadError;
   final VoidCallback? onUploadRetry;
+  final Widget? contentWarningSection;
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +118,10 @@ class VideoReviewPageTemplate extends StatelessWidget {
                         onMentionsChanged: onMentionsChanged,
                         maxChars: descriptionMaxChars,
                       ),
+                      if (contentWarningSection != null) ...[
+                        const SizedBox(height: 20),
+                        contentWarningSection!,
+                      ],
                       if (showCrossPost) ...[
                         const SizedBox(height: 20),
                         _CrossPostSection(

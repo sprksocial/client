@@ -77,6 +77,8 @@ abstract class Record with _$Record {
 }
 
 extension StoryRecordConvenience on StoryRecord {
+  List<SelfLabel>? get selfLabels => labels?.selfLabels?.values;
+
   List<StoryEmbed> get localEmbeds =>
       embeds
           ?.map(

@@ -289,6 +289,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                       final story = widget.stories[index];
                       return StoryPage(
                         story: story,
+                        isActive: index == _currentStoryIndex,
                         onLoadingStateChanged: (isLoading) =>
                             _onStoryLoadingStateChanged(index, isLoading),
                         onStoryDurationChanged: (duration) =>

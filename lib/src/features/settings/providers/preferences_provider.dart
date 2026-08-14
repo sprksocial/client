@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:spark/src/core/moderation/moderation_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -88,5 +89,46 @@ class UserPreferences extends _$UserPreferences {
 
     final updated = updater(current);
     await updatePreferences(updated);
+  }
+
+  Future<void> setAdultContentEnabled(bool enabled) async {
+    await updatePreferencesWithFn((current) {
+      final retained = current.preferences.where((preference) {
+        final data = preference.unknown;
+        return data?[r'$type'] != 'so.sprk.actor.defs#adultContentPref';
+      });
+      return Preferences(
+        preferences: [
+          ...retained,
+          adultContentPreference(enabled: enabled),
+        ],
+      );
+    });
+  }
+
+  Future<void> setGlobalLabelPreference(
+    String label,
+    ModerationSetting setting,
+  ) async {
+    if (!globalAdultContentLabelValues.contains(label)) {
+      throw ArgumentError.value(label, 'label', 'Not a global adult label');
+    }
+
+    await updatePreferencesWithFn((current) {
+      final retained = current.preferences.where((preference) {
+        final contentLabelPref = preference.contentLabelPref;
+        return contentLabelPref == null || contentLabelPref.label != label;
+      });
+      return Preferences(
+        preferences: [
+          ...retained,
+          contentLabelPreference(
+            labelerDid: null,
+            label: label,
+            visibility: setting.name,
+          ),
+        ],
+      );
+    });
   }
 }

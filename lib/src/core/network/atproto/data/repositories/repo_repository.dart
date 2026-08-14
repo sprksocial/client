@@ -79,5 +79,6 @@ abstract class RepoRepository {
   Future<bool> createReport({
     required ModerationCreateReportInput input,
     dynamic service,
+    String? serviceDid,
   });
 }

@@ -1,8 +1,6 @@
 import 'package:bluesky_poptart/app/bsky/feed/defs.dart' as bsky_feed_defs;
 import 'package:bluesky_poptart/app/bsky/feed/search_posts.dart'
     as bsky_feed_search_posts;
-import 'package:poptart/poptart.dart';
-import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -21,12 +19,12 @@ abstract interface class PostSearchRepository {
 class PostSearchRepositoryImpl implements PostSearchRepository {
   PostSearchRepositoryImpl(
     this._feedRepository,
-    this._authRepository,
+    this._sprkRepository,
     this._logger,
   );
 
   final FeedRepository _feedRepository;
-  final AuthRepository _authRepository;
+  final SprkRepository _sprkRepository;
   final SparkLogger _logger;
 
   @override
@@ -52,23 +50,25 @@ class PostSearchRepositoryImpl implements PostSearchRepository {
     String? cursor,
     required String sort,
   }) async {
-    final atproto = _authRepository.atproto;
-    if (atproto?.oAuthSession == null) {
-      throw StateError('Post search requires an authenticated session');
-    }
-    final api = PoptartClient.fromOAuthSession(atproto!.oAuthSession!);
-    final response = await api.call(
-      bsky_feed_search_posts.appBskyFeedSearchPosts,
-      parameters: bsky_feed_search_posts.FeedSearchPostsInput(
-        q: query,
-        sort: bsky_feed_search_posts.FeedSearchPostsSort.unknown(data: sort),
-        cursor: cursor,
-      ),
-    );
-    return (
-      posts: _convertBskyPosts(response.data.posts),
-      cursor: response.data.cursor,
-    );
+    return _sprkRepository.executeWithRetry(() async {
+      final atproto = _sprkRepository.authRepository.atproto;
+      if (!_sprkRepository.authRepository.isAuthenticated || atproto == null) {
+        throw StateError('Post search requires an authenticated session');
+      }
+      final response = await atproto.call(
+        bsky_feed_search_posts.appBskyFeedSearchPosts,
+        parameters: bsky_feed_search_posts.FeedSearchPostsInput(
+          q: query,
+          sort: bsky_feed_search_posts.FeedSearchPostsSort.unknown(data: sort),
+          cursor: cursor,
+        ),
+        headers: _sprkRepository.appViewHeaders(_sprkRepository.bskyDid),
+      );
+      return (
+        posts: _convertBskyPosts(response.data.posts),
+        cursor: response.data.cursor,
+      );
+    });
   }
 
   List<PostView> _convertBskyPosts(List<bsky_feed_defs.PostView> posts) {

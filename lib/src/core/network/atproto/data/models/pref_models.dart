@@ -74,7 +74,27 @@ Preference contentLabelPreference({
   );
 }
 
+/// Stores Spark's adult-content preference in the forward-compatible
+/// preference union until sprk_poptart exposes the typed variant.
+Preference adultContentPreference({required bool enabled}) =>
+    Preference.unknown(
+      data: {
+        r'$type': 'so.sprk.actor.defs#adultContentPref',
+        'enabled': enabled,
+      },
+    );
+
 extension PreferencesConvenience on Preferences {
+  bool get adultContentEnabled {
+    for (final preference in preferences) {
+      final data = preference.unknown;
+      if (data?[r'$type'] == 'so.sprk.actor.defs#adultContentPref') {
+        return data?['enabled'] == true;
+      }
+    }
+    return false;
+  }
+
   List<ContentLabelPref>? get contentLabelPrefs {
     final prefs = preferences
         .map((preference) => preference.contentLabelPref)
@@ -152,8 +172,4 @@ extension PreferencesConvenience on Preferences {
 
 extension SavedFeedConvenience on SavedFeed {
   String get typeValue => type.toJson();
-}
-
-extension ContentLabelPrefConvenience on ContentLabelPref {
-  String get visibilityValue => visibility.toJson();
 }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
@@ -58,40 +60,49 @@ class UserListView extends ConsumerWidget {
         }
         final user = users[index];
         final hasStories = user.stories?.isNotEmpty ?? false;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: ProfileCard(
-            imageUrl: user.avatar?.toString() ?? '',
-            userName: user.displayName ?? user.handle,
-            userHandle: '@${user.handle}',
-            description: user.description,
-            isFollowing: user.viewer?.following != null,
-            onFollowingChanged: (shouldFollow) {
-              final notifier = ref.read(
-                userListProvider(did: did, type: type).notifier,
-              );
-              if (shouldFollow) {
-                notifier.followUser(user.did);
-              } else {
-                notifier.unfollowUser(user.did);
-              }
-            },
-            showFollowButton: !ref
-                .read(userListProvider(did: did, type: type).notifier)
-                .isCurrentUser(user.did),
-            hasStories: hasStories,
-            onAvatarTap: hasStories
-                ? () =>
-                      openStoriesForProfile(context, user, source: 'user list')
-                : null,
-            onTap: () => context.router.push(
-              ProfileRoute(
-                did: user.did,
-                initialProfile: ProfileViewBasic(
+        return ModeratedContent(
+          labels: user.labels ?? const [],
+          target: ModerationTarget.account,
+          context: ModerationContext.profileList,
+          subjectDid: user.did,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: ProfileCard(
+              imageUrl: user.avatar?.toString() ?? '',
+              userName: user.displayName ?? user.handle,
+              userHandle: '@${user.handle}',
+              description: user.description,
+              isFollowing: user.viewer?.following != null,
+              onFollowingChanged: (shouldFollow) {
+                final notifier = ref.read(
+                  userListProvider(did: did, type: type).notifier,
+                );
+                if (shouldFollow) {
+                  notifier.followUser(user.did);
+                } else {
+                  notifier.unfollowUser(user.did);
+                }
+              },
+              showFollowButton: !ref
+                  .read(userListProvider(did: did, type: type).notifier)
+                  .isCurrentUser(user.did),
+              hasStories: hasStories,
+              onAvatarTap: hasStories
+                  ? () => openStoriesForProfile(
+                      context,
+                      user,
+                      source: 'user list',
+                    )
+                  : null,
+              onTap: () => context.router.push(
+                ProfileRoute(
                   did: user.did,
-                  handle: user.handle,
-                  displayName: user.displayName,
-                  avatar: user.avatar,
+                  initialProfile: ProfileViewBasic(
+                    did: user.did,
+                    handle: user.handle,
+                    displayName: user.displayName,
+                    avatar: user.avatar,
+                  ),
                 ),
               ),
             ),

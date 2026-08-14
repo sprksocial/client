@@ -82,12 +82,14 @@ void main() {
         uploadResult: upload,
         storyMode: true,
         storyEmbeds: [embed],
+        selfLabels: const [SelfLabel(val: 'nudity')],
       );
 
       expect(result, storyRepository.result);
       expect(soundRepository.createdBlobs, [upload.audioBlob]);
       expect(storyRepository.soundRef, createdSound);
       expect(storyRepository.embeds, [embed]);
+      expect(storyRepository.selfLabels, const [SelfLabel(val: 'nudity')]);
       expect(storyRepository.media, isA<MediaVideo>());
       expect((storyRepository.media! as MediaVideo).video, upload.videoBlob);
       expect(repoRepository.createCalls, isEmpty);
@@ -120,6 +122,10 @@ void main() {
       altText: 'a short clip',
       aspectRatio: const MediaAspectRatio(width: 9, height: 16),
       soundRef: sound,
+      selfLabels: const [
+        SelfLabel(val: 'sexual'),
+        SelfLabel(val: 'graphic-media'),
+      ],
     );
 
     expect(result, repoRepository.sparkResult);
@@ -134,6 +140,10 @@ void main() {
       'height': 16,
     });
     expect(call.record['sound'], sound.toJson());
+    expect(call.record['labels']['values'], [
+      {r'$type': 'com.atproto.label.defs#selfLabel', 'val': 'sexual'},
+      {r'$type': 'com.atproto.label.defs#selfLabel', 'val': 'graphic-media'},
+    ]);
     expect(repoRepository.editCalls, isEmpty);
   });
 
@@ -146,6 +156,7 @@ void main() {
         uploadResult: upload,
         description: 'crosspost me',
         crosspostToBsky: true,
+        selfLabels: const [SelfLabel(val: 'porn')],
       );
 
       expect(result, repoRepository.editedResult);
@@ -154,6 +165,9 @@ void main() {
         'app.bsky.feed.post',
       ]);
       expect(repoRepository.createCalls.last.rkey, 'spark-rkey');
+      expect(repoRepository.createCalls.last.record['labels']['values'], [
+        {r'$type': 'com.atproto.label.defs#selfLabel', 'val': 'porn'},
+      ]);
       expect(repoRepository.editCalls, hasLength(1));
       expect(
         repoRepository.editCalls.single.uri,
@@ -233,6 +247,7 @@ class _FakeStoryRepository implements StoryRepository {
   Media? media;
   RepoStrongRef? soundRef;
   List<StoryEmbed>? embeds;
+  List<SelfLabel>? selfLabels;
 
   @override
   Future<RepoStrongRef> postStory(
@@ -245,6 +260,7 @@ class _FakeStoryRepository implements StoryRepository {
     this.media = media;
     this.soundRef = soundRef;
     this.embeds = embeds;
+    this.selfLabels = selfLabels;
     return result;
   }
 

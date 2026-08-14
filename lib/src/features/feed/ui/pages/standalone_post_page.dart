@@ -8,19 +8,18 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/app_overla
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/media/media_playback_gate.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_video_aspect_ratio.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
-import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/post_updates.dart';
 import 'package:spark/src/features/feed/navigation/standalone_post_navigation_resolver.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
@@ -41,9 +40,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Future<ResolvedStandalonePost>? _postFuture;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey =
       GlobalKey<PostVideoPlayerState>();
-  bool _showWarningOverlay = false;
-  List<String> _warningLabels = [];
-  bool _shouldBlurContent = false;
+  bool _moderationConcealed = false;
   bool _hasOpenedHighlightedReply = false;
   String? _activePostUri;
   ProviderSubscription<int>? _anchorUpdateSubscription;
@@ -72,7 +69,6 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       if (mounted) {
         _activePostUri = resolvedPost.post.uri.toString();
         _bindResolvedPostUpdates(_activePostUri);
-        _checkContentWarning(resolvedPost.post);
         _openHighlightedReplyIfNeeded(resolvedPost);
       }
     });
@@ -163,40 +159,6 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
     );
   }
 
-  void _checkContentWarning(PostView postData) {
-    final labels = postData.labels ?? [];
-    final preferences = ref.read(userPreferencesProvider).asData?.value;
-
-    if (labels.isNotEmpty && preferences != null) {
-      final shouldShowWarning = LabelUtils.shouldShowWarning(
-        preferences,
-        labels,
-      );
-      final shouldBlurContent = LabelUtils.shouldBlurContent(
-        preferences,
-        labels,
-      );
-      if (shouldShowWarning) {
-        final warningLabels = LabelUtils.getWarningLabels(preferences, labels);
-        setState(() {
-          _showWarningOverlay = true;
-          _warningLabels = warningLabels;
-          _shouldBlurContent = shouldBlurContent;
-        });
-      } else {
-        setState(() {
-          _showWarningOverlay = false;
-          _warningLabels = [];
-        });
-      }
-    } else {
-      setState(() {
-        _showWarningOverlay = false;
-        _warningLabels = [];
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -217,7 +179,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
               Positioned.fill(
                 child: postData!.videoUrl.isNotEmpty
                     ? MediaPlaybackGate(
-                        isActive: true,
+                        isActive: !_moderationConcealed,
                         builder: (context, shouldPlay) {
                           return PostVideoPlayer(
                             key: _videoPlayerKey,
@@ -247,20 +209,20 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
             ],
           );
 
-          if (_showWarningOverlay && _warningLabels.isNotEmpty) {
-            content = ContentWarningOverlay(
-              onViewContent: () {
-                setState(() {
-                  _showWarningOverlay = false;
-                });
-              },
-              warningLabels: _warningLabels,
-              shouldBlur: _shouldBlurContent,
-              child: mainContent,
-            );
-          } else {
-            content = mainContent;
-          }
+          content = ModeratedContent(
+            key: ValueKey(postData.uri.toString()),
+            labels: postData.labels ?? const [],
+            authorLabels: postData.author.labels ?? const [],
+            target: ModerationTarget.content,
+            context: ModerationContext.contentView,
+            subjectDid: postData.author.did,
+            onConcealChanged: (concealed) {
+              if (mounted && _moderationConcealed != concealed) {
+                setState(() => _moderationConcealed = concealed);
+              }
+            },
+            child: mainContent,
+          );
         } else if (snapshot.hasError) {
           content = Center(
             child: Column(

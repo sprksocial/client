@@ -5,8 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -47,6 +48,9 @@ void main() {
           SettingsState(activeFeed: activeFeed ?? feed),
         ),
         feedSettingsGatewayProvider.overrideWithValue(settingsGateway),
+        moderationEngineProvider.overrideWith(
+          (ref) async => _moderationEngine(settingsGateway.hiddenLabels),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -205,6 +209,120 @@ void main() {
     },
   );
 
+  test('author labels retain account and profile subject semantics', () async {
+    settingsGateway.hiddenLabels.add('blocked');
+    final profileLabeledPost = _post(
+      'profile-labeled',
+      authorLabels: [_authorLabel(profileRecord: true)],
+    );
+    final accountLabeledPost = _post(
+      'account-labeled',
+      authorLabels: [_authorLabel()],
+    );
+    feedRepository.enqueue(_page([profileLabeledPost, accountLabeledPost]));
+    final container = createContainer();
+    final notifier = readNotifier(container);
+
+    await notifier.loadAndUpdateFirstLoad();
+
+    expect(
+      container.read(feedProvider(feed)).loadedPosts.map((post) => post.uri),
+      [profileLabeledPost.uri],
+    );
+  });
+
+  test(
+    'a newer negation clears a cached label without duplicating the post',
+    () async {
+      final original = _post(
+        'updated-label',
+        labels: [
+          Label(
+            src: 'did:plc:moderator',
+            uri: 'at://did:plc:author/so.sprk.feed.post/updated-label',
+            val: 'sexual',
+            cts: _indexedAt,
+          ),
+        ],
+      );
+      final retracted = _post(
+        'updated-label',
+        labels: [
+          Label(
+            src: 'did:plc:moderator',
+            uri: 'at://did:plc:author/so.sprk.feed.post/updated-label',
+            val: 'sexual',
+            neg: true,
+            cts: _indexedAt.add(const Duration(minutes: 1)),
+          ),
+        ],
+      );
+      feedRepository
+        ..enqueue(_page([original], cursor: 'next'))
+        ..enqueue(_page([retracted]));
+      final container = createContainer();
+      final notifier = readNotifier(container);
+
+      await notifier.loadAndUpdateFirstLoad();
+      await notifier.scrollDown();
+
+      final state = container.read(feedProvider(feed));
+      expect(state.loadedPosts, hasLength(1));
+      expect(state.loadedPosts.single.labels, isEmpty);
+      expect(state.extraInfo[original.uri]!.postLabels, isEmpty);
+    },
+  );
+
+  test('an all-hidden update removes the stale loaded post', () async {
+    settingsGateway.hiddenLabels.add('blocked');
+    final visible = _post('newly-hidden');
+    final hidden = _post('newly-hidden', label: 'blocked');
+    feedRepository
+      ..enqueue(_page([visible], cursor: 'next'))
+      ..enqueue(_page([hidden]));
+    final container = createContainer();
+    final notifier = readNotifier(container);
+
+    await notifier.loadAndUpdateFirstLoad();
+    expect(
+      container.read(feedProvider(feed)).loadedPosts.map((post) => post.uri),
+      [visible.uri],
+    );
+
+    await notifier.scrollDown();
+
+    final state = container.read(feedProvider(feed));
+    expect(state.loadedPosts, isEmpty);
+    expect(state.index, 0);
+    expect(state.extraInfo[visible.uri]!.postLabels.map((label) => label.val), [
+      'blocked',
+    ]);
+  });
+
+  test('expired assertions are not cached or attached to posts', () async {
+    final post = _post(
+      'expired-label',
+      labels: [
+        Label(
+          src: 'did:plc:moderator',
+          uri: 'at://did:plc:author/so.sprk.feed.post/expired-label',
+          val: 'sexual',
+          cts: _indexedAt,
+          exp: _indexedAt.add(const Duration(minutes: 1)),
+        ),
+      ],
+    );
+    feedRepository.enqueue(_page([post]));
+    final container = createContainer();
+    final notifier = readNotifier(container);
+
+    await notifier.loadAndUpdateFirstLoad();
+
+    final state = container.read(feedProvider(feed));
+    expect(state.loadedPosts.single.labels, isEmpty);
+    expect(state.extraInfo[post.uri]!.postLabels, isEmpty);
+  });
+
   test('an empty network page ends the feed', () async {
     feedRepository.enqueue(_page(const []));
     final container = createContainer();
@@ -289,26 +407,42 @@ Feed _feed(String id) => Feed(
   ),
 );
 
-PostView _post(String id, {String? label}) {
+PostView _post(
+  String id, {
+  String? label,
+  List<Label>? labels,
+  List<Label>? authorLabels,
+}) {
   final uri = AtUri.parse('at://did:plc:author/so.sprk.feed.post/$id');
   return PostView(
     uri: uri,
     cid: 'cid-$id',
-    author: _author,
+    author: _author.copyWith(labels: authorLabels),
     record: {r'$type': 'so.sprk.feed.post', 'text': id},
     indexedAt: _indexedAt,
-    labels: label == null
-        ? null
-        : [
-            Label(
-              src: 'did:plc:moderator',
-              uri: uri.toString(),
-              val: label,
-              cts: _indexedAt,
-            ),
-          ],
+    labels:
+        labels ??
+        (label == null
+            ? null
+            : [
+                Label(
+                  src: 'did:plc:moderator',
+                  uri: uri.toString(),
+                  val: label,
+                  cts: _indexedAt,
+                ),
+              ]),
   );
 }
+
+Label _authorLabel({bool profileRecord = false}) => Label(
+  src: 'did:plc:moderator',
+  uri: profileRecord
+      ? 'at://did:plc:author/app.bsky.actor.profile/self'
+      : 'did:plc:author',
+  val: 'blocked',
+  cts: _indexedAt,
+);
 
 FeedView _page(List<PostView> posts, {String? cursor}) {
   return FeedView(
@@ -376,18 +510,38 @@ class _FakeFeedSettingsGateway implements FeedSettingsGateway {
 
   @override
   Future<List<String>> getLabelers() async => const ['did:plc:moderator'];
+}
 
-  @override
-  Future<LabelPreference> getLabelPreference(String value) async {
-    return LabelPreference(
-      value: value,
-      blurs: Blurs.none,
-      severity: Severity.none,
-      defaultSetting: Setting.ignore,
-      setting: hiddenLabels.contains(value) ? Setting.hide : Setting.ignore,
-      adultOnly: false,
-    );
-  }
+ModerationEngine _moderationEngine(Iterable<String> hiddenLabels) {
+  return ModerationEngine(
+    definitions: ModerationLabelDefinitions(
+      definitions: [
+        for (final value in hiddenLabels)
+          ModerationLabelDefinition(
+            identifier: value,
+            severity: ModerationSeverity.alert,
+            blurs: ModerationBlur.content,
+            defaultSetting: ModerationSetting.hide,
+            configurable: true,
+            flags: const {ModerationLabelFlag.noSelf},
+            locales: const [],
+            behaviors: {
+              ModerationTarget.content: ModerationBehavior({
+                ModerationContext.contentList: ModerationAction.blur,
+              }),
+              ModerationTarget.account: ModerationBehavior({
+                ModerationContext.contentList: ModerationAction.blur,
+              }),
+            },
+          ),
+      ],
+    ),
+    preferences: ModerationPreferences(
+      labels: const [],
+      adultContentEnabled: true,
+      authenticated: true,
+    ),
+  );
 }
 
 class _FakeSprkRepository implements SprkRepository {

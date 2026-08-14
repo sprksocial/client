@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/templates/chat_list_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/messages/providers/conversations_provider.dart';
@@ -84,6 +86,16 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           },
           onAddTap: _openNewChat,
           onRefresh: refreshAndInvalidate,
+          itemWrapper: (context, index, child) {
+            final profile = data.conversations[index].$1;
+            return ModeratedContent(
+              labels: profile.labels ?? const [],
+              target: ModerationTarget.account,
+              context: ModerationContext.profileList,
+              subjectDid: profile.did,
+              child: child,
+            );
+          },
         );
       },
       loading: () => ChatListPageTemplate.loading(onAddTap: _openNewChat),

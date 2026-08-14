@@ -6,7 +6,8 @@ import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
@@ -19,8 +20,6 @@ part 'feed_provider.g.dart';
 
 abstract interface class FeedSettingsGateway {
   Future<List<String>> getLabelers();
-
-  Future<LabelPreference> getLabelPreference(String value);
 }
 
 class _RiverpodFeedSettingsGateway implements FeedSettingsGateway {
@@ -43,11 +42,6 @@ class _RiverpodFeedSettingsGateway implements FeedSettingsGateway {
 
   List<String> _fallbackLabelers() {
     return [sprkRepository.modDid.split('#').first];
-  }
-
-  @override
-  Future<LabelPreference> getLabelPreference(String value) {
-    return ref.read(settingsProvider.notifier).getLabelPreference(value);
   }
 }
 
@@ -215,65 +209,63 @@ class FeedNotifier extends _$FeedNotifier {
     try {
       // Labels are already included in post views from the appview
       // We just need to merge them with self-labels and process them
-      final allLabels = <Label>[];
+      final now = DateTime.now().toUtc();
+      final extraInfo = replaceExisting
+          ? LinkedHashMap<AtUri, ({List<Label> postLabels})>()
+          : LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
+              state.extraInfo,
+            );
       final postsWithMergedLabels = <PostView>[];
 
       for (final post in posts) {
         final key = post.uri.toString();
-        // Start with labels from the post view (from appview)
-        final postLabels = <Label>[...?post.labels];
+        final incomingLabels = <Label>[...?post.labels];
 
         // Add self-labels from the post record
         if (post.selfLabels != null) {
           for (final selfLabel in post.selfLabels!) {
-            postLabels.add(
+            incomingLabels.add(
               Label(
                 uri: key,
                 val: selfLabel.val,
-                src: key,
+                src: post.author.did,
                 cts: post.indexedAt,
               ),
             );
           }
         }
 
-        allLabels.addAll(postLabels);
-        postsWithMergedLabels.add(post.copyWith(labels: postLabels));
-      }
-
-      final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
-        state.extraInfo,
-      );
-
-      for (final newLabel in allLabels) {
-        final uri = AtUri.parse(newLabel.uri);
-        extraInfo.update(uri, (value) {
-          final existingLabels = value.postLabels;
-
-          // if new label in existing labels,
-          //check if it should replace existing one
-          if (existingLabels.any((label) => label.val == newLabel.val)) {
-            final existingLabel = existingLabels.firstWhere(
-              (label) => label.val == newLabel.val,
-            );
-
-            // if new label says that existing one is negated or expired,
-            // replace the existing one
-            if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) &&
-                    newLabel.isNeg) ||
-                existingLabel.exp != null &&
-                    existingLabel.exp!.isBefore(DateTime.now())) {
-              existingLabels.remove(existingLabel);
-              return (postLabels: [...existingLabels, newLabel]);
-            } else {
-              // if the new label is the same as the existing one, do nothing
-              return value;
+        final activeLabels = <Label>[
+          ...?extraInfo[post.uri]?.postLabels.where(
+            (label) => label.exp?.toUtc().isAfter(now) ?? true,
+          ),
+        ];
+        for (final incoming in incomingLabels) {
+          final existingIndex = activeLabels.indexWhere(
+            (label) =>
+                label.src == incoming.src &&
+                label.uri == incoming.uri &&
+                label.val == incoming.val,
+          );
+          final isExpired = incoming.exp?.toUtc().isAfter(now) == false;
+          if (incoming.isNeg || isExpired) {
+            if (existingIndex != -1 &&
+                _labelIsAtLeastAsNew(incoming, activeLabels[existingIndex])) {
+              activeLabels.removeAt(existingIndex);
             }
-          } else {
-            // if the new label is not in the existing labels, add it
-            return (postLabels: [...existingLabels, newLabel]);
+            continue;
           }
-        }, ifAbsent: () => (postLabels: [newLabel]));
+          if (existingIndex == -1) {
+            activeLabels.add(incoming);
+          } else if (_labelIsAtLeastAsNew(
+            incoming,
+            activeLabels[existingIndex],
+          )) {
+            activeLabels[existingIndex] = incoming;
+          }
+        }
+        extraInfo[post.uri] = (postLabels: activeLabels);
+        postsWithMergedLabels.add(post.copyWith(labels: activeLabels));
       }
 
       final filteredPosts = await _filterHiddenPosts(
@@ -289,27 +281,32 @@ class FeedNotifier extends _$FeedNotifier {
         return false;
       }
 
-      if (filteredPosts.isEmpty) {
-        if (generation == null || generation == _fetchGeneration) {
-          state = state.copyWith(
-            cursor: cursor,
-            extraInfo: extraInfo,
-            loadingFirstLoad: false,
-          );
-        }
-        return false;
-      }
-
+      final receivedUris = postsWithMergedLabels
+          .map((post) => post.uri)
+          .toSet();
       final updatedPosts = replaceExisting
           ? filteredPosts
-          : [...state.loadedPosts, ...filteredPosts];
+          : [
+              ...state.loadedPosts.where(
+                (post) => !receivedUris.contains(post.uri),
+              ),
+              ...filteredPosts,
+            ];
+      final updatedIndex = updatedPosts.isEmpty
+          ? 0
+          : state.index.clamp(0, updatedPosts.length - 1);
       if (generation == null || generation == _fetchGeneration) {
         state = state.copyWith(
           loadedPosts: updatedPosts,
+          index: updatedIndex,
           cursor: cursor,
           extraInfo: extraInfo,
           loadingFirstLoad: false,
         );
+      }
+
+      if (filteredPosts.isEmpty) {
+        return false;
       }
 
       for (final post in filteredPosts) {
@@ -561,22 +558,29 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   /// Checks if a post should be hidden based on its labels and user preferences
-  Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
-    for (final label in postLabels) {
-      try {
-        final labelPreference = await _settingsGateway.getLabelPreference(
-          label.val,
-        );
-        if (labelPreference.setting == Setting.hide ||
-            labelPreference.adultOnly) {
-          return true;
-        }
-      } catch (e) {
-        // Label preference not found, continue checking other labels
-        continue;
-      }
+  Future<bool> _shouldHidePost(PostView post, List<Label> postLabels) async {
+    try {
+      final engine = await ref.read(moderationEngineProvider.future);
+      final decision = ModerationDecision.merge([
+        engine.evaluate(
+          postLabels,
+          target: ModerationTarget.content,
+          subjectDid: post.author.did,
+        ),
+        engine.evaluateProfileLabels(
+          post.author.labels ?? const [],
+          subjectDid: post.author.did,
+        ),
+      ]);
+      return decision.forContext(ModerationContext.contentList).filter;
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Could not evaluate moderation for ${post.uri}',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
     }
-    return false;
   }
 
   /// Filters based on label preferences, removing posts that should be hidden
@@ -590,7 +594,7 @@ class FeedNotifier extends _$FeedNotifier {
       final postExtraInfo = extraInfo[post.uri];
       if (postExtraInfo != null) {
         final shouldHide = await _shouldHidePost(
-          post.uri,
+          post,
           postExtraInfo.postLabels,
         );
         if (!shouldHide) {
@@ -603,4 +607,13 @@ class FeedNotifier extends _$FeedNotifier {
 
     return filteredPosts;
   }
+}
+
+bool _labelIsAtLeastAsNew(Label candidate, Label existing) {
+  final candidateVersion = candidate.ver;
+  final existingVersion = existing.ver;
+  if (candidateVersion != null || existingVersion != null) {
+    return (candidateVersion ?? 0) >= (existingVersion ?? 0);
+  }
+  return !candidate.cts.toUtc().isBefore(existing.cts.toUtc());
 }

@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -115,6 +116,84 @@ void main() {
     expect(container.read(userPreferencesProvider).value, updated);
   });
 
+  test(
+    'adult content updates preserve other preferences and replace prior state',
+    () async {
+      final initial = Preferences(
+        preferences: [
+          ..._preferences('preserved').preferences,
+          adultContentPreference(enabled: false),
+        ],
+      );
+      prefRepository.getResult = initial;
+      final container = createContainer();
+      await container.read(userPreferencesProvider.future);
+      final notifier = container.read(userPreferencesProvider.notifier);
+
+      await notifier.setAdultContentEnabled(true);
+
+      final updated = container.read(userPreferencesProvider).value!;
+      expect(updated.adultContentEnabled, isTrue);
+      expect(updated.contentLabelPrefs?.single.label, 'preserved');
+      expect(
+        updated.preferences.where(
+          (preference) =>
+              preference.unknown?[r'$type'] ==
+              'so.sprk.actor.defs#adultContentPref',
+        ),
+        hasLength(1),
+      );
+      expect(prefRepository.putCalls.single, updated);
+    },
+  );
+
+  test('global adult label update replaces every scoped copy', () async {
+    final initial = Preferences(
+      preferences: [
+        contentLabelPreference(
+          labelerDid: 'did:plc:one',
+          label: 'porn',
+          visibility: 'warn',
+        ),
+        contentLabelPreference(
+          labelerDid: 'did:plc:two',
+          label: 'porn',
+          visibility: 'ignore',
+        ),
+        contentLabelPreference(
+          labelerDid: 'did:plc:one',
+          label: 'sexual',
+          visibility: 'warn',
+        ),
+      ],
+    );
+    prefRepository.getResult = initial;
+    final container = createContainer();
+    await container.read(userPreferencesProvider.future);
+
+    await container
+        .read(userPreferencesProvider.notifier)
+        .setGlobalLabelPreference('porn', ModerationSetting.hide);
+
+    final prefs = container
+        .read(userPreferencesProvider)
+        .requireValue
+        .contentLabelPrefs!;
+    expect(
+      prefs.where((preference) => preference.label == 'porn'),
+      hasLength(1),
+    );
+    final porn = prefs.singleWhere((preference) => preference.label == 'porn');
+    expect(porn.labelerDid, isNull);
+    expect(porn.visibility.toJson(), 'hide');
+    expect(
+      prefs
+          .singleWhere((preference) => preference.label == 'sexual')
+          .labelerDid,
+      'did:plc:one',
+    );
+  });
+
   test('update exposes and rethrows repository errors', () async {
     final initial = _preferences('initial');
     prefRepository.getResult = initial;
@@ -219,6 +298,18 @@ class _FakeSprkRepository implements SprkRepository {
 
   @override
   final AuthRepository authRepository;
+
+  @override
+  List<String> get labelerDids => const [];
+
+  @override
+  void configureLabelers(Iterable<String> labelerDids) {}
+
+  @override
+  Map<String, String> appViewHeaders(
+    String? proxyDid, {
+    Iterable<String>? labelerDids,
+  }) => const {};
 
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) => apiCall();

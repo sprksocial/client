@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/story_circle.dart';
 import 'package:spark/src/core/design_system/templates/explore_loading_skeletons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
@@ -103,20 +105,27 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                   final authorEntry = authorsList[index - 1];
                   final author = authorEntry.key;
 
-                  return GestureDetector(
-                    onTap: () {
-                      context.router.push(
-                        AllStoriesRoute(
-                          storiesByAuthor: data.storiesByAuthor,
-                          initialAuthorIndex: index - 1,
+                  return ModeratedContent(
+                    labels: author.labels ?? const [],
+                    target: ModerationTarget.account,
+                    context: ModerationContext.profileList,
+                    subjectDid: author.did,
+                    compact: true,
+                    child: GestureDetector(
+                      onTap: () {
+                        context.router.push(
+                          AllStoriesRoute(
+                            storiesByAuthor: data.storiesByAuthor,
+                            initialAuthorIndex: index - 1,
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: StoryCircle.story(
+                          userName: author.displayName ?? author.handle,
+                          imageUrl: author.avatar?.toString() ?? '',
                         ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: StoryCircle.story(
-                        userName: author.displayName ?? author.handle,
-                        imageUrl: author.avatar?.toString() ?? '',
                       ),
                     ),
                   );

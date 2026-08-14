@@ -109,6 +109,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SettingsRoute.page, path: '/settings'),
     AutoRoute(page: LegalRoute.page, path: '/settings/legal'),
     AutoRoute(page: FeedListRoute.page, path: '/settings/feeds'),
+    AutoRoute(page: ModerationRoute.page, path: '/settings/moderation'),
     AutoRoute(page: LabelerManagementRoute.page, path: '/settings/labelers'),
     AutoRoute(page: BlocksRoute.page, path: '/settings/blocks'),
 

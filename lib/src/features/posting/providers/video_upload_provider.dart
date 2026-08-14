@@ -1,6 +1,7 @@
 import 'package:poptart/poptart.dart';
 import 'package:bluesky_poptart/app/bsky/richtext/facet.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -52,6 +53,7 @@ Future<RepoStrongRef?> postVideo(
   bool crosspostToBsky = false,
   RepoStrongRef? soundRef,
   List<Facet> facets = const [],
+  List<String> selfLabelValues = const [],
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
@@ -64,6 +66,9 @@ Future<RepoStrongRef?> postVideo(
       crosspostToBsky: crosspostToBsky,
       soundRef: soundRef,
       facets: facets,
+      selfLabels: selfLabelValues
+          .map((value) => SelfLabel(val: value))
+          .toList(),
     );
   } catch (error, stackTrace) {
     logger.e('Error posting video', error: error, stackTrace: stackTrace);
@@ -81,6 +86,7 @@ Future<RepoStrongRef?> postProcessedVideo({
   RepoStrongRef? soundRef,
   List<Facet> facets = const [],
   List<StoryEmbed> storyEmbeds = const [],
+  List<SelfLabel>? selfLabels,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Post Processed Video')
     ..d(
@@ -117,6 +123,7 @@ Future<RepoStrongRef?> postProcessedVideo({
           Media.video(video: videoBlob, aspectRatio: aspectRatio),
           soundRef: effectiveSoundRef,
           embeds: storyEmbeds,
+          selfLabels: selfLabels,
         );
         logger.i('Story posted: ${res.uri}');
         return res;
@@ -135,6 +142,7 @@ Future<RepoStrongRef?> postProcessedVideo({
       crosspostToBsky: crosspostToBsky,
       soundRef: effectiveSoundRef,
       facets: facets,
+      selfLabels: selfLabels,
     );
     logger.i('Video flow complete (storyMode=false) success=${res != null}');
     return res;
@@ -161,6 +169,7 @@ Future<RepoStrongRef?> processAndPostVideo(
   RepoStrongRef? soundRef,
   List<Facet> facets = const [],
   List<StoryEmbed> storyEmbeds = const [],
+  List<String> selfLabelValues = const [],
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video')
     ..d(
@@ -183,6 +192,7 @@ Future<RepoStrongRef?> processAndPostVideo(
     soundRef: soundRef,
     facets: facets,
     storyEmbeds: storyEmbeds,
+    selfLabels: selfLabelValues.map((value) => SelfLabel(val: value)).toList(),
   );
 }
 
@@ -195,6 +205,7 @@ Future<RepoStrongRef?> _postVideoRecord({
   required bool crosspostToBsky,
   required RepoStrongRef? soundRef,
   required List<Facet> facets,
+  required List<SelfLabel>? selfLabels,
 }) async {
   logger.d(
     'Posting video (size=${blob.size}, crosspost=$crosspostToBsky, '
@@ -209,6 +220,7 @@ Future<RepoStrongRef?> _postVideoRecord({
     media: Media.video(video: blob, alt: altText, aspectRatio: aspectRatio),
     createdAt: DateTime.now().toUtc(),
     sound: soundRef,
+    selfLabels: selfLabels,
   );
 
   final result = await GetIt.I<SprkRepository>().repo.createRecord(
@@ -226,6 +238,7 @@ Future<RepoStrongRef?> _postVideoRecord({
         altText,
         result.uri.rkey,
         facets,
+        selfLabels,
       );
       finalResult = await GetIt.I<SprkRepository>().repo.editRecordJson(
         uri: result.uri,
@@ -241,25 +254,13 @@ Future<RepoStrongRef?> _postVideoRecord({
   return finalResult;
 }
 
-/// Crosspost video to Bluesky using same blob but Bluesky models
-@riverpod
-Future<RepoStrongRef> _crosspostVideoToBlueSky(
-  Ref _,
-  String text,
-  Blob blob,
-  String altText,
-  String rkey,
-  List<Facet> sparkFacets,
-) async {
-  return _crosspostVideoToBlueSkyRecord(text, blob, altText, rkey, sparkFacets);
-}
-
 Future<RepoStrongRef> _crosspostVideoToBlueSkyRecord(
   String text,
   Blob blob,
   String altText,
   String rkey,
   List<Facet> sparkFacets,
+  List<SelfLabel>? selfLabels,
 ) async {
   final logger = GetIt.I<LogService>().getLogger('Crosspost Video')
     ..d('Crossposting video to Bluesky');
@@ -324,6 +325,8 @@ Future<RepoStrongRef> _crosspostVideoToBlueSkyRecord(
       'alt': altText,
     },
     'createdAt': DateTime.now().toUtc().toIso8601String(),
+    if (selfLabels != null && selfLabels.isNotEmpty)
+      'labels': SelfLabels(values: selfLabels).toJson(),
   };
 
   final result = await sprkRepository.repo.createRecord(

@@ -1,4 +1,6 @@
 import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/identity/resolve_handle.dart'
+    as identity_resolve_handle;
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
@@ -16,6 +18,49 @@ class LabelerRepositoryImpl extends LabelerRepository {
   }
   final SprkRepository _client;
   final SparkLogger _logger;
+
+  @override
+  Future<String> resolveIdentifier(String identifier) async {
+    final normalized = identifier.trim().replaceFirst(RegExp(r'^@'), '');
+    if (normalized.startsWith('did:')) {
+      return normalized.split('#').first;
+    }
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(identifier, 'identifier', 'Cannot be empty');
+    }
+
+    return _client.executeWithRetry(() async {
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+      final result = await atproto.call(
+        identity_resolve_handle.comAtprotoIdentityResolveHandle,
+        parameters: identity_resolve_handle.IdentityResolveHandleInput(
+          handle: normalized,
+        ),
+      );
+      return result.data.did;
+    });
+  }
+
+  @override
+  Future<void> validateService(String did) async {
+    final service = await getServicesDetailed([did]);
+    if (service.creator.did != did) {
+      throw const LabelerServiceUnavailableException(
+        'Labeler service DID does not match requested DID',
+      );
+    }
+    if (service.labels?.any(
+          (label) => label.val == '!takedown' && label.neg != true,
+        ) ??
+        false) {
+      throw LabelerServiceUnavailableException(
+        'Labeler service is taken down: $did',
+      );
+    }
+  }
 
   @override
   Future<LabelerView> getServices(List<String> dids) async {
@@ -38,18 +83,22 @@ class LabelerRepositoryImpl extends LabelerRepository {
           dids: dids,
           detailed: false,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       if (result.status != HttpStatus.ok) {
         _logger.e('Failed to retrieve labeler services for DIDs: $dids');
         throw Exception('Failed to retrieve labeler services for DIDs: $dids');
       }
       if (result.data.views.isEmpty) {
-        throw Exception('No labeler services returned for DIDs: $dids');
+        throw LabelerServiceUnavailableException(
+          'No labeler services returned for DIDs: $dids',
+        );
       }
       final view = result.data.views.first.labelerView;
       if (view == null) {
-        throw Exception('No basic labeler service returned for DIDs: $dids');
+        throw LabelerServiceUnavailableException(
+          'No basic labeler service returned for DIDs: $dids',
+        );
       }
       _logger.d('Labeler services retrieved successfully');
       return view;
@@ -77,18 +126,22 @@ class LabelerRepositoryImpl extends LabelerRepository {
           dids: dids,
           detailed: true,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       if (result.status != HttpStatus.ok) {
         _logger.e('Failed to retrieve labeler services for DIDs: $dids');
         throw Exception('Failed to retrieve labeler services for DIDs: $dids');
       }
       if (result.data.views.isEmpty) {
-        throw Exception('No labeler services returned for DIDs: $dids');
+        throw LabelerServiceUnavailableException(
+          'No labeler services returned for DIDs: $dids',
+        );
       }
       final view = result.data.views.first.labelerViewDetailed;
       if (view == null) {
-        throw Exception('No detailed labeler service returned for DIDs: $dids');
+        throw LabelerServiceUnavailableException(
+          'No detailed labeler service returned for DIDs: $dids',
+        );
       }
       _logger.d('Labeler services retrieved successfully');
       return view;

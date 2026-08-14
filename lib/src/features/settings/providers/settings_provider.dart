@@ -1,20 +1,20 @@
-import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:spark/src/core/moderation/moderation_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/network/atproto/data/services/appview_labeler_headers.dart';
 import 'package:spark/src/core/storage/preferences/default_preferences.dart';
 import 'package:spark/src/core/storage/preferences/storage_manager.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_state.dart';
-import 'package:sprk_poptart/so/sprk/labeler/get_services.dart'
-    as sprk_get_services;
 
 part 'settings_provider.g.dart';
 
@@ -96,6 +96,7 @@ class Settings extends _$Settings {
     await ref
         .read(userPreferencesProvider.notifier)
         .updatePreferences(preferences);
+    _configureLabelerHeaders(preferences);
   }
 
   Future<Preferences> _getCurrentPreferencesForFeedUpdate() async {
@@ -246,6 +247,7 @@ class Settings extends _$Settings {
 
       // Get preferences from the provider (waits for it to load if needed)
       final preferences = await _getPreferences();
+      _configureLabelerHeaders(preferences);
       final savedFeeds = _getSavedFeedsFromPreferences(preferences);
 
       // If there are no feeds, set default preferences
@@ -255,11 +257,29 @@ class Settings extends _$Settings {
           final defaultPrefs = DefaultPreferences.defaultPreferences(
             modServiceDid: modServiceDid,
           );
-          await _updatePreferences(defaultPrefs);
+          final mergedDefaults = Preferences(
+            preferences: [
+              ...preferences.preferences.where(
+                (preference) => !preference.isSavedFeedsPref,
+              ),
+              ...defaultPrefs.preferences.where((preference) {
+                if (preference.isSavedFeedsPref) return true;
+                if (preference.isLabelersPref) {
+                  return preferences.labelers == null;
+                }
+                if (preference.isContentLabelPref) {
+                  return preferences.contentLabelPrefs == null;
+                }
+                return false;
+              }),
+            ],
+          );
+          await _updatePreferences(mergedDefaults);
 
           // Get updated preferences from provider
           final updatedPreferences =
-              ref.read(userPreferencesProvider).asData?.value ?? defaultPrefs;
+              ref.read(userPreferencesProvider).asData?.value ?? mergedDefaults;
+          _configureLabelerHeaders(updatedPreferences);
           final updatedSavedFeeds = _getSavedFeedsFromPreferences(
             updatedPreferences,
           );
@@ -563,11 +583,13 @@ class Settings extends _$Settings {
         logger.d('Default mod service labeler not found, adding it');
         labelers = [modServiceDid, ...labelers];
 
+        sprkRepository.configureLabelers(labelers);
+        labelers = sprkRepository.labelerDids;
+
         // Update preferences to include default labeler
-        final updatedLabelers = <LabelerPrefItem>[
-          LabelerPrefItem(did: modServiceDid),
-          ...(preferences.labelers ?? []),
-        ];
+        final updatedLabelers = labelers
+            .map((did) => LabelerPrefItem(did: did))
+            .toList();
         final updatedPreferencesList =
             preferences.preferences
                 .where((pref) => !pref.isLabelersPref)
@@ -582,6 +604,9 @@ class Settings extends _$Settings {
       // Already checked this session but still need to include it in return
       labelers = [modServiceDid, ...labelers];
     }
+
+    sprkRepository.configureLabelers(labelers);
+    labelers = sprkRepository.labelerDids;
 
     // Ensure all labelers' label values are set as preferences
     // Do this asynchronously to avoid blocking
@@ -603,8 +628,9 @@ class Settings extends _$Settings {
 
     for (final did in uncheckedLabelers) {
       try {
-        await _fetchLabelerPoliciesAndSetDefaults(did);
-        _labelerPoliciesChecked.add(did);
+        if (await _fetchLabelerPoliciesAndSetDefaults(did)) {
+          _labelerPoliciesChecked.add(did);
+        }
       } catch (e) {
         logger.w('Error ensuring label values for labeler $did: $e');
       }
@@ -612,9 +638,10 @@ class Settings extends _$Settings {
   }
 
   /// Adds a labeler to the user's subscribed labelers list
-  Future<void> addLabeler(String did) async {
+  Future<void> addLabeler(String identifier) async {
     try {
-      logger.d('Adding labeler: $did');
+      logger.d('Adding labeler: $identifier');
+      final did = await sprkRepository.labeler.resolveIdentifier(identifier);
       final preferences = await _getPreferences();
       final currentLabelers = preferences.labelers ?? [];
 
@@ -623,6 +650,15 @@ class Settings extends _$Settings {
         logger.w('Labeler already exists: $did');
         return;
       }
+
+      if (currentLabelers.length >= AppViewLabelerHeaders.maxLabelers) {
+        throw StateError(
+          'Cannot subscribe to more than '
+          '${AppViewLabelerHeaders.maxLabelers} labelers',
+        );
+      }
+
+      await sprkRepository.labeler.validateService(did);
 
       // Create updated preferences with new labeler
       final updatedLabelers = [...currentLabelers, LabelerPrefItem(did: did)];
@@ -636,8 +672,9 @@ class Settings extends _$Settings {
       logger.d('Labeler added successfully: $did');
 
       // Fetch and set default label preferences for this labeler
-      await _fetchLabelerPoliciesAndSetDefaults(did);
-      _labelerPoliciesChecked.add(did);
+      if (await _fetchLabelerPoliciesAndSetDefaults(did)) {
+        _labelerPoliciesChecked.add(did);
+      }
     } catch (e) {
       logger.e('Error adding labeler: $e');
       rethrow;
@@ -666,13 +703,16 @@ class Settings extends _$Settings {
           .toList();
 
       // Create updated preferences
-      final updatedPreferencesList =
-          preferences.preferences.where((pref) => !pref.isLabelersPref).toList()
-            ..add(labelersPreference(updatedLabelers));
+      final updatedPreferencesList = preferences.preferences.where((pref) {
+        if (pref.isLabelersPref) return false;
+        final contentLabelPref = pref.contentLabelPref;
+        return contentLabelPref?.labelerDid != did;
+      }).toList()..add(labelersPreference(updatedLabelers));
 
       await _updatePreferences(
         Preferences(preferences: updatedPreferencesList),
       );
+      _labelerPoliciesChecked.remove(did);
       logger.d('Labeler removed successfully: $did');
     } catch (e) {
       logger.e('Error removing labeler: $e');
@@ -690,8 +730,8 @@ class Settings extends _$Settings {
       // Refresh preferences from server first
       await ref.read(userPreferencesProvider.notifier).refresh();
 
-      final preferences = await _getPreferences();
-      final labelers =
+      var preferences = await _getPreferences();
+      var labelers =
           preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
 
       // Ensure default mod service labeler is present
@@ -699,18 +739,42 @@ class Settings extends _$Settings {
       _defaultLabelerEnsured = true;
       if (!labelers.contains(modServiceDid)) {
         labelers.insert(0, modServiceDid);
-        final updatedLabelers = <LabelerPrefItem>[
-          LabelerPrefItem(did: modServiceDid),
-          ...(preferences.labelers ?? []),
-        ];
-        final updatedPreferencesList =
-            preferences.preferences
-                .where((pref) => !pref.isLabelersPref)
-                .toList()
-              ..add(labelersPreference(updatedLabelers));
-        await _updatePreferences(
-          Preferences(preferences: updatedPreferencesList),
-        );
+      }
+
+      sprkRepository.configureLabelers(labelers);
+      final normalizedLabelers = sprkRepository.labelerDids;
+      if (!_sameLabelers(labelers, normalizedLabelers) ||
+          !_sameLabelers(
+            preferences.labelers?.map((labeler) => labeler.did) ?? const [],
+            normalizedLabelers,
+          )) {
+        preferences = _withLabelers(preferences, normalizedLabelers);
+        await _updatePreferences(preferences);
+      }
+      labelers = normalizedLabelers.toList();
+
+      final availableLabelers = <String>[];
+      final unavailableLabelers = <String>{};
+      for (final did in labelers) {
+        if (did == modServiceDid) {
+          availableLabelers.add(did);
+          continue;
+        }
+        try {
+          await sprkRepository.labeler.validateService(did);
+          availableLabelers.add(did);
+        } on LabelerServiceUnavailableException catch (e) {
+          logger.w('Removing unavailable labeler $did: $e');
+          unavailableLabelers.add(did);
+        }
+      }
+
+      if (unavailableLabelers.isNotEmpty) {
+        preferences = _withLabelers(preferences, availableLabelers);
+        await _updatePreferences(preferences);
+        labelers
+          ..clear()
+          ..addAll(availableLabelers);
       }
 
       logger.d(
@@ -720,6 +784,8 @@ class Settings extends _$Settings {
       // Ensure all labelers' label values are set as preferences
       await _ensureAllLabelersPoliciesSet(labelers);
 
+      sprkRepository.configureLabelers(labelers);
+
       logger.d('Labelers synced successfully');
     } catch (e) {
       logger.e('Error syncing labelers: $e');
@@ -727,68 +793,8 @@ class Settings extends _$Settings {
     }
   }
 
-  Future<LabelPreference> getLabelPreference(String value) async {
-    final preferences = await _getPreferences();
-    final contentLabelPrefs = preferences.contentLabelPrefs ?? [];
-    final contentLabelPref = contentLabelPrefs.firstWhere(
-      (pref) => pref.label == value,
-      orElse: () => throw Exception('Label preference not found'),
-    );
-    return LabelPreference(
-      value: contentLabelPref.label,
-      blurs: _visibilityToBlurs(contentLabelPref.visibilityValue),
-      severity: _visibilityToSeverity(contentLabelPref.visibilityValue),
-      defaultSetting: _visibilityToSetting(contentLabelPref.visibilityValue),
-      setting: _visibilityToSetting(contentLabelPref.visibilityValue),
-      adultOnly: _isAdultOnlyLabel(value),
-    );
-  }
-
-  Future<void> setLabelPreference(
-    String value,
-    Blurs blurs,
-    Severity severity,
-    bool adultOnly,
-    Setting setting,
-  ) async {
-    final preferences = await _getPreferences();
-    final updatedPreferencesList = preferences.preferences
-        .where((pref) => !pref.isContentLabelPref)
-        .toList();
-    final existingContentPrefs = preferences.contentLabelPrefs ?? [];
-    for (final pref in existingContentPrefs) {
-      if (pref.label == value) {
-        updatedPreferencesList.add(
-          contentLabelPreference(
-            labelerDid: pref.labelerDid,
-            label: value,
-            visibility: _settingToVisibility(setting),
-          ),
-        );
-      } else {
-        updatedPreferencesList.add(
-          contentLabelPreference(
-            labelerDid: pref.labelerDid,
-            label: pref.label,
-            visibility: pref.visibilityValue,
-          ),
-        );
-      }
-    }
-    if (!existingContentPrefs.any((pref) => pref.label == value)) {
-      updatedPreferencesList.add(
-        contentLabelPreference(
-          labelerDid: _defaultModServiceDid,
-          label: value,
-          visibility: _settingToVisibility(setting),
-        ),
-      );
-    }
-    await _updatePreferences(Preferences(preferences: updatedPreferencesList));
-  }
-
   /// Gets label preferences for a specific labeler
-  Future<Map<String, LabelPreference>> getLabelPreferencesForLabeler(
+  Future<Map<String, Setting>> getLabelSettingsForLabeler(
     String labelerDid,
   ) async {
     final preferences = await _getPreferences();
@@ -799,43 +805,28 @@ class Settings extends _$Settings {
       final contentLabelPref = pref.contentLabelPref;
       if (contentLabelPref != null &&
           contentLabelPref.labelerDid == labelerDid) {
-        contentLabelPrefsMap[contentLabelPref.label] =
-            contentLabelPref.visibilityValue;
+        contentLabelPrefsMap[contentLabelPref.label] = contentLabelPref
+            .visibility
+            .toJson();
       }
     }
 
     // Also check contentLabelPrefs property
-    final contentLabelPrefsFromProperty = preferences.contentLabelPrefs ?? [];
+    final contentLabelPrefsFromProperty =
+        preferences.contentLabelPrefs ?? const <ContentLabelPref>[];
     for (final pref in contentLabelPrefsFromProperty) {
       final prefLabelerDid = pref.labelerDid;
       final prefLabel = pref.label;
-      final prefVisibility = pref.visibilityValue;
+      final prefVisibility = pref.visibility.toJson();
       if (prefLabelerDid == labelerDid &&
           !contentLabelPrefsMap.containsKey(prefLabel)) {
         contentLabelPrefsMap[prefLabel] = prefVisibility;
       }
     }
 
-    final result = <String, LabelPreference>{};
+    final result = <String, Setting>{};
     for (final entry in contentLabelPrefsMap.entries) {
-      final label = entry.key;
-      final visibility = entry.value;
-
-      // Get the actual saved setting from visibility
-      final setting = _visibilityToSetting(visibility);
-
-      // For blur, we need to infer it from the setting
-      // If setting is 'warn', default to media blur, otherwise none
-      final blurs = setting == Setting.warn ? Blurs.media : Blurs.none;
-
-      result[label] = LabelPreference(
-        value: label,
-        blurs: blurs,
-        severity: _visibilityToSeverity(visibility),
-        defaultSetting: setting, // TODO: should come from label definitions
-        setting: setting,
-        adultOnly: _isAdultOnlyLabel(label),
-      );
+      result[entry.key] = _visibilityToSetting(entry.value);
     }
     return result;
   }
@@ -844,9 +835,6 @@ class Settings extends _$Settings {
   Future<void> setLabelPreferenceForLabeler(
     String labelerDid,
     String value,
-    Blurs blurs,
-    Severity severity,
-    bool adultOnly,
     Setting setting,
   ) async {
     final preferences = await _getPreferences();
@@ -933,78 +921,16 @@ class Settings extends _$Settings {
     }
   }
 
-  Blurs _visibilityToBlurs(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Blurs.none;
-      case 'warn':
-        return Blurs.media;
-      case 'hide':
-        return Blurs.content;
-      default:
-        return Blurs.none;
-    }
-  }
-
-  Severity _visibilityToSeverity(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Severity.none;
-      case 'warn':
-        return Severity.alert;
-      case 'hide':
-        return Severity.alert;
-      default:
-        return Severity.none;
-    }
-  }
-
-  bool _isAdultOnlyLabel(String label) {
-    const adultOnlyLabels = {'porn', 'sexual', 'nsfl'};
-    return adultOnlyLabels.contains(label);
-  }
-
   /// Fetches labeler policies and sets default content label preferences
   /// for label values that don't already have preferences
-  Future<void> _fetchLabelerPoliciesAndSetDefaults(String did) async {
+  Future<bool> _fetchLabelerPoliciesAndSetDefaults(String did) async {
     try {
-      final rawResponse = await sprkRepository.executeWithRetry(() async {
-        if (!sprkRepository.authRepository.isAuthenticated) {
-          throw Exception('Not authenticated');
-        }
-        final atproto = sprkRepository.authRepository.atproto;
-        if (atproto == null) {
-          throw Exception('AtProto not initialized');
-        }
-        final result = await atproto.call(
-          sprk_get_services.soSprkLabelerGetServices,
-          parameters: sprk_get_services.LabelerGetServicesInput(
-            dids: [did],
-            detailed: true,
-          ),
-          headers: {'atproto-proxy': sprkRepository.sprkDid},
-        );
-        if (result.status != HttpStatus.ok) {
-          throw Exception('Failed to retrieve labeler services');
-        }
-        return result.data.toJson();
-      });
-
-      final viewsJson = rawResponse['views'] as List<dynamic>?;
-      if (viewsJson == null || viewsJson.isEmpty) {
-        return;
-      }
-
-      final viewJson = viewsJson.first as Map<String, dynamic>;
-      final policiesJson = viewJson['policies'] as Map<String, dynamic>?;
-
-      if (policiesJson == null) {
-        return;
-      }
+      final service = await sprkRepository.labeler.getServicesDetailed([did]);
+      final policiesJson = service.policies.toJson();
 
       final labelValuesJson = policiesJson['labelValues'] as List<dynamic>?;
       if (labelValuesJson == null || labelValuesJson.isEmpty) {
-        return;
+        return true;
       }
 
       final labelValues = labelValuesJson.map((v) => v as String).toList();
@@ -1029,7 +955,7 @@ class Settings extends _$Settings {
           .where((pref) => pref.isContentLabelPref)
           .toList();
       final existingContentPrefsFromProperty =
-          preferences.contentLabelPrefs ?? [];
+          preferences.contentLabelPrefs ?? const <ContentLabelPref>[];
 
       // Build a map of existing preferences by labelerDid:label
       final existingPrefsMap =
@@ -1038,20 +964,21 @@ class Settings extends _$Settings {
         final contentLabelPref = pref.contentLabelPref;
         if (contentLabelPref != null) {
           existingPrefsMap['${contentLabelPref.labelerDid}:'
-                  '${contentLabelPref.label}'] =
-              contentLabelPref.visibilityValue;
+              '${contentLabelPref.label}'] = contentLabelPref.visibility
+              .toJson();
         }
       }
       for (final pref in existingContentPrefsFromProperty) {
         final key = '${pref.labelerDid}:${pref.label}';
         if (!existingPrefsMap.containsKey(key)) {
-          existingPrefsMap[key] = pref.visibilityValue;
+          existingPrefsMap[key] = pref.visibility.toJson();
         }
       }
 
       final preferencesToAdd = <Preference>[];
 
       for (final labelValue in labelValues) {
+        if (globalAdultContentLabelValues.contains(labelValue)) continue;
         final key = '$did:$labelValue';
         final hasExistingPref = existingPrefsMap.containsKey(key);
 
@@ -1086,9 +1013,47 @@ class Settings extends _$Settings {
           Preferences(preferences: updatedPreferencesList),
         );
       }
+      return true;
     } catch (e) {
       logger.e('Error fetching labeler policies for $did: $e');
+      return false;
     }
+  }
+
+  void _configureLabelerHeaders(Preferences preferences) {
+    sprkRepository.configureLabelers(
+      preferences.labelers?.map((labeler) => labeler.did) ?? const [],
+    );
+  }
+
+  Preferences _withLabelers(
+    Preferences preferences,
+    Iterable<String> labelers,
+  ) {
+    final normalizedLabelers = labelers.toList(growable: false);
+    final subscribed = normalizedLabelers.toSet();
+    return Preferences(
+      preferences: [
+        ...preferences.preferences.where((preference) {
+          if (preference.isLabelersPref) return false;
+          final labelerDid = preference.contentLabelPref?.labelerDid;
+          return labelerDid == null || subscribed.contains(labelerDid);
+        }),
+        labelersPreference([
+          for (final did in normalizedLabelers) LabelerPrefItem(did: did),
+        ]),
+      ],
+    );
+  }
+
+  bool _sameLabelers(Iterable<String> left, Iterable<String> right) {
+    final leftItems = left.toList(growable: false);
+    final rightItems = right.toList(growable: false);
+    if (leftItems.length != rightItems.length) return false;
+    for (var index = 0; index < leftItems.length; index++) {
+      if (leftItems[index] != rightItems[index]) return false;
+    }
+    return true;
   }
 
   /// Determines default visibility setting for a label value

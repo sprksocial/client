@@ -142,26 +142,18 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
       if (result == null || result.isEmpty) {
         return;
       }
-      final did = result.trim();
-
-      // If it's a handle, try to resolve it to a DID
-      if (did.startsWith('@')) {
-        // TODO: add handle resolution in the future
-        return;
-      }
-
-      // Validate DID format
-      if (!did.startsWith('did:')) {
-        return;
-      }
-
       final settings = ref.read(settingsProvider.notifier);
-      await settings.addLabeler(did);
+      await settings.addLabeler(result.trim());
 
       // Refresh the list
       await _loadLabelers();
     } catch (e) {
       _logger.e('Error adding labeler: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorAddingLabeler)));
+      }
     } finally {
       didController.dispose();
     }

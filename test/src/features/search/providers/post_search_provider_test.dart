@@ -6,8 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/providers/debounce_scheduler.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/search/data/repositories/post_search_repository.dart';
@@ -46,6 +47,11 @@ void main() {
         sprk: (
           posts: [
             _post('hidden', label: 'blocked'),
+            _post(
+              'profile-labeled-author',
+              authorLabels: [_authorLabel(profileRecord: true)],
+            ),
+            _post('account-labeled-author', authorLabels: [_authorLabel()]),
             _post('spark'),
           ],
           cursor: null,
@@ -56,15 +62,34 @@ void main() {
     final scope = container(
       overrides: [
         postSearchRepositoryProvider.overrideWithValue(repository),
-        postSearchPreferencesProvider.overrideWithValue(
-          Preferences(
-            preferences: [
-              contentLabelPreference(
-                labelerDid: 'did:plc:mod',
-                label: 'blocked',
-                visibility: 'hide',
-              ),
-            ],
+        moderationEngineProvider.overrideWith(
+          (ref) async => ModerationEngine(
+            definitions: ModerationLabelDefinitions(
+              definitions: [
+                ModerationLabelDefinition(
+                  identifier: 'blocked',
+                  severity: ModerationSeverity.alert,
+                  blurs: ModerationBlur.content,
+                  defaultSetting: ModerationSetting.hide,
+                  configurable: true,
+                  flags: const {ModerationLabelFlag.noSelf},
+                  locales: const [],
+                  behaviors: {
+                    ModerationTarget.content: ModerationBehavior({
+                      ModerationContext.contentList: ModerationAction.blur,
+                    }),
+                    ModerationTarget.account: ModerationBehavior({
+                      ModerationContext.contentList: ModerationAction.blur,
+                    }),
+                  },
+                ),
+              ],
+            ),
+            preferences: ModerationPreferences(
+              labels: const [],
+              adultContentEnabled: true,
+              authenticated: true,
+            ),
           ),
         ),
       ],
@@ -76,7 +101,11 @@ void main() {
 
     final state = scope.read(postSearchProvider);
     expect(state.query, 'clips');
-    expect(state.searchResults.map((post) => post.uri.rkey), ['spark', 'bsky']);
+    expect(state.searchResults.map((post) => post.uri.rkey), [
+      'profile-labeled-author',
+      'spark',
+      'bsky',
+    ]);
     expect(state.isLoading, isFalse);
     expect(state.sprkNextCursor, isNull);
     expect(state.bskyNextCursor, isNull);
@@ -204,12 +233,12 @@ final _postAuthor = ProfileViewBasic(
 );
 final _indexedAt = DateTime.utc(2026, 7, 1);
 
-PostView _post(String id, {String? label}) {
+PostView _post(String id, {String? label, List<Label>? authorLabels}) {
   final uri = AtUri('at://did:plc:author/so.sprk.feed.post/$id');
   return PostView(
     uri: uri,
     cid: 'cid-$id',
-    author: _postAuthor,
+    author: _postAuthor.copyWith(labels: authorLabels),
     record: {r'$type': 'so.sprk.feed.post', 'text': id},
     indexedAt: _indexedAt,
     labels: label == null
@@ -224,6 +253,15 @@ PostView _post(String id, {String? label}) {
           ],
   );
 }
+
+Label _authorLabel({bool profileRecord = false}) => Label(
+  src: 'did:plc:mod',
+  uri: profileRecord
+      ? 'at://did:plc:author/app.bsky.actor.profile/self'
+      : 'did:plc:author',
+  val: 'blocked',
+  cts: _indexedAt,
+);
 
 InitialPostSearchResult _initial(List<PostView> posts) =>
     (sprk: (posts: posts, cursor: null), bsky: (posts: const [], cursor: null));

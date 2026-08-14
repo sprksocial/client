@@ -85,6 +85,26 @@ void main() {
       );
       expect((sent.single as Map<String, dynamic>)['items'], hasLength(1));
     });
+
+    test('putPreferences serializes Spark adult-content preference', () async {
+      final harness = RepositoryHarness();
+      harness.transport.enqueuePost(<String, dynamic>{});
+      final repository = PrefRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+      final preferences = Preferences(
+        preferences: [adultContentPreference(enabled: true)],
+      );
+
+      await repository.putPreferences(preferences);
+
+      final request = harness.transport.singleRequest;
+      final sent = request.jsonBody['preferences'] as List<dynamic>;
+      expect(sent, [
+        {r'$type': 'so.sprk.actor.defs#adultContentPref', 'enabled': true},
+      ]);
+    });
   });
 }
 

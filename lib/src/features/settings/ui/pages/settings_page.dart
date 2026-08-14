@@ -143,15 +143,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               child: ListTile(
                 splashColor: Colors.transparent,
                 title: Text(
-                  l10n.pageTitleLabelers,
+                  l10n.pageTitleModeration,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: const Icon(FluentIcons.tag_24_regular),
-                onTap: () =>
-                    context.router.push(const LabelerManagementRoute()),
+                trailing: const Icon(FluentIcons.shield_24_regular),
+                onTap: () => context.router.push(const ModerationRoute()),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,

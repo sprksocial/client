@@ -262,6 +262,7 @@ class RepoRepositoryImpl implements RepoRepository {
   Future<bool> createReport({
     required ModerationCreateReportInput input,
     dynamic service,
+    String? serviceDid,
   }) async {
     _logger.i('Creating moderation report for reason: ${input.reasonType}');
 
@@ -291,22 +292,23 @@ class RepoRepositoryImpl implements RepoRepository {
       } else {
         _logger.d('Using direct API call for moderation report');
         final subjectData = input.subject.data;
-        if (subjectData is! RepoStrongRef) {
-          _logger.e('Invalid subject data type: ${subjectData.runtimeType}');
-          throw Exception('Invalid subject data');
-        }
+        final isBskyPost =
+            subjectData is RepoStrongRef &&
+            subjectData.uri.collection.toString().startsWith('app.bsky');
+        final fallbackServiceDid = isBskyPost
+            ? _client.bskyModDid
+            : _client.modDid;
+        final modServiceDid =
+            serviceDid ??
+            await _resolveCompatibleModerationService(
+              input,
+              fallbackDid: fallbackServiceDid,
+            );
+        _logger.d('Routing report to moderation service: $modServiceDid');
 
-        // Check if this is a Bluesky post and route to appropriate moderation service
-        final isBskyPost = subjectData.uri.collection.toString().startsWith(
-          'app.bsky',
-        );
-        final modServiceDid = isBskyPost ? _client.bskyModDid : _client.modDid;
-        _logger.d(
-          'Routing report to ${isBskyPost ? 'Bluesky' : 'Spark'} moderation '
-          'service: $modServiceDid',
-        );
-
-        final headers = {'atproto-proxy': modServiceDid};
+        final headers = {
+          'atproto-proxy': _moderationProxyDid(modServiceDid),
+        };
 
         try {
           final response = await atproto.call(
@@ -331,5 +333,53 @@ class RepoRepositoryImpl implements RepoRepository {
         }
       }
     });
+  }
+
+  Future<String> _resolveCompatibleModerationService(
+    ModerationCreateReportInput input, {
+    required String fallbackDid,
+  }) async {
+    final subject = input.subject.data;
+    final subjectType = subject is RepoStrongRef ? 'record' : 'account';
+    final collection = subject is RepoStrongRef
+        ? subject.uri.collection.toString()
+        : null;
+    final reasonType = input.reasonType.toJson();
+    final candidates = <String>{
+      fallbackDid.split('#').first,
+      ..._client.labelerDids,
+    };
+
+    for (final did in candidates) {
+      try {
+        final service = await _client.labeler.getServicesDetailed([did]);
+        final subjectTypes = service.subjectTypes?.map((type) => type.toJson());
+        if (subjectTypes != null && !subjectTypes.contains(subjectType)) {
+          continue;
+        }
+        final collections = service.subjectCollections;
+        if (collection != null &&
+            collections != null &&
+            !collections.contains(collection)) {
+          continue;
+        }
+        final reasons = service.reasonTypes?.map((reason) => reason.toJson());
+        if (reasons != null && !reasons.contains(reasonType)) {
+          continue;
+        }
+        return did;
+      } catch (error, stackTrace) {
+        _logger.w(
+          'Could not inspect moderation service $did',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
+    }
+    return fallbackDid;
+  }
+
+  String _moderationProxyDid(String did) {
+    return did.contains('#') ? did : '$did#atproto_labeler';
   }
 }

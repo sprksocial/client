@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:poptart_lex/com/atproto/admin/defs.dart';
 import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
 import 'package:poptart_lex/com/atproto/moderation/defs.dart';
 import 'package:poptart/poptart.dart';
@@ -13,10 +16,11 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
 typedef ReportSubmitCallback =
-    void Function(
+    Future<void> Function(
       UModerationCreateReportSubject subject,
       ReasonType reasonType,
       String? reason,
+      String serviceDid,
     );
 
 enum ReportCategory {
@@ -49,13 +53,20 @@ class ReportReason {
 
 class ReportDialog extends ConsumerStatefulWidget {
   const ReportDialog({
-    required this.postUri,
-    required this.postCid,
+    this.postUri,
+    this.postCid,
+    this.accountDid,
+    this.fallbackServiceDid,
     super.key,
     this.onSubmit,
-  });
-  final String postUri;
-  final String postCid;
+  }) : assert(
+         accountDid != null || (postUri != null && postCid != null),
+         'Provide either an account DID or both a record URI and CID.',
+       );
+  final String? postUri;
+  final String? postCid;
+  final String? accountDid;
+  final String? fallbackServiceDid;
 
   /// Callback for report submission. Uses [ReasonType] directly to support
   /// known & unknown reason types.
@@ -75,6 +86,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       TextEditingController();
   bool _isSubmitting = false;
   String? _errorMessage;
+  Future<List<_ModerationServiceOption>>? _compatibleServicesFuture;
+  String? _selectedServiceDid;
 
   // Map categories to their reasons
   static final Map<ReportCategory, List<ReportReason>> _categoryReasons = {
@@ -353,27 +366,122 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
   }
 
   void _selectReason(ReportReason reason) {
+    final servicesFuture = _loadCompatibleServices(reason);
     setState(() {
       _selectedReason = reason;
+      _compatibleServicesFuture = servicesFuture;
+      _selectedServiceDid = null;
     });
+    unawaited(
+      servicesFuture.then((services) {
+        if (!mounted || _selectedReason != reason || services.isEmpty) return;
+        setState(() {
+          _selectedServiceDid = services.first.did;
+        });
+      }),
+    );
   }
 
   void _goBack() {
     setState(() {
       _selectedCategory = null;
       _selectedReason = null;
+      _compatibleServicesFuture = null;
+      _selectedServiceDid = null;
     });
   }
 
-  Future<void> _submitReport() async {
-    if (_selectedReason == null) return;
-
-    final subject = UModerationCreateReportSubject.repoStrongRef(
+  UModerationCreateReportSubject _buildSubject() {
+    final accountDid = widget.accountDid;
+    if (accountDid != null) {
+      return UModerationCreateReportSubject.repoRef(
+        data: RepoRef(did: accountDid),
+      );
+    }
+    return UModerationCreateReportSubject.repoStrongRef(
       data: RepoStrongRef(
-        cid: widget.postCid,
-        uri: AtUri.parse(widget.postUri),
+        cid: widget.postCid!,
+        uri: AtUri.parse(widget.postUri!),
       ),
     );
+  }
+
+  ReasonType _reasonTypeFor(ReportReason reason) {
+    return reason.knownType != null
+        ? ReasonType.knownValue(data: reason.knownType!)
+        : ReasonType.unknown(data: reason.value);
+  }
+
+  Future<List<_ModerationServiceOption>> _loadCompatibleServices(
+    ReportReason reason,
+  ) async {
+    final repository = GetIt.instance<SprkRepository>();
+    final subject = _buildSubject().data;
+    final isRecord = subject is RepoStrongRef;
+    final collection = isRecord ? subject.uri.collection.toString() : null;
+    final fallbackProxyDid =
+        widget.fallbackServiceDid ??
+        (isRecord && collection!.startsWith('app.bsky')
+            ? repository.bskyModDid
+            : repository.modDid);
+    final fallbackDid = fallbackProxyDid.split('#').first;
+    final candidates = <String>{fallbackDid, ...repository.labelerDids};
+    final reasonType = _reasonTypeFor(reason).toJson();
+    final services = <_ModerationServiceOption>[];
+
+    for (final did in candidates) {
+      try {
+        final service = await repository.labeler.getServicesDetailed([did]);
+        final subjectTypes = service.subjectTypes?.map((type) => type.toJson());
+        if (subjectTypes != null &&
+            !subjectTypes.contains(isRecord ? 'record' : 'account')) {
+          continue;
+        }
+        if (collection != null &&
+            service.subjectCollections != null &&
+            !service.subjectCollections!.contains(collection)) {
+          continue;
+        }
+        final reasonTypes = service.reasonTypes?.map((type) => type.toJson());
+        if (reasonTypes != null && !reasonTypes.contains(reasonType)) {
+          continue;
+        }
+        services.add(
+          _ModerationServiceOption(
+            did: did,
+            displayName: service.creator.displayName ?? service.creator.handle,
+            isDefault: did == fallbackDid,
+          ),
+        );
+      } catch (error, stackTrace) {
+        _logger.w(
+          'Unable to inspect report capabilities for $did',
+          error: error,
+          stackTrace: stackTrace,
+        );
+        if (did == fallbackDid) {
+          services.add(
+            _ModerationServiceOption(
+              did: did,
+              displayName: did,
+              isDefault: true,
+            ),
+          );
+        }
+      }
+    }
+
+    services.sort((left, right) {
+      if (left.isDefault != right.isDefault) return left.isDefault ? -1 : 1;
+      return left.displayName.compareTo(right.displayName);
+    });
+    return services;
+  }
+
+  Future<void> _submitReport() async {
+    if (_selectedReason == null || _selectedServiceDid == null) return;
+
+    final subject = _buildSubject();
     final reason = _additionalInfoController.text.isNotEmpty
         ? _additionalInfoController.text
         : null;
@@ -386,13 +494,15 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
     try {
       // Build the ReasonType: use known type if available, otherwise unknown
       // with the raw value
-      final reasonType = _selectedReason!.knownType != null
-          ? ReasonType.knownValue(data: _selectedReason!.knownType!)
-          : ReasonType.unknown(data: _selectedReason!.value);
+      final reasonType = _reasonTypeFor(_selectedReason!);
 
       if (widget.onSubmit != null) {
-        // Use the callback if provided - now passing ReasonType directly
-        widget.onSubmit!(subject, reasonType, reason);
+        await widget.onSubmit!(
+          subject,
+          reasonType,
+          reason,
+          _selectedServiceDid!,
+        );
         if (mounted) {
           context.router.maybePop();
         }
@@ -407,6 +517,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
             reasonType: reasonType,
             reason: reason,
           ),
+          serviceDid: _selectedServiceDid,
         );
 
         if (success && mounted) {
@@ -477,79 +588,129 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       content: SizedBox(
         width: double.maxFinite,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!isStep2)
-              // Step 1: Category selection
-              ...ReportCategory.values.map(
-                (category) => _CategoryTile(
-                  category: category,
-                  selectedCategory: _selectedCategory,
-                  onTap: () => _selectCategory(category),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isStep2)
+                // Step 1: Category selection
+                ...ReportCategory.values.map(
+                  (category) => _CategoryTile(
+                    category: category,
+                    selectedCategory: _selectedCategory,
+                    onTap: () => _selectCategory(category),
+                  ),
+                )
+              else
+                // Step 2: Reason selection
+                ...reasons.map(
+                  (reason) => _ReasonTile(
+                    reason: reason,
+                    selectedReason: _selectedReason,
+                    onChanged: (value) {
+                      if (value != null) {
+                        _selectReason(value);
+                      }
+                    },
+                  ),
                 ),
-              )
-            else
-              // Step 2: Reason selection
-              ...reasons.map(
-                (reason) => _ReasonTile(
-                  reason: reason,
-                  selectedReason: _selectedReason,
-                  onChanged: (value) {
-                    if (value != null) {
-                      _selectReason(value);
+
+              if (isStep2 && _selectedReason != null) ...[
+                const SizedBox(height: 8),
+                FutureBuilder<List<_ModerationServiceOption>>(
+                  future: _compatibleServicesFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      );
                     }
+                    if (snapshot.hasError) {
+                      return Text(l10n.moderationServiceLoadFailed);
+                    }
+                    final services = snapshot.data ?? const [];
+                    if (services.isEmpty) {
+                      return Text(l10n.moderationNoCompatibleService);
+                    }
+                    return DropdownButtonFormField<String>(
+                      key: ValueKey(
+                        '${_selectedReason!.value}:${_selectedServiceDid ?? ''}',
+                      ),
+                      initialValue: _selectedServiceDid,
+                      decoration: InputDecoration(
+                        labelText: l10n.moderationService,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        for (final service in services)
+                          DropdownMenuItem(
+                            value: service.did,
+                            child: Text(
+                              service.isDefault &&
+                                      service.displayName == service.did
+                                  ? l10n.moderationDefaultService
+                                  : service.displayName,
+                            ),
+                          ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedServiceDid = value;
+                        });
+                      },
+                    );
                   },
                 ),
-              ),
-
-            if (isStep2 && _selectedReason != null) ...[
-              const SizedBox(height: 8),
-              TextField(
-                controller: _additionalInfoController,
-                maxLines: 3,
-                style: theme.textTheme.bodySmall?.copyWith(color: textColor),
-                decoration: InputDecoration(
-                  hintText: l10n.hintAdditionalDetails,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _additionalInfoController,
+                  maxLines: 3,
+                  style: theme.textTheme.bodySmall?.copyWith(color: textColor),
+                  decoration: InputDecoration(
+                    hintText: l10n.hintAdditionalDetails,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    border: const OutlineInputBorder(),
+                    hintStyle: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.hintColor,
+                    ),
+                    fillColor: theme.colorScheme.surface,
+                    filled: true,
                   ),
-                  border: const OutlineInputBorder(),
-                  hintStyle: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.hintColor,
-                  ),
-                  fillColor: theme.colorScheme.surface,
-                  filled: true,
                 ),
-              ),
-            ],
+              ],
 
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.error.withAlpha(25),
-                    border: Border.all(color: theme.colorScheme.error),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(
-                      color: theme.colorScheme.error,
-                      fontSize: 12,
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.error.withAlpha(25),
+                      border: Border.all(color: theme.colorScheme.error),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _errorMessage!,
+                      style: TextStyle(
+                        color: theme.colorScheme.error,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: [
-        if (isStep2 && _selectedReason != null)
+        if (isStep2 && _selectedReason != null && _selectedServiceDid != null)
           _isSubmitting
               ? const SizedBox(
                   width: 16,
@@ -564,6 +725,18 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       ],
     );
   }
+}
+
+class _ModerationServiceOption {
+  const _ModerationServiceOption({
+    required this.did,
+    required this.displayName,
+    required this.isDefault,
+  });
+
+  final String did;
+  final String displayName;
+  final bool isDefault;
 }
 
 class _CategoryTile extends StatelessWidget {
