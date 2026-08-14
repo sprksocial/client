@@ -1736,24 +1736,6 @@ abstract class AppLocalizations {
     int count,
   );
 
-  /// Heading for author-applied media content warnings
-  ///
-  /// In en, this message translates to:
-  /// **'Content warnings'**
-  String get labelContentWarnings;
-
-  /// Explanation shown above author self-label controls
-  ///
-  /// In en, this message translates to:
-  /// **'Add any warnings that apply to the media you are posting.'**
-  String get messageContentWarningsDescription;
-
-  /// Heading for mutually exclusive adult-content warnings
-  ///
-  /// In en, this message translates to:
-  /// **'Adult Content'**
-  String get labelAdultContent;
-
   /// Heading over content concealed by moderation
   ///
   /// In en, this message translates to:

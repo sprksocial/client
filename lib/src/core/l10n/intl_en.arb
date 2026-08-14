@@ -1508,18 +1508,6 @@
     }
   },
 
-  "labelContentWarnings": "Content warnings",
-  "@labelContentWarnings": {
-    "description": "Heading for author-applied media content warnings"
-  },
-  "messageContentWarningsDescription": "Add any warnings that apply to the media you are posting.",
-  "@messageContentWarningsDescription": {
-    "description": "Explanation shown above author self-label controls"
-  },
-  "labelAdultContent": "Adult Content",
-  "@labelAdultContent": {
-    "description": "Heading for mutually exclusive adult-content warnings"
-  },
   "moderationContentWarning": "Content warning",
   "@moderationContentWarning": {
     "description": "Heading over content concealed by moderation"

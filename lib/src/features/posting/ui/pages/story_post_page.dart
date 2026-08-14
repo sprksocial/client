@@ -11,8 +11,6 @@ import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
-import 'package:spark/src/features/posting/models/content_warning_selection.dart';
-import 'package:spark/src/features/posting/ui/widgets/content_warning_selector.dart';
 
 /// Page that handles posting a story directly without a review UI.
 ///
@@ -44,7 +42,6 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
   bool _isPosting = false;
   String _statusMessage = 'Preparing...';
   String? _error;
-  ContentWarningSelection _contentWarnings = const ContentWarningSelection();
 
   @override
   void initState() {
@@ -56,14 +53,6 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
 
   Future<void> _postStory() async {
     if (_isPosting) return;
-
-    final selection = await showContentWarningDialog(context);
-    if (!mounted) return;
-    if (selection == null) {
-      context.router.maybePop(false);
-      return;
-    }
-    _contentWarnings = selection;
 
     setState(() {
       _isPosting = true;
@@ -115,7 +104,6 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
       postStoryProvider(
         Media.image(image: uploadedImage.image, alt: uploadedImage.alt),
         embeds: widget.embeds,
-        selfLabels: _contentWarnings.selfLabels,
       ).future,
     );
 
@@ -135,7 +123,6 @@ class _StoryPostPageState extends ConsumerState<StoryPostPage> {
         storyMode: true,
         soundRef: widget.soundRef,
         storyEmbeds: widget.embeds,
-        selfLabelValues: _contentWarnings.values,
       ).future,
     );
 

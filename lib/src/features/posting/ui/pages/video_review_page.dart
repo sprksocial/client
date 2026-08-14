@@ -17,9 +17,7 @@ import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
-import 'package:spark/src/features/posting/models/content_warning_selection.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
-import 'package:spark/src/features/posting/ui/widgets/content_warning_selector.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -52,7 +50,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   bool _isPosting = false;
   String _videoAltText = '';
   bool _crosspostToBsky = false;
-  ContentWarningSelection _contentWarnings = const ContentWarningSelection();
   late XFile _video;
   late final FeedRepository _feedRepository;
   VideoPlayerController? _player;
@@ -279,7 +276,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         soundRef: widget.soundRef,
         crosspostToBsky: !widget.storyMode && _crosspostToBsky,
         facets: facets,
-        selfLabels: _contentWarnings.selfLabels,
       );
 
       if (!mounted) return;
@@ -382,10 +378,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         // Mentions are automatically tracked in the controller
       },
       descriptionMaxChars: AppConstants.postDescriptionMaxChars,
-      contentWarningSection: ContentWarningSelector(
-        value: _contentWarnings,
-        onChanged: (value) => setState(() => _contentWarnings = value),
-      ),
       showCrossPost: !widget.storyMode,
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),

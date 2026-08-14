@@ -968,16 +968,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get labelContentWarnings => 'Content warnings';
-
-  @override
-  String get messageContentWarningsDescription =>
-      'Add any warnings that apply to the media you are posting.';
-
-  @override
-  String get labelAdultContent => 'Adult Content';
-
-  @override
   String get moderationContentWarning => 'Content warning';
 
   @override

@@ -15,10 +15,8 @@ import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/pages/post_image_editor_page.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
-import 'package:spark/src/features/posting/models/content_warning_selection.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/posting/ui/widgets/image_sound_selection_sheet.dart';
-import 'package:spark/src/features/posting/ui/widgets/content_warning_selector.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:spark/src/features/sound/models/sound_audio_track.dart';
 
@@ -46,7 +44,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   final Map<String, String> _altTexts = {};
   bool _crosspostToBsky = false;
   AudioTrack? _selectedSoundTrack;
-  ContentWarningSelection _contentWarnings = const ContentWarningSelection();
   late final FeedRepository _feedRepository;
 
   Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
@@ -150,7 +147,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         final firstImage = uploadedImage.first;
         final storyProvider = postStoryProvider(
           Media.image(image: firstImage.image, alt: firstImage.alt),
-          selfLabels: _contentWarnings.selfLabels,
         );
         final asyncResult = await ref.read(storyProvider.future);
         if (asyncResult == null) {
@@ -166,7 +162,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
           crosspostToBsky: crosspostEnabled,
           facets: facets,
           soundRef: decodeSoundTrackStrongRef(_selectedSoundTrack?.id),
-          selfLabels: _contentWarnings.selfLabels,
         );
       }
       return result;
@@ -218,10 +213,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         // Mentions are automatically tracked in the controller
       },
       descriptionMaxChars: AppConstants.postDescriptionMaxChars,
-      contentWarningSection: ContentWarningSelector(
-        value: _contentWarnings,
-        onChanged: (value) => setState(() => _contentWarnings = value),
-      ),
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
       showCrossPostWarning: showCrossPostWarning,

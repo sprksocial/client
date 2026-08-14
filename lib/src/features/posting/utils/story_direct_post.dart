@@ -9,7 +9,6 @@ import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
-import 'package:spark/src/features/posting/ui/widgets/content_warning_selector.dart';
 
 /// Utility for posting stories directly without a review page.
 class StoryDirectPost {
@@ -25,9 +24,6 @@ class StoryDirectPost {
     XFile imageFile, {
     List<StoryEmbed> embeds = const [],
   }) async {
-    final contentWarnings = await showContentWarningDialog(context);
-    if (contentWarnings == null || !context.mounted) return null;
-
     // Show loading overlay
     final navigator = Navigator.of(context);
 
@@ -59,7 +55,6 @@ class StoryDirectPost {
         postStoryProvider(
           Media.image(image: uploadedImage.image, alt: uploadedImage.alt),
           embeds: embeds,
-          selfLabels: contentWarnings.selfLabels,
         ).future,
       );
 
@@ -93,9 +88,6 @@ class StoryDirectPost {
     RepoStrongRef? soundRef,
     List<StoryEmbed> embeds = const [],
   }) async {
-    final contentWarnings = await showContentWarningDialog(context);
-    if (contentWarnings == null || !context.mounted) return null;
-
     // Show loading overlay
     final navigator = Navigator.of(context);
 
@@ -115,7 +107,6 @@ class StoryDirectPost {
           storyMode: true,
           soundRef: soundRef,
           storyEmbeds: embeds,
-          selfLabelValues: contentWarnings.values,
         ).future,
       );
 
