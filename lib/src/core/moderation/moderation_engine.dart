@@ -3,17 +3,19 @@ import 'package:spark/src/core/moderation/moderation_definitions.dart';
 import 'package:spark/src/core/moderation/moderation_models.dart';
 
 final class ModerationEngine {
-  const ModerationEngine({
+  ModerationEngine({
     required this.definitions,
     required this.preferences,
     this.currentUserDid,
     this.selfLabelerDid,
-  });
+    Map<String, String> labelerHandles = const {},
+  }) : _labelerHandles = Map.unmodifiable(labelerHandles);
 
   final ModerationLabelDefinitions definitions;
   final ModerationPreferences preferences;
   final String? currentUserDid;
   final String? selfLabelerDid;
+  final Map<String, String> _labelerHandles;
 
   ModerationDecision evaluate(
     Iterable<Label> labels, {
@@ -70,6 +72,7 @@ final class ModerationEngine {
             noOverride: noOverride,
           ),
           strings: definition.stringsFor(preferredLocales),
+          sourceHandle: _labelerHandles[label.src],
         ),
       );
     }

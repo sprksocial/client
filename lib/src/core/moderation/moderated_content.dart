@@ -443,6 +443,10 @@ class _ModerationDetailsState extends State<_ModerationDetails> {
             Builder(
               builder: (context) {
                 final strings = cause.localizedStrings(l10n);
+                final source = switch (cause.sourceHandle) {
+                  final handle? => '@$handle',
+                  null => cause.sourceDid,
+                };
                 return Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -458,9 +462,7 @@ class _ModerationDetailsState extends State<_ModerationDetails> {
                           Text(description),
                         ],
                         const SizedBox(height: 8),
-                        SelectableText(
-                          '${l10n.moderationAppliedBy}: ${cause.sourceDid}',
-                        ),
+                        SelectableText('${l10n.moderationAppliedBy}: $source'),
                         if (cause.label.exp case final expires?)
                           Text(
                             '${l10n.moderationExpires}: ${expires.toLocal()}',

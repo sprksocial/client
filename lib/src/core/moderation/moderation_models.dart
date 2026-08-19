@@ -232,6 +232,7 @@ final class ModerationCause {
     required this.noOverride,
     required this.priority,
     this.strings,
+    this.sourceHandle,
   });
 
   final Label label;
@@ -242,6 +243,7 @@ final class ModerationCause {
   final bool noOverride;
   final int priority;
   final ModerationLabelStrings? strings;
+  final String? sourceHandle;
 
   String get sourceDid => label.src;
 }

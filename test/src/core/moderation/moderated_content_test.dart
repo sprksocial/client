@@ -340,6 +340,30 @@ void main() {
     );
   });
 
+  testWidgets('label details show the moderator handle instead of its DID', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        _engine(labelerHandles: const {'did:plc:labeler': 'labeler.test'}),
+        ModeratedContent(
+          labels: [_label('gore', source: 'did:plc:labeler')],
+          target: ModerationTarget.content,
+          context: ModerationContext.contentView,
+          subjectDid: 'did:plc:author',
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Why am I seeing this?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Applied by: @labeler.test'), findsOneWidget);
+    expect(find.textContaining('did:plc:labeler'), findsNothing);
+  });
+
   testWidgets('does not offer an account appeal for a CID-less record label', (
     tester,
   ) async {
@@ -501,6 +525,7 @@ ModerationEngine _engine({
   bool adultContentEnabled = true,
   String? currentUserDid,
   Map<String, Iterable<LabelValueDefinition>> definitions = const {},
+  Map<String, String> labelerHandles = const {},
 }) {
   return ModerationEngine(
     definitions: ModerationLabelDefinitions.fromLabelers(definitions),
@@ -510,6 +535,7 @@ ModerationEngine _engine({
       authenticated: true,
     ),
     currentUserDid: currentUserDid,
+    labelerHandles: labelerHandles,
   );
 }
 

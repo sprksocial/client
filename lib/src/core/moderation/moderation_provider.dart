@@ -21,11 +21,13 @@ final moderationEngineProvider = FutureProvider<ModerationEngine>((ref) async {
   };
 
   final definitions = <String, Iterable<LabelValueDefinition>>{};
+  final labelerHandles = <String, String>{};
   await Future.wait(
     labelerDids.map((did) async {
       try {
         final service = await repository.labeler.getServicesDetailed([did]);
         definitions[did] = service.policies.labelValueDefinitions ?? const [];
+        labelerHandles[did] = service.creator.handle;
       } catch (error, stackTrace) {
         logger.w(
           'Could not load label definitions for $did',
@@ -46,5 +48,6 @@ final moderationEngineProvider = FutureProvider<ModerationEngine>((ref) async {
     ),
     currentUserDid: repository.authRepository.did,
     selfLabelerDid: repository.modDid.split('#').first,
+    labelerHandles: labelerHandles,
   );
 });
