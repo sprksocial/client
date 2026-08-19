@@ -125,6 +125,11 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                         child: StoryCircle.story(
                           userName: author.displayName ?? author.handle,
                           imageUrl: author.avatar?.toString() ?? '',
+                          avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                            labels: author.labels ?? const [],
+                            subjectDid: author.did,
+                            child: avatar,
+                          ),
                         ),
                       ),
                     ),

@@ -235,36 +235,31 @@ class FeedNotifier extends _$FeedNotifier {
           }
         }
 
-        final activeLabels = <Label>[
-          ...?extraInfo[post.uri]?.postLabels.where(
-            (label) => label.exp?.toUtc().isAfter(now) ?? true,
-          ),
-        ];
+        final latestLabels = <Label>[...?extraInfo[post.uri]?.postLabels];
         for (final incoming in incomingLabels) {
-          final existingIndex = activeLabels.indexWhere(
+          final existingIndex = latestLabels.indexWhere(
             (label) =>
                 label.src == incoming.src &&
                 label.uri == incoming.uri &&
                 label.val == incoming.val,
           );
-          final isExpired = incoming.exp?.toUtc().isAfter(now) == false;
-          if (incoming.isNeg || isExpired) {
-            if (existingIndex != -1 &&
-                _labelIsAtLeastAsNew(incoming, activeLabels[existingIndex])) {
-              activeLabels.removeAt(existingIndex);
-            }
-            continue;
-          }
           if (existingIndex == -1) {
-            activeLabels.add(incoming);
-          } else if (_labelIsAtLeastAsNew(
+            latestLabels.add(incoming);
+          } else if (_labelShouldReplace(
             incoming,
-            activeLabels[existingIndex],
+            latestLabels[existingIndex],
+            now,
           )) {
-            activeLabels[existingIndex] = incoming;
+            latestLabels[existingIndex] = incoming;
           }
         }
-        extraInfo[post.uri] = (postLabels: activeLabels);
+        final activeLabels = latestLabels
+            .where(
+              (label) =>
+                  !label.isNeg && (label.exp?.toUtc().isAfter(now) ?? true),
+            )
+            .toList();
+        extraInfo[post.uri] = (postLabels: latestLabels);
         postsWithMergedLabels.add(post.copyWith(labels: activeLabels));
       }
 
@@ -609,11 +604,13 @@ class FeedNotifier extends _$FeedNotifier {
   }
 }
 
-bool _labelIsAtLeastAsNew(Label candidate, Label existing) {
-  final candidateVersion = candidate.ver;
-  final existingVersion = existing.ver;
-  if (candidateVersion != null || existingVersion != null) {
-    return (candidateVersion ?? 0) >= (existingVersion ?? 0);
-  }
-  return !candidate.cts.toUtc().isBefore(existing.cts.toUtc());
+bool _labelShouldReplace(Label candidate, Label existing, DateTime now) {
+  final comparison = candidate.cts.toUtc().compareTo(existing.cts.toUtc());
+  if (comparison != 0) return comparison > 0;
+
+  final candidateInactive =
+      candidate.isNeg || candidate.exp?.toUtc().isAfter(now) == false;
+  final existingInactive =
+      existing.isNeg || existing.exp?.toUtc().isAfter(now) == false;
+  return candidateInactive || !existingInactive;
 }

@@ -13,6 +13,7 @@ class ChatListItemData {
     this.avatarUrl,
     this.verified = false,
     this.unread = false,
+    this.avatarBuilder,
   });
 
   final String? avatarUrl;
@@ -22,6 +23,7 @@ class ChatListItemData {
   final String preview;
   final bool verified;
   final bool unread;
+  final Widget Function(Widget avatar)? avatarBuilder;
 }
 
 class ChatListPageTemplate extends StatelessWidget {
@@ -117,16 +119,17 @@ class _ChatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
+    final avatar = UserAvatar(
+      imageUrl: data.avatarUrl ?? '',
+      username: data.handle,
+      size: 50.45,
+    );
 
     return ListTile(
       onTap: onTap,
       horizontalTitleGap: 12,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: UserAvatar(
-        imageUrl: data.avatarUrl ?? '',
-        username: data.handle,
-        size: 50.45,
-      ),
+      leading: data.avatarBuilder?.call(avatar) ?? avatar,
       title: Row(
         children: [
           Expanded(

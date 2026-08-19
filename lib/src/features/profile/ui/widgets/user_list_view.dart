@@ -69,6 +69,11 @@ class UserListView extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: ProfileCard(
               imageUrl: user.avatar?.toString() ?? '',
+              avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                labels: user.labels ?? const [],
+                subjectDid: user.did,
+                child: avatar,
+              ),
               userName: user.displayName ?? user.handle,
               userHandle: '@${user.handle}',
               description: user.description,
@@ -102,6 +107,7 @@ class UserListView extends ConsumerWidget {
                     handle: user.handle,
                     displayName: user.displayName,
                     avatar: user.avatar,
+                    labels: user.labels,
                   ),
                 ),
               ),

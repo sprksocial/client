@@ -35,6 +35,7 @@ Future<void> openStoriesForProfile(
       displayName: user.displayName,
       avatar: user.avatar,
       viewer: user.viewer,
+      labels: user.labels,
     );
 
     context.router.push(

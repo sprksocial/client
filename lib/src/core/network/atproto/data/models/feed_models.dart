@@ -192,6 +192,26 @@ extension ReplyViewConvenience on ReplyView {
 }
 
 extension StoryViewConvenience on StoryView {
+  static const _moderationLabelsKey = 'sparkModerationLabels';
+
+  List<Label> get moderationLabels {
+    final values = $unknown?[_moderationLabelsKey];
+    if (values is! List) return const [];
+    return values
+        .whereType<Map<String, Object?>>()
+        .map((value) => Label.fromJson(Map<String, Object?>.from(value)))
+        .toList();
+  }
+
+  StoryView withModerationLabels(Iterable<Label> labels) {
+    return copyWith(
+      $unknown: {
+        ...?$unknown,
+        _moderationLabelsKey: [for (final label in labels) label.toJson()],
+      },
+    );
+  }
+
   StoryRecord? get localRecord {
     try {
       return StoryRecord.fromJson(record);

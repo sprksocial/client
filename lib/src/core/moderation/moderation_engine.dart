@@ -205,8 +205,7 @@ final class ModerationDecision {
 
 bool _filtersContext(ModerationTarget target, ModerationContext context) {
   return switch (context) {
-    ModerationContext.profileList =>
-      target == ModerationTarget.account || target == ModerationTarget.profile,
+    ModerationContext.profileList => target == ModerationTarget.account,
     ModerationContext.contentList =>
       target == ModerationTarget.account || target == ModerationTarget.content,
     _ => false,

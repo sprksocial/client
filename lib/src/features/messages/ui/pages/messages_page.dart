@@ -59,6 +59,11 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
             timestamp: ts,
             preview: preview,
             unread: (convo.unreadCount) > 0,
+            avatarBuilder: (avatar) => ModeratedProfileAvatar(
+              labels: profile.labels ?? const [],
+              subjectDid: profile.did,
+              child: avatar,
+            ),
           );
         }).toList();
 

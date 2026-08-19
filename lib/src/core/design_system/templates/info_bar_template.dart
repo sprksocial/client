@@ -23,6 +23,7 @@ class InfoBarTemplate extends StatefulWidget {
     this.altAvailable = false,
     this.onAltTap,
     this.avatarUrl,
+    this.avatarBuilder,
   });
 
   /// Display name
@@ -57,6 +58,7 @@ class InfoBarTemplate extends StatefulWidget {
 
   /// Avatar shown on left of the name/handle.
   final String? avatarUrl;
+  final Widget Function(Widget avatar)? avatarBuilder;
 
   @override
   State<InfoBarTemplate> createState() => _InfoBarTemplateState();
@@ -95,6 +97,7 @@ class _InfoBarTemplateState extends State<InfoBarTemplate>
                         displayName: widget.displayName,
                         size: 32,
                         onTap: widget.onAvatarTap ?? widget.onTitleTap,
+                        avatarBuilder: widget.avatarBuilder,
                       ),
                     ),
 

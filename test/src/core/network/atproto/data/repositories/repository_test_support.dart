@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 
@@ -15,6 +16,7 @@ class RepositoryHarness {
     String? did = 'did:plc:viewer',
     Map<String, dynamic>? getResponse,
     int getStatusCode = 200,
+    FeedRepository? feedRepository,
   }) : transport = TestTransport() {
     final atproto = oauth
         ? PoptartClient.fromOAuthSession(
@@ -44,7 +46,11 @@ class RepositoryHarness {
       atproto: atprotoInitialized ? atproto : null,
     );
     repo = FakeRepoRepository();
-    sprk = FakeSprkRepository(auth: auth, repo: repo);
+    sprk = FakeSprkRepository(
+      auth: auth,
+      repo: repo,
+      feed: feedRepository ?? const _UnavailableFeedRepository(),
+    );
     if (atprotoInitialized && getResponse != null) {
       transport.enqueueGet(getResponse, statusCode: getStatusCode);
     }
@@ -183,7 +189,11 @@ class FakeAuthRepository implements AuthRepository {
 }
 
 class FakeSprkRepository implements SprkRepository {
-  FakeSprkRepository({required this.auth, required this.repo});
+  FakeSprkRepository({
+    required this.auth,
+    required this.repo,
+    required this.feed,
+  });
 
   static const testSprkDid = 'did:web:sprk.test#sprk_appview';
   static const testBskyDid = 'did:web:bsky.test#bsky_appview';
@@ -193,6 +203,9 @@ class FakeSprkRepository implements SprkRepository {
 
   @override
   final RepoRepository repo;
+
+  @override
+  final FeedRepository feed;
 
   @override
   AuthRepository get authRepository => auth;
@@ -231,6 +244,13 @@ class FakeSprkRepository implements SprkRepository {
 
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) => apiCall();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _UnavailableFeedRepository implements FeedRepository {
+  const _UnavailableFeedRepository();
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

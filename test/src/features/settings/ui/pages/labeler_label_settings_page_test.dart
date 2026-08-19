@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -71,24 +73,43 @@ void main() {
     }
     expect(find.text('Warn'), findsNothing);
   });
+
+  testWidgets('does not update state after disposal while loading', (
+    tester,
+  ) async {
+    final profiles = Completer<List<ProfileViewDetailed>>();
+    await GetIt.I.unregister<ActorRepository>();
+    GetIt.I.registerSingleton<ActorRepository>(
+      _PendingActorRepository(profiles.future),
+    );
+
+    await tester.pumpWidget(_page(labelerDid));
+    await tester.pump();
+    await tester.pumpWidget(const SizedBox.shrink());
+
+    profiles.complete(const []);
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _pumpPage(WidgetTester tester, String labelerDid) async {
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [
-        settingsProvider.overrideWith(_FakeSettings.new),
-        userPreferencesProvider.overrideWith(_FakePreferences.new),
-      ],
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: LabelerLabelSettingsPage(did: labelerDid),
-      ),
-    ),
-  );
+  await tester.pumpWidget(_page(labelerDid));
   await tester.pumpAndSettle();
 }
+
+Widget _page(String labelerDid) => ProviderScope(
+  overrides: [
+    settingsProvider.overrideWith(_FakeSettings.new),
+    userPreferencesProvider.overrideWith(_FakePreferences.new),
+  ],
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: LabelerLabelSettingsPage(did: labelerDid),
+  ),
+);
 
 LabelerViewDetailed _service(String did) => LabelerViewDetailed(
   uri: AtUri.parse('at://$did/app.bsky.labeler.service/self'),
@@ -124,6 +145,22 @@ class _FakeActorRepository implements ActorRepository {
     List<String> dids, {
     bool useBluesky = false,
   }) async => const [];
+
+  @override
+  Never noSuchMethod(Invocation invocation) =>
+      throw UnsupportedError('${invocation.memberName} is not used');
+}
+
+class _PendingActorRepository implements ActorRepository {
+  const _PendingActorRepository(this.profiles);
+
+  final Future<List<ProfileViewDetailed>> profiles;
+
+  @override
+  Future<List<ProfileViewDetailed>> getProfiles(
+    List<String> dids, {
+    bool useBluesky = false,
+  }) => profiles;
 
   @override
   Never noSuchMethod(Invocation invocation) =>

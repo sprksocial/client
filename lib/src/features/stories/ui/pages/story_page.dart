@@ -23,6 +23,7 @@ class StoryPage extends ConsumerStatefulWidget {
     this.onStoryDurationChanged,
     this.onPauseRequested,
     this.onResumeRequested,
+    this.onConcealChanged,
     this.onPrevious,
     this.onNext,
   });
@@ -33,6 +34,7 @@ class StoryPage extends ConsumerStatefulWidget {
   final ValueChanged<Duration>? onStoryDurationChanged;
   final VoidCallback? onPauseRequested;
   final VoidCallback? onResumeRequested;
+  final ValueChanged<bool>? onConcealChanged;
   final VoidCallback? onPrevious;
   final VoidCallback? onNext;
 
@@ -261,7 +263,8 @@ class _StoryPageState extends ConsumerState<StoryPage>
     }
 
     final selfLabels = widget.story.localRecord?.selfLabels ?? const [];
-    final labels = [
+    final labels = <Label>[
+      ...widget.story.moderationLabels,
       for (final selfLabel in selfLabels)
         Label(
           src: widget.story.author.did,
@@ -271,7 +274,6 @@ class _StoryPageState extends ConsumerState<StoryPage>
         ),
     ];
 
-    // Story labels are stored on the record rather than StoryView itself.
     return ModeratedContent(
       labels: labels,
       authorLabels: widget.story.author.labels ?? const [],
@@ -445,6 +447,7 @@ class _StoryPageState extends ConsumerState<StoryPage>
 
   void _onModerationConcealChanged(bool concealed) {
     _moderationConcealed = concealed;
+    widget.onConcealChanged?.call(concealed);
     if (widget.isActive) _applyModerationPlaybackState();
   }
 

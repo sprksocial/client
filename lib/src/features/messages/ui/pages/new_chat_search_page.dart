@@ -249,6 +249,11 @@ class _UserResultsState extends ConsumerState<_UserResults> {
             padding: const EdgeInsets.only(bottom: 8),
             child: ProfileCard(
               imageUrl: actor.avatar?.toString() ?? '',
+              avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                labels: actor.labels ?? const [],
+                subjectDid: actor.did,
+                child: avatar,
+              ),
               userName: actor.displayName ?? actor.handle,
               userHandle: '@${actor.handle}',
               description: actor.description ?? '',

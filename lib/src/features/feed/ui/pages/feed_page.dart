@@ -11,12 +11,12 @@ import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physi
 import 'package:spark/src/features/feed/ui/widgets/post/feed_post_skeleton.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/no_more_posts.dart';
-import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 class FeedPage extends ConsumerStatefulWidget {
-  const FeedPage({required this.feed, super.key});
+  const FeedPage({required this.feed, required this.isActive, super.key});
 
   final Feed feed;
+  final bool isActive;
 
   @override
   ConsumerState<FeedPage> createState() => _FeedPageState();
@@ -91,9 +91,7 @@ class _FeedPageState extends ConsumerState<FeedPage>
     final l10n = AppLocalizations.of(context);
     final state = ref.watch(feedProvider(widget.feed));
     final notifier = ref.read(feedProvider(widget.feed).notifier);
-    final shouldBeActive = ref.watch(
-      settingsProvider.select((settings) => settings.activeFeed == widget.feed),
-    );
+    final shouldBeActive = widget.isActive;
 
     ref.listen(feedRefreshTriggerProvider(widget.feed), (previous, next) {
       if (previous != next) {

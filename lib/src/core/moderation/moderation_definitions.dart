@@ -72,6 +72,7 @@ final class ModerationLabelDefinitions {
 
     // Only protocol-supported global values may be self-applied. For those
     // values, use the configured labeler's metadata when it is available.
+    if (!globalAdultContentLabelValues.contains(label.val)) return null;
     final builtIn = _global[label.val];
     if (builtIn == null) return null;
     return _bySource[labelerDid]?[label.val] ?? builtIn;

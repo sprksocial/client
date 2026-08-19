@@ -3,17 +3,46 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/features/sound/controllers/audio_audition_controller.dart';
 import 'package:spark/src/features/sound/controllers/audio_audition_playback.dart';
 import 'package:spark/src/features/sound/ui/widgets/audio_selection_bottom_sheet.dart';
 import 'package:spark/src/features/sound/providers/sound_picker_search_provider.dart';
 import 'package:spark/src/features/sound/providers/sound_picker_search_state.dart';
 import 'package:spark/src/features/sound/ui/widgets/audio_track_list_section.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 void main() {
+  testWidgets('hidden sounds are not selectable', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          soundPickerSearchProvider.overrideWithValue(
+            SoundPickerSearchState(audios: [_audio(hidden: true)]),
+          ),
+          moderationEngineProvider.overrideWith((ref) async => _engine()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: AudioTrackListSection(onTrackSelected: (_) {})),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(AudioTrackSelectionTile), findsNothing);
+    expect(find.text('Hidden sound'), findsNothing);
+  });
+
   testWidgets('cancel while opening does not present a stale picker', (
     tester,
   ) async {
@@ -313,6 +342,42 @@ AudioTrack _track(String id) {
     audio: EditorAudio(networkUrl: 'https://example.com/$id.mp3'),
   );
 }
+
+AudioView _audio({required bool hidden}) {
+  final uri = AtUri('at://did:plc:author/so.sprk.sound.audio/hidden');
+  return AudioView(
+    uri: uri,
+    cid: 'audio-cid',
+    author: const ProfileViewBasic(
+      did: 'did:plc:author',
+      handle: 'author.sprk.so',
+    ),
+    record: const <String, dynamic>{},
+    title: 'Hidden sound',
+    coverArt: 'https://example.com/cover.jpg',
+    indexedAt: DateTime.utc(2026, 8, 17),
+    audio: 'https://example.com/audio.mp3',
+    labels: hidden
+        ? [
+            Label(
+              src: 'did:plc:moderator',
+              uri: uri.toString(),
+              val: '!hide',
+              cts: DateTime.utc(2026, 8, 17),
+            ),
+          ]
+        : null,
+  );
+}
+
+ModerationEngine _engine() => ModerationEngine(
+  definitions: ModerationLabelDefinitions(),
+  preferences: ModerationPreferences(
+    labels: const [],
+    adultContentEnabled: true,
+    authenticated: true,
+  ),
+);
 
 final _span = TrimDurationSpan(
   start: Duration.zero,

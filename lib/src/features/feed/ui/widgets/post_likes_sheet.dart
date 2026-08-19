@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/feed/providers/post_likes_provider.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
@@ -115,33 +117,45 @@ class _PostLikesSheetState extends ConsumerState<_PostLikesSheet> {
                   }
 
                   final actor = state.likes[index].actor;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    child: ProfileCard(
-                      imageUrl: actor.avatar?.toString() ?? '',
-                      userName: actor.displayName ?? actor.handle,
-                      userHandle: '@${actor.handle}',
-                      description: actor.description,
-                      isFollowing: actor.viewer?.following != null,
-                      showFollowButton: false,
-                      onTap: () {
-                        final router = context.router;
-                        Navigator.of(context).pop();
-                        router.push(
-                          ProfileRoute(
-                            did: actor.did,
-                            initialProfile: ProfileViewBasic(
+                  return ModeratedContent(
+                    labels: actor.labels ?? const [],
+                    target: ModerationTarget.account,
+                    context: ModerationContext.profileList,
+                    subjectDid: actor.did,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      child: ProfileCard(
+                        imageUrl: actor.avatar?.toString() ?? '',
+                        avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                          labels: actor.labels ?? const [],
+                          subjectDid: actor.did,
+                          child: avatar,
+                        ),
+                        userName: actor.displayName ?? actor.handle,
+                        userHandle: '@${actor.handle}',
+                        description: actor.description,
+                        isFollowing: actor.viewer?.following != null,
+                        showFollowButton: false,
+                        onTap: () {
+                          final router = context.router;
+                          Navigator.of(context).pop();
+                          router.push(
+                            ProfileRoute(
                               did: actor.did,
-                              handle: actor.handle,
-                              displayName: actor.displayName,
-                              avatar: actor.avatar,
+                              initialProfile: ProfileViewBasic(
+                                did: actor.did,
+                                handle: actor.handle,
+                                displayName: actor.displayName,
+                                avatar: actor.avatar,
+                                labels: actor.labels,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   );
                 },

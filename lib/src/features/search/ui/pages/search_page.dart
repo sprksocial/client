@@ -222,9 +222,13 @@ class _ActorTypeaheadSuggestions extends ConsumerWidget {
           child: ListTile(
             onTap: () => onSuggestionSelected(actor),
             contentPadding: const EdgeInsets.symmetric(vertical: 4),
-            leading: UserAvatar(
-              imageUrl: actor.avatar?.toString() ?? '',
-              size: 36,
+            leading: ModeratedProfileAvatar(
+              labels: actor.labels ?? const [],
+              subjectDid: actor.did,
+              child: UserAvatar(
+                imageUrl: actor.avatar?.toString() ?? '',
+                size: 36,
+              ),
             ),
             title: Text(actor.displayName ?? actor.handle),
             subtitle: Text('@${actor.handle}'),

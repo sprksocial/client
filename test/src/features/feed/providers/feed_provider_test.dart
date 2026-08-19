@@ -232,12 +232,13 @@ void main() {
   });
 
   test(
-    'a newer negation clears a cached label without duplicating the post',
+    'a newer negation blocks stale data and yields to a newer assertion',
     () async {
       final original = _post(
         'updated-label',
         labels: [
           Label(
+            ver: 1,
             src: 'did:plc:moderator',
             uri: 'at://did:plc:author/so.sprk.feed.post/updated-label',
             val: 'sexual',
@@ -249,6 +250,7 @@ void main() {
         'updated-label',
         labels: [
           Label(
+            ver: 1,
             src: 'did:plc:moderator',
             uri: 'at://did:plc:author/so.sprk.feed.post/updated-label',
             val: 'sexual',
@@ -257,19 +259,44 @@ void main() {
           ),
         ],
       );
+      final staleAssertion = original.copyWith(
+        labels: [original.labels!.single.copyWith(cts: _indexedAt)],
+      );
+      final reapplied = original.copyWith(
+        labels: [
+          original.labels!.single.copyWith(
+            cts: _indexedAt.add(const Duration(minutes: 2)),
+          ),
+        ],
+      );
       feedRepository
         ..enqueue(_page([original], cursor: 'next'))
-        ..enqueue(_page([retracted]));
+        ..enqueue(_page([retracted], cursor: 'after-retraction'))
+        ..enqueue(_page([staleAssertion], cursor: 'after-stale'))
+        ..enqueue(_page([reapplied]));
       final container = createContainer();
       final notifier = readNotifier(container);
 
       await notifier.loadAndUpdateFirstLoad();
       await notifier.scrollDown();
+      await notifier.scrollDown();
 
-      final state = container.read(feedProvider(feed));
+      var state = container.read(feedProvider(feed));
       expect(state.loadedPosts, hasLength(1));
       expect(state.loadedPosts.single.labels, isEmpty);
-      expect(state.extraInfo[original.uri]!.postLabels, isEmpty);
+      expect(state.extraInfo[original.uri]!.postLabels.single.isNeg, isTrue);
+      expect(
+        state.extraInfo[original.uri]!.postLabels.single.cts,
+        _indexedAt.add(const Duration(minutes: 1)),
+      );
+
+      await notifier.scrollDown();
+
+      state = container.read(feedProvider(feed));
+      expect(state.loadedPosts.single.labels, [reapplied.labels!.single]);
+      expect(state.extraInfo[original.uri]!.postLabels, [
+        reapplied.labels!.single,
+      ]);
     },
   );
 
@@ -299,29 +326,39 @@ void main() {
     ]);
   });
 
-  test('expired assertions are not cached or attached to posts', () async {
-    final post = _post(
-      'expired-label',
-      labels: [
-        Label(
-          src: 'did:plc:moderator',
-          uri: 'at://did:plc:author/so.sprk.feed.post/expired-label',
-          val: 'sexual',
-          cts: _indexedAt,
-          exp: _indexedAt.add(const Duration(minutes: 1)),
-        ),
-      ],
-    );
-    feedRepository.enqueue(_page([post]));
-    final container = createContainer();
-    final notifier = readNotifier(container);
+  test(
+    'expired assertions are cached as tombstones but not attached',
+    () async {
+      final post = _post(
+        'expired-label',
+        labels: [
+          Label(
+            ver: 1,
+            src: 'did:plc:moderator',
+            uri: 'at://did:plc:author/so.sprk.feed.post/expired-label',
+            val: 'sexual',
+            cts: _indexedAt,
+            exp: _indexedAt.add(const Duration(minutes: 1)),
+          ),
+        ],
+      );
+      final staleAssertion = post.copyWith(
+        labels: [post.labels!.single.copyWith(exp: null)],
+      );
+      feedRepository
+        ..enqueue(_page([post], cursor: 'next'))
+        ..enqueue(_page([staleAssertion]));
+      final container = createContainer();
+      final notifier = readNotifier(container);
 
-    await notifier.loadAndUpdateFirstLoad();
+      await notifier.loadAndUpdateFirstLoad();
+      await notifier.scrollDown();
 
-    final state = container.read(feedProvider(feed));
-    expect(state.loadedPosts.single.labels, isEmpty);
-    expect(state.extraInfo[post.uri]!.postLabels, isEmpty);
-  });
+      final state = container.read(feedProvider(feed));
+      expect(state.loadedPosts.single.labels, isEmpty);
+      expect(state.extraInfo[post.uri]!.postLabels, post.labels);
+    },
+  );
 
   test('an empty network page ends the feed', () async {
     feedRepository.enqueue(_page(const []));

@@ -269,6 +269,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             followersCount: TextFormatter.formatCount(profile.followersCount),
             followingCount: TextFormatter.formatCount(profile.followsCount),
             avatarUrl: profile.avatar?.toString(),
+            avatarBuilder: (avatar) => ModeratedProfileAvatar(
+              labels: profile.labels ?? const [],
+              subjectDid: profile.did,
+              child: avatar,
+            ),
             description: description.isNotEmpty ? description : null,
             links: uniqueLinks.isNotEmpty ? uniqueLinks : null,
             knownFollowers: profile.viewer?.knownFollowers,
@@ -474,6 +479,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           displayName: initial?.displayName ?? initial?.handle ?? 'Loading...',
           handle: initial?.handle ?? 'loading',
           avatarUrl: initial?.avatar?.toString(),
+          avatarBuilder: initial == null
+              ? null
+              : (avatar) => ModeratedProfileAvatar(
+                  labels: initial.labels ?? const [],
+                  subjectDid: initial.did,
+                  child: avatar,
+                ),
           postsCount: '0',
           followersCount: '0',
           followingCount: '0',
@@ -624,6 +636,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         displayName: profile.displayName,
         avatar: profile.avatar,
         viewer: profile.viewer,
+        labels: profile.labels,
       );
 
       if (mounted) {

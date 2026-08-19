@@ -64,6 +64,7 @@ class _LabelerLabelSettingsPageState
       // Fetch labeler profile
       try {
         final profiles = await _actorRepository.getProfiles([widget.did]);
+        if (!mounted) return;
         if (profiles.isNotEmpty) {
           setState(() {
             _labelerProfile = profiles.firstWhere(
@@ -75,10 +76,12 @@ class _LabelerLabelSettingsPageState
       } catch (e) {
         _logger.w('Could not fetch labeler profile: $e');
       }
+      if (!mounted) return;
 
       final service = await _sprkRepository.labeler.getServicesDetailed([
         widget.did,
       ]);
+      if (!mounted) return;
       final policiesJson = service.policies.toJson();
       final labelValuesJson = policiesJson['labelValues'] as List<dynamic>?;
       if (labelValuesJson == null || labelValuesJson.isEmpty) {
@@ -104,12 +107,12 @@ class _LabelerLabelSettingsPageState
       final existingSettings = await settings.getLabelSettingsForLabeler(
         widget.did,
       );
+      if (!mounted) return;
+      final userPreferences = await ref.read(userPreferencesProvider.future);
+      if (!mounted) return;
       final globalSettings = <String, Setting>{
         for (final preference
-            in (await ref.read(
-                  userPreferencesProvider.future,
-                )).contentLabelPrefs ??
-                const <ContentLabelPref>[])
+            in userPreferences.contentLabelPrefs ?? const <ContentLabelPref>[])
           if (preference.labelerDid == null)
             preference.label: _visibilityToSetting(
               preference.visibility.toJson(),
@@ -149,6 +152,7 @@ class _LabelerLabelSettingsPageState
       });
     } catch (e) {
       _logger.e('Error loading labeler settings: $e');
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;

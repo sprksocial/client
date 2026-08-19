@@ -101,12 +101,10 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
-    final feeds = ref.watch(visiblePinnedFeedsProvider);
-    var activeFeed = settings.activeFeed;
-    if (feeds.isNotEmpty &&
-        !feeds.any((feed) => feed.config.id == activeFeed.config.id)) {
-      activeFeed = feeds.first;
+    final visiblePinnedFeeds = ref.watch(visiblePinnedFeedsProvider);
+    final feeds = visiblePinnedFeeds.feeds;
+    final activeFeed = visiblePinnedFeeds.effectiveActiveFeed;
+    if (visiblePinnedFeeds.shouldPersistEffectiveActiveFeed) {
       _scheduleActiveFeed(activeFeed);
     }
 
@@ -172,7 +170,10 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
                   // Use feed ID as key to preserve state across reordering
                   return KeyedSubtree(
                     key: ValueKey(feeds[index].config.id),
-                    child: FeedPage(feed: feeds[index]),
+                    child: FeedPage(
+                      feed: feeds[index],
+                      isActive: feeds[index].config.id == activeFeed.config.id,
+                    ),
                   );
                 }
                 return const DecoratedBox(

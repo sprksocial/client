@@ -72,6 +72,17 @@ void main() {
       expect(decision.causes.single.definition.identifier, 'sexual');
     });
 
+    test('ignores moderation-only built-in values when self-applied', () {
+      final decision = _engine().evaluate(
+        [_label(src: 'did:plc:author', val: 'dmca-violation')],
+        target: ModerationTarget.content,
+        subjectDid: 'did:plc:author',
+        now: now,
+      );
+
+      expect(decision.causes, isEmpty);
+    });
+
     test('uses the configured labeler policy and metadata for self-labels', () {
       final engine = _engine(
         definitions: {
@@ -452,7 +463,7 @@ void main() {
         target: ModerationTarget.profile,
         now: now,
       );
-      expect(profile.forContext(ModerationContext.profileList).filter, isTrue);
+      expect(profile.forContext(ModerationContext.profileList).filter, isFalse);
       expect(profile.forContext(ModerationContext.contentList).filter, isFalse);
     });
 

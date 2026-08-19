@@ -437,10 +437,15 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return UserAvatar(
-      imageUrl: thread.post.author.avatar.toString(),
-      username: thread.post.author.handle,
-      size: 36,
+    final author = thread.post.author;
+    return ModeratedProfileAvatar(
+      labels: author.labels ?? const [],
+      subjectDid: author.did,
+      child: UserAvatar(
+        imageUrl: author.avatar.toString(),
+        username: author.handle,
+        size: 36,
+      ),
     );
   }
 }

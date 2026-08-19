@@ -24,6 +24,7 @@ class ProfilePageTemplate extends StatelessWidget {
     required this.tabsWidget,
     super.key,
     this.avatarUrl,
+    this.avatarBuilder,
     this.description,
     this.links,
     this.knownFollowers,
@@ -58,6 +59,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final String followersCount;
   final String followingCount;
   final String? avatarUrl;
+  final Widget Function(Widget avatar)? avatarBuilder;
   final String? description;
   final List<String>? links;
   final KnownFollowers? knownFollowers;
@@ -119,6 +121,7 @@ class ProfilePageTemplate extends StatelessWidget {
                     followersCount: followersCount,
                     followingCount: followingCount,
                     avatarUrl: avatarUrl,
+                    avatarBuilder: avatarBuilder,
                     description: description,
                     links: links,
                     knownFollowers: knownFollowers,
@@ -169,6 +172,7 @@ class _ProfileHeaderSection extends StatelessWidget {
     required this.isBlocking,
     required this.isEarlySupporter,
     this.avatarUrl,
+    this.avatarBuilder,
     this.description,
     this.links,
     this.knownFollowers,
@@ -190,6 +194,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final String followersCount;
   final String followingCount;
   final String? avatarUrl;
+  final Widget Function(Widget avatar)? avatarBuilder;
   final String? description;
   final List<String>? links;
   final KnownFollowers? knownFollowers;
@@ -211,6 +216,17 @@ class _ProfileHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avatar = ProfileAvatar(
+      avatarUrl: avatarUrl,
+      displayName: displayName,
+      hasStories: hasStories,
+      size: 80,
+      onTap: onAvatarTap,
+      showAddButton: isCurrentUser,
+      onAddTap: onAddStoryTap,
+      avatarBuilder: avatarBuilder,
+    );
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -219,17 +235,7 @@ class _ProfileHeaderSection extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Skeleton.keep(
-                child: ProfileAvatar(
-                  avatarUrl: avatarUrl,
-                  displayName: displayName,
-                  hasStories: hasStories,
-                  size: 80,
-                  onTap: onAvatarTap,
-                  showAddButton: isCurrentUser,
-                  onAddTap: onAddStoryTap,
-                ),
-              ),
+              Skeleton.keep(child: avatar),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

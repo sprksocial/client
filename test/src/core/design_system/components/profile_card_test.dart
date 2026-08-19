@@ -1,8 +1,13 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/toggles/toggle_button.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:spark/src/core/design_system/templates/info_bar_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
 
 void main() {
   testWidgets('reports follow and unfollow through one state-change intent', (
@@ -60,6 +65,63 @@ void main() {
 
     expect(find.text('Follow'), findsNothing);
     expect(find.text('Unfollow'), findsNothing);
+  });
+
+  testWidgets('avatar moderation leaves the add-story action outside', (
+    tester,
+  ) async {
+    var addRequests = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: _TestApp(
+          child: ProfileAvatar(
+            avatarUrl: null,
+            displayName: 'Alice',
+            showAddButton: true,
+            onAddTap: () => addRequests += 1,
+            avatarBuilder: (avatar) => ModeratedProfileAvatar(
+              labels: const [],
+              subjectDid: 'did:plc:alice',
+              child: avatar,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final addAction = find.byIcon(FluentIcons.add_24_filled);
+    expect(find.byType(ModeratedProfileAvatar), findsOneWidget);
+    expect(
+      find.ancestor(
+        of: addAction,
+        matching: find.byType(ModeratedProfileAvatar),
+      ),
+      findsNothing,
+    );
+
+    await tester.tap(addAction);
+    await tester.pump();
+    expect(addRequests, 1);
+  });
+
+  testWidgets('info bar forwards its avatar builder to the image seam', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _TestApp(
+        child: InfoBarTemplate(
+          displayName: 'Alice',
+          handle: 'alice.sprk.so',
+          avatarBuilder: (avatar) => KeyedSubtree(
+            key: const Key('moderated-info-bar-avatar'),
+            child: avatar,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('moderated-info-bar-avatar')), findsOneWidget);
   });
 }
 

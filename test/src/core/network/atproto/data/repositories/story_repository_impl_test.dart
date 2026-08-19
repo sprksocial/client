@@ -1,7 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository_impl.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 import 'repository_test_support.dart';
 
@@ -50,6 +54,64 @@ void main() {
         'did:web:mod.sprk.test',
       );
     });
+
+    test(
+      'getStoryViews enriches stories with queried moderation labels',
+      () async {
+        final story = StoryView(
+          uri: AtUri('at://did:plc:author/so.sprk.story.post/story'),
+          cid: 'story-cid',
+          author: const ProfileViewBasic(
+            did: 'did:plc:author',
+            handle: 'author.sprk.so',
+          ),
+          record: const <String, dynamic>{},
+          indexedAt: fixedNow,
+        );
+        final currentVersionLabel = Label(
+          src: 'did:plc:moderator',
+          uri: story.uri.toString(),
+          cid: story.cid,
+          val: 'sexual',
+          cts: fixedNow,
+        );
+        final oldVersionLabel = Label(
+          src: 'did:plc:moderator',
+          uri: story.uri.toString(),
+          cid: 'old-story-cid',
+          val: 'gore',
+          cts: fixedNow,
+        );
+        final unversionedLabel = Label(
+          src: 'did:plc:moderator',
+          uri: story.uri.toString(),
+          val: 'nudity',
+          cts: fixedNow,
+        );
+        final feed = _LabelFeedRepository([
+          (
+            labels: [currentVersionLabel, oldVersionLabel, unversionedLabel],
+            cursor: null,
+          ),
+        ]);
+        final harness = RepositoryHarness(
+          getResponse: {
+            'stories': [story.toJson()],
+          },
+          feedRepository: feed,
+        );
+        final repository = StoryRepositoryImpl(harness.sprk);
+
+        final result = await repository.getStoryViews([story.uri]);
+
+        expect(result.single.moderationLabels, [
+          currentVersionLabel,
+          unversionedLabel,
+        ]);
+        expect(feed.calls.single.uris, [story.uri]);
+        expect(feed.calls.single.limit, 250);
+      },
+    );
 
     test('listStoryRecords owns record paging parameters', () async {
       final harness = RepositoryHarness(
@@ -122,4 +184,25 @@ void main() {
       );
     });
   });
+}
+
+class _LabelFeedRepository implements FeedRepository {
+  _LabelFeedRepository(this.pages);
+
+  final List<({List<Label> labels, String? cursor})> pages;
+  final List<({List<AtUri> uris, int? limit, String? cursor})> calls = [];
+
+  @override
+  Future<({List<Label> labels, String? cursor})> getLabels(
+    List<AtUri> uris, {
+    List<String>? sources,
+    int? limit,
+    String? cursor,
+  }) async {
+    calls.add((uris: uris, limit: limit, cursor: cursor));
+    return pages.removeAt(0);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

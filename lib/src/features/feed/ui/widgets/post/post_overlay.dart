@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
@@ -138,6 +139,11 @@ class PostOverlay extends ConsumerWidget {
                               displayName:
                                   post.author.displayName ?? post.author.handle,
                               avatarUrl: post.author.avatar?.toString(),
+                              avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                                labels: post.author.labels ?? const [],
+                                subjectDid: post.author.did,
+                                child: avatar,
+                              ),
                               description: post.displayText,
                               hashtags: post.hashtags,
                               informLabels: informLabels,

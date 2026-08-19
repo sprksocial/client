@@ -14,6 +14,7 @@ class ProfileAvatar extends StatelessWidget {
     this.onTap,
     this.showAddButton = false,
     this.onAddTap,
+    this.avatarBuilder,
   });
 
   final String? avatarUrl;
@@ -23,6 +24,7 @@ class ProfileAvatar extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showAddButton;
   final VoidCallback? onAddTap;
+  final Widget Function(Widget avatar)? avatarBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -111,24 +113,22 @@ class ProfileAvatar extends StatelessWidget {
     required bool isDarkMode,
     required double avatarSize,
   }) {
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) {
-      return ClipOval(
-        child: CachedNetworkImage(
-          fadeInDuration: Duration.zero,
-          fadeOutDuration: Duration.zero,
-          imageUrl: avatarUrl!,
-          width: avatarSize,
-          height: avatarSize,
-          fit: BoxFit.cover,
-          placeholder: (context, url) =>
-              _buildPlaceholder(context, isDarkMode, avatarSize),
-          errorWidget: (context, url, error) =>
-              _buildPlaceholder(context, isDarkMode, avatarSize),
-        ),
-      );
-    }
+    final avatar = avatarUrl != null && avatarUrl!.isNotEmpty
+        ? CachedNetworkImage(
+            fadeInDuration: Duration.zero,
+            fadeOutDuration: Duration.zero,
+            imageUrl: avatarUrl!,
+            width: avatarSize,
+            height: avatarSize,
+            fit: BoxFit.cover,
+            placeholder: (context, url) =>
+                _buildPlaceholder(context, isDarkMode, avatarSize),
+            errorWidget: (context, url, error) =>
+                _buildPlaceholder(context, isDarkMode, avatarSize),
+          )
+        : _buildPlaceholder(context, isDarkMode, avatarSize);
 
-    return _buildPlaceholder(context, isDarkMode, avatarSize);
+    return ClipOval(child: avatarBuilder?.call(avatar) ?? avatar);
   }
 
   Widget _buildPlaceholder(

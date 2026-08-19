@@ -153,8 +153,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final settings = ref.watch(settingsProvider);
-    final visiblePinnedFeeds = ref.watch(visiblePinnedFeedsProvider);
+    final visiblePinnedFeedsState = ref.watch(visiblePinnedFeedsProvider);
+    final visiblePinnedFeeds = visiblePinnedFeedsState.feeds;
+    final effectiveActiveFeed = visiblePinnedFeedsState.effectiveActiveFeed;
     final engine = ref.watch(moderationEngineProvider).asData?.value;
     final locale = Localizations.localeOf(context).toLanguageTag();
 
@@ -184,12 +185,12 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
 
     return FeedsBarTemplate(
       tags: tags,
-      selectedTagId: settings.activeFeed.config.id,
+      selectedTagId: effectiveActiveFeed.config.id,
       onLeadingPressed: CreateMediaActions.onRecord(context, storyMode: false),
       onTagTap: (tagId) {
         final feed = visiblePinnedFeeds.firstWhere((f) => f.config.id == tagId);
 
-        if (settings.activeFeed == feed) {
+        if (effectiveActiveFeed.config.id == feed.config.id) {
           ref.read(feedRefreshTriggerProvider(feed).notifier).trigger();
         } else {
           ref.read(settingsProvider.notifier).setActiveFeed(feed);

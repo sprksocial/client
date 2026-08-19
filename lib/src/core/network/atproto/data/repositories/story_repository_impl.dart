@@ -155,7 +155,19 @@ class StoryRepositoryImpl implements StoryRepository {
         );
       })();
 
-      return response;
+      final labelsByUri = await _getModerationLabels(
+        response.storiesByAuthor.values.expand((stories) => stories),
+      );
+      return (
+        storiesByAuthor: {
+          for (final entry in response.storiesByAuthor.entries)
+            entry.key: [
+              for (final story in entry.value)
+                story.withModerationLabels(_labelsForStory(labelsByUri, story)),
+            ],
+        },
+        cursor: response.cursor,
+      );
     });
   }
 
@@ -201,8 +213,48 @@ class StoryRepositoryImpl implements StoryRepository {
             .toList();
       })();
 
-      return response;
+      final labelsByUri = await _getModerationLabels(response);
+      return [
+        for (final story in response)
+          story.withModerationLabels(_labelsForStory(labelsByUri, story)),
+      ];
     });
+  }
+
+  Future<Map<String, List<Label>>> _getModerationLabels(
+    Iterable<StoryView> stories,
+  ) async {
+    final uris = stories.map((story) => story.uri).toSet().toList();
+    if (uris.isEmpty) return const {};
+
+    final labelsByUri = <String, List<Label>>{};
+    final seenCursors = <String>{};
+    String? cursor;
+    do {
+      if (cursor != null && !seenCursors.add(cursor)) {
+        throw StateError('Label query returned a repeated cursor');
+      }
+      final page = await _client.feed.getLabels(
+        uris,
+        limit: 250,
+        cursor: cursor,
+      );
+      for (final label in page.labels) {
+        labelsByUri.putIfAbsent(label.uri, () => []).add(label);
+      }
+      cursor = page.cursor;
+    } while (cursor != null && cursor.isNotEmpty);
+
+    return labelsByUri;
+  }
+
+  Iterable<Label> _labelsForStory(
+    Map<String, List<Label>> labelsByUri,
+    StoryView story,
+  ) {
+    return (labelsByUri[story.uri.toString()] ?? const []).where(
+      (label) => label.cid == null || label.cid == story.cid,
+    );
   }
 
   @override

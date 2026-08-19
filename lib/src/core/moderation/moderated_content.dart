@@ -47,6 +47,33 @@ class ModeratedContent extends ConsumerStatefulWidget {
   ConsumerState<ModeratedContent> createState() => _ModeratedContentState();
 }
 
+class ModeratedProfileAvatar extends StatelessWidget {
+  const ModeratedProfileAvatar({
+    required this.labels,
+    required this.subjectDid,
+    required this.child,
+    super.key,
+  });
+
+  final List<Label> labels;
+  final String subjectDid;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipOval(
+      child: ModeratedContent(
+        labels: labels,
+        target: ModerationTarget.account,
+        context: ModerationContext.avatar,
+        subjectDid: subjectDid,
+        compact: true,
+        child: child,
+      ),
+    );
+  }
+}
+
 class _ModeratedContentState extends ConsumerState<ModeratedContent> {
   String? _revealedKey;
   bool? _lastConcealed;
@@ -444,7 +471,8 @@ class _ModerationDetailsState extends State<_ModerationDetails> {
                         ],
                         if (widget.mayAppeal &&
                             cause.sourceDid != _labelSubjectDid(cause.label) &&
-                            cause.sourceDid.startsWith('did:')) ...[
+                            cause.sourceDid.startsWith('did:') &&
+                            _reportSubject(cause.label) != null) ...[
                           const SizedBox(height: 10),
                           OutlinedButton(
                             onPressed: _submitting
@@ -465,10 +493,12 @@ class _ModerationDetailsState extends State<_ModerationDetails> {
   }
 
   Future<void> _appeal(ModerationCause cause) async {
+    final subject = _reportSubject(cause.label);
+    if (subject == null) return;
+
     setState(() => _submitting = true);
     final l10n = AppLocalizations.of(context);
     try {
-      final subject = _reportSubject(cause.label);
       await GetIt.I<SprkRepository>().repo.createReport(
         input: ModerationCreateReportInput(
           subject: subject,
@@ -496,20 +526,26 @@ class _ModerationDetailsState extends State<_ModerationDetails> {
   }
 }
 
-UModerationCreateReportSubject _reportSubject(Label label) {
+UModerationCreateReportSubject? _reportSubject(Label label) {
   AtUri? uri;
   try {
     uri = AtUri.parse(label.uri);
   } catch (_) {
     uri = null;
   }
-  if (uri != null && label.cid != null && label.cid!.isNotEmpty) {
-    return UModerationCreateReportSubject.repoStrongRef(
-      data: RepoStrongRef(uri: uri, cid: label.cid!),
-    );
+  if (uri != null) {
+    if (uri.pathname.isEmpty) {
+      return UModerationCreateReportSubject.repoRef(
+        data: RepoRef(did: uri.hostname),
+      );
+    }
+    if (label.cid != null && label.cid!.isNotEmpty) {
+      return UModerationCreateReportSubject.repoStrongRef(
+        data: RepoStrongRef(uri: uri, cid: label.cid!),
+      );
+    }
   }
-  final did = uri?.hostname ?? label.uri;
-  return UModerationCreateReportSubject.repoRef(data: RepoRef(did: did));
+  return null;
 }
 
 String _labelSubjectDid(Label label) {
@@ -523,6 +559,7 @@ String _labelSubjectDid(Label label) {
 String _signature(List<Label> labels) => labels
     .map(
       (label) =>
-          '${label.src}|${label.uri}|${label.val}|${label.neg}|${label.exp}',
+          '${label.src}|${label.uri}|${label.cid}|${label.val}|${label.neg}|'
+          '${label.cts.toUtc().toIso8601String()}|${label.exp}',
     )
     .join(';;');

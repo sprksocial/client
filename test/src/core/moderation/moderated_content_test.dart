@@ -229,6 +229,90 @@ void main() {
     expect(find.text('View content'), findsOneWidget);
   });
 
+  testWidgets('reissued labels require a fresh disclosure', (tester) async {
+    final firstCts = DateTime.utc(2026, 8, 8);
+    final secondCts = DateTime.utc(2026, 8, 9);
+    var labels = [_label('sexual', cid: 'cid-a', cts: firstCts)];
+
+    await tester.pumpWidget(
+      _app(
+        _engine(),
+        StatefulBuilder(
+          builder: (context, setState) => Column(
+            children: [
+              Expanded(
+                child: ModeratedContent(
+                  labels: labels,
+                  target: ModerationTarget.content,
+                  context: ModerationContext.contentView,
+                  subjectDid: 'did:plc:author',
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() {
+                  labels = [_label('sexual', cid: 'cid-b', cts: firstCts)];
+                }),
+                child: const Text('new revision'),
+              ),
+              TextButton(
+                onPressed: () => setState(() => labels = []),
+                child: const Text('remove label'),
+              ),
+              TextButton(
+                onPressed: () => setState(() {
+                  labels = [_label('sexual', cid: 'cid-b', cts: secondCts)];
+                }),
+                child: const Text('reissue label'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('View content'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('new revision'));
+    await tester.pumpAndSettle();
+    expect(find.text('View content'), findsOneWidget);
+
+    await tester.tap(find.text('View content'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('remove label'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('reissue label'));
+    await tester.pumpAndSettle();
+    expect(find.text('View content'), findsOneWidget);
+  });
+
+  testWidgets('profile avatars use avatar moderation behavior', (tester) async {
+    await tester.pumpWidget(
+      _app(
+        _engine(adultContentEnabled: false),
+        ModeratedProfileAvatar(
+          labels: [
+            _label(
+              'porn',
+              source: 'did:plc:labeler',
+              uri: 'at://did:plc:author/app.bsky.actor.profile/self',
+            ),
+          ],
+          subjectDid: 'did:plc:author',
+          child: const SizedBox.square(
+            key: Key('profile-avatar'),
+            dimension: 80,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ImageFiltered), findsOneWidget);
+    expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+  });
+
   testWidgets('built-in label details use app-localized guidance', (
     tester,
   ) async {
@@ -236,7 +320,7 @@ void main() {
       _app(
         _engine(),
         ModeratedContent(
-          labels: [_label('gore')],
+          labels: [_label('gore', source: 'did:plc:labeler')],
           target: ModerationTarget.content,
           context: ModerationContext.contentView,
           subjectDid: 'did:plc:author',
@@ -254,6 +338,54 @@ void main() {
       find.text('Graphic depictions of severe injury, blood, or death.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('does not offer an account appeal for a CID-less record label', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        _engine(currentUserDid: 'did:plc:author'),
+        ModeratedContent(
+          labels: [_label('gore', source: 'did:plc:labeler')],
+          target: ModerationTarget.content,
+          context: ModerationContext.contentView,
+          subjectDid: 'did:plc:author',
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Why am I seeing this?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Appeal label'), findsNothing);
+  });
+
+  testWidgets('offers an appeal for an account label without a CID', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        _engine(currentUserDid: 'did:plc:author'),
+        ModeratedContent(
+          labels: [
+            _label('gore', source: 'did:plc:labeler', uri: 'did:plc:author'),
+          ],
+          target: ModerationTarget.account,
+          context: ModerationContext.contentView,
+          subjectDid: 'did:plc:author',
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Why am I seeing this?'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Appeal label'), findsOneWidget);
   });
 
   testWidgets('inform content stays visible with a moderation badge', (
@@ -367,6 +499,7 @@ Widget _materialApp(Widget child) {
 
 ModerationEngine _engine({
   bool adultContentEnabled = true,
+  String? currentUserDid,
   Map<String, Iterable<LabelValueDefinition>> definitions = const {},
 }) {
   return ModerationEngine(
@@ -376,14 +509,22 @@ ModerationEngine _engine({
       adultContentEnabled: adultContentEnabled,
       authenticated: true,
     ),
+    currentUserDid: currentUserDid,
   );
 }
 
-Label _label(String value, {String source = 'did:plc:author'}) {
+Label _label(
+  String value, {
+  String source = 'did:plc:author',
+  String uri = 'at://did:plc:author/so.sprk.feed.post/example',
+  String? cid,
+  DateTime? cts,
+}) {
   return Label(
     src: source,
-    uri: 'at://did:plc:author/so.sprk.feed.post/example',
+    uri: uri,
+    cid: cid,
     val: value,
-    cts: DateTime.utc(2026, 8, 8),
+    cts: cts ?? DateTime.utc(2026, 8, 8),
   );
 }

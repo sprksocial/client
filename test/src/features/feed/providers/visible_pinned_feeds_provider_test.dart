@@ -32,7 +32,11 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    expect(container.read(visiblePinnedFeedsProvider), [timeline, unlabeled]);
+    final visiblePinnedFeeds = container.read(visiblePinnedFeedsProvider);
+
+    expect(visiblePinnedFeeds.effectiveActiveFeed, timeline);
+    expect(visiblePinnedFeeds.shouldPersistEffectiveActiveFeed, isFalse);
+    expect(visiblePinnedFeeds.feeds, [timeline, unlabeled]);
   });
 
   test('uses one ordered list with profile-aware creator moderation', () async {
@@ -68,11 +72,11 @@ void main() {
 
     await container.read(moderationEngineProvider.future);
 
-    expect(container.read(visiblePinnedFeedsProvider), [
-      timeline,
-      profileLabeled,
-      visible,
-    ]);
+    final visiblePinnedFeeds = container.read(visiblePinnedFeedsProvider);
+
+    expect(visiblePinnedFeeds.effectiveActiveFeed, timeline);
+    expect(visiblePinnedFeeds.shouldPersistEffectiveActiveFeed, isFalse);
+    expect(visiblePinnedFeeds.feeds, [timeline, profileLabeled, visible]);
   });
 }
 
