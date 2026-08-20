@@ -113,6 +113,81 @@ void main() {
       },
     );
 
+    test(
+      'getStoryViews reconciles paged negations and newer assertions',
+      () async {
+        final story = StoryView(
+          uri: AtUri('at://did:plc:author/so.sprk.story.post/story'),
+          cid: 'story-cid',
+          author: const ProfileViewBasic(
+            did: 'did:plc:author',
+            handle: 'author.sprk.so',
+          ),
+          record: const <String, dynamic>{},
+          indexedAt: fixedNow,
+        );
+        Label label(String value, Duration age, {bool? neg, String? cid}) =>
+            Label(
+              src: 'did:plc:moderator',
+              uri: story.uri.toString(),
+              cid: cid ?? story.cid,
+              val: value,
+              neg: neg,
+              cts: fixedNow.subtract(age),
+            );
+
+        final sexualAssertion = label('sexual', const Duration(minutes: 3));
+        final sexualNegation = label(
+          'sexual',
+          const Duration(minutes: 2),
+          neg: true,
+        );
+        final staleSexualAssertion = label(
+          'sexual',
+          const Duration(minutes: 4),
+        );
+        final goreAssertion = label('gore', const Duration(minutes: 3));
+        final goreNegation = label(
+          'gore',
+          const Duration(minutes: 2),
+          neg: true,
+        );
+        final reappliedGore = label('gore', const Duration(minutes: 1));
+        final oldVersionGore = label(
+          'gore',
+          Duration.zero,
+          cid: 'old-story-cid',
+        );
+        final feed = _LabelFeedRepository([
+          (labels: [sexualAssertion, goreAssertion], cursor: 'negations'),
+          (labels: [sexualNegation, goreNegation], cursor: 'updates'),
+          (
+            labels: [staleSexualAssertion, reappliedGore, oldVersionGore],
+            cursor: null,
+          ),
+        ]);
+        final harness = RepositoryHarness(
+          getResponse: {
+            'stories': [story.toJson()],
+          },
+          feedRepository: feed,
+        );
+        final repository = StoryRepositoryImpl(
+          harness.sprk,
+          now: () => fixedNow,
+        );
+
+        final result = await repository.getStoryViews([story.uri]);
+
+        expect(result.single.moderationLabels, [reappliedGore]);
+        expect(feed.calls.map((call) => call.cursor), [
+          null,
+          'negations',
+          'updates',
+        ]);
+      },
+    );
+
     test('listStoryRecords owns record paging parameters', () async {
       final harness = RepositoryHarness(
         getResponse: const {'records': <dynamic>[], 'cursor': 'next-page'},

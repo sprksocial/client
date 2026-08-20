@@ -1,5 +1,6 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/moderation/moderation_definitions.dart';
+import 'package:spark/src/core/moderation/moderation_label_events.dart';
 import 'package:spark/src/core/moderation/moderation_models.dart';
 
 final class ModerationEngine {
@@ -28,8 +29,7 @@ final class ModerationEngine {
     final causes = <ModerationCause>[];
 
     for (final label in labels) {
-      if (label.neg ?? false) continue;
-      if (label.exp?.toUtc().isAfter(evaluationTime) == false) continue;
+      if (!isLabelActiveAt(label, now: evaluationTime)) continue;
 
       final isSelfLabel = subjectDid != null && label.src == subjectDid;
       final definition = isSelfLabel

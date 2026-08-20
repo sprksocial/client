@@ -3,6 +3,7 @@ import 'package:poptart_lex/com/atproto/repo/list_records.dart'
     as repo_list_records;
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
+import 'package:spark/src/core/moderation/moderation_label_events.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
@@ -262,9 +263,15 @@ class StoryRepositoryImpl implements StoryRepository {
     Map<String, List<Label>> labelsByUri,
     StoryView story,
   ) {
-    return (labelsByUri[story.uri.toString()] ?? const []).where(
-      (label) => label.cid == null || label.cid == story.cid,
+    final now = _now().toUtc();
+    final latest = mergeLatestLabelEvents(
+      existing: const [],
+      incoming: (labelsByUri[story.uri.toString()] ?? const []).where(
+        (label) => label.cid == null || label.cid == story.cid,
+      ),
+      now: now,
     );
+    return activeLabelsFromEvents(latest, now: now);
   }
 
   @override

@@ -236,30 +236,12 @@ class FeedNotifier extends _$FeedNotifier {
           }
         }
 
-        final latestLabels = <Label>[...?extraInfo[post.uri]?.postLabels];
-        for (final incoming in incomingLabels) {
-          final existingIndex = latestLabels.indexWhere(
-            (label) =>
-                label.src == incoming.src &&
-                label.uri == incoming.uri &&
-                label.val == incoming.val,
-          );
-          if (existingIndex == -1) {
-            latestLabels.add(incoming);
-          } else if (_labelShouldReplace(
-            incoming,
-            latestLabels[existingIndex],
-            now,
-          )) {
-            latestLabels[existingIndex] = incoming;
-          }
-        }
-        final activeLabels = latestLabels
-            .where(
-              (label) =>
-                  !label.isNeg && (label.exp?.toUtc().isAfter(now) ?? true),
-            )
-            .toList();
+        final latestLabels = mergeLatestLabelEvents(
+          existing: extraInfo[post.uri]?.postLabels ?? const [],
+          incoming: incomingLabels,
+          now: now,
+        );
+        final activeLabels = activeLabelsFromEvents(latestLabels, now: now);
         extraInfo[post.uri] = (postLabels: latestLabels);
         postsWithMergedLabels.add(post.copyWith(labels: activeLabels));
       }
@@ -579,15 +561,4 @@ class FeedNotifier extends _$FeedNotifier {
       return posts;
     }
   }
-}
-
-bool _labelShouldReplace(Label candidate, Label existing, DateTime now) {
-  final comparison = candidate.cts.toUtc().compareTo(existing.cts.toUtc());
-  if (comparison != 0) return comparison > 0;
-
-  final candidateInactive =
-      candidate.isNeg || candidate.exp?.toUtc().isAfter(now) == false;
-  final existingInactive =
-      existing.isNeg || existing.exp?.toUtc().isAfter(now) == false;
-  return candidateInactive || !existingInactive;
 }
