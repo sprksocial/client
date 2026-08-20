@@ -215,10 +215,11 @@ class _ActorTypeaheadSuggestions extends ConsumerWidget {
         final actor = state.results[index];
 
         return ModeratedContent(
-          labels: actor.labels ?? const [],
-          target: ModerationTarget.account,
+          subject: ModerationSubject.profile(
+            labels: actor.labels ?? const [],
+            subjectDid: actor.did,
+          ),
           context: ModerationContext.profileList,
-          subjectDid: actor.did,
           child: ListTile(
             onTap: () => onSuggestionSelected(actor),
             contentPadding: const EdgeInsets.symmetric(vertical: 4),

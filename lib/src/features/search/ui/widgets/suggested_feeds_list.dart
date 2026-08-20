@@ -102,11 +102,12 @@ class SuggestedFeedsList extends ConsumerWidget {
                       );
 
                 return ModeratedContent(
-                  labels: generatorView.labels ?? const [],
-                  authorLabels: generatorView.creator.labels ?? const [],
-                  target: ModerationTarget.content,
+                  subject: ModerationSubject.content(
+                    labels: generatorView.labels ?? const [],
+                    authorLabels: generatorView.creator.labels ?? const [],
+                    subjectDid: generatorView.creator.did,
+                  ),
                   context: ModerationContext.contentList,
-                  subjectDid: generatorView.creator.did,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: FeedCard(

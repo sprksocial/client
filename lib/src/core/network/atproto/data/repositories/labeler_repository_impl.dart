@@ -18,6 +18,7 @@ class LabelerRepositoryImpl extends LabelerRepository {
   }
   final SprkRepository _client;
   final SparkLogger _logger;
+  final Map<String, Future<LabelerViewDetailed>> _detailedServiceCache = {};
 
   @override
   Future<String> resolveIdentifier(String identifier) async {
@@ -107,6 +108,23 @@ class LabelerRepositoryImpl extends LabelerRepository {
 
   @override
   Future<LabelerViewDetailed> getServicesDetailed(List<String> dids) async {
+    if (dids.length != 1) return _fetchServicesDetailed(dids);
+
+    final did = dids.single;
+    final request = _detailedServiceCache.putIfAbsent(
+      did,
+      () => _fetchServicesDetailed(dids),
+    );
+    try {
+      return await request;
+    } finally {
+      if (identical(_detailedServiceCache[did], request)) {
+        _detailedServiceCache.remove(did);
+      }
+    }
+  }
+
+  Future<LabelerViewDetailed> _fetchServicesDetailed(List<String> dids) async {
     _logger.d('Getting detailed labeler services for DIDs: $dids');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -146,5 +164,68 @@ class LabelerRepositoryImpl extends LabelerRepository {
       _logger.d('Labeler services retrieved successfully');
       return view;
     });
+  }
+
+  @override
+  Future<List<CompatibleModerationService>> getCompatibleModerationServices(
+    Iterable<String> dids,
+    ModerationServiceQuery query,
+  ) async {
+    final fallbackDid = query.fallbackDid.split('#').first;
+    final candidates = <String>{fallbackDid, ...dids};
+    final services = await Future.wait([
+      for (final did in candidates)
+        _compatibleService(did, fallbackDid: fallbackDid, query: query),
+    ]);
+    final compatible = services.nonNulls.toList()
+      ..sort((left, right) {
+        if (left.isDefault != right.isDefault) {
+          return left.isDefault ? -1 : 1;
+        }
+        return left.displayName.compareTo(right.displayName);
+      });
+    return compatible;
+  }
+
+  Future<CompatibleModerationService?> _compatibleService(
+    String did, {
+    required String fallbackDid,
+    required ModerationServiceQuery query,
+  }) async {
+    try {
+      final service = await getServicesDetailed([did]);
+      final subjectTypes = service.subjectTypes?.map((type) => type.toJson());
+      if (subjectTypes != null && !subjectTypes.contains(query.subjectType)) {
+        return null;
+      }
+      if (query.subjectCollection != null &&
+          service.subjectCollections != null &&
+          !service.subjectCollections!.contains(query.subjectCollection)) {
+        return null;
+      }
+      final reasonTypes = service.reasonTypes?.map((type) => type.toJson());
+      if (reasonTypes != null && !reasonTypes.contains(query.reasonType)) {
+        return null;
+      }
+      return CompatibleModerationService(
+        did: did,
+        displayName: service.creator.displayName ?? service.creator.handle,
+        isDefault: did == fallbackDid,
+      );
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Unable to inspect moderation service capabilities for $did',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (did == fallbackDid) {
+        return CompatibleModerationService(
+          did: did,
+          displayName: did,
+          isDefault: true,
+        );
+      }
+      return null;
+    }
   }
 }

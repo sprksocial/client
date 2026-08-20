@@ -183,12 +183,13 @@ class _PostResultsState extends ConsumerState<PostResults>
 
               final post = state.searchResults[index];
               return ModeratedContent(
-                labels: post.labels ?? const [],
-                authorLabels: post.author.labels ?? const [],
-                target: ModerationTarget.content,
+                subject: ModerationSubject.content(
+                  labels: post.labels ?? const [],
+                  authorLabels: post.author.labels ?? const [],
+                  subjectDid: post.author.did,
+                ),
                 context: ModerationContext.contentList,
-                subjectDid: post.author.did,
-                compact: true,
+                presentation: const ModerationPresentation.compact(),
                 child: PostTile(
                   thumbnailUrl: post.thumbnailUrl,
                   likes: post.likeCount ?? 0,

@@ -11,7 +11,7 @@ import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
 
 void main() {
   late _FakeAuthRepository authRepository;

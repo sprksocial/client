@@ -117,11 +117,12 @@ class SettingsFeedCard extends ConsumerWidget {
     final generator = _generator;
     if (generator == null) return card;
     return ModeratedContent(
-      labels: generator.labels ?? const [],
-      authorLabels: generator.creator.labels ?? const [],
-      target: ModerationTarget.content,
+      subject: ModerationSubject.content(
+        labels: generator.labels ?? const [],
+        authorLabels: generator.creator.labels ?? const [],
+        subjectDid: generator.creator.did,
+      ),
       context: ModerationContext.contentList,
-      subjectDid: generator.creator.did,
       child: card,
     );
   }

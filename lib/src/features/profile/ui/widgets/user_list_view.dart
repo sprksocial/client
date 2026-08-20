@@ -61,10 +61,11 @@ class UserListView extends ConsumerWidget {
         final user = users[index];
         final hasStories = user.stories?.isNotEmpty ?? false;
         return ModeratedContent(
-          labels: user.labels ?? const [],
-          target: ModerationTarget.account,
+          subject: ModerationSubject.profile(
+            labels: user.labels ?? const [],
+            subjectDid: user.did,
+          ),
           context: ModerationContext.profileList,
-          subjectDid: user.did,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: ProfileCard(

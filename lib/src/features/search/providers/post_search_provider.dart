@@ -101,23 +101,20 @@ class PostSearch extends _$PostSearch {
   /// Search for posts with the given query
   Future<void> _searchPosts(String query, {required int requestToken}) async {
     if (query.isEmpty) return;
-    if (requestToken != _activeSearchToken || state.query != query) {
-      return;
-    }
+    if (!_isCurrentRequest(query, requestToken)) return;
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final response = await _repository.search(query);
 
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       final filteredSprkPosts = await _filterHiddenPosts(response.sprk.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
+
       final filteredBskyPosts = await _filterHiddenPosts(response.bsky.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       final combinedPosts = [...filteredSprkPosts, ...filteredBskyPosts];
 
@@ -134,11 +131,7 @@ class PostSearch extends _$PostSearch {
         await _loadMorePostsForToken(requestToken);
       }
     } catch (e) {
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       _logger.e('Error searching posts: $e');
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -184,13 +177,11 @@ class PostSearch extends _$PostSearch {
     if (sprkCursor != null && sprkCursor.isNotEmpty) {
       final response = await _repository.searchSprk(query, cursor: sprkCursor);
 
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       final filteredPosts = await _filterHiddenPosts(response.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
+
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredPosts],
         sprkNextCursor: response.cursor,
@@ -208,14 +199,12 @@ class PostSearch extends _$PostSearch {
     if (bskyCursor != null && bskyCursor.isNotEmpty) {
       final response = await _repository.searchBsky(query, cursor: bskyCursor);
 
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       final initialCount = state.searchResults.length;
       final filteredBskyPosts = await _filterHiddenPosts(response.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
+
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredBskyPosts],
         bskyNextCursor: response.cursor,
@@ -230,21 +219,21 @@ class PostSearch extends _$PostSearch {
     }
   }
 
+  bool _isCurrentRequest(String query, int requestToken) {
+    return ref.mounted &&
+        requestToken == _activeSearchToken &&
+        state.query == query;
+  }
+
   Future<List<PostView>> _filterHiddenPosts(List<PostView> posts) async {
     try {
       final engine = await ref.read(moderationEngineProvider.future);
       return posts.where((post) {
-        final decision = ModerationDecision.merge([
-          engine.evaluate(
-            post.labels ?? const [],
-            target: ModerationTarget.content,
-            subjectDid: post.author.did,
-          ),
-          engine.evaluateProfileLabels(
-            post.author.labels ?? const [],
-            subjectDid: post.author.did,
-          ),
-        ]);
+        final decision = ModerationSubject.content(
+          labels: post.labels ?? const [],
+          authorLabels: post.author.labels ?? const [],
+          subjectDid: post.author.did,
+        ).evaluate(engine);
         return !decision.forContext(ModerationContext.contentList).filter;
       }).toList();
     } catch (error, stackTrace) {

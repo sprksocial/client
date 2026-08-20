@@ -258,10 +258,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         final uniqueLinks = links.toSet().toList();
 
         return ModeratedContent(
-          labels: profile.labels ?? const [],
-          target: ModerationTarget.account,
+          subject: ModerationSubject.profile(
+            labels: profile.labels ?? const [],
+            subjectDid: profile.did,
+          ),
           context: ModerationContext.profileView,
-          subjectDid: profile.did,
           child: ProfilePageTemplate(
             displayName: profile.displayName ?? profile.handle,
             handle: profile.handle,

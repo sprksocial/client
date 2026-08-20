@@ -168,12 +168,13 @@ class ProfileGridTile extends ConsumerWidget {
 
     if (thumbnailUrl.isEmpty) {
       return ModeratedContent(
-        labels: postView.labels ?? const [],
-        authorLabels: postView.author.labels ?? const [],
-        target: ModerationTarget.content,
+        subject: ModerationSubject.content(
+          labels: postView.labels ?? const [],
+          authorLabels: postView.author.labels ?? const [],
+          subjectDid: postView.author.did,
+        ),
         context: ModerationContext.contentList,
-        subjectDid: postView.author.did,
-        compact: true,
+        presentation: const ModerationPresentation.compact(),
         child: GestureDetector(
           onTap: onTap,
           child: ColoredBox(
@@ -187,19 +188,21 @@ class ProfileGridTile extends ConsumerWidget {
     }
 
     return ModeratedContent(
-      labels: postView.labels ?? const [],
-      authorLabels: postView.author.labels ?? const [],
-      target: ModerationTarget.content,
+      subject: ModerationSubject.content(
+        labels: postView.labels ?? const [],
+        authorLabels: postView.author.labels ?? const [],
+        subjectDid: postView.author.did,
+      ),
       context: ModerationContext.contentList,
-      subjectDid: postView.author.did,
-      compact: true,
-      onConcealedTap: onTap,
-      blurredChild: PostTile(
-        thumbnailUrl: thumbnailUrl,
-        likes: likeCount,
-        seen: false,
-        nsfwBlur: true,
-        onTap: onTap,
+      presentation: ModerationPresentation.compact(
+        onConcealedTap: onTap,
+        blurredChild: PostTile(
+          thumbnailUrl: thumbnailUrl,
+          likes: likeCount,
+          seen: false,
+          nsfwBlur: true,
+          onTap: onTap,
+        ),
       ),
       child: PostTile(
         thumbnailUrl: thumbnailUrl,

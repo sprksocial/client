@@ -63,17 +63,9 @@ ModerationDecision feedGeneratorModerationDecision(
   GeneratorView generator, {
   Iterable<String> preferredLocales = const [],
 }) {
-  return ModerationDecision.merge([
-    engine.evaluate(
-      generator.labels ?? const [],
-      target: ModerationTarget.content,
-      subjectDid: generator.creator.did,
-      preferredLocales: preferredLocales,
-    ),
-    engine.evaluateProfileLabels(
-      generator.creator.labels ?? const [],
-      subjectDid: generator.creator.did,
-      preferredLocales: preferredLocales,
-    ),
-  ]);
+  return ModerationSubject.content(
+    labels: generator.labels ?? const [],
+    authorLabels: generator.creator.labels ?? const [],
+    subjectDid: generator.creator.did,
+  ).evaluate(engine, preferredLocales: preferredLocales);
 }

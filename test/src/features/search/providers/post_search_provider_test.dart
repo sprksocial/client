@@ -142,6 +142,50 @@ void main() {
   });
 
   test(
+    'query change while moderation resolves cannot publish stale results',
+    () async {
+      final repository = _FakePostSearchRepository();
+      final secondResponse = Completer<InitialPostSearchResult>();
+      repository.initialResponses
+        ..add(() async => _initial([_post('first')]))
+        ..add(() => secondResponse.future);
+      final moderation = Completer<ModerationEngine>();
+      final scope = container(
+        overrides: [
+          postSearchRepositoryProvider.overrideWithValue(repository),
+          moderationEngineProvider.overrideWith((ref) => moderation.future),
+        ],
+      );
+      final subscription = scope.listen(
+        postSearchProvider,
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
+      final notifier = scope.read(postSearchProvider.notifier);
+
+      final firstRequest = notifier.submitQuery('first');
+      await pumpEventQueue();
+      final secondRequest = notifier.submitQuery('second');
+      await pumpEventQueue();
+
+      moderation.complete(_engine());
+      await firstRequest;
+
+      final pendingSecondState = scope.read(postSearchProvider);
+      expect(pendingSecondState.query, 'second');
+      expect(pendingSecondState.searchResults, isEmpty);
+      expect(pendingSecondState.isLoading, isTrue);
+
+      secondResponse.complete(_initial([_post('second')]));
+      await secondRequest;
+      expect(
+        scope.read(postSearchProvider).searchResults.single.uri.rkey,
+        'second',
+      );
+    },
+  );
+
+  test(
     'pagination suppresses duplicates and stops after cursors end',
     () async {
       final repository = _FakePostSearchRepository();
@@ -179,6 +223,62 @@ void main() {
         'next-post',
       );
       expect(scope.read(postSearchProvider).isLoadingMore, isFalse);
+    },
+  );
+
+  test(
+    'query change while paginated moderation resolves discards the page',
+    () async {
+      final repository = _FakePostSearchRepository();
+      repository.initialResponses.add(
+        () async => (
+          sprk: (
+            posts: List.generate(10, (i) => _post('initial-$i')),
+            cursor: 'next',
+          ),
+          bsky: (posts: const <PostView>[], cursor: null),
+        ),
+      );
+      final pageReturned = Completer<void>();
+      repository.sprkResponses.add(() {
+        pageReturned.complete();
+        return Future.value((posts: [_post('stale-page')], cursor: null));
+      });
+      final paginationModeration = Completer<ModerationEngine>();
+      var moderationBuilds = 0;
+      final scope = container(
+        overrides: [
+          postSearchRepositoryProvider.overrideWithValue(repository),
+          moderationEngineProvider.overrideWith((ref) {
+            moderationBuilds++;
+            return moderationBuilds == 1
+                ? Future.value(_engine())
+                : paginationModeration.future;
+          }),
+        ],
+      );
+      final subscription = scope.listen(
+        postSearchProvider,
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
+      final notifier = scope.read(postSearchProvider.notifier);
+      await notifier.submitQuery('first');
+
+      scope.invalidate(moderationEngineProvider);
+      final loadMore = notifier.loadMorePosts();
+      await pageReturned.future;
+      await pumpEventQueue();
+
+      notifier.updateQuery('second');
+      paginationModeration.complete(_engine());
+      await loadMore;
+
+      final state = scope.read(postSearchProvider);
+      expect(state.query, 'second');
+      expect(state.searchResults, isEmpty);
+      expect(state.sprkNextCursor, isNull);
+      expect(state.isLoading, isTrue);
     },
   );
 
@@ -261,6 +361,15 @@ Label _authorLabel({bool profileRecord = false}) => Label(
       : 'did:plc:author',
   val: 'blocked',
   cts: _indexedAt,
+);
+
+ModerationEngine _engine() => ModerationEngine(
+  definitions: ModerationLabelDefinitions(),
+  preferences: ModerationPreferences(
+    labels: const [],
+    adultContentEnabled: true,
+    authenticated: true,
+  ),
 );
 
 InitialPostSearchResult _initial(List<PostView> posts) =>

@@ -14,6 +14,7 @@ import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 part 'feed_provider.g.dart';
@@ -32,7 +33,7 @@ class _RiverpodFeedSettingsGateway implements FeedSettingsGateway {
   Future<List<String>> getLabelers() async {
     try {
       return await ref
-          .read(settingsProvider.notifier)
+          .read(labelerSettingsControllerProvider)
           .getLabelers()
           .timeout(const Duration(seconds: 5), onTimeout: _fallbackLabelers);
     } catch (_) {
@@ -552,55 +553,31 @@ class FeedNotifier extends _$FeedNotifier {
     );
   }
 
-  /// Checks if a post should be hidden based on its labels and user preferences
-  Future<bool> _shouldHidePost(PostView post, List<Label> postLabels) async {
-    try {
-      final engine = await ref.read(moderationEngineProvider.future);
-      final decision = ModerationDecision.merge([
-        engine.evaluate(
-          postLabels,
-          target: ModerationTarget.content,
-          subjectDid: post.author.did,
-        ),
-        engine.evaluateProfileLabels(
-          post.author.labels ?? const [],
-          subjectDid: post.author.did,
-        ),
-      ]);
-      return decision.forContext(ModerationContext.contentList).filter;
-    } catch (error, stackTrace) {
-      _logger.w(
-        'Could not evaluate moderation for ${post.uri}',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
-  }
-
   /// Filters based on label preferences, removing posts that should be hidden
   Future<List<PostView>> _filterHiddenPosts(
     List<PostView> posts,
     LinkedHashMap<AtUri, ({List<Label> postLabels})> extraInfo,
   ) async {
-    final filteredPosts = <PostView>[];
-
-    for (final post in posts) {
-      final postExtraInfo = extraInfo[post.uri];
-      if (postExtraInfo != null) {
-        final shouldHide = await _shouldHidePost(
-          post,
-          postExtraInfo.postLabels,
-        );
-        if (!shouldHide) {
-          filteredPosts.add(post);
-        }
-      } else {
-        filteredPosts.add(post);
-      }
+    try {
+      final engine = await ref.read(moderationEngineProvider.future);
+      return posts.where((post) {
+        final labels = extraInfo[post.uri]?.postLabels;
+        if (labels == null) return true;
+        final decision = ModerationSubject.content(
+          labels: labels,
+          authorLabels: post.author.labels ?? const [],
+          subjectDid: post.author.did,
+        ).evaluate(engine);
+        return !decision.forContext(ModerationContext.contentList).filter;
+      }).toList();
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Could not moderate feed page',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return posts;
     }
-
-    return filteredPosts;
   }
 }
 

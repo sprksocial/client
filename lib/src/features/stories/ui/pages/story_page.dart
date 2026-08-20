@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -28,7 +28,7 @@ class StoryPage extends ConsumerStatefulWidget {
     this.onNext,
   });
 
-  final StoryView story;
+  final ModeratedStoryView story;
   final bool isActive;
   final ValueChanged<bool>? onLoadingStateChanged;
   final ValueChanged<Duration>? onStoryDurationChanged;
@@ -146,15 +146,15 @@ class _StoryPageState extends ConsumerState<StoryPage>
     }
   }
 
-  bool _isVideoStory(StoryView story) {
+  bool _isVideoStory(ModeratedStoryView story) {
     return story.isVideoStory;
   }
 
-  String _getVideoUrl(StoryView story) {
+  String _getVideoUrl(ModeratedStoryView story) {
     return story.videoUrl;
   }
 
-  String _getImageUrl(StoryView story) {
+  String _getImageUrl(ModeratedStoryView story) {
     final imageUrl = story.imageUrl;
     return imageUrl.isNotEmpty
         ? imageUrl
@@ -275,11 +275,12 @@ class _StoryPageState extends ConsumerState<StoryPage>
     ];
 
     return ModeratedContent(
-      labels: labels,
-      authorLabels: widget.story.author.labels ?? const [],
-      target: ModerationTarget.content,
+      subject: ModerationSubject.content(
+        labels: labels,
+        authorLabels: widget.story.author.labels ?? const [],
+        subjectDid: widget.story.author.did,
+      ),
       context: ModerationContext.contentView,
-      subjectDid: widget.story.author.did,
       onConcealChanged: _onModerationConcealChanged,
       child: ClipRRect(
         borderRadius: borderRadius,

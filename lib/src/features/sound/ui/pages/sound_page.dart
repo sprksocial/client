@@ -65,12 +65,13 @@ class _SoundPageState extends ConsumerState<SoundPage> {
         actions: [
           soundState.maybeWhen(
             data: (state) => ModeratedContent(
-              labels: state.audio.labels ?? const [],
-              authorLabels: state.audio.author.labels ?? const [],
-              target: ModerationTarget.content,
+              subject: ModerationSubject.content(
+                labels: state.audio.labels ?? const [],
+                authorLabels: state.audio.author.labels ?? const [],
+                subjectDid: state.audio.author.did,
+              ),
               context: ModerationContext.contentView,
-              subjectDid: state.audio.author.did,
-              compact: true,
+              presentation: const ModerationPresentation.compact(),
               child: IconButton(
                 tooltip: l10n.buttonAddSound,
                 onPressed: state.audio.audio == null
@@ -98,11 +99,12 @@ class _SoundPageState extends ConsumerState<SoundPage> {
               // Header Card
               SliverToBoxAdapter(
                 child: ModeratedContent(
-                  labels: state.audio.labels ?? const [],
-                  authorLabels: state.audio.author.labels ?? const [],
-                  target: ModerationTarget.content,
+                  subject: ModerationSubject.content(
+                    labels: state.audio.labels ?? const [],
+                    authorLabels: state.audio.author.labels ?? const [],
+                    subjectDid: state.audio.author.did,
+                  ),
                   context: ModerationContext.contentView,
-                  subjectDid: state.audio.author.did,
                   child: SoundHeaderCard(audio: state.audio),
                 ),
               ),
@@ -160,12 +162,13 @@ class _SoundPageState extends ConsumerState<SoundPage> {
 
                         final post = state.posts[index];
                         return ModeratedContent(
-                          labels: post.labels ?? const [],
-                          authorLabels: post.author.labels ?? const [],
-                          target: ModerationTarget.content,
+                          subject: ModerationSubject.content(
+                            labels: post.labels ?? const [],
+                            authorLabels: post.author.labels ?? const [],
+                            subjectDid: post.author.did,
+                          ),
                           context: ModerationContext.contentList,
-                          subjectDid: post.author.did,
-                          compact: true,
+                          presentation: const ModerationPresentation.compact(),
                           child: _SoundPostTile(
                             post: post,
                             onTap: () => context.router.push(

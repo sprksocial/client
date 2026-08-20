@@ -1,7 +1,7 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
@@ -39,14 +39,17 @@ abstract class StoryRepository {
   /// [limit] The number of items to return (default 30)
   /// [cursor] Pagination cursor for the next set of results
   Future<
-    ({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})
+    ({
+      String? cursor,
+      Map<ProfileViewBasic, List<ModeratedStoryView>> storiesByAuthor,
+    })
   >
   getStoriesTimeline({int limit = 30, String? cursor});
 
   /// Gets story views for a specified list of stories (by AT-URI).
   ///
   /// [storyUris] List of story URIs to fetch
-  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris);
+  Future<List<ModeratedStoryView>> getStoryViews(List<AtUri> storyUris);
 
   Future<StoryRecordPage> listStoryRecords({
     required String did,

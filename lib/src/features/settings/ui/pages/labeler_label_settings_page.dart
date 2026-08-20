@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -12,8 +11,8 @@ import 'package:spark/src/core/network/atproto/data/repositories/actor_repositor
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
-import 'package:spark/src/features/settings/providers/settings_provider.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
@@ -78,76 +77,14 @@ class _LabelerLabelSettingsPageState
       }
       if (!mounted) return;
 
-      final service = await _sprkRepository.labeler.getServicesDetailed([
-        widget.did,
-      ]);
+      final snapshot = await ref
+          .read(labelerSettingsControllerProvider)
+          .getPreferenceSnapshot(widget.did);
       if (!mounted) return;
-      final policiesJson = service.policies.toJson();
-      final labelValuesJson = policiesJson['labelValues'] as List<dynamic>?;
-      if (labelValuesJson == null || labelValuesJson.isEmpty) {
-        throw Exception('No label values found for labeler');
-      }
-
-      final labelValues = labelValuesJson.cast<String>();
-
-      final definitions = ModerationLabelDefinitions.fromLabelers({
-        widget.did:
-            service.policies.labelValueDefinitions ??
-            const <LabelValueDefinition>[],
-      });
-      final labelDefinitionMap = <String, ModerationLabelDefinition>{
-        for (final labelValue in labelValues)
-          labelValue:
-              ?definitions.bySource[widget.did]?[labelValue] ??
-              definitions.global[labelValue],
-      };
-
-      // Get existing preferences for this labeler
-      final settings = ref.read(settingsProvider.notifier);
-      final existingSettings = await settings.getLabelSettingsForLabeler(
-        widget.did,
-      );
-      if (!mounted) return;
-      final userPreferences = await ref.read(userPreferencesProvider.future);
-      if (!mounted) return;
-      final globalSettings = <String, Setting>{
-        for (final preference
-            in userPreferences.contentLabelPrefs ?? const <ContentLabelPref>[])
-          if (preference.labelerDid == null)
-            preference.label: _visibilityToSetting(
-              preference.visibility.toJson(),
-            ),
-      };
-      final preferences = <String, LabelPreference>{};
-
-      // Create preferences for all label values
-      for (final labelValue in labelValues) {
-        final definition = labelDefinitionMap[labelValue];
-        final defaultSetting = definition == null
-            ? _visibilityToSetting(_getDefaultVisibilityForLabel(labelValue))
-            : Setting.fromValue(definition.defaultSetting.name);
-        final savedSetting = globalAdultContentLabelValues.contains(labelValue)
-            ? globalSettings[labelValue] ??
-                  existingSettings[labelValue] ??
-                  defaultSetting
-            : existingSettings[labelValue] ?? defaultSetting;
-        preferences[labelValue] = LabelPreference(
-          value: labelValue,
-          blurs: definition == null
-              ? _visibilityToBlurs(_getDefaultVisibilityForLabel(labelValue))
-              : Blurs.fromValue(definition.blurs.name),
-          severity: definition == null
-              ? _visibilityToSeverity(_getDefaultVisibilityForLabel(labelValue))
-              : Severity.fromValue(definition.severity.name),
-          defaultSetting: defaultSetting,
-          setting: savedSetting,
-          adultOnly: definition?.adultOnly ?? false,
-        );
-      }
 
       setState(() {
-        _labelPreferences = preferences;
-        _labelDefinitions = labelDefinitionMap;
+        _labelPreferences = snapshot.preferences;
+        _labelDefinitions = snapshot.definitions;
         _isLoading = false;
       });
     } catch (e) {
@@ -160,80 +97,15 @@ class _LabelerLabelSettingsPageState
     }
   }
 
-  String _getDefaultVisibilityForLabel(String labelValue) {
-    switch (labelValue) {
-      case '!hide':
-      case 'dmca-violation':
-        return 'hide';
-      case '!no-promote':
-        return 'hide';
-      case '!warn':
-      case 'doxxing':
-      case 'porn':
-      case 'sexual':
-      case 'nsfl':
-      case 'gore':
-        return 'warn';
-      case '!no-unauthenticated':
-        return 'ignore';
-      case 'nudity':
-        return 'ignore';
-      default:
-        return 'warn';
-    }
-  }
-
-  Setting _visibilityToSetting(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Setting.ignore;
-      case 'warn':
-        return Setting.warn;
-      case 'hide':
-        return Setting.hide;
-      default:
-        return Setting.ignore;
-    }
-  }
-
-  Blurs _visibilityToBlurs(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Blurs.none;
-      case 'warn':
-        return Blurs.media;
-      case 'hide':
-        return Blurs.content;
-      default:
-        return Blurs.none;
-    }
-  }
-
-  Severity _visibilityToSeverity(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Severity.none;
-      case 'warn':
-        return Severity.alert;
-      case 'hide':
-        return Severity.alert;
-      default:
-        return Severity.none;
-    }
-  }
-
   Future<void> _updateLabelPreference(String label, {Setting? setting}) async {
     try {
       final currentPref = _labelPreferences[label];
       if (currentPref != null) {
         final newSetting = setting ?? currentPref.setting;
 
-        final settings = ref.read(settingsProvider.notifier);
-        await settings.setLabelPreferenceForLabeler(
-          widget.did,
-          label,
-          newSetting,
-        );
+        await ref
+            .read(labelerSettingsControllerProvider)
+            .setLabelPreference(widget.did, label, newSetting);
 
         setState(() {
           _labelPreferences[label] = currentPref.copyWith(setting: newSetting);

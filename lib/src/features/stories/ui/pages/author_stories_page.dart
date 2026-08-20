@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/stories/ui/pages/story_page.dart';
@@ -22,7 +22,7 @@ class AuthorStoriesPage extends ConsumerStatefulWidget {
   });
 
   final ProfileViewBasic author;
-  final List<StoryView> stories;
+  final List<ModeratedStoryView> stories;
   final int initialStoryIndex;
 
   /// Called when the user attempts to go to a previous story but is already at
@@ -253,7 +253,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
     });
   }
 
-  String _timeAgo(StoryView story) {
+  String _timeAgo(ModeratedStoryView story) {
     final now = DateTime.now();
     final diff = now.difference(story.indexedAt);
     if (diff.inDays > 0) return '${diff.inDays}d';

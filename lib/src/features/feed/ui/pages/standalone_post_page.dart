@@ -211,11 +211,12 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
           content = ModeratedContent(
             key: ValueKey(postData.uri.toString()),
-            labels: postData.labels ?? const [],
-            authorLabels: postData.author.labels ?? const [],
-            target: ModerationTarget.content,
+            subject: ModerationSubject.content(
+              labels: postData.labels ?? const [],
+              authorLabels: postData.author.labels ?? const [],
+              subjectDid: postData.author.did,
+            ),
             context: ModerationContext.contentView,
-            subjectDid: postData.author.did,
             onConcealChanged: (concealed) {
               if (mounted && _moderationConcealed != concealed) {
                 setState(() => _moderationConcealed = concealed);

@@ -402,11 +402,12 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
       return SizedBox(
         width: 40,
         child: ModeratedContent(
-          labels: author.labels ?? const [],
-          target: ModerationTarget.account,
+          subject: ModerationSubject.profile(
+            labels: author.labels ?? const [],
+            subjectDid: author.did,
+          ),
           context: ModerationContext.avatar,
-          subjectDid: author.did,
-          compact: true,
+          presentation: const ModerationPresentation.compact(),
           child: UserAvatar(
             imageUrl: avatarUrl,
             username: username,
@@ -439,11 +440,12 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
             return Positioned(
               left: index * overlapStep,
               child: ModeratedContent(
-                labels: author.labels ?? const [],
-                target: ModerationTarget.account,
+                subject: ModerationSubject.profile(
+                  labels: author.labels ?? const [],
+                  subjectDid: author.did,
+                ),
                 context: ModerationContext.avatar,
-                subjectDid: author.did,
-                compact: true,
+                presentation: const ModerationPresentation.compact(),
                 child: UserAvatar(
                   imageUrl: avatarUrl,
                   username: username,
@@ -506,11 +508,12 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     final username = primaryAuthor.displayName ?? primaryAuthor.handle;
 
     return ModeratedContent(
-      labels: notification.labels ?? const [],
-      authorLabels: notification.author.labels ?? const [],
-      target: ModerationTarget.content,
+      subject: ModerationSubject.content(
+        labels: notification.labels ?? const [],
+        authorLabels: notification.author.labels ?? const [],
+        subjectDid: primaryAuthor.did,
+      ),
       context: ModerationContext.contentList,
-      subjectDid: primaryAuthor.did,
       child: Material(
         color: widget.groupedNotification.isRead
             ? Colors.transparent

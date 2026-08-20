@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -86,7 +87,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       TextEditingController();
   bool _isSubmitting = false;
   String? _errorMessage;
-  Future<List<_ModerationServiceOption>>? _compatibleServicesFuture;
+  Future<List<CompatibleModerationService>>? _compatibleServicesFuture;
   String? _selectedServiceDid;
 
   // Map categories to their reasons
@@ -372,14 +373,26 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       _compatibleServicesFuture = servicesFuture;
       _selectedServiceDid = null;
     });
-    unawaited(
-      servicesFuture.then((services) {
-        if (!mounted || _selectedReason != reason || services.isEmpty) return;
-        setState(() {
-          _selectedServiceDid = services.first.did;
-        });
-      }),
-    );
+    unawaited(_selectDefaultService(servicesFuture, reason));
+  }
+
+  Future<void> _selectDefaultService(
+    Future<List<CompatibleModerationService>> servicesFuture,
+    ReportReason reason,
+  ) async {
+    try {
+      final services = await servicesFuture;
+      if (!mounted || _selectedReason != reason || services.isEmpty) return;
+      setState(() {
+        _selectedServiceDid = services.first.did;
+      });
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Could not select a default moderation service',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   void _goBack() {
@@ -412,7 +425,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         : ReasonType.unknown(data: reason.value);
   }
 
-  Future<List<_ModerationServiceOption>> _loadCompatibleServices(
+  Future<List<CompatibleModerationService>> _loadCompatibleServices(
     ReportReason reason,
   ) async {
     final repository = GetIt.instance<SprkRepository>();
@@ -425,62 +438,22 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
             ? repository.bskyModDid
             : repository.modDid);
     final fallbackDid = fallbackProxyDid.split('#').first;
-    final candidates = <String>{fallbackDid, ...repository.labelerDids};
     final reasonType = _reasonTypeFor(reason).toJson();
-    final services = <_ModerationServiceOption>[];
-
-    for (final did in candidates) {
-      try {
-        final service = await repository.labeler.getServicesDetailed([did]);
-        final subjectTypes = service.subjectTypes?.map((type) => type.toJson());
-        if (subjectTypes != null &&
-            !subjectTypes.contains(isRecord ? 'record' : 'account')) {
-          continue;
-        }
-        if (collection != null &&
-            service.subjectCollections != null &&
-            !service.subjectCollections!.contains(collection)) {
-          continue;
-        }
-        final reasonTypes = service.reasonTypes?.map((type) => type.toJson());
-        if (reasonTypes != null && !reasonTypes.contains(reasonType)) {
-          continue;
-        }
-        services.add(
-          _ModerationServiceOption(
-            did: did,
-            displayName: service.creator.displayName ?? service.creator.handle,
-            isDefault: did == fallbackDid,
-          ),
-        );
-      } catch (error, stackTrace) {
-        _logger.w(
-          'Unable to inspect report capabilities for $did',
-          error: error,
-          stackTrace: stackTrace,
-        );
-        if (did == fallbackDid) {
-          services.add(
-            _ModerationServiceOption(
-              did: did,
-              displayName: did,
-              isDefault: true,
-            ),
-          );
-        }
-      }
-    }
-
-    services.sort((left, right) {
-      if (left.isDefault != right.isDefault) return left.isDefault ? -1 : 1;
-      return left.displayName.compareTo(right.displayName);
-    });
-    return services;
+    return repository.labeler.getCompatibleModerationServices(
+      repository.labelerDids,
+      ModerationServiceQuery(
+        fallbackDid: fallbackDid,
+        subjectType: isRecord ? 'record' : 'account',
+        subjectCollection: collection,
+        reasonType: reasonType,
+      ),
+    );
   }
 
   Future<void> _submitReport() async {
     if (_selectedReason == null || _selectedServiceDid == null) return;
 
+    final l10n = AppLocalizations.of(context);
     final subject = _buildSubject();
     final reason = _additionalInfoController.text.isNotEmpty
         ? _additionalInfoController.text
@@ -528,7 +501,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       _logger.e('Error creating report', error: e);
       if (mounted) {
         setState(() {
-          _errorMessage = 'Error: $e';
+          _errorMessage = l10n.errorGeneric;
         });
       }
     } finally {
@@ -618,7 +591,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 
               if (isStep2 && _selectedReason != null) ...[
                 const SizedBox(height: 8),
-                FutureBuilder<List<_ModerationServiceOption>>(
+                FutureBuilder<List<CompatibleModerationService>>(
                   future: _compatibleServicesFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
@@ -725,18 +698,6 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       ],
     );
   }
-}
-
-class _ModerationServiceOption {
-  const _ModerationServiceOption({
-    required this.did,
-    required this.displayName,
-    required this.isDefault,
-  });
-
-  final String did;
-  final String displayName;
-  final bool isDefault;
 }
 
 class _CategoryTile extends StatelessWidget {

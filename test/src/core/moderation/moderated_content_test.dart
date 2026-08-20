@@ -23,8 +23,10 @@ void main() {
         ],
         child: _materialApp(
           ModeratedContent(
-            labels: [_label('sexual')],
-            target: ModerationTarget.content,
+            subject: ModerationSubject.content(
+              labels: [_label('sexual')],
+              subjectDid: null,
+            ),
             context: ModerationContext.contentView,
             child: GestureDetector(
               key: const Key('pending-child'),
@@ -63,10 +65,12 @@ void main() {
         _engine(),
         Center(
           child: ModeratedContent(
-            labels: [_label('sexual')],
-            target: ModerationTarget.content,
+            subject: ModerationSubject.content(
+              labels: [_label('sexual')],
+              subjectDid: null,
+            ),
             context: ModerationContext.contentView,
-            compact: true,
+            presentation: const ModerationPresentation.compact(),
             child: GestureDetector(
               key: const Key('compact-child'),
               onTap: () => taps += 1,
@@ -95,13 +99,16 @@ void main() {
         _engine(),
         Center(
           child: ModeratedContent(
-            labels: [_label('sexual')],
-            target: ModerationTarget.content,
+            subject: ModerationSubject.content(
+              labels: [_label('sexual')],
+              subjectDid: null,
+            ),
             context: ModerationContext.contentView,
-            compact: true,
-            blurredChild: const SizedBox.square(
-              key: Key('internally-blurred-child'),
-              dimension: 100,
+            presentation: const ModerationPresentation.compact(
+              blurredChild: SizedBox.square(
+                key: Key('internally-blurred-child'),
+                dimension: 100,
+              ),
             ),
             child: const SizedBox.square(
               key: Key('clear-child'),
@@ -134,14 +141,17 @@ void main() {
         _engine(),
         Center(
           child: ModeratedContent(
-            labels: [_label('sexual')],
-            target: ModerationTarget.content,
+            subject: ModerationSubject.content(
+              labels: [_label('sexual')],
+              subjectDid: null,
+            ),
             context: ModerationContext.contentList,
-            compact: true,
-            onConcealedTap: () => forwardedTaps += 1,
-            blurredChild: const SizedBox.square(
-              key: Key('still-blurred-child'),
-              dimension: 100,
+            presentation: ModerationPresentation.compact(
+              onConcealedTap: () => forwardedTaps += 1,
+              blurredChild: const SizedBox.square(
+                key: Key('still-blurred-child'),
+                dimension: 100,
+              ),
             ),
             child: const SizedBox.square(
               key: Key('clear-child'),
@@ -175,10 +185,11 @@ void main() {
             children: [
               Expanded(
                 child: ModeratedContent(
-                  labels: labels,
-                  target: ModerationTarget.content,
+                  subject: ModerationSubject.content(
+                    labels: labels,
+                    subjectDid: 'did:plc:author',
+                  ),
                   context: ModerationContext.contentView,
-                  subjectDid: 'did:plc:author',
                   child: const ColoredBox(
                     color: Colors.pink,
                     child: SizedBox.expand(),
@@ -211,6 +222,7 @@ void main() {
     expect(
       tester
           .widget<ModeratedContent>(find.byType(ModeratedContent))
+          .subject
           .labels
           .single
           .src,
@@ -242,10 +254,11 @@ void main() {
             children: [
               Expanded(
                 child: ModeratedContent(
-                  labels: labels,
-                  target: ModerationTarget.content,
+                  subject: ModerationSubject.content(
+                    labels: labels,
+                    subjectDid: 'did:plc:author',
+                  ),
                   context: ModerationContext.contentView,
-                  subjectDid: 'did:plc:author',
                   child: const SizedBox.expand(),
                 ),
               ),
@@ -320,10 +333,11 @@ void main() {
       _app(
         _engine(),
         ModeratedContent(
-          labels: [_label('gore', source: 'did:plc:labeler')],
-          target: ModerationTarget.content,
+          subject: ModerationSubject.content(
+            labels: [_label('gore', source: 'did:plc:labeler')],
+            subjectDid: 'did:plc:author',
+          ),
           context: ModerationContext.contentView,
-          subjectDid: 'did:plc:author',
           child: const SizedBox.expand(),
         ),
       ),
@@ -347,10 +361,11 @@ void main() {
       _app(
         _engine(labelerHandles: const {'did:plc:labeler': 'labeler.test'}),
         ModeratedContent(
-          labels: [_label('gore', source: 'did:plc:labeler')],
-          target: ModerationTarget.content,
+          subject: ModerationSubject.content(
+            labels: [_label('gore', source: 'did:plc:labeler')],
+            subjectDid: 'did:plc:author',
+          ),
           context: ModerationContext.contentView,
-          subjectDid: 'did:plc:author',
           child: const SizedBox.expand(),
         ),
       ),
@@ -371,10 +386,11 @@ void main() {
       _app(
         _engine(currentUserDid: 'did:plc:author'),
         ModeratedContent(
-          labels: [_label('gore', source: 'did:plc:labeler')],
-          target: ModerationTarget.content,
+          subject: ModerationSubject.content(
+            labels: [_label('gore', source: 'did:plc:labeler')],
+            subjectDid: 'did:plc:author',
+          ),
           context: ModerationContext.contentView,
-          subjectDid: 'did:plc:author',
           child: const SizedBox.expand(),
         ),
       ),
@@ -394,12 +410,13 @@ void main() {
       _app(
         _engine(currentUserDid: 'did:plc:author'),
         ModeratedContent(
-          labels: [
-            _label('gore', source: 'did:plc:labeler', uri: 'did:plc:author'),
-          ],
-          target: ModerationTarget.account,
+          subject: ModerationSubject.profile(
+            labels: [
+              _label('gore', source: 'did:plc:labeler', uri: 'did:plc:author'),
+            ],
+            subjectDid: 'did:plc:author',
+          ),
           context: ModerationContext.contentView,
-          subjectDid: 'did:plc:author',
           child: const SizedBox.expand(),
         ),
       ),
@@ -433,8 +450,10 @@ void main() {
           },
         ),
         ModeratedContent(
-          labels: [_label('context', source: 'did:plc:labeler')],
-          target: ModerationTarget.content,
+          subject: ModerationSubject.content(
+            labels: [_label('context', source: 'did:plc:labeler')],
+            subjectDid: null,
+          ),
           context: ModerationContext.contentView,
           child: const SizedBox.expand(key: Key('inform-child')),
         ),
@@ -453,10 +472,11 @@ void main() {
       _app(
         _engine(),
         ModeratedContent(
-          labels: [_label('!hide', source: 'did:plc:labeler')],
-          target: ModerationTarget.content,
+          subject: ModerationSubject.content(
+            labels: [_label('!hide', source: 'did:plc:labeler')],
+            subjectDid: 'did:plc:author',
+          ),
           context: ModerationContext.contentView,
-          subjectDid: 'did:plc:author',
           child: const SizedBox.expand(),
         ),
       ),
@@ -481,10 +501,11 @@ void main() {
         container: container,
         child: _materialApp(
           ModeratedContent(
-            labels: [_label('sexual')],
-            target: ModerationTarget.content,
+            subject: ModerationSubject.content(
+              labels: [_label('sexual')],
+              subjectDid: 'did:plc:author',
+            ),
             context: ModerationContext.contentView,
-            subjectDid: 'did:plc:author',
             child: const SizedBox.expand(),
           ),
         ),

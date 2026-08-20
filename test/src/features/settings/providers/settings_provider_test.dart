@@ -15,7 +15,8 @@ import 'package:spark/src/core/network/atproto/data/repositories/labeler_reposit
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/storage/preferences/storage_manager.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 void main() {
@@ -347,13 +348,10 @@ void main() {
         ],
       );
       final container = createContainer();
-      final notifier = await loadSettings(container);
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
 
-      await notifier.setLabelPreferenceForLabeler(
-        'did:plc:a',
-        'custom',
-        Setting.hide,
-      );
+      await labelers.setLabelPreference('did:plc:a', 'custom', Setting.hide);
 
       final written = preferencesController.writes.single.contentLabelPrefs!;
       expect(
@@ -387,15 +385,16 @@ void main() {
           ],
         );
         final container = createContainer();
-        final notifier = await loadSettings(container);
+        await loadSettings(container);
+        final labelers = container.read(labelerSettingsControllerProvider);
 
-        await notifier.addLabeler('did:plc:other');
+        await labelers.addLabeler('did:plc:other');
         expect(
           preferencesController.current.labelers?.map((item) => item.did),
           ['did:plc:mod', 'did:plc:other'],
         );
 
-        await notifier.removeLabeler('did:plc:other');
+        await labelers.removeLabeler('did:plc:other');
         expect(
           preferencesController.current.labelers?.map((item) => item.did),
           ['did:plc:mod'],
@@ -408,7 +407,7 @@ void main() {
           isEmpty,
         );
         await expectLater(
-          notifier.removeLabeler('did:plc:mod'),
+          labelers.removeLabeler('did:plc:mod'),
           throwsA(isA<Exception>()),
         );
         expect(preferencesController.writes, hasLength(2));
@@ -423,9 +422,10 @@ void main() {
         ],
       );
       final container = createContainer();
-      final notifier = await loadSettings(container);
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
 
-      await notifier.addLabeler('@labeler.test');
+      await labelers.addLabeler('@labeler.test');
 
       expect(preferencesController.current.labelers?.map((item) => item.did), [
         'did:plc:mod',
@@ -443,10 +443,11 @@ void main() {
       );
       sprkRepository._labelerRepository.invalidDids.add('did:plc:invalid');
       final container = createContainer();
-      final notifier = await loadSettings(container);
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
 
       await expectLater(
-        notifier.addLabeler('did:plc:invalid'),
+        labelers.addLabeler('did:plc:invalid'),
         throwsA(isA<Exception>()),
       );
 
@@ -468,10 +469,11 @@ void main() {
         ],
       );
       final container = createContainer();
-      final notifier = await loadSettings(container);
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
 
       await expectLater(
-        notifier.addLabeler('did:plc:overflow'),
+        labelers.addLabeler('did:plc:overflow'),
         throwsA(isA<StateError>()),
       );
 
@@ -496,9 +498,10 @@ void main() {
       );
       sprkRepository._labelerRepository.invalidDids.add('did:plc:unavailable');
       final container = createContainer();
-      final notifier = await loadSettings(container);
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
 
-      await notifier.syncLabelers();
+      await labelers.syncLabelers();
 
       expect(preferencesController.current.labelers?.map((item) => item.did), [
         'did:plc:mod',
@@ -531,9 +534,10 @@ void main() {
           ],
         );
         final container = createContainer();
-        final notifier = await loadSettings(container);
+        await loadSettings(container);
+        final labelers = container.read(labelerSettingsControllerProvider);
 
-        await notifier.syncLabelers();
+        await labelers.syncLabelers();
 
         final persisted = preferencesController.current;
         expect(persisted.labelers, hasLength(20));

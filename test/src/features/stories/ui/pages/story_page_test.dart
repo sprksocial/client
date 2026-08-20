@@ -13,6 +13,7 @@ import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/features/stories/ui/pages/author_stories_page.dart';
 import 'package:spark/src/features/stories/ui/pages/story_page.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
@@ -163,7 +164,7 @@ Future<void> _cacheImage(String url) async {
   });
 }
 
-StoryView _story(
+ModeratedStoryView _story(
   String id, {
   bool authorLabeled = false,
   bool storyLabeled = false,
@@ -191,15 +192,19 @@ StoryView _story(
     record: const {},
     indexedAt: DateTime.utc(2026, 8, 12),
   );
-  if (!storyLabeled) return story;
-  return story.withModerationLabels([
-    Label(
-      src: 'did:plc:moderator',
-      uri: story.uri.toString(),
-      val: 'sexual',
-      cts: DateTime.utc(2026, 8, 12),
-    ),
-  ]);
+  return ModeratedStoryView(
+    story: story,
+    moderationLabels: storyLabeled
+        ? [
+            Label(
+              src: 'did:plc:moderator',
+              uri: story.uri.toString(),
+              val: 'sexual',
+              cts: DateTime.utc(2026, 8, 12),
+            ),
+          ]
+        : const [],
+  );
 }
 
 ModerationEngine _engine() => ModerationEngine(

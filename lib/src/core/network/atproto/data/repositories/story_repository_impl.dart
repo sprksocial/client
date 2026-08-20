@@ -5,6 +5,7 @@ import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_write_adapters.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
@@ -77,7 +78,10 @@ class StoryRepositoryImpl implements StoryRepository {
 
   @override
   Future<
-    ({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})
+    ({
+      String? cursor,
+      Map<ProfileViewBasic, List<ModeratedStoryView>> storiesByAuthor,
+    })
   >
   getStoriesTimeline({int limit = 30, String? cursor}) {
     return _client.executeWithRetry(() async {
@@ -163,7 +167,10 @@ class StoryRepositoryImpl implements StoryRepository {
           for (final entry in response.storiesByAuthor.entries)
             entry.key: [
               for (final story in entry.value)
-                story.withModerationLabels(_labelsForStory(labelsByUri, story)),
+                ModeratedStoryView(
+                  story: story,
+                  moderationLabels: _labelsForStory(labelsByUri, story),
+                ),
             ],
         },
         cursor: response.cursor,
@@ -172,7 +179,7 @@ class StoryRepositoryImpl implements StoryRepository {
   }
 
   @override
-  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris) {
+  Future<List<ModeratedStoryView>> getStoryViews(List<AtUri> storyUris) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         throw Exception('Not authenticated');
@@ -216,7 +223,10 @@ class StoryRepositoryImpl implements StoryRepository {
       final labelsByUri = await _getModerationLabels(response);
       return [
         for (final story in response)
-          story.withModerationLabels(_labelsForStory(labelsByUri, story)),
+          ModeratedStoryView(
+            story: story,
+            moderationLabels: _labelsForStory(labelsByUri, story),
+          ),
       ];
     });
   }

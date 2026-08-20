@@ -719,12 +719,13 @@ class _PostEmbedPreview extends ConsumerWidget {
         final screenWidth = MediaQuery.of(context).size.width;
         final double targetWidth = math.min(screenWidth * 0.5, 170);
         return ModeratedContent(
-          labels: post.labels ?? const [],
-          authorLabels: post.author.labels ?? const [],
-          target: ModerationTarget.content,
+          subject: ModerationSubject.content(
+            labels: post.labels ?? const [],
+            authorLabels: post.author.labels ?? const [],
+            subjectDid: post.author.did,
+          ),
           context: ModerationContext.contentList,
-          subjectDid: post.author.did,
-          compact: true,
+          presentation: const ModerationPresentation.compact(),
           child: SizedBox(
             width: targetWidth,
             child: AspectRatio(

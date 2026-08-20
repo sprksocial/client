@@ -118,10 +118,11 @@ class _PostLikesSheetState extends ConsumerState<_PostLikesSheet> {
 
                   final actor = state.likes[index].actor;
                   return ModeratedContent(
-                    labels: actor.labels ?? const [],
-                    target: ModerationTarget.account,
+                    subject: ModerationSubject.profile(
+                      labels: actor.labels ?? const [],
+                      subjectDid: actor.did,
+                    ),
                     context: ModerationContext.profileList,
-                    subjectDid: actor.did,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,

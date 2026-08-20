@@ -94,10 +94,11 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           itemWrapper: (context, index, child) {
             final profile = data.conversations[index].$1;
             return ModeratedContent(
-              labels: profile.labels ?? const [],
-              target: ModerationTarget.account,
+              subject: ModerationSubject.profile(
+                labels: profile.labels ?? const [],
+                subjectDid: profile.did,
+              ),
               context: ModerationContext.profileList,
-              subjectDid: profile.did,
               child: child,
             );
           },

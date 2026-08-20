@@ -17,6 +17,7 @@ import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/repo_adapter.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -306,9 +307,7 @@ class RepoRepositoryImpl implements RepoRepository {
             );
         _logger.d('Routing report to moderation service: $modServiceDid');
 
-        final headers = {
-          'atproto-proxy': _moderationProxyDid(modServiceDid),
-        };
+        final headers = {'atproto-proxy': _moderationProxyDid(modServiceDid)};
 
         try {
           final response = await atproto.call(
@@ -345,38 +344,16 @@ class RepoRepositoryImpl implements RepoRepository {
         ? subject.uri.collection.toString()
         : null;
     final reasonType = input.reasonType.toJson();
-    final candidates = <String>{
-      fallbackDid.split('#').first,
-      ..._client.labelerDids,
-    };
-
-    for (final did in candidates) {
-      try {
-        final service = await _client.labeler.getServicesDetailed([did]);
-        final subjectTypes = service.subjectTypes?.map((type) => type.toJson());
-        if (subjectTypes != null && !subjectTypes.contains(subjectType)) {
-          continue;
-        }
-        final collections = service.subjectCollections;
-        if (collection != null &&
-            collections != null &&
-            !collections.contains(collection)) {
-          continue;
-        }
-        final reasons = service.reasonTypes?.map((reason) => reason.toJson());
-        if (reasons != null && !reasons.contains(reasonType)) {
-          continue;
-        }
-        return did;
-      } catch (error, stackTrace) {
-        _logger.w(
-          'Could not inspect moderation service $did',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }
-    }
-    return fallbackDid;
+    final compatible = await _client.labeler.getCompatibleModerationServices(
+      _client.labelerDids,
+      ModerationServiceQuery(
+        fallbackDid: fallbackDid,
+        subjectType: subjectType,
+        subjectCollection: collection,
+        reasonType: reasonType,
+      ),
+    );
+    return compatible.firstOrNull?.did ?? fallbackDid;
   }
 
   String _moderationProxyDid(String did) {

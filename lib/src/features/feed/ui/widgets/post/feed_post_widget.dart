@@ -214,11 +214,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
           return ModeratedContent(
             key: ValueKey(currentPost.uri.toString()),
-            labels: labels,
-            authorLabels: currentPost.author.labels ?? const [],
-            target: ModerationTarget.content,
+            subject: ModerationSubject.content(
+              labels: labels,
+              authorLabels: currentPost.author.labels ?? const [],
+              subjectDid: currentPost.author.did,
+            ),
             context: ModerationContext.contentList,
-            subjectDid: currentPost.author.did,
             onConcealChanged: (concealed) {
               if (mounted && _moderationConcealed != concealed) {
                 setState(() => _moderationConcealed = concealed);

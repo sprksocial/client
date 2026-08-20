@@ -176,12 +176,13 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
         final audio = item.audio;
         if (audio == null) return tile;
         return ModeratedContent(
-          labels: audio.labels ?? const [],
-          authorLabels: audio.author.labels ?? const [],
-          target: ModerationTarget.content,
+          subject: ModerationSubject.content(
+            labels: audio.labels ?? const [],
+            authorLabels: audio.author.labels ?? const [],
+            subjectDid: audio.author.did,
+          ),
           context: ModerationContext.contentList,
-          subjectDid: audio.author.did,
-          compact: true,
+          presentation: const ModerationPresentation.compact(),
           child: tile,
         );
       },

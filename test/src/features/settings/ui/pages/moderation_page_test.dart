@@ -8,7 +8,7 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
 import 'package:spark/src/features/settings/ui/pages/moderation_page.dart';
 import 'package:spark/src/features/settings/ui/widgets/label_setting_tile.dart';
 

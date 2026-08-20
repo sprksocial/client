@@ -9,16 +9,13 @@ import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/design_system/components/molecules/app_choice_group.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
-import 'package:spark/src/features/settings/providers/settings_provider.dart';
-import 'package:spark/src/features/settings/providers/settings_state.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
 import 'package:spark/src/features/settings/ui/pages/labeler_label_settings_page.dart';
 import 'package:spark/src/features/settings/ui/widgets/label_setting_tile.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
@@ -100,10 +97,7 @@ Future<void> _pumpPage(WidgetTester tester, String labelerDid) async {
 }
 
 Widget _page(String labelerDid) => ProviderScope(
-  overrides: [
-    settingsProvider.overrideWith(_FakeSettings.new),
-    userPreferencesProvider.overrideWith(_FakePreferences.new),
-  ],
+  overrides: [userPreferencesProvider.overrideWith(_FakePreferences.new)],
   child: MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
@@ -195,26 +189,6 @@ class _FakeLabelerRepository implements LabelerRepository {
   @override
   Never noSuchMethod(Invocation invocation) =>
       throw UnsupportedError('${invocation.memberName} is not used');
-}
-
-class _FakeSettings extends Settings {
-  @override
-  SettingsState build() => SettingsState(
-    activeFeed: Feed(
-      type: 'timeline',
-      config: makeSavedFeed(
-        id: 'following',
-        type: 'timeline',
-        value: 'following',
-        pinned: true,
-      ),
-    ),
-  );
-
-  @override
-  Future<Map<String, Setting>> getLabelSettingsForLabeler(
-    String labelerDid,
-  ) async => const {};
 }
 
 class _FakePreferences extends UserPreferences {

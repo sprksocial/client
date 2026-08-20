@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -60,6 +61,84 @@ void main() {
       expect(request.uri.queryParameters['detailed'], 'true');
       expect(service.creator.did, 'did:plc:labeler-one');
       expect(service.policies.labelValues, isEmpty);
+    });
+
+    test('deduplicates concurrent detailed service lookups', () async {
+      final harness = RepositoryHarness();
+      harness.transport.enqueueGet({
+        'views': [_detailedLabeler],
+      });
+      final repository = LabelerRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+
+      final services = await Future.wait([
+        repository.getServicesDetailed(['did:plc:labeler-one']),
+        repository.getServicesDetailed(['did:plc:labeler-one']),
+      ]);
+
+      expect(services, hasLength(2));
+      expect(harness.transport.requests, hasLength(1));
+    });
+
+    test('refreshes completed detailed service lookups', () async {
+      final harness = RepositoryHarness();
+      harness.transport
+        ..enqueueGet({
+          'views': [_detailedLabeler],
+        })
+        ..enqueueGet({
+          'views': [
+            {..._detailedLabeler, 'cid': 'refreshed-labeler-cid'},
+          ],
+        });
+      final repository = LabelerRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+
+      final initial = await repository.getServicesDetailed([
+        'did:plc:labeler-one',
+      ]);
+      final refreshed = await repository.getServicesDetailed([
+        'did:plc:labeler-one',
+      ]);
+
+      expect(initial.cid, 'labeler-cid');
+      expect(refreshed.cid, 'refreshed-labeler-cid');
+      expect(harness.transport.requests, hasLength(2));
+    });
+
+    test('filters moderation services by report capabilities', () async {
+      final harness = RepositoryHarness();
+      harness.transport
+        ..enqueueGet({
+          'views': [
+            _detailedService('did:plc:labeler-one', subjectTypes: ['record']),
+          ],
+        })
+        ..enqueueGet({
+          'views': [
+            _detailedService('did:plc:accounts', subjectTypes: ['account']),
+          ],
+        });
+      final repository = LabelerRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+
+      final services = await repository.getCompatibleModerationServices(
+        ['did:plc:accounts'],
+        const ModerationServiceQuery(
+          fallbackDid: 'did:plc:labeler-one',
+          subjectType: 'record',
+          reasonType: 'com.atproto.moderation.defs#reasonOther',
+        ),
+      );
+
+      expect(services.map((service) => service.did), ['did:plc:labeler-one']);
+      expect(harness.transport.requests, hasLength(2));
     });
 
     test(
@@ -203,3 +282,25 @@ const _detailedLabeler = <String, dynamic>{
   },
   'indexedAt': '2026-07-22T12:00:00.000Z',
 };
+
+Map<String, dynamic> _detailedService(
+  String did, {
+  required List<String> subjectTypes,
+}) {
+  return {
+    r'$type': 'so.sprk.labeler.defs#labelerViewDetailed',
+    'uri': 'at://$did/so.sprk.labeler.service/self',
+    'cid': 'labeler-cid',
+    'creator': {
+      r'$type': 'so.sprk.actor.defs#profileView',
+      'did': did,
+      'handle': '${did.split(':').last}.test',
+    },
+    'policies': {
+      r'$type': 'so.sprk.labeler.defs#labelerPolicies',
+      'labelValues': <dynamic>[],
+    },
+    'subjectTypes': subjectTypes,
+    'indexedAt': '2026-07-22T12:00:00.000Z',
+  };
+}

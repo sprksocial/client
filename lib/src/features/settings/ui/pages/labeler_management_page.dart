@@ -10,7 +10,7 @@ import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
-import 'package:spark/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
 @RoutePage()
@@ -50,8 +50,9 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
   Future<void> _loadLabelers() async {
     try {
       setState(() => _isLoading = true);
-      final settings = ref.read(settingsProvider.notifier);
-      final labelerDids = await settings.getLabelers();
+      final labelerDids = await ref
+          .read(labelerSettingsControllerProvider)
+          .getLabelers();
 
       setState(() {
         _labelerDids = labelerDids;
@@ -142,8 +143,9 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
       if (result == null || result.isEmpty) {
         return;
       }
-      final settings = ref.read(settingsProvider.notifier);
-      await settings.addLabeler(result.trim());
+      await ref
+          .read(labelerSettingsControllerProvider)
+          .addLabeler(result.trim());
 
       // Refresh the list
       await _loadLabelers();
@@ -186,8 +188,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
     if (confirmed != true) return;
 
     try {
-      final settings = ref.read(settingsProvider.notifier);
-      await settings.removeLabeler(did);
+      await ref.read(labelerSettingsControllerProvider).removeLabeler(did);
 
       // Refresh the list
       await _loadLabelers();

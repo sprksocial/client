@@ -106,11 +106,12 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                   final author = authorEntry.key;
 
                   return ModeratedContent(
-                    labels: author.labels ?? const [],
-                    target: ModerationTarget.account,
+                    subject: ModerationSubject.profile(
+                      labels: author.labels ?? const [],
+                      subjectDid: author.did,
+                    ),
                     context: ModerationContext.profileList,
-                    subjectDid: author.did,
-                    compact: true,
+                    presentation: const ModerationPresentation.compact(),
                     child: GestureDetector(
                       onTap: () {
                         context.router.push(

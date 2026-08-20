@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -23,12 +23,12 @@ class StoryManagerState {
     this.isLoading = false,
     this.error,
   });
-  final List<StoryView> stories; // hydrated story views
+  final List<ModeratedStoryView> stories;
   final bool isLoading;
   final String? error;
 
   StoryManagerState copyWith({
-    List<StoryView>? stories,
+    List<ModeratedStoryView>? stories,
     bool? isLoading,
     String? error,
   }) {
@@ -97,12 +97,12 @@ class StoryManager extends _$StoryManager {
     state = await AsyncValue.guard(_loadInitial);
   }
 
-  Future<void> deleteStory(StoryView story) async {
+  Future<void> deleteStory(ModeratedStoryView story) async {
     final current = state.value;
     if (current == null) return;
     try {
       // Optimistic update
-      final updatedList = List<StoryView>.from(current.stories)
+      final updatedList = List<ModeratedStoryView>.from(current.stories)
         ..removeWhere((s) => s.uri == story.uri);
       state = AsyncData(current.copyWith(stories: updatedList));
       await _repository.deleteStoryRecord(story.uri);

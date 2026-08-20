@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
@@ -102,6 +103,75 @@ void main() {
     expect(find.text('Bluesky moderation'), findsOneWidget);
     expect(find.text('Moderation service'), findsOneWidget);
   });
+
+  testWidgets('renders service discovery failures without an uncaught error', (
+    tester,
+  ) async {
+    await GetIt.I.unregister<SprkRepository>();
+    GetIt.I.registerSingleton<SprkRepository>(
+      _FakeSprkRepository(
+        _FakeLabelerRepository(
+          const {},
+          compatibilityError: StateError('discovery failed'),
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: ReportDialog(
+              postUri: 'at://did:plc:author/so.sprk.feed.post/example',
+              postCid: 'example-cid',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Violence'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Animal Abuse'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Could not load moderation services.'), findsOneWidget);
+  });
+
+  testWidgets('does not expose submission exceptions to the user', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(800, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: ReportDialog(
+              accountDid: 'did:plc:account',
+              fallbackServiceDid: 'did:plc:bsky#atproto_labeler',
+              onSubmit: (_, _, _, _) async {
+                throw StateError('private transport detail');
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Violence'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Animal Abuse'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(AppButton, 'Submit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('An error occurred'), findsOneWidget);
+    expect(find.textContaining('private transport detail'), findsNothing);
+  });
 }
 
 class _FakeSprkRepository implements SprkRepository {
@@ -130,9 +200,38 @@ class _FakeSprkRepository implements SprkRepository {
 }
 
 class _FakeLabelerRepository implements LabelerRepository {
-  const _FakeLabelerRepository(this.services);
+  const _FakeLabelerRepository(this.services, {this.compatibilityError});
 
   final Map<String, LabelerViewDetailed> services;
+  final Object? compatibilityError;
+
+  @override
+  Future<List<CompatibleModerationService>> getCompatibleModerationServices(
+    Iterable<String> dids,
+    ModerationServiceQuery query,
+  ) async {
+    if (compatibilityError case final error?) throw error;
+    final candidates = <String>{query.fallbackDid, ...dids};
+    return [
+      for (final did in candidates)
+        if (services[did] case final service?)
+          if ((service.subjectTypes == null ||
+                  service.subjectTypes!.any(
+                    (type) => type.toJson() == query.subjectType,
+                  )) &&
+              (query.subjectCollection == null ||
+                  service.subjectCollections == null ||
+                  service.subjectCollections!.contains(
+                    query.subjectCollection,
+                  )))
+            CompatibleModerationService(
+              did: did,
+              displayName:
+                  service.creator.displayName ?? service.creator.handle,
+              isDefault: did == query.fallbackDid,
+            ),
+    ]..sort((left, right) => left.isDefault ? -1 : 1);
+  }
 
   @override
   Future<LabelerViewDetailed> getServicesDetailed(List<String> dids) async {
