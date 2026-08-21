@@ -411,6 +411,23 @@ void main() {
       );
     });
 
+    test('keeps Spark profile-record labels out of account content', () {
+      final decision = _engine().evaluateProfileLabels(
+        [
+          _label(
+            val: 'doxxing',
+            uri: 'at://did:plc:subject/so.sprk.actor.profile/self',
+          ),
+        ],
+        subjectDid: 'did:plc:subject',
+        now: now,
+      );
+
+      expect(decision.causes.single.target, ModerationTarget.profile);
+      expect(decision.forContext(ModerationContext.profileView).blur, isTrue);
+      expect(decision.forContext(ModerationContext.contentList).blur, isFalse);
+    });
+
     test(
       'merges account, profile, and content decisions without losing targets',
       () {

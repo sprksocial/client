@@ -113,7 +113,8 @@ final class ModerationEngine {
 }
 
 bool _isProfileRecordLabel(Label label) {
-  return label.uri.endsWith('/app.bsky.actor.profile/self');
+  return label.uri.endsWith('/app.bsky.actor.profile/self') ||
+      label.uri.endsWith('/so.sprk.actor.profile/self');
 }
 
 bool _isAccountLabel(Label label) {
