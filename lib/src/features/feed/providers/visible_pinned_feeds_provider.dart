@@ -22,10 +22,8 @@ final visiblePinnedFeedsProvider = Provider<VisiblePinnedFeedsState>((ref) {
         final generator = feed.view;
         if (generator == null) return true;
 
-        final hasLabels =
-            (generator.labels?.isNotEmpty ?? false) ||
-            (generator.creator.labels?.isNotEmpty ?? false);
-        if (!hasLabels) return true;
+        final subject = feedGeneratorModerationSubject(generator);
+        if (!subject.hasLabels) return true;
         if (engine == null) {
           if (feed.config.id == settings.activeFeed.config.id) {
             activeFeedModerationUnresolved = true;
@@ -33,10 +31,10 @@ final visiblePinnedFeedsProvider = Provider<VisiblePinnedFeedsState>((ref) {
           return false;
         }
 
-        return !feedGeneratorModerationDecision(
-          engine,
-          generator,
-        ).forContext(ModerationContext.contentList).filter;
+        return !subject
+            .evaluate(engine)
+            .forContext(ModerationContext.contentList)
+            .filter;
       })
       .toList(growable: false);
   final activeFeedIndex = feeds.indexWhere(
@@ -57,15 +55,3 @@ final visiblePinnedFeedsProvider = Provider<VisiblePinnedFeedsState>((ref) {
         !activeFeedModerationUnresolved,
   );
 });
-
-ModerationDecision feedGeneratorModerationDecision(
-  ModerationEngine engine,
-  GeneratorView generator, {
-  Iterable<String> preferredLocales = const [],
-}) {
-  return ModerationSubject.content(
-    labels: generator.labels ?? const [],
-    authorLabels: generator.creator.labels ?? const [],
-    subjectDid: generator.creator.did,
-  ).evaluate(engine, preferredLocales: preferredLocales);
-}

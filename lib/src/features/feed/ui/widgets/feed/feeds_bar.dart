@@ -165,11 +165,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
       final generator = feed.view;
       var text = generator?.displayName ?? l10n.labelFollowing;
       if (engine != null && generator != null) {
-        final decision = feedGeneratorModerationDecision(
-          engine,
+        final decision = feedGeneratorModerationSubject(
           generator,
-          preferredLocales: [locale],
-        );
+        ).evaluate(engine, preferredLocales: [locale]);
         if (decision.forContext(ModerationContext.contentList).blur) {
           text = l10n.moderationContentNotice;
         }

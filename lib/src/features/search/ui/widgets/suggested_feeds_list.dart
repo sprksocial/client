@@ -14,7 +14,7 @@ class SuggestedFeedsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final suggestedFeedsAsync = ref.watch(suggestedFeedsProvider);
+    final suggestedFeedsAsync = ref.watch(promotableSuggestedFeedsProvider);
     final settingsState = ref.watch(settingsProvider);
 
     return Column(
@@ -102,11 +102,7 @@ class SuggestedFeedsList extends ConsumerWidget {
                       );
 
                 return ModeratedContent(
-                  subject: ModerationSubject.content(
-                    labels: generatorView.labels ?? const [],
-                    authorLabels: generatorView.creator.labels ?? const [],
-                    subjectDid: generatorView.creator.did,
-                  ),
+                  subject: feedGeneratorModerationSubject(generatorView),
                   context: ModerationContext.contentList,
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 12),
