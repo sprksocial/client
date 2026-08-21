@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -27,13 +25,11 @@ final class LabelerSettingsController {
   final Ref _ref;
   final SprkRepository _repository;
   final SparkLogger _logger;
-  final Set<String> _policiesChecked = {};
   bool _defaultEnsured = false;
 
   String get _defaultDid => _repository.modDid.split('#').first;
 
   void resetSessionCache() {
-    _policiesChecked.clear();
     _defaultEnsured = false;
   }
 
@@ -74,7 +70,6 @@ final class LabelerSettingsController {
 
     _repository.configureLabelers(labelers);
     labelers = _repository.labelerDids;
-    unawaited(_ensurePolicies(labelers));
     return labelers;
   }
 
@@ -97,7 +92,6 @@ final class LabelerSettingsController {
           did,
         ]),
       );
-      if (await _setMissingPolicyDefaults(did)) _policiesChecked.add(did);
     } catch (error, stackTrace) {
       _logger.e(
         'Could not add labeler $identifier',
@@ -121,7 +115,6 @@ final class LabelerSettingsController {
             .where((labelerDid) => labelerDid != did),
       ),
     );
-    _policiesChecked.remove(did);
   }
 
   Future<void> syncLabelers() async {
@@ -166,7 +159,6 @@ final class LabelerSettingsController {
       await _update(preferences);
       labelers = available;
     }
-    await _ensurePolicies(labelers);
     _repository.configureLabelers(labelers);
     _defaultEnsured = true;
   }
@@ -246,53 +238,6 @@ final class LabelerSettingsController {
       );
     }
     await _update(Preferences(preferences: updated));
-  }
-
-  Future<void> _ensurePolicies(Iterable<String> dids) async {
-    for (final did in dids.where((did) => !_policiesChecked.contains(did))) {
-      if (await _setMissingPolicyDefaults(did)) _policiesChecked.add(did);
-    }
-  }
-
-  Future<bool> _setMissingPolicyDefaults(String did) async {
-    try {
-      final service = await _repository.labeler.getServicesDetailed([did]);
-      final labelValues = service.policies.labelValues
-          .map<String>((value) => value.toJson())
-          .where((value) => !globalAdultContentLabelValues.contains(value));
-      final definitions = ModerationLabelDefinitions.fromLabelers({
-        did: service.policies.labelValueDefinitions ?? const [],
-      });
-      final preferences = await _preferences();
-      final existing = _savedSettings(preferences, did);
-      final additions = <Preference>[
-        for (final value in labelValues)
-          if (!existing.containsKey(value))
-            contentLabelPreference(
-              labelerDid: did,
-              label: value,
-              visibility:
-                  (definitions.bySource[did]?[value] ??
-                          definitions.global[value])
-                      ?.defaultSetting
-                      .name ??
-                  Setting.warn.name,
-            ),
-      ];
-      if (additions.isNotEmpty) {
-        await _update(
-          Preferences(preferences: [...preferences.preferences, ...additions]),
-        );
-      }
-      return true;
-    } catch (error, stackTrace) {
-      _logger.w(
-        'Could not set label policy defaults for $did',
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
   }
 
   Map<String, Setting> _savedSettings(

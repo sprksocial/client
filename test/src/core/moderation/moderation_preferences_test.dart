@@ -98,6 +98,26 @@ void main() {
       );
     });
 
+    test('tracks definition default changes when no preference exists', () {
+      final preferences = _preferences([]);
+      final label = _label(src: 'did:plc:alpha');
+
+      expect(
+        preferences.settingFor(
+          label,
+          _definition(defaultSetting: ModerationSetting.hide),
+        ),
+        ModerationSetting.hide,
+      );
+      expect(
+        preferences.settingFor(
+          label,
+          _definition(defaultSetting: ModerationSetting.ignore),
+        ),
+        ModerationSetting.ignore,
+      );
+    });
+
     test('non-configurable labels ignore user preferences', () {
       final preferences = _preferences([
         const ModerationLabelPreference(
@@ -191,13 +211,16 @@ ModerationPreferences _preferences(
   );
 }
 
-ModerationLabelDefinition _definition({String identifier = 'topic'}) {
+ModerationLabelDefinition _definition({
+  String identifier = 'topic',
+  ModerationSetting defaultSetting = ModerationSetting.warn,
+}) {
   return ModerationLabelDefinition(
     identifier: identifier,
     definedBy: 'did:plc:alpha',
     severity: ModerationSeverity.none,
     blurs: ModerationBlur.none,
-    defaultSetting: ModerationSetting.warn,
+    defaultSetting: defaultSetting,
     configurable: true,
     flags: const {},
     locales: const [],
