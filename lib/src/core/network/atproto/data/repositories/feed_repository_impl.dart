@@ -2,8 +2,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:poptart_lex/com/atproto/label/defs.dart';
-import 'package:poptart_lex/com/atproto/label/query_labels.dart'
-    as label_query_labels;
 import 'package:bluesky_poptart/app/bsky/feed/get_author_feed.dart'
     as bsky_feed_get_author_feed;
 import 'package:bluesky_poptart/app/bsky/feed/get_feed.dart'
@@ -1481,64 +1479,6 @@ class FeedRepositoryImpl implements FeedRepository {
         threadItems: threadItems,
         isCrosspostThread: true,
       );
-    });
-  }
-
-  @override
-  Future<({List<Label> labels, String? cursor})> getLabels(
-    List<AtUri> uris, {
-    List<String>? sources,
-    int? limit,
-    String? cursor,
-  }) async {
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      final labels = <Label>[];
-
-      // Use modDid from repository as fallback if no sources provided
-      final defaultLabelerDid = _client.modDid.split('#').first;
-      final labelers = sources != null && sources.isNotEmpty
-          ? sources
-          : _client.labelerDids;
-
-      final parameters = label_query_labels.LabelQueryLabelsInput(
-        uriPatterns: uris.map((uri) => uri.toString()).toList(),
-        sources: labelers,
-        limit: limit ?? 50,
-        cursor: cursor,
-      );
-
-      final response = await atproto.call(
-        label_query_labels.comAtprotoLabelQueryLabels,
-        headers: {'atproto-proxy': _client.modDid},
-        parameters: parameters,
-      );
-      final responseJson = response.data.toJson();
-      _logger
-        ..d('parameters: ${parameters.toJson()}')
-        ..d('Labels retrieved: $responseJson');
-
-      for (final label in responseJson['labels']! as List<dynamic>) {
-        final cleanLabel = label as Map<String, Object?>
-          ..remove('sig')
-          ..putIfAbsent(
-            'src',
-            () => defaultLabelerDid,
-          ); // Use default labeler DID if src is missing from response
-        labels.add(Label.fromJson(cleanLabel));
-      }
-
-      return (labels: labels, cursor: responseJson['cursor'] as String?);
     });
   }
 

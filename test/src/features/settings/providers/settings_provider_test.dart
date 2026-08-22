@@ -50,7 +50,7 @@ void main() {
   ProviderContainer createContainer() => ProviderContainer.test(
     overrides: [
       userPreferencesProvider.overrideWith(
-        () => _FakeUserPreferences(preferencesController),
+        () => _FakeUserPreferences(preferencesController, sprkRepository),
       ),
     ],
     retry: (retryCount, error) => null,
@@ -583,12 +583,13 @@ class _PreferencesController {
 }
 
 class _FakeUserPreferences extends UserPreferences {
-  _FakeUserPreferences(this.controller);
+  _FakeUserPreferences(this.controller, this.repository);
 
   final _PreferencesController controller;
+  final SprkRepository repository;
 
   @override
-  Future<Preferences> build() async => controller.current;
+  Future<Preferences> build() async => _configureLabelers(controller.current);
 
   @override
   Future<void> refresh() async {
@@ -600,7 +601,7 @@ class _FakeUserPreferences extends UserPreferences {
     }
     final refreshed = controller.refreshResult ?? controller.current;
     controller.current = refreshed;
-    state = AsyncValue.data(refreshed);
+    state = AsyncValue.data(_configureLabelers(refreshed));
   }
 
   @override
@@ -612,7 +613,14 @@ class _FakeUserPreferences extends UserPreferences {
       throw error;
     }
     controller.current = preferences;
-    state = AsyncValue.data(preferences);
+    state = AsyncValue.data(_configureLabelers(preferences));
+  }
+
+  Preferences _configureLabelers(Preferences preferences) {
+    repository.configureLabelers(
+      preferences.labelers?.map((labeler) => labeler.did) ?? const [],
+    );
+    return preferences;
   }
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -61,6 +62,30 @@ void main() {
       expect(request.uri.queryParameters['detailed'], 'true');
       expect(service.creator.did, 'did:plc:labeler-one');
       expect(service.policies.labelValues, isEmpty);
+    });
+
+    test('queryLabels falls back to the configured labeler sources', () async {
+      final harness = RepositoryHarness(
+        getResponse: const <String, dynamic>{'labels': <dynamic>[]},
+      );
+      harness.sprk.configureLabelers(const ['did:plc:one', 'did:plc:two']);
+      final repository = LabelerRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+      final uri = AtUri('at://did:plc:author/so.sprk.feed.post/post');
+
+      final result = await repository.queryLabels([uri]);
+
+      final request = harness.transport.singleRequest;
+      expect(request.uri.path, '/xrpc/com.atproto.label.queryLabels');
+      expect(request.uri.queryParametersAll['uriPatterns'], [uri.toString()]);
+      expect(request.uri.queryParametersAll['sources'], [
+        'did:plc:one',
+        'did:plc:two',
+      ]);
+      expect(request.headers['atproto-proxy'], harness.sprk.modDid);
+      expect(result.labels, isEmpty);
     });
 
     test('deduplicates concurrent detailed service lookups', () async {

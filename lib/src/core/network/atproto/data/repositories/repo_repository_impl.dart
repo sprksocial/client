@@ -338,19 +338,12 @@ class RepoRepositoryImpl implements RepoRepository {
     ModerationCreateReportInput input, {
     required String fallbackDid,
   }) async {
-    final subject = input.subject.data;
-    final subjectType = subject is RepoStrongRef ? 'record' : 'account';
-    final collection = subject is RepoStrongRef
-        ? subject.uri.collection.toString()
-        : null;
-    final reasonType = input.reasonType.toJson();
     final compatible = await _client.labeler.getCompatibleModerationServices(
       _client.labelerDids,
-      ModerationServiceQuery(
+      ModerationServiceQuery.forReport(
         fallbackDid: fallbackDid,
-        subjectType: subjectType,
-        subjectCollection: collection,
-        reasonType: reasonType,
+        subject: input.subject,
+        reasonType: input.reasonType.toJson(),
       ),
     );
     return compatible.firstOrNull?.did ?? fallbackDid;

@@ -1,6 +1,9 @@
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/identity/resolve_handle.dart'
     as identity_resolve_handle;
+import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:poptart_lex/com/atproto/label/query_labels.dart'
+    as label_query_labels;
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
@@ -61,6 +64,57 @@ class LabelerRepositoryImpl extends LabelerRepository {
         'Labeler service is taken down: $did',
       );
     }
+  }
+
+  @override
+  Future<({List<Label> labels, String? cursor})> queryLabels(
+    List<AtUri> uris, {
+    List<String>? sources,
+    int? limit,
+    String? cursor,
+  }) async {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final defaultLabelerDid = _client.modDid.split('#').first;
+      final labelers = sources != null && sources.isNotEmpty
+          ? sources
+          : _client.labelerDids;
+      final parameters = label_query_labels.LabelQueryLabelsInput(
+        uriPatterns: uris.map((uri) => uri.toString()).toList(),
+        sources: labelers,
+        limit: limit ?? 50,
+        cursor: cursor,
+      );
+      final response = await atproto.call(
+        label_query_labels.comAtprotoLabelQueryLabels,
+        headers: {'atproto-proxy': _client.modDid},
+        parameters: parameters,
+      );
+      final responseJson = response.data.toJson();
+      _logger
+        ..d('parameters: ${parameters.toJson()}')
+        ..d('Labels retrieved: $responseJson');
+
+      final labels = <Label>[];
+      for (final label in responseJson['labels']! as List<dynamic>) {
+        final cleanLabel = label as Map<String, Object?>
+          ..remove('sig')
+          ..putIfAbsent('src', () => defaultLabelerDid);
+        labels.add(Label.fromJson(cleanLabel));
+      }
+
+      return (labels: labels, cursor: responseJson['cursor'] as String?);
+    });
   }
 
   @override

@@ -428,6 +428,22 @@ void main() {
       expect(decision.forContext(ModerationContext.contentList).blur, isFalse);
     });
 
+    test('classifies profile-record imperatives exactly once', () {
+      final decision = _engine(authenticated: false).evaluateProfileLabels(
+        [
+          _label(
+            val: '!no-unauthenticated',
+            uri: 'at://did:plc:subject/app.bsky.actor.profile/self',
+          ),
+        ],
+        subjectDid: 'did:plc:subject',
+        now: now,
+      );
+
+      expect(decision.causes, hasLength(1));
+      expect(decision.causes.single.target, ModerationTarget.account);
+    });
+
     test(
       'merges account, profile, and content decisions without losing targets',
       () {

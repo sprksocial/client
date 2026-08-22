@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/admin/defs.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
@@ -50,14 +54,18 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      const ProviderScope(
+      ProviderScope(
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              postUri: 'at://did:plc:author/so.sprk.feed.post/example',
-              postCid: 'example-cid',
+              subject: UModerationCreateReportSubject.repoStrongRef(
+                data: RepoStrongRef(
+                  uri: AtUri('at://did:plc:author/so.sprk.feed.post/example'),
+                  cid: 'example-cid',
+                ),
+              ),
             ),
           ),
         ),
@@ -87,7 +95,9 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              accountDid: 'did:plc:account',
+              subject: UModerationCreateReportSubject.repoRef(
+                data: RepoRef(did: 'did:plc:account'),
+              ),
               fallbackServiceDid: 'did:plc:bsky#atproto_labeler',
             ),
           ),
@@ -117,14 +127,18 @@ void main() {
       ),
     );
     await tester.pumpWidget(
-      const ProviderScope(
+      ProviderScope(
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              postUri: 'at://did:plc:author/so.sprk.feed.post/example',
-              postCid: 'example-cid',
+              subject: UModerationCreateReportSubject.repoStrongRef(
+                data: RepoStrongRef(
+                  uri: AtUri('at://did:plc:author/so.sprk.feed.post/example'),
+                  cid: 'example-cid',
+                ),
+              ),
             ),
           ),
         ),
@@ -151,7 +165,9 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              accountDid: 'did:plc:account',
+              subject: UModerationCreateReportSubject.repoRef(
+                data: RepoRef(did: 'did:plc:account'),
+              ),
               fallbackServiceDid: 'did:plc:bsky#atproto_labeler',
               onSubmit: (_, _, _, _) async {
                 throw StateError('private transport detail');

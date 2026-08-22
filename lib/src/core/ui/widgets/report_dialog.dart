@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:poptart_lex/com/atproto/admin/defs.dart';
 import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
 import 'package:poptart_lex/com/atproto/moderation/defs.dart';
-import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:flutter/material.dart';
@@ -54,19 +52,12 @@ class ReportReason {
 
 class ReportDialog extends ConsumerStatefulWidget {
   const ReportDialog({
-    this.postUri,
-    this.postCid,
-    this.accountDid,
+    required this.subject,
     this.fallbackServiceDid,
     super.key,
     this.onSubmit,
-  }) : assert(
-         accountDid != null || (postUri != null && postCid != null),
-         'Provide either an account DID or both a record URI and CID.',
-       );
-  final String? postUri;
-  final String? postCid;
-  final String? accountDid;
+  });
+  final UModerationCreateReportSubject subject;
   final String? fallbackServiceDid;
 
   /// Callback for report submission. Uses [ReasonType] directly to support
@@ -404,21 +395,6 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
     });
   }
 
-  UModerationCreateReportSubject _buildSubject() {
-    final accountDid = widget.accountDid;
-    if (accountDid != null) {
-      return UModerationCreateReportSubject.repoRef(
-        data: RepoRef(did: accountDid),
-      );
-    }
-    return UModerationCreateReportSubject.repoStrongRef(
-      data: RepoStrongRef(
-        cid: widget.postCid!,
-        uri: AtUri.parse(widget.postUri!),
-      ),
-    );
-  }
-
   ReasonType _reasonTypeFor(ReportReason reason) {
     return reason.knownType != null
         ? ReasonType.knownValue(data: reason.knownType!)
@@ -429,23 +405,20 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
     ReportReason reason,
   ) async {
     final repository = GetIt.instance<SprkRepository>();
-    final subject = _buildSubject().data;
-    final isRecord = subject is RepoStrongRef;
-    final collection = isRecord ? subject.uri.collection.toString() : null;
+    final subject = widget.subject.data;
+    final isBskyRecord =
+        subject is RepoStrongRef &&
+        subject.uri.collection.toString().startsWith('app.bsky');
     final fallbackProxyDid =
         widget.fallbackServiceDid ??
-        (isRecord && collection!.startsWith('app.bsky')
-            ? repository.bskyModDid
-            : repository.modDid);
+        (isBskyRecord ? repository.bskyModDid : repository.modDid);
     final fallbackDid = fallbackProxyDid.split('#').first;
-    final reasonType = _reasonTypeFor(reason).toJson();
     return repository.labeler.getCompatibleModerationServices(
       repository.labelerDids,
-      ModerationServiceQuery(
+      ModerationServiceQuery.forReport(
         fallbackDid: fallbackDid,
-        subjectType: isRecord ? 'record' : 'account',
-        subjectCollection: collection,
-        reasonType: reasonType,
+        subject: widget.subject,
+        reasonType: _reasonTypeFor(reason).toJson(),
       ),
     );
   }
@@ -454,7 +427,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
     if (_selectedReason == null || _selectedServiceDid == null) return;
 
     final l10n = AppLocalizations.of(context);
-    final subject = _buildSubject();
+    final subject = widget.subject;
     final reason = _additionalInfoController.text.isNotEmpty
         ? _additionalInfoController.text
         : null;

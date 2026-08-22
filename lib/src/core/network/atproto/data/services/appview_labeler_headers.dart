@@ -8,7 +8,10 @@ const String atprotoAcceptLabelersHeader = 'atproto-accept-labelers';
 class AppViewLabelerHeaders {
   AppViewLabelerHeaders({required String defaultLabelerDid})
     : _defaultLabelerDid = _normalizeDid(defaultLabelerDid),
-      _labelerDids = [_normalizeDid(defaultLabelerDid)];
+      _labelerDids = normalize(
+        defaultLabelerDid: defaultLabelerDid,
+        labelerDids: const [],
+      );
 
   static const int maxLabelers = 20;
 
@@ -18,17 +21,10 @@ class AppViewLabelerHeaders {
   List<String> get labelerDids => List.unmodifiable(_labelerDids);
 
   void configure(Iterable<String> labelerDids) {
-    final normalized = <String>{_defaultLabelerDid};
-    for (final did in labelerDids) {
-      final value = _normalizeDid(did);
-      if (value.isNotEmpty) {
-        normalized.add(value);
-      }
-      if (normalized.length == maxLabelers) {
-        break;
-      }
-    }
-    _labelerDids = normalized.toList(growable: false);
+    _labelerDids = normalize(
+      defaultLabelerDid: _defaultLabelerDid,
+      labelerDids: labelerDids,
+    );
   }
 
   Map<String, String> forAppView(
@@ -37,7 +33,10 @@ class AppViewLabelerHeaders {
   }) {
     final accepted = labelerDids == null
         ? _labelerDids
-        : _normalizedWithDefault(labelerDids);
+        : normalize(
+            defaultLabelerDid: _defaultLabelerDid,
+            labelerDids: labelerDids,
+          );
     final headers = <String, String>{
       if (accepted.isNotEmpty) atprotoAcceptLabelersHeader: accepted.join(','),
     };
@@ -47,8 +46,11 @@ class AppViewLabelerHeaders {
     return headers;
   }
 
-  List<String> _normalizedWithDefault(Iterable<String> labelerDids) {
-    final normalized = <String>{_defaultLabelerDid};
+  static List<String> normalize({
+    required String defaultLabelerDid,
+    required Iterable<String> labelerDids,
+  }) {
+    final normalized = <String>{_normalizeDid(defaultLabelerDid)};
     for (final did in labelerDids) {
       final value = _normalizeDid(did);
       if (value.isNotEmpty) {

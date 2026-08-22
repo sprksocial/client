@@ -1,4 +1,6 @@
 import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/admin/defs.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -357,7 +359,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       context: context,
                       useRootNavigator: false,
                       builder: (dContext) => ReportDialog(
-                        accountDid: profile.did,
+                        subject: UModerationCreateReportSubject.repoRef(
+                          data: RepoRef(did: profile.did),
+                        ),
                         fallbackServiceDid: widget.bsky
                             ? _sprkRepository.bskyModDid
                             : _sprkRepository.modDid,

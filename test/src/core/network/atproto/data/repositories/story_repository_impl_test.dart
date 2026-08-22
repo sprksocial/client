@@ -3,7 +3,7 @@ import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository_impl.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 
@@ -88,7 +88,7 @@ void main() {
           val: 'nudity',
           cts: fixedNow,
         );
-        final feed = _LabelFeedRepository([
+        final labeler = _LabelQueryRepository([
           (
             labels: [currentVersionLabel, oldVersionLabel, unversionedLabel],
             cursor: null,
@@ -98,7 +98,7 @@ void main() {
           getResponse: {
             'stories': [story.toJson()],
           },
-          feedRepository: feed,
+          labelerRepository: labeler,
         );
         final repository = StoryRepositoryImpl(harness.sprk);
 
@@ -108,8 +108,8 @@ void main() {
           currentVersionLabel,
           unversionedLabel,
         ]);
-        expect(feed.calls.single.uris, [story.uri]);
-        expect(feed.calls.single.limit, 250);
+        expect(labeler.calls.single.uris, [story.uri]);
+        expect(labeler.calls.single.limit, 250);
       },
     );
 
@@ -158,7 +158,7 @@ void main() {
           Duration.zero,
           cid: 'old-story-cid',
         );
-        final feed = _LabelFeedRepository([
+        final labeler = _LabelQueryRepository([
           (labels: [sexualAssertion, goreAssertion], cursor: 'negations'),
           (labels: [sexualNegation, goreNegation], cursor: 'updates'),
           (
@@ -170,7 +170,7 @@ void main() {
           getResponse: {
             'stories': [story.toJson()],
           },
-          feedRepository: feed,
+          labelerRepository: labeler,
         );
         final repository = StoryRepositoryImpl(
           harness.sprk,
@@ -180,7 +180,7 @@ void main() {
         final result = await repository.getStoryViews([story.uri]);
 
         expect(result.single.moderationLabels, [reappliedGore]);
-        expect(feed.calls.map((call) => call.cursor), [
+        expect(labeler.calls.map((call) => call.cursor), [
           null,
           'negations',
           'updates',
@@ -261,14 +261,14 @@ void main() {
   });
 }
 
-class _LabelFeedRepository implements FeedRepository {
-  _LabelFeedRepository(this.pages);
+class _LabelQueryRepository implements LabelerRepository {
+  _LabelQueryRepository(this.pages);
 
   final List<({List<Label> labels, String? cursor})> pages;
   final List<({List<AtUri> uris, int? limit, String? cursor})> calls = [];
 
   @override
-  Future<({List<Label> labels, String? cursor})> getLabels(
+  Future<({List<Label> labels, String? cursor})> queryLabels(
     List<AtUri> uris, {
     List<String>? sources,
     int? limit,

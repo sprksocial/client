@@ -16,14 +16,16 @@ import 'package:spark/src/core/providers/preferences_provider.dart';
 void main() {
   late _FakeAuthRepository authRepository;
   late _FakePrefRepository prefRepository;
+  late _FakeSprkRepository sprkRepository;
 
   setUp(() async {
     await GetIt.I.reset();
     authRepository = _FakeAuthRepository();
     prefRepository = _FakePrefRepository();
+    sprkRepository = _FakeSprkRepository(authRepository);
     GetIt.I
       ..registerSingleton<PrefRepository>(prefRepository)
-      ..registerSingleton<SprkRepository>(_FakeSprkRepository(authRepository))
+      ..registerSingleton<SprkRepository>(sprkRepository)
       ..registerSingleton<LogService>(LogService());
   });
 
@@ -42,6 +44,7 @@ void main() {
 
     expect(preferences.preferences, isEmpty);
     expect(prefRepository.getCalls, 0);
+    expect(sprkRepository.labelerConfigurations, [<String>[]]);
   });
 
   test('loads preferences when authenticated', () async {
@@ -57,6 +60,9 @@ void main() {
       container.read(userPreferencesProvider.notifier).currentPreferences,
       expected,
     );
+    expect(sprkRepository.labelerConfigurations, [
+      ['did:plc:labeler'],
+    ]);
   });
 
   test('exposes an error when initial loading fails', () async {
@@ -88,6 +94,10 @@ void main() {
 
     expect(container.read(userPreferencesProvider).value, refreshed);
     expect(prefRepository.getCalls, 2);
+    expect(sprkRepository.labelerConfigurations, [
+      ['did:plc:labeler'],
+      ['did:plc:labeler'],
+    ]);
   });
 
   test('refresh exposes and rethrows repository errors', () async {
@@ -114,6 +124,10 @@ void main() {
 
     expect(prefRepository.putCalls, [updated]);
     expect(container.read(userPreferencesProvider).value, updated);
+    expect(sprkRepository.labelerConfigurations, [
+      ['did:plc:labeler'],
+      ['did:plc:labeler'],
+    ]);
   });
 
   test(
@@ -262,6 +276,7 @@ void main() {
 
 Preferences _preferences(String label) => Preferences(
   preferences: [
+    labelersPreference([LabelerPrefItem(did: 'did:plc:labeler')]),
     contentLabelPreference(
       labelerDid: 'did:plc:labeler',
       label: label,
@@ -299,11 +314,15 @@ class _FakeSprkRepository implements SprkRepository {
   @override
   final AuthRepository authRepository;
 
+  final List<List<String>> labelerConfigurations = [];
+
   @override
   List<String> get labelerDids => const [];
 
   @override
-  void configureLabelers(Iterable<String> labelerDids) {}
+  void configureLabelers(Iterable<String> labelerDids) {
+    labelerConfigurations.add(labelerDids.toList(growable: false));
+  }
 
   @override
   Map<String, String> appViewHeaders(

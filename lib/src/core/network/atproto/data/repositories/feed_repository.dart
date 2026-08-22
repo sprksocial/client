@@ -220,19 +220,6 @@ abstract class FeedRepository {
     String sort = 'newest',
   });
 
-  /// Get labels for a list of URIs
-  ///
-  /// [uris] List of post URIs to fetch labels for
-  /// [sources] Optional list of label sources (DIDs) to filter on.
-  /// [limit] Optional limit on the number of labels to return.
-  /// [cursor] Optional pagination cursor.
-  Future<({List<Label> labels, String? cursor})> getLabels(
-    List<AtUri> uris, {
-    List<String>? sources,
-    int? limit,
-    String? cursor,
-  });
-
   /// Search for posts
   /// [query] The search query string
   /// [limit] The number of items to return (default 20)

@@ -245,7 +245,7 @@ class StoryRepositoryImpl implements StoryRepository {
       if (cursor != null && !seenCursors.add(cursor)) {
         throw StateError('Label query returned a repeated cursor');
       }
-      final page = await _client.feed.getLabels(
+      final page = await _client.labeler.queryLabels(
         uris,
         limit: 250,
         cursor: cursor,

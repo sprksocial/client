@@ -5,6 +5,7 @@ import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 
@@ -17,6 +18,7 @@ class RepositoryHarness {
     Map<String, dynamic>? getResponse,
     int getStatusCode = 200,
     FeedRepository? feedRepository,
+    LabelerRepository? labelerRepository,
   }) : transport = TestTransport() {
     final atproto = oauth
         ? PoptartClient.fromOAuthSession(
@@ -50,6 +52,7 @@ class RepositoryHarness {
       auth: auth,
       repo: repo,
       feed: feedRepository ?? const _UnavailableFeedRepository(),
+      labeler: labelerRepository ?? const _UnavailableLabelerRepository(),
     );
     if (atprotoInitialized && getResponse != null) {
       transport.enqueueGet(getResponse, statusCode: getStatusCode);
@@ -193,6 +196,7 @@ class FakeSprkRepository implements SprkRepository {
     required this.auth,
     required this.repo,
     required this.feed,
+    required this.labeler,
   });
 
   static const testSprkDid = 'did:web:sprk.test#sprk_appview';
@@ -206,6 +210,9 @@ class FakeSprkRepository implements SprkRepository {
 
   @override
   final FeedRepository feed;
+
+  @override
+  final LabelerRepository labeler;
 
   @override
   AuthRepository get authRepository => auth;
@@ -251,6 +258,13 @@ class FakeSprkRepository implements SprkRepository {
 
 class _UnavailableFeedRepository implements FeedRepository {
   const _UnavailableFeedRepository();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _UnavailableLabelerRepository implements LabelerRepository {
+  const _UnavailableLabelerRepository();
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

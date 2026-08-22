@@ -42,13 +42,6 @@ final class LabelerSettingsController {
     await _ref
         .read(userPreferencesProvider.notifier)
         .updatePreferences(preferences);
-    configureHeaders(preferences);
-  }
-
-  void configureHeaders(Preferences preferences) {
-    _repository.configureLabelers(
-      preferences.labelers?.map((labeler) => labeler.did) ?? const [],
-    );
   }
 
   Future<List<String>> getLabelers() async {
@@ -57,20 +50,14 @@ final class LabelerSettingsController {
         preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
 
     if (!_defaultEnsured) {
-      _defaultEnsured = true;
       if (!labelers.contains(_defaultDid)) {
-        labelers = [_defaultDid, ...labelers];
-        _repository.configureLabelers(labelers);
-        labelers = _repository.labelerDids;
+        labelers = _normalizeLabelers(labelers);
         await _update(_withLabelers(preferences, labelers));
       }
-    } else if (!labelers.contains(_defaultDid)) {
-      labelers = [_defaultDid, ...labelers];
+      _defaultEnsured = true;
     }
 
-    _repository.configureLabelers(labelers);
-    labelers = _repository.labelerDids;
-    return labelers;
+    return _normalizeLabelers(labelers);
   }
 
   Future<void> addLabeler(String identifier) async {
@@ -121,14 +108,9 @@ final class LabelerSettingsController {
     resetSessionCache();
     await _ref.read(userPreferencesProvider.notifier).refresh();
     var preferences = await _preferences();
-    final configured = <String>[
-      _defaultDid,
-      ...(preferences.labelers ?? const [])
-          .map((labeler) => labeler.did)
-          .where((did) => did != _defaultDid),
-    ];
-    _repository.configureLabelers(configured);
-    var labelers = _repository.labelerDids;
+    var labelers = _normalizeLabelers(
+      (preferences.labelers ?? const []).map((labeler) => labeler.did),
+    );
     if (!_sameLabelers(
       preferences.labelers?.map((labeler) => labeler.did) ?? const [],
       labelers,
@@ -159,7 +141,6 @@ final class LabelerSettingsController {
       await _update(preferences);
       labelers = available;
     }
-    _repository.configureLabelers(labelers);
     _defaultEnsured = true;
   }
 
@@ -284,5 +265,12 @@ final class LabelerSettingsController {
       if (leftItems[index] != rightItems[index]) return false;
     }
     return true;
+  }
+
+  List<String> _normalizeLabelers(Iterable<String> labelers) {
+    return AppViewLabelerHeaders.normalize(
+      defaultLabelerDid: _defaultDid,
+      labelerDids: labelers,
+    );
   }
 }

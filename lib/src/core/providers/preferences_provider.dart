@@ -33,12 +33,12 @@ class UserPreferences extends _$UserPreferences {
     await _sprkRepository.authRepository.initializationComplete;
 
     if (!_sprkRepository.authRepository.isAuthenticated) {
-      return Preferences(preferences: []);
+      return _configureLabelers(Preferences(preferences: []));
     }
 
     try {
       final preferences = await _prefRepository.getPreferences();
-      return preferences;
+      return _configureLabelers(preferences);
     } catch (e) {
       _logger.e('Error loading preferences: $e');
       rethrow;
@@ -56,7 +56,7 @@ class UserPreferences extends _$UserPreferences {
 
     try {
       final preferences = await _prefRepository.getPreferences();
-      state = AsyncValue.data(preferences);
+      state = AsyncValue.data(_configureLabelers(preferences));
     } catch (e, st) {
       _logger.e('Error refreshing preferences: $e');
       state = AsyncValue.error(e, st);
@@ -69,7 +69,7 @@ class UserPreferences extends _$UserPreferences {
   Future<void> updatePreferences(Preferences preferences) async {
     try {
       await _prefRepository.putPreferences(preferences);
-      state = AsyncValue.data(preferences);
+      state = AsyncValue.data(_configureLabelers(preferences));
     } catch (e, st) {
       _logger.e('Error updating preferences: $e');
       state = AsyncValue.error(e, st);
@@ -130,5 +130,12 @@ class UserPreferences extends _$UserPreferences {
         ],
       );
     });
+  }
+
+  Preferences _configureLabelers(Preferences preferences) {
+    _sprkRepository.configureLabelers(
+      preferences.labelers?.map((labeler) => labeler.did) ?? const [],
+    );
+    return preferences;
   }
 }

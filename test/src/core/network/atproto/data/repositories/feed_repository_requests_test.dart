@@ -175,29 +175,6 @@ void main() {
         '/xrpc/so.sprk.feed.getFeed',
       );
     });
-
-    test(
-      'getLabels falls back to configured labelers when sources are null',
-      () async {
-        final harness = RepositoryHarness(
-          getResponse: const <String, dynamic>{'labels': <dynamic>[]},
-        );
-        harness.sprk.configureLabelers(const ['did:plc:one', 'did:plc:two']);
-        final uri = AtUri('at://did:plc:author/so.sprk.feed.post/post');
-
-        final result = await repository(harness).getLabels([uri]);
-
-        final request = harness.transport.singleRequest;
-        expect(request.uri.path, '/xrpc/com.atproto.label.queryLabels');
-        expect(request.uri.queryParametersAll['uriPatterns'], [uri.toString()]);
-        expect(request.uri.queryParametersAll['sources'], [
-          'did:plc:one',
-          'did:plc:two',
-        ]);
-        expect(request.headers['atproto-proxy'], harness.sprk.modDid);
-        expect(result.labels, isEmpty);
-      },
-    );
   });
 }
 

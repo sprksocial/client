@@ -3,6 +3,8 @@ import 'package:spark/src/core/moderation/moderation_definitions.dart';
 import 'package:spark/src/core/moderation/moderation_label_events.dart';
 import 'package:spark/src/core/moderation/moderation_models.dart';
 
+enum _ProfileLabelTarget { account, profile }
+
 final class ModerationEngine {
   ModerationEngine({
     required this.definitions,
@@ -93,16 +95,26 @@ final class ModerationEngine {
     DateTime? now,
   }) {
     final items = labels.toList(growable: false);
+    final accountLabels = <Label>[];
+    final profileLabels = <Label>[];
+    for (final label in items) {
+      switch (_profileLabelTarget(label)) {
+        case _ProfileLabelTarget.account:
+          accountLabels.add(label);
+        case _ProfileLabelTarget.profile:
+          profileLabels.add(label);
+      }
+    }
     return ModerationDecision.merge([
       evaluate(
-        items.where(_isAccountLabel),
+        accountLabels,
         target: ModerationTarget.account,
         subjectDid: subjectDid,
         preferredLocales: preferredLocales,
         now: now,
       ),
       evaluate(
-        items.where(_isProfileRecordLabel),
+        profileLabels,
         target: ModerationTarget.profile,
         subjectDid: subjectDid,
         preferredLocales: preferredLocales,
@@ -117,8 +129,11 @@ bool _isProfileRecordLabel(Label label) {
       label.uri.endsWith('/so.sprk.actor.profile/self');
 }
 
-bool _isAccountLabel(Label label) {
-  return !_isProfileRecordLabel(label) || label.val == '!no-unauthenticated';
+_ProfileLabelTarget _profileLabelTarget(Label label) {
+  if (label.val == '!no-unauthenticated') return _ProfileLabelTarget.account;
+  return _isProfileRecordLabel(label)
+      ? _ProfileLabelTarget.profile
+      : _ProfileLabelTarget.account;
 }
 
 final class ModerationDecision {

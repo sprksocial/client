@@ -86,7 +86,6 @@ class Settings extends _$Settings {
     await ref
         .read(userPreferencesProvider.notifier)
         .updatePreferences(preferences);
-    ref.read(labelerSettingsControllerProvider).configureHeaders(preferences);
   }
 
   Future<Preferences> _getCurrentPreferencesForFeedUpdate() async {
@@ -237,7 +236,6 @@ class Settings extends _$Settings {
 
       // Get preferences from the provider (waits for it to load if needed)
       final preferences = await _getPreferences();
-      ref.read(labelerSettingsControllerProvider).configureHeaders(preferences);
       final savedFeeds = _getSavedFeedsFromPreferences(preferences);
 
       // If there are no feeds, set default preferences
@@ -269,9 +267,6 @@ class Settings extends _$Settings {
           // Get updated preferences from provider
           final updatedPreferences =
               ref.read(userPreferencesProvider).asData?.value ?? mergedDefaults;
-          ref
-              .read(labelerSettingsControllerProvider)
-              .configureHeaders(updatedPreferences);
           final updatedSavedFeeds = _getSavedFeedsFromPreferences(
             updatedPreferences,
           );

@@ -1,4 +1,5 @@
 import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -108,8 +109,12 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
     showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
-        postUri: commentState.thread.post.uri.toString(),
-        postCid: commentState.thread.post.cid,
+        subject: UModerationCreateReportSubject.repoStrongRef(
+          data: RepoStrongRef(
+            uri: commentState.thread.post.uri,
+            cid: commentState.thread.post.cid,
+          ),
+        ),
         onSubmit: (subject, reasonType, reason, serviceDid) async {
           try {
             await sprkRepository.repo.createReport(

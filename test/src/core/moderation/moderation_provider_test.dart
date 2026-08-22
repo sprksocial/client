@@ -93,6 +93,9 @@ class _FakeSprkRepository implements SprkRepository {
   String get modDid => 'did:plc:moderator#atproto_labeler';
 
   @override
+  void configureLabelers(Iterable<String> labelerDids) {}
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
