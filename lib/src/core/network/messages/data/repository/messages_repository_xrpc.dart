@@ -17,7 +17,7 @@ import 'package:sprk_poptart/chat/sprk/convo/get_convo_for_members/output.dart'
     as get_convo_for_members;
 import 'package:sprk_poptart/chat/sprk/convo/get_messages/output.dart'
     as get_messages;
-import 'package:sprk_poptart/chat/sprk/convo/get_messages/union_main_messages.dart'
+import 'package:sprk_poptart/chat/sprk/convo/get_messages/union_main_output_messages.dart'
     as get_messages_union;
 import 'package:sprk_poptart/chat/sprk/convo/list_convos/output.dart'
     as list_convos;
@@ -314,16 +314,18 @@ class MessagesRepositoryXrpc implements MessagesRepository {
 }
 
 ChatMessageView _chatMessageFromChat(
-  get_messages_union.UConvoGetMessagesMessages message,
+  get_messages_union.UConvoGetMessagesOutputMessages message,
 ) {
   return switch (message) {
-    get_messages_union.UConvoGetMessagesMessagesMessageView(:final data) =>
+    get_messages_union.UConvoGetMessagesOutputMessagesMessageView(
+      :final data,
+    ) =>
       ChatMessageView.message(data: MessageView.fromChat(data)),
-    get_messages_union.UConvoGetMessagesMessagesDeletedMessageView(
+    get_messages_union.UConvoGetMessagesOutputMessagesDeletedMessageView(
       :final data,
     ) =>
       ChatMessageView.deleted(data: DeletedMessageView.fromChat(data)),
-    get_messages_union.UConvoGetMessagesMessagesUnknown(:final data) =>
+    get_messages_union.UConvoGetMessagesOutputMessagesUnknown(:final data) =>
       ChatMessageView.unsupportedFromRaw(data),
   };
 }

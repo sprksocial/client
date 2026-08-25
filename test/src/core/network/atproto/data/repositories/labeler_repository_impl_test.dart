@@ -88,6 +88,35 @@ void main() {
       expect(result.labels, isEmpty);
     });
 
+    test('queryLabels preserves typed labels and signatures', () async {
+      final harness = RepositoryHarness(
+        getResponse: const <String, dynamic>{
+          'cursor': 'next-page',
+          'labels': [
+            {
+              r'$type': 'com.atproto.label.defs#label',
+              'src': 'did:plc:labeler',
+              'uri': 'at://did:plc:author/so.sprk.feed.post/post',
+              'val': 'sexual',
+              'cts': '2026-08-25T12:00:00.000Z',
+              'sig': {r'$bytes': 'AQI='},
+            },
+          ],
+        },
+      );
+      final repository = LabelerRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+      final uri = AtUri('at://did:plc:author/so.sprk.feed.post/post');
+
+      final result = await repository.queryLabels([uri]);
+
+      expect(result.cursor, 'next-page');
+      expect(result.labels.single.src, 'did:plc:labeler');
+      expect(result.labels.single.sig, {r'$bytes': 'AQI='});
+    });
+
     test('deduplicates concurrent detailed service lookups', () async {
       final harness = RepositoryHarness();
       harness.transport.enqueueGet({

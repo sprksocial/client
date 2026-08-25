@@ -151,9 +151,7 @@ void main() {
       expect(updated.contentLabelPrefs?.single.label, 'preserved');
       expect(
         updated.preferences.where(
-          (preference) =>
-              preference.unknown?[r'$type'] ==
-              'so.sprk.actor.defs#adultContentPref',
+          (preference) => preference.isAdultContentPref,
         ),
         hasLength(1),
       );

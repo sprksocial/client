@@ -1,4 +1,5 @@
 import 'package:poptart/poptart.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/adult_content_pref.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref_visibility.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/labeler_pref_item.dart';
@@ -10,6 +11,7 @@ import 'package:sprk_poptart/so/sprk/actor/defs/saved_feeds_pref.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/union_preferences.dart';
 import 'package:sprk_poptart/so/sprk/actor/get_preferences/output.dart';
 
+export 'package:sprk_poptart/so/sprk/actor/defs/adult_content_pref.dart';
 export 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref.dart';
 export 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref_visibility.dart';
 export 'package:sprk_poptart/so/sprk/actor/defs/feed_view_pref.dart';
@@ -74,23 +76,14 @@ Preference contentLabelPreference({
   );
 }
 
-/// Stores Spark's adult-content preference in the forward-compatible
-/// preference union until sprk_poptart exposes the typed variant.
 Preference adultContentPreference({required bool enabled}) =>
-    Preference.unknown(
-      data: {
-        r'$type': 'so.sprk.actor.defs#adultContentPref',
-        'enabled': enabled,
-      },
-    );
+    Preference.adultContentPref(data: AdultContentPref(enabled: enabled));
 
 extension PreferencesConvenience on Preferences {
   bool get adultContentEnabled {
     for (final preference in preferences) {
-      final data = preference.unknown;
-      if (data?[r'$type'] == 'so.sprk.actor.defs#adultContentPref') {
-        return data?['enabled'] == true;
-      }
+      final adultContentPref = preference.adultContentPref;
+      if (adultContentPref != null) return adultContentPref.enabled;
     }
     return false;
   }

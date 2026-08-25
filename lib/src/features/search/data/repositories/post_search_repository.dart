@@ -59,7 +59,9 @@ class PostSearchRepositoryImpl implements PostSearchRepository {
         bsky_feed_search_posts.appBskyFeedSearchPosts,
         parameters: bsky_feed_search_posts.FeedSearchPostsInput(
           q: query,
-          sort: bsky_feed_search_posts.FeedSearchPostsSort.unknown(data: sort),
+          sort: bsky_feed_search_posts.FeedSearchPostsParametersSort.unknown(
+            data: sort,
+          ),
           cursor: cursor,
         ),
         headers: _sprkRepository.appViewHeaders(_sprkRepository.bskyDid),

@@ -94,8 +94,7 @@ class UserPreferences extends _$UserPreferences {
   Future<void> setAdultContentEnabled(bool enabled) async {
     await updatePreferencesWithFn((current) {
       final retained = current.preferences.where((preference) {
-        final data = preference.unknown;
-        return data?[r'$type'] != 'so.sprk.actor.defs#adultContentPref';
+        return !preference.isAdultContentPref;
       });
       return Preferences(
         preferences: [

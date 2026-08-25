@@ -316,7 +316,8 @@ class FeedRepositoryImpl implements FeedRepository {
             limit: limit,
             cursor: cursor,
             filter: videosOnly
-                ? sprk_get_author_feed.FeedGetAuthorFeedFilter.valueOf(
+                ? sprk_get_author_feed
+                      .FeedGetAuthorFeedParametersFilter.valueOf(
                     'posts_with_video',
                   )
                 : null,
@@ -377,7 +378,8 @@ class FeedRepositoryImpl implements FeedRepository {
                 limit: limit,
                 cursor: cursor,
                 filter:
-                    bsky_feed_get_author_feed.FeedGetAuthorFeedFilter.valueOf(
+                    bsky_feed_get_author_feed
+                        .FeedGetAuthorFeedParametersFilter.valueOf(
                       videosOnly ? 'posts_with_video' : 'posts_with_media',
                     ),
               ),
@@ -1451,9 +1453,8 @@ class FeedRepositoryImpl implements FeedRepository {
             anchor: anchor,
             depth: depth,
             parentHeight: parentHeight,
-            sort: sprk_get_crosspost_thread.FeedGetCrosspostThreadSort.valueOf(
-              sort,
-            ),
+            sort: sprk_get_crosspost_thread
+                .FeedGetCrosspostThreadParametersSort.valueOf(sort),
             limit: 100,
             cursor: cursor,
           ),
@@ -1511,7 +1512,7 @@ class FeedRepositoryImpl implements FeedRepository {
         parameters: sprk_search_posts.FeedSearchPostsInput(
           q: query,
           limit: limit,
-          sort: sprk_search_posts.FeedSearchPostsSort.valueOf(sort),
+          sort: sprk_search_posts.FeedSearchPostsParametersSort.valueOf(sort),
           cursor: cursor,
         ),
         headers: _client.appViewHeaders(_client.sprkDid),

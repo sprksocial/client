@@ -573,7 +573,7 @@ class BskyFeedAdapter {
     switch (parent) {
       case bsky_defs.UThreadViewPostParentThreadViewPost(:final data):
         return convertBskyThreadToSparkThread(
-          thread: UFeedGetPostThreadThread.threadViewPost(data: data),
+          thread: UFeedGetPostThreadOutputThread.threadViewPost(data: data),
           uri: uri,
         );
       case bsky_defs.UThreadViewPostParentNotFoundPost(:final data):
@@ -595,11 +595,11 @@ class BskyFeedAdapter {
   /// to Spark Thread models. Handles all thread types: normal posts,
   /// not found posts, and blocked posts.
   Thread convertBskyThreadToSparkThread({
-    required UFeedGetPostThreadThread thread,
+    required UFeedGetPostThreadOutputThread thread,
     required AtUri uri,
   }) {
     switch (thread) {
-      case UFeedGetPostThreadThreadThreadViewPost(:final data):
+      case UFeedGetPostThreadOutputThreadThreadViewPost(:final data):
         try {
           var embed = data.post.embed;
           if (data.post.embed is bsky_defs.UPostViewEmbedEmbedExternalView) {
@@ -659,7 +659,7 @@ class BskyFeedAdapter {
                         return null;
                       }
                       return convertBskyThreadToSparkThread(
-                        thread: UFeedGetPostThreadThread.threadViewPost(
+                        thread: UFeedGetPostThreadOutputThread.threadViewPost(
                           data: data,
                         ),
                         uri: data.post.uri,
@@ -688,9 +688,9 @@ class BskyFeedAdapter {
         } catch (e) {
           rethrow;
         }
-      case UFeedGetPostThreadThreadNotFoundPost(:final data):
+      case UFeedGetPostThreadOutputThreadNotFoundPost(:final data):
         return Thread.notFoundPost(uri: data.uri, notFound: true);
-      case UFeedGetPostThreadThreadBlockedPost(:final data):
+      case UFeedGetPostThreadOutputThreadBlockedPost(:final data):
         return Thread.blockedPost(
           uri: data.uri,
           blocked: true,

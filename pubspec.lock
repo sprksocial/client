@@ -181,10 +181,10 @@ packages:
     dependency: "direct main"
     description:
       name: bluesky_poptart
-      sha256: "03d75389a9d7f7e49c92181bff53c779038fdf4c84b64cf39efbea6fc5263906"
+      sha256: "9b1278f11718d4a873bc7e8983a813f55f6e0ff5501db074fb8f1e82d43d247a"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.3"
+    version: "0.2.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -1160,10 +1160,10 @@ packages:
     dependency: "direct main"
     description:
       name: ozone_poptart
-      sha256: c2abf0eb23b4f522927a87143723e067fda328a73e1f9cc81bbe2e8bfb41a50e
+      sha256: df6df201b8bb3a20e284e139b5b019295e87e2291b3ef6ca743716a5ffc7807b
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.3"
+    version: "0.2.0"
   package_config:
     dependency: transitive
     description:
@@ -1637,10 +1637,10 @@ packages:
     dependency: "direct main"
     description:
       name: sprk_poptart
-      sha256: "49635009231c2a9bd2652502c9ceca5afa7bbfb8a7201ea68588a857306bb382"
+      sha256: ccc71f94d8ca626583f46ed84fe87b58dffd5919b80891b22c2e8d28d876ffb5
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.3"
+    version: "0.2.0"
   sqflite:
     dependency: "direct main"
     description:

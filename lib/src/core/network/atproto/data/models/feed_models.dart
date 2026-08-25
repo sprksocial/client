@@ -635,7 +635,7 @@ sealed class Thread with _$Thread {
   /// Delegates to [bskyFeedAdapter.convertBskyThreadToSparkThread] which
   /// handles all Bluesky-specific conversion logic.
   factory Thread.fromBsky({
-    required UFeedGetPostThreadThread thread,
+    required UFeedGetPostThreadOutputThread thread,
     required AtUri uri,
   }) {
     return bskyFeedAdapter.convertBskyThreadToSparkThread(

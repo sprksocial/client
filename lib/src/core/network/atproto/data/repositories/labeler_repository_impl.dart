@@ -12,7 +12,7 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:sprk_poptart/so/sprk/labeler/get_services.dart'
     as sprk_get_services;
-import 'package:sprk_poptart/so/sprk/labeler/get_services/union_main_views.dart';
+import 'package:sprk_poptart/so/sprk/labeler/get_services/union_main_output_views.dart';
 
 class LabelerRepositoryImpl extends LabelerRepository {
   LabelerRepositoryImpl(this._client, {SparkLogger? logger})
@@ -85,7 +85,6 @@ class LabelerRepositoryImpl extends LabelerRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final defaultLabelerDid = _client.modDid.split('#').first;
       final labelers = sources != null && sources.isNotEmpty
           ? sources
           : _client.labelerDids;
@@ -100,20 +99,11 @@ class LabelerRepositoryImpl extends LabelerRepository {
         headers: {'atproto-proxy': _client.modDid},
         parameters: parameters,
       );
-      final responseJson = response.data.toJson();
       _logger
         ..d('parameters: ${parameters.toJson()}')
-        ..d('Labels retrieved: $responseJson');
+        ..d('Labels retrieved: ${response.data.toJson()}');
 
-      final labels = <Label>[];
-      for (final label in responseJson['labels']! as List<dynamic>) {
-        final cleanLabel = label as Map<String, Object?>
-          ..remove('sig')
-          ..putIfAbsent('src', () => defaultLabelerDid);
-        labels.add(Label.fromJson(cleanLabel));
-      }
-
-      return (labels: labels, cursor: responseJson['cursor'] as String?);
+      return (labels: response.data.labels, cursor: response.data.cursor);
     });
   }
 
