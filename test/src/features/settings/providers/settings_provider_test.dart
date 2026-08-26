@@ -7,8 +7,8 @@ import 'package:poptart/poptart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
@@ -351,7 +351,11 @@ void main() {
       await loadSettings(container);
       final labelers = container.read(labelerSettingsControllerProvider);
 
-      await labelers.setLabelPreference('did:plc:a', 'custom', Setting.hide);
+      await labelers.setLabelPreference(
+        'did:plc:a',
+        'custom',
+        ModerationSetting.hide,
+      );
 
       final written = preferencesController.writes.single.contentLabelPrefs!;
       expect(

@@ -11,7 +11,6 @@ import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/ui/widgets/image_content.dart';
@@ -105,7 +104,6 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
   }
 
   void _handleReportComment() {
-    final sprkRepository = GetIt.instance<SprkRepository>();
     showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
@@ -115,20 +113,6 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
             cid: commentState.thread.post.cid,
           ),
         ),
-        onSubmit: (subject, reasonType, reason, serviceDid) async {
-          try {
-            await sprkRepository.repo.createReport(
-              input: ModerationCreateReportInput(
-                subject: subject,
-                reasonType: reasonType,
-                reason: reason,
-              ),
-              serviceDid: serviceDid,
-            );
-          } catch (e) {
-            _logger.e('Error creating report', error: e);
-          }
-        },
       ),
     );
   }

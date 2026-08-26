@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
-import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -34,7 +33,7 @@ class _LabelerLabelSettingsPageState
   final SprkRepository _sprkRepository = GetIt.instance<SprkRepository>();
 
   ProfileViewDetailed? _labelerProfile;
-  Map<String, LabelPreference> _labelPreferences = {};
+  Map<String, ModerationSetting> _labelSettings = {};
   Map<String, ModerationLabelDefinition> _labelDefinitions = {};
   bool _isLoading = true;
   bool _isSaving = false;
@@ -84,7 +83,7 @@ class _LabelerLabelSettingsPageState
       if (!mounted) return;
 
       setState(() {
-        _labelPreferences = snapshot.preferences;
+        _labelSettings = snapshot.settings;
         _labelDefinitions = snapshot.definitions;
         _isLoading = false;
       });
@@ -98,22 +97,22 @@ class _LabelerLabelSettingsPageState
     }
   }
 
-  Future<void> _updateLabelPreference(String label, {Setting? setting}) async {
+  Future<void> _updateLabelPreference(
+    String label,
+    ModerationSetting setting,
+  ) async {
     if (_isSaving) return;
     setState(() => _isSaving = true);
 
     try {
-      final currentPref = _labelPreferences[label];
-      if (currentPref != null) {
-        final newSetting = setting ?? currentPref.setting;
-
+      if (_labelSettings.containsKey(label)) {
         await ref
             .read(labelerSettingsControllerProvider)
-            .setLabelPreference(widget.did, label, newSetting);
+            .setLabelPreference(widget.did, label, setting);
 
         if (!mounted) return;
         setState(() {
-          _labelPreferences[label] = currentPref.copyWith(setting: newSetting);
+          _labelSettings[label] = setting;
         });
       }
     } catch (e) {
@@ -308,7 +307,7 @@ class _LabelerLabelSettingsPageState
             ),
 
             // Label preferences
-            if (_labelPreferences.isEmpty)
+            if (_labelSettings.isEmpty)
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: Padding(
@@ -342,7 +341,7 @@ class _LabelerLabelSettingsPageState
                 ),
               )
             else
-              ..._labelPreferences.entries
+              ..._labelSettings.entries
                   .where((entry) => !entry.key.startsWith('!'))
                   .map((entry) {
                     final definition = _labelDefinitions[entry.key];
@@ -358,16 +357,13 @@ class _LabelerLabelSettingsPageState
                     return LabelSettingTile(
                       key: Key('labeler-label-${entry.key}'),
                       label: entry.key,
-                      controlContext: entry.value.severity == Severity.inform
+                      controlContext:
+                          definition?.severity == ModerationSeverity.inform
                           ? LabelSettingTileContext.informLabel
                           : LabelSettingTileContext.label,
-                      setting: ModerationSetting.values.byName(
-                        entry.value.setting.name,
-                      ),
-                      onChanged: (setting) => _updateLabelPreference(
-                        entry.key,
-                        setting: Setting.values.byName(setting.name),
-                      ),
+                      setting: entry.value,
+                      onChanged: (setting) =>
+                          _updateLabelPreference(entry.key, setting),
                       labelName: strings?.name,
                       labelDescription: strings?.description,
                       disabledMessage: configuredGlobally
@@ -376,7 +372,8 @@ class _LabelerLabelSettingsPageState
                       enabled:
                           !_isSaving &&
                           !configuredGlobally &&
-                          (!entry.value.adultOnly || adultContentEnabled),
+                          (!(definition?.adultOnly ?? false) ||
+                              adultContentEnabled),
                     );
                   }),
 

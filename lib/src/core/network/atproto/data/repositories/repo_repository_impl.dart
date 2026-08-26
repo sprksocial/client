@@ -17,7 +17,6 @@ import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/adapters/bsky/repo_adapter.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -260,10 +259,9 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<bool> createReport({
+  Future<void> createReport({
     required ModerationCreateReportInput input,
-    dynamic service,
-    String? serviceDid,
+    required String serviceDid,
   }) async {
     _logger.i('Creating moderation report for reason: ${input.reasonType}');
 
@@ -277,76 +275,32 @@ class RepoRepositoryImpl implements RepoRepository {
       if (atproto == null || atproto.oAuthSession == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
-      } else if (service != null) {
-        _logger.d('Using provided moderation service');
-        try {
-          final report = await service.createReport(
-            subject: input.subject,
-            reasonType: input.reasonType,
-            reason: input.reason,
+      }
+
+      _logger.d('Routing report to moderation service: $serviceDid');
+      final headers = {'atproto-proxy': _moderationProxyDid(serviceDid)};
+
+      try {
+        final response = await atproto.call(
+          comAtprotoModerationCreateReport,
+          headers: headers,
+          input: input,
+        );
+
+        if (response.status != HttpStatus.ok) {
+          _logger.e(
+            'Failed to create report: ${response.data}',
+            error: 'HTTP ${response.status}',
           );
-          return report.status.code == 200;
-        } catch (e) {
-          _logger.e('Error creating report with service', error: e);
-          throw Exception('Failed to create report: $e');
+          throw Exception('Failed to create report: ${response.data}');
         }
-      } else {
-        _logger.d('Using direct API call for moderation report');
-        final subjectData = input.subject.data;
-        final isBskyPost =
-            subjectData is RepoStrongRef &&
-            subjectData.uri.collection.toString().startsWith('app.bsky');
-        final fallbackServiceDid = isBskyPost
-            ? _client.bskyModDid
-            : _client.modDid;
-        final modServiceDid =
-            serviceDid ??
-            await _resolveCompatibleModerationService(
-              input,
-              fallbackDid: fallbackServiceDid,
-            );
-        _logger.d('Routing report to moderation service: $modServiceDid');
 
-        final headers = {'atproto-proxy': _moderationProxyDid(modServiceDid)};
-
-        try {
-          final response = await atproto.call(
-            comAtprotoModerationCreateReport,
-            headers: headers,
-            input: input,
-          );
-
-          if (response.status != HttpStatus.ok) {
-            _logger.e(
-              'Failed to create report: ${response.data}',
-              error: 'HTTP ${response.status}',
-            );
-            throw Exception('Failed to create report: ${response.data}');
-          }
-
-          _logger.i('Report created successfully');
-          return true;
-        } catch (e) {
-          _logger.e('Error creating report', error: e);
-          throw Exception('Failed to create report: $e');
-        }
+        _logger.i('Report created successfully');
+      } catch (e) {
+        _logger.e('Error creating report', error: e);
+        throw Exception('Failed to create report: $e');
       }
     });
-  }
-
-  Future<String> _resolveCompatibleModerationService(
-    ModerationCreateReportInput input, {
-    required String fallbackDid,
-  }) async {
-    final compatible = await _client.labeler.getCompatibleModerationServices(
-      _client.labelerDids,
-      ModerationServiceQuery.forReport(
-        fallbackDid: fallbackDid,
-        subject: input.subject,
-        reasonType: input.reasonType.toJson(),
-      ),
-    );
-    return compatible.firstOrNull?.did ?? fallbackDid;
   }
 
   String _moderationProxyDid(String did) {

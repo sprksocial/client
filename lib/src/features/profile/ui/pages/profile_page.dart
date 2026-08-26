@@ -365,19 +365,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         fallbackServiceDid: widget.bsky
                             ? _sprkRepository.bskyModDid
                             : _sprkRepository.modDid,
-                        onSubmit:
-                            (subject, reasonType, reason, serviceDid) async {
-                              try {
-                                await notifier.createReport(
-                                  did: profile.did,
-                                  reasonType: reasonType,
-                                  reason: reason,
-                                  serviceDid: serviceDid,
-                                );
-                              } catch (e) {
-                                _logger.e('Error creating report', error: e);
-                              }
-                            },
+                        onSubmit: (input, serviceDid) async {
+                          await notifier.createReport(
+                            did: profile.did,
+                            reasonType: input.reasonType,
+                            reason: input.reason,
+                            serviceDid: serviceDid,
+                          );
+                        },
                       ),
                     ),
                     onBlock: () async {

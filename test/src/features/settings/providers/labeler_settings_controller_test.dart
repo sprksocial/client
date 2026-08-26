@@ -85,6 +85,31 @@ void main() {
       expect(preferencesController.writes, isEmpty);
       expect(labelerRepository.detailedServiceCalls, isEmpty);
     });
+
+    test(
+      'sync validates concurrently and persists one final subscription list',
+      () async {
+        preferencesController.current = _preferencesWithLabelers([
+          'did:plc:available',
+          'did:plc:unavailable',
+        ]);
+        labelerRepository.unavailableDids.add('did:plc:unavailable');
+        final controller = container.read(labelerSettingsControllerProvider);
+
+        await controller.syncLabelers();
+
+        expect(
+          labelerRepository.validationCalls,
+          unorderedEquals(['did:plc:available', 'did:plc:unavailable']),
+        );
+        expect(labelerRepository.maxConcurrentValidations, 2);
+        expect(preferencesController.writes, hasLength(1));
+        expect(
+          preferencesController.current.labelers?.map((item) => item.did),
+          ['did:plc:mod', 'did:plc:available'],
+        );
+      },
+    );
   });
 }
 
@@ -159,6 +184,10 @@ class _FakeSprkRepository implements SprkRepository {
 
 class _FakeLabelerRepository implements LabelerRepository {
   final List<List<String>> detailedServiceCalls = [];
+  final Set<String> unavailableDids = {};
+  final List<String> validationCalls = [];
+  int activeValidations = 0;
+  int maxConcurrentValidations = 0;
 
   @override
   Future<String> resolveIdentifier(String identifier) async {
@@ -166,7 +195,21 @@ class _FakeLabelerRepository implements LabelerRepository {
   }
 
   @override
-  Future<void> validateService(String did) async {}
+  Future<void> validateService(String did) async {
+    validationCalls.add(did);
+    activeValidations++;
+    if (activeValidations > maxConcurrentValidations) {
+      maxConcurrentValidations = activeValidations;
+    }
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+      if (unavailableDids.contains(did)) {
+        throw const LabelerServiceUnavailableException('Unavailable labeler');
+      }
+    } finally {
+      activeValidations--;
+    }
+  }
 
   @override
   Future<LabelerViewDetailed> getServicesDetailed(List<String> dids) async {

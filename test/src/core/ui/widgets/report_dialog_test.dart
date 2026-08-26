@@ -169,7 +169,7 @@ void main() {
                 data: RepoRef(did: 'did:plc:account'),
               ),
               fallbackServiceDid: 'did:plc:bsky#atproto_labeler',
-              onSubmit: (_, _, _, _) async {
+              onSubmit: (_, _) async {
                 throw StateError('private transport detail');
               },
             ),

@@ -7,7 +7,6 @@ import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
-import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -275,7 +274,11 @@ void main() {
       await pumpEventQueue();
       final labelUpdate = container
           .read(labelerSettingsControllerProvider)
-          .setLabelPreference('did:plc:labeler', 'custom', Setting.hide);
+          .setLabelPreference(
+            'did:plc:labeler',
+            'custom',
+            ModerationSetting.hide,
+          );
       await pumpEventQueue();
 
       expect(prefRepository.putCalls, hasLength(1));

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
-import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -125,48 +124,44 @@ final class LabelerSettingsController {
   Future<void> syncLabelers() async {
     resetSessionCache();
     await _ref.read(userPreferencesProvider.notifier).refresh();
-    final preferences = await _update((current) {
-      final currentLabelers =
-          current.labelers?.map((labeler) => labeler.did) ?? const [];
-      final normalized = _normalizeLabelers(currentLabelers);
-      if (_sameLabelers(currentLabelers, normalized)) return current;
-      return _withLabelers(current, normalized);
-    });
+    final preferences = await _preferences();
     final labelers = _normalizeLabelers(
       (preferences.labelers ?? const []).map((labeler) => labeler.did),
     );
 
-    final unavailable = <String>{};
-    for (final did in labelers) {
-      if (did == _defaultDid) continue;
-      try {
-        await _repository.labeler.validateService(did);
-      } on LabelerServiceUnavailableException catch (error, stackTrace) {
-        unavailable.add(did);
-        _logger.w(
-          'Removing unavailable labeler $did',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }
-    }
-    if (unavailable.isNotEmpty) {
-      await _update((current) {
-        final currentLabelers = current.labelers ?? const [];
-        return _withLabelers(
-          current,
-          _normalizeLabelers(
-            currentLabelers
-                .map((labeler) => labeler.did)
-                .where((did) => !unavailable.contains(did)),
-          ),
-        );
-      });
-    }
+    final unavailable = (await Future.wait([
+      for (final did in labelers)
+        if (did != _defaultDid)
+          () async {
+            try {
+              await _repository.labeler.validateService(did);
+              return null;
+            } on LabelerServiceUnavailableException catch (error, stackTrace) {
+              _logger.w(
+                'Removing unavailable labeler $did',
+                error: error,
+                stackTrace: stackTrace,
+              );
+              return did;
+            }
+          }(),
+    ])).nonNulls.toSet();
+
+    await _update((current) {
+      final currentLabelers =
+          current.labelers?.map((labeler) => labeler.did) ?? const [];
+      final available = _normalizeLabelers(
+        currentLabelers.where((did) => !unavailable.contains(did)),
+      );
+      if (_sameLabelers(currentLabelers, available)) return current;
+      return _withLabelers(current, available);
+    });
     _defaultEnsured = true;
   }
 
-  Future<Map<String, Setting>> getLabelSettings(String labelerDid) async {
+  Future<Map<String, ModerationSetting>> getLabelSettings(
+    String labelerDid,
+  ) async {
     final preferences = await _preferences();
     return _savedSettings(preferences, labelerDid);
   }
@@ -195,12 +190,13 @@ final class LabelerSettingsController {
     final global = _savedSettings(preferences, null);
     return LabelerPreferenceSnapshot(
       definitions: definitionMap,
-      preferences: {
+      settings: {
         for (final value in labelValues)
-          value: labelPreferenceFromPolicy(
-            value: value,
+          value: moderationSettingFromPolicy(
             savedSetting: saved[value],
-            globalSetting: global[value],
+            globalSetting: globalAdultContentLabelValues.contains(value)
+                ? global[value]
+                : null,
             definition: definitionMap[value],
           ),
       },
@@ -210,7 +206,7 @@ final class LabelerSettingsController {
   Future<void> setLabelPreference(
     String labelerDid,
     String value,
-    Setting setting,
+    ModerationSetting setting,
   ) async {
     await _update((current) {
       final updated = <Preference>[];
@@ -244,17 +240,19 @@ final class LabelerSettingsController {
     });
   }
 
-  Map<String, Setting> _savedSettings(
+  Map<String, ModerationSetting> _savedSettings(
     Preferences preferences,
     String? labelerDid,
   ) {
-    final result = <String, Setting>{};
+    final result = <String, ModerationSetting>{};
     for (final preference
         in preferences.contentLabelPrefs ?? const <ContentLabelPref>[]) {
       if (preference.labelerDid == labelerDid) {
-        result[preference.label] = Setting.fromValue(
-          preference.visibility.toJson(),
-        );
+        result[preference.label] = switch (preference.visibility.toJson()) {
+          'hide' => ModerationSetting.hide,
+          'warn' => ModerationSetting.warn,
+          _ => ModerationSetting.ignore,
+        };
       }
     }
     return result;
