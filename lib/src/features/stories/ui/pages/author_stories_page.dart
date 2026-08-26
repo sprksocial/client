@@ -4,7 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/stories/ui/pages/story_page.dart';
@@ -21,7 +22,7 @@ class AuthorStoriesPage extends ConsumerStatefulWidget {
   });
 
   final ProfileViewBasic author;
-  final List<StoryView> stories;
+  final List<ModeratedStoryView> stories;
   final int initialStoryIndex;
 
   /// Called when the user attempts to go to a previous story but is already at
@@ -42,11 +43,13 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
   late final PageController _pageController;
   late final List<AnimationController> _progressControllers;
   late final List<bool> _storyLoadingStates;
+  late final List<bool?> _storyConcealedStates;
   int _currentStoryIndex = 0;
   double _dragOffset = 0;
   double _dragScale = 1;
   bool _isDragging = false;
   bool _isCurrentStoryLoading = true;
+  bool _isCurrentStoryConcealed = true;
 
   @override
   void initState() {
@@ -75,6 +78,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
       (_) => AnimationController(duration: _defaultStoryDuration, vsync: this),
     );
     _storyLoadingStates = List<bool>.filled(widget.stories.length, true);
+    _storyConcealedStates = List<bool?>.filled(widget.stories.length, null);
   }
 
   void _onStoryDurationChanged(int index, Duration duration) {
@@ -94,6 +98,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
   }
 
   void _startProgressForCurrentStory() {
+    if (_isCurrentStoryLoading || _isCurrentStoryConcealed) return;
     final storyIndex = _currentStoryIndex;
     final controller = _progressControllers[storyIndex];
     controller.forward().whenComplete(() {
@@ -112,9 +117,20 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
   void _resume() {
     final controller = _progressControllers[_currentStoryIndex];
     if (controller.status != AnimationStatus.completed &&
-        !_isCurrentStoryLoading) {
+        !_isCurrentStoryLoading &&
+        !_isCurrentStoryConcealed &&
+        !controller.isAnimating) {
       _startProgressForCurrentStory();
     }
+  }
+
+  void _onStoryConcealChanged(int index, bool concealed) {
+    if (index < 0 || index >= _storyConcealedStates.length) return;
+    _storyConcealedStates[index] = concealed;
+    if (index != _currentStoryIndex) return;
+
+    _isCurrentStoryConcealed = concealed;
+    if (concealed) _pause();
   }
 
   void _onStoryLoadingStateChanged(int index, bool isLoading) {
@@ -132,7 +148,8 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
       } else {
         final controller = _progressControllers[_currentStoryIndex];
         if (controller.status != AnimationStatus.completed &&
-            !controller.isAnimating) {
+            !controller.isAnimating &&
+            !_isCurrentStoryConcealed) {
           _startProgressForCurrentStory();
         }
       }
@@ -236,7 +253,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
     });
   }
 
-  String _timeAgo(StoryView story) {
+  String _timeAgo(ModeratedStoryView story) {
     final now = DateTime.now();
     final diff = now.difference(story.indexedAt);
     if (diff.inDays > 0) return '${diff.inDays}d';
@@ -279,8 +296,11 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                         setState(() {
                           _currentStoryIndex = index;
                           _isCurrentStoryLoading = _storyLoadingStates[index];
+                          _isCurrentStoryConcealed =
+                              _storyConcealedStates[index] != false;
                         });
-                        if (!_isCurrentStoryLoading) {
+                        if (!_isCurrentStoryLoading &&
+                            !_isCurrentStoryConcealed) {
                           _startProgressForCurrentStory();
                         }
                       }
@@ -289,12 +309,15 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                       final story = widget.stories[index];
                       return StoryPage(
                         story: story,
+                        isActive: index == _currentStoryIndex,
                         onLoadingStateChanged: (isLoading) =>
                             _onStoryLoadingStateChanged(index, isLoading),
                         onStoryDurationChanged: (duration) =>
                             _onStoryDurationChanged(index, duration),
                         onPauseRequested: _pause,
                         onResumeRequested: _resume,
+                        onConcealChanged: (concealed) =>
+                            _onStoryConcealChanged(index, concealed),
                         onPrevious: _previousStory,
                         onNext: _nextStory,
                       );
@@ -353,9 +376,19 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage>
                               ),
                             );
                           },
-                          child: UserAvatar(
-                            imageUrl: widget.author.avatar?.toString() ?? '',
-                            size: 40,
+                          child: ModeratedProfileAvatar(
+                            labels:
+                                widget.author.labels ??
+                                widget
+                                    .stories[_currentStoryIndex]
+                                    .author
+                                    .labels ??
+                                const [],
+                            subjectDid: widget.author.did,
+                            child: UserAvatar(
+                              imageUrl: widget.author.avatar?.toString() ?? '',
+                              size: 40,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),

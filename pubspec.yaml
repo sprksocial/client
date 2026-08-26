@@ -18,12 +18,12 @@ dependencies:
   audioplayers: ^6.8.1
   auto_route: ^11.1.0
   better_player_plus: ^1.3.4
-  bluesky_poptart: ^0.1.3
-  ozone_poptart: ^0.1.3
+  bluesky_poptart: ^0.2.0
+  ozone_poptart: ^0.2.0
   plyr_poptart: ^0.1.2
   poptart: ^0.1.2
   poptart_lex: ^0.1.0
-  sprk_poptart: ^0.1.3
+  sprk_poptart: ^0.2.0
   cached_network_image: ^3.4.1
   camera: ^0.12.0+2
   collection: ^1.19.1

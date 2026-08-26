@@ -1,20 +1,19 @@
-import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
-import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
-import 'package:spark/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 import 'package:spark/src/features/settings/ui/widgets/widgets.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
-import 'package:sprk_poptart/so/sprk/labeler/get_services.dart'
-    as sprk_get_services;
 
 @RoutePage()
 class LabelerLabelSettingsPage extends ConsumerStatefulWidget {
@@ -34,9 +33,10 @@ class _LabelerLabelSettingsPageState
   final SprkRepository _sprkRepository = GetIt.instance<SprkRepository>();
 
   ProfileViewDetailed? _labelerProfile;
-  Map<String, LabelPreference> _labelPreferences = {};
-  Map<String, Map<String, dynamic>> _labelDefinitions = {};
+  Map<String, ModerationSetting> _labelSettings = {};
+  Map<String, ModerationLabelDefinition> _labelDefinitions = {};
   bool _isLoading = true;
+  bool _isSaving = false;
   String? _errorMessage;
 
   String get _defaultModServiceDid {
@@ -63,6 +63,7 @@ class _LabelerLabelSettingsPageState
       // Fetch labeler profile
       try {
         final profiles = await _actorRepository.getProfiles([widget.did]);
+        if (!mounted) return;
         if (profiles.isNotEmpty) {
           setState(() {
             _labelerProfile = profiles.firstWhere(
@@ -74,104 +75,21 @@ class _LabelerLabelSettingsPageState
       } catch (e) {
         _logger.w('Could not fetch labeler profile: $e');
       }
+      if (!mounted) return;
 
-      // Fetch labeler policies
-      final rawResponse = await _sprkRepository.executeWithRetry(() async {
-        if (!_sprkRepository.authRepository.isAuthenticated) {
-          throw Exception('Not authenticated');
-        }
-        final atproto = _sprkRepository.authRepository.atproto;
-        if (atproto == null) {
-          throw Exception('AtProto not initialized');
-        }
-        final result = await atproto.call(
-          sprk_get_services.soSprkLabelerGetServices,
-          parameters: sprk_get_services.LabelerGetServicesInput(
-            dids: [widget.did],
-            detailed: true,
-          ),
-          headers: {'atproto-proxy': _sprkRepository.sprkDid},
-        );
-        if (result.status != HttpStatus.ok) {
-          throw Exception('Failed to retrieve labeler services');
-        }
-        return result.data.toJson();
-      });
-
-      final viewsJson = rawResponse['views'] as List<dynamic>?;
-      if (viewsJson == null || viewsJson.isEmpty) {
-        throw Exception('No labeler views returned');
-      }
-
-      final viewJson = viewsJson.first as Map<String, dynamic>;
-      final policiesJson = viewJson['policies'] as Map<String, dynamic>?;
-
-      if (policiesJson == null) {
-        throw Exception('No policies found for labeler');
-      }
-
-      final labelValuesJson = policiesJson['labelValues'] as List<dynamic>?;
-      if (labelValuesJson == null || labelValuesJson.isEmpty) {
-        throw Exception('No label values found for labeler');
-      }
-
-      final labelValues = labelValuesJson.map((v) => v as String).toList();
-
-      // Extract labelValueDefinitions
-      final labelValueDefinitionsJson =
-          policiesJson['labelValueDefinitions'] as List<dynamic>?;
-      final labelDefinitionMap = <String, Map<String, dynamic>>{};
-      if (labelValueDefinitionsJson != null) {
-        for (final defJson in labelValueDefinitionsJson) {
-          final def = defJson as Map<String, dynamic>;
-          final identifier = def['identifier'] as String?;
-          if (identifier != null) {
-            labelDefinitionMap[identifier] = def;
-          }
-        }
-      }
-
-      // Get existing preferences for this labeler
-      final settings = ref.read(settingsProvider.notifier);
-      final existingPrefs = await settings.getLabelPreferencesForLabeler(
-        widget.did,
-      );
-      final preferences = <String, LabelPreference>{};
-
-      // Create preferences for all label values
-      for (final labelValue in labelValues) {
-        if (existingPrefs.containsKey(labelValue)) {
-          preferences[labelValue] = existingPrefs[labelValue]!;
-        } else {
-          // Create default preference
-          String defaultVisibility;
-          final definition = labelDefinitionMap[labelValue];
-          if (definition != null) {
-            defaultVisibility =
-                definition['defaultSetting'] as String? ?? 'warn';
-          } else {
-            defaultVisibility = _getDefaultVisibilityForLabel(labelValue);
-          }
-
-          final defaultPref = LabelPreference(
-            value: labelValue,
-            blurs: _visibilityToBlurs(defaultVisibility),
-            severity: _visibilityToSeverity(defaultVisibility),
-            defaultSetting: _visibilityToSetting(defaultVisibility),
-            setting: _visibilityToSetting(defaultVisibility),
-            adultOnly: _isAdultOnlyLabel(labelValue),
-          );
-          preferences[labelValue] = defaultPref;
-        }
-      }
+      final snapshot = await ref
+          .read(labelerSettingsControllerProvider)
+          .getPreferenceSnapshot(widget.did);
+      if (!mounted) return;
 
       setState(() {
-        _labelPreferences = preferences;
-        _labelDefinitions = labelDefinitionMap;
+        _labelSettings = snapshot.settings;
+        _labelDefinitions = snapshot.definitions;
         _isLoading = false;
       });
     } catch (e) {
       _logger.e('Error loading labeler settings: $e');
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -179,106 +97,28 @@ class _LabelerLabelSettingsPageState
     }
   }
 
-  String _getDefaultVisibilityForLabel(String labelValue) {
-    switch (labelValue) {
-      case '!hide':
-      case 'dmca-violation':
-        return 'hide';
-      case '!no-promote':
-        return 'hide';
-      case '!warn':
-      case 'doxxing':
-      case 'porn':
-      case 'sexual':
-      case 'nsfl':
-      case 'gore':
-        return 'warn';
-      case '!no-unauthenticated':
-        return 'ignore';
-      case 'nudity':
-        return 'ignore';
-      default:
-        return 'warn';
-    }
-  }
-
-  Setting _visibilityToSetting(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Setting.ignore;
-      case 'warn':
-        return Setting.warn;
-      case 'hide':
-        return Setting.hide;
-      default:
-        return Setting.ignore;
-    }
-  }
-
-  Blurs _visibilityToBlurs(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Blurs.none;
-      case 'warn':
-        return Blurs.media;
-      case 'hide':
-        return Blurs.content;
-      default:
-        return Blurs.none;
-    }
-  }
-
-  Severity _visibilityToSeverity(String visibility) {
-    switch (visibility) {
-      case 'ignore':
-        return Severity.none;
-      case 'warn':
-        return Severity.alert;
-      case 'hide':
-        return Severity.alert;
-      default:
-        return Severity.none;
-    }
-  }
-
-  bool _isAdultOnlyLabel(String label) {
-    const adultOnlyLabels = {'porn', 'sexual', 'nsfl'};
-    return adultOnlyLabels.contains(label);
-  }
-
   Future<void> _updateLabelPreference(
-    String label, {
-    Setting? setting,
-    Blurs? blurs,
-    Severity? severity,
-  }) async {
+    String label,
+    ModerationSetting setting,
+  ) async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
     try {
-      final currentPref = _labelPreferences[label];
-      if (currentPref != null) {
-        final newSetting = setting ?? currentPref.setting;
-        final newBlurs = blurs ?? currentPref.blurs;
-        final newSeverity = severity ?? currentPref.severity;
+      if (_labelSettings.containsKey(label)) {
+        await ref
+            .read(labelerSettingsControllerProvider)
+            .setLabelPreference(widget.did, label, setting);
 
-        final settings = ref.read(settingsProvider.notifier);
-        await settings.setLabelPreferenceForLabeler(
-          widget.did,
-          label,
-          newBlurs,
-          newSeverity,
-          currentPref.adultOnly,
-          newSetting,
-        );
-
+        if (!mounted) return;
         setState(() {
-          _labelPreferences[label] = currentPref.copyWith(
-            setting: newSetting,
-            blurs: newBlurs,
-            severity: newSeverity,
-          );
+          _labelSettings[label] = setting;
         });
       }
     } catch (e) {
       _logger.e('Error updating label preference: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -287,6 +127,9 @@ class _LabelerLabelSettingsPageState
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
+    final adultContentEnabled =
+        ref.watch(userPreferencesProvider).asData?.value.adultContentEnabled ??
+        false;
 
     if (_isLoading) {
       return Scaffold(
@@ -464,7 +307,7 @@ class _LabelerLabelSettingsPageState
             ),
 
             // Label preferences
-            if (_labelPreferences.isEmpty)
+            if (_labelSettings.isEmpty)
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: Padding(
@@ -498,32 +341,39 @@ class _LabelerLabelSettingsPageState
                 ),
               )
             else
-              ..._labelPreferences.entries
+              ..._labelSettings.entries
                   .where((entry) => !entry.key.startsWith('!'))
                   .map((entry) {
                     final definition = _labelDefinitions[entry.key];
-                    String? labelName;
-                    String? labelDescription;
-
-                    if (definition != null) {
-                      final locales = definition['locales'] as List<dynamic>?;
-                      if (locales != null && locales.isNotEmpty) {
-                        // TODO: match user's locale instead of first
-                        final firstLocale =
-                            locales.first as Map<String, dynamic>;
-                        labelName = firstLocale['name'] as String?;
-                        labelDescription =
-                            firstLocale['description'] as String?;
-                      }
-                    }
+                    final configuredGlobally = globalAdultContentLabelValues
+                        .contains(entry.key);
+                    final strings = definition?.localizedStrings(
+                      l10n,
+                      preferredLocales: [
+                        Localizations.localeOf(context).toLanguageTag(),
+                      ],
+                    );
 
                     return LabelSettingTile(
+                      key: Key('labeler-label-${entry.key}'),
                       label: entry.key,
-                      preference: entry.value,
-                      onPreferenceUpdate: _updateLabelPreference,
-                      labelName: labelName,
-                      labelDescription: labelDescription,
-                      showSeverity: false,
+                      controlContext:
+                          definition?.severity == ModerationSeverity.inform
+                          ? LabelSettingTileContext.informLabel
+                          : LabelSettingTileContext.label,
+                      setting: entry.value,
+                      onChanged: (setting) =>
+                          _updateLabelPreference(entry.key, setting),
+                      labelName: strings?.name,
+                      labelDescription: strings?.description,
+                      disabledMessage: configuredGlobally
+                          ? l10n.moderationConfiguredGlobally
+                          : null,
+                      enabled:
+                          !_isSaving &&
+                          !configuredGlobally &&
+                          (!(definition?.adultOnly ?? false) ||
+                              adultContentEnabled),
                     );
                   }),
 

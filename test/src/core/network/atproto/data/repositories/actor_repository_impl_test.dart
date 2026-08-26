@@ -24,6 +24,10 @@ void main() {
         request.headers['atproto-proxy'],
         'did:web:sprk.test#sprk_appview',
       );
+      expect(
+        request.headers['atproto-accept-labelers'],
+        'did:web:mod.sprk.test',
+      );
       expect(profile.did, 'did:plc:alice');
     });
 
@@ -85,6 +89,10 @@ void main() {
       expect(
         request.headers['atproto-proxy'],
         'did:web:sprk.test#sprk_appview',
+      );
+      expect(
+        request.headers['atproto-accept-labelers'],
+        'did:web:mod.sprk.test',
       );
       expect(result.actors.single.did, 'did:plc:alice');
     });

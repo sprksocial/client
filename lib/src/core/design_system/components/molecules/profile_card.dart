@@ -20,6 +20,7 @@ class ProfileCard extends StatelessWidget {
     this.onTap,
     this.hasStories = false,
     this.onAvatarTap,
+    this.avatarBuilder,
     super.key,
   });
 
@@ -37,6 +38,7 @@ class ProfileCard extends StatelessWidget {
     VoidCallback? onTap,
     bool hasStories = false,
     VoidCallback? onAvatarTap,
+    Widget Function(Widget avatar)? avatarBuilder,
     Key? key,
   }) : this(
          imageUrl: imageUrl,
@@ -51,6 +53,7 @@ class ProfileCard extends StatelessWidget {
          onTap: onTap,
          hasStories: hasStories,
          onAvatarTap: onAvatarTap,
+         avatarBuilder: avatarBuilder,
          key: key,
        );
 
@@ -66,6 +69,7 @@ class ProfileCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool hasStories;
   final VoidCallback? onAvatarTap;
+  final Widget Function(Widget avatar)? avatarBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +77,14 @@ class ProfileCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final radius = BorderRadius.circular(AppShapes.squircleRadius);
     final borderColor = isDark ? AppColors.grey800 : AppColors.grey200;
+    final avatar = ProfileAvatar(
+      avatarUrl: imageUrl.isNotEmpty ? imageUrl : null,
+      displayName: userName,
+      size: 36,
+      hasStories: hasStories,
+      onTap: onAvatarTap ?? onTap,
+      avatarBuilder: avatarBuilder,
+    );
 
     final Widget content = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 60),
@@ -97,13 +109,7 @@ class ProfileCard extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ProfileAvatar(
-                        avatarUrl: imageUrl.isNotEmpty ? imageUrl : null,
-                        displayName: userName,
-                        size: 36,
-                        hasStories: hasStories,
-                        onTap: onAvatarTap ?? onTap,
-                      ),
+                      avatar,
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(

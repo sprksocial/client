@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/features/feed/providers/visible_pinned_feeds_provider.dart';
 import 'package:spark/src/features/feed/ui/pages/feed_page.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/feeds_bar.dart';
@@ -22,6 +25,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
   Feed? _lastActiveFeed;
   List<Feed>? _lastFeedsList;
   bool _isPageControllerUpdating = false;
+  String? _scheduledActiveFeedId;
 
   @override
   void initState() {
@@ -97,10 +101,12 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
-    // Only show pinned feeds in the home view
-    final feeds = settings.feeds.where((feed) => feed.config.pinned).toList();
-    final activeFeed = settings.activeFeed;
+    final visiblePinnedFeeds = ref.watch(visiblePinnedFeedsProvider);
+    final feeds = visiblePinnedFeeds.feeds;
+    final activeFeed = visiblePinnedFeeds.effectiveActiveFeed;
+    if (visiblePinnedFeeds.shouldPersistEffectiveActiveFeed) {
+      _scheduleActiveFeed(activeFeed);
+    }
 
     // Check if we need to initialize or update the page controller
     final needsInitialization = !_isInitialized;
@@ -164,7 +170,10 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
                   // Use feed ID as key to preserve state across reordering
                   return KeyedSubtree(
                     key: ValueKey(feeds[index].config.id),
-                    child: FeedPage(feed: feeds[index]),
+                    child: FeedPage(
+                      feed: feeds[index],
+                      isActive: feeds[index].config.id == activeFeed.config.id,
+                    ),
                   );
                 }
                 return const DecoratedBox(
@@ -178,5 +187,17 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
               decoration: BoxDecoration(color: AppColors.black),
             ),
     );
+  }
+
+  void _scheduleActiveFeed(Feed feed) {
+    if (_scheduledActiveFeedId == feed.config.id) return;
+    _scheduledActiveFeedId = feed.config.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scheduledActiveFeedId = null;
+      final current = ref.read(settingsProvider).activeFeed;
+      if (current.config.id == feed.config.id) return;
+      unawaited(ref.read(settingsProvider.notifier).setActiveFeed(feed));
+    });
   }
 }

@@ -145,6 +145,7 @@ abstract class FeedRepository {
   /// [crosspostToBsky] Whether to also post to Bluesky
   /// [facets] Optional list of facets for text formatting (mentions, links, etc.)
   /// [soundRef] Optional reusable sound reference for Spark image/carousel posts.
+  /// [selfLabels] Optional author-applied content warnings.
   Future<RepoStrongRef> postImages(
     String text,
     List<XFile> imageFiles,
@@ -152,6 +153,7 @@ abstract class FeedRepository {
     bool crosspostToBsky = false,
     List<Facet> facets = const [],
     RepoStrongRef? soundRef,
+    List<SelfLabel>? selfLabels,
   });
 
   /// Upload images to the server
@@ -216,19 +218,6 @@ abstract class FeedRepository {
     int depth = 1,
     int parentHeight = 0,
     String sort = 'newest',
-  });
-
-  /// Get labels for a list of URIs
-  ///
-  /// [uris] List of post URIs to fetch labels for
-  /// [sources] Optional list of label sources (DIDs) to filter on.
-  /// [limit] Optional limit on the number of labels to return.
-  /// [cursor] Optional pagination cursor.
-  Future<({List<Label> labels, String? cursor})> getLabels(
-    List<AtUri> uris, {
-    List<String>? sources,
-    int? limit,
-    String? cursor,
   });
 
   /// Search for posts

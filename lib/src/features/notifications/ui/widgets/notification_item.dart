@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/notification_models.dart'
     as models;
 import 'package:spark/src/core/notifications/notification_navigation.dart';
@@ -399,11 +401,19 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
 
       return SizedBox(
         width: 40,
-        child: UserAvatar(
-          imageUrl: avatarUrl,
-          username: username,
-          size: 32,
-          backgroundColor: getAvatarColor(handleHash),
+        child: ModeratedContent(
+          subject: ModerationSubject.profile(
+            labels: author.labels ?? const [],
+            subjectDid: author.did,
+          ),
+          context: ModerationContext.avatar,
+          presentation: const ModerationPresentation.compact(),
+          child: UserAvatar(
+            imageUrl: avatarUrl,
+            username: username,
+            size: 32,
+            backgroundColor: getAvatarColor(handleHash),
+          ),
         ),
       );
     }
@@ -429,11 +439,19 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
 
             return Positioned(
               left: index * overlapStep,
-              child: UserAvatar(
-                imageUrl: avatarUrl,
-                username: username,
-                size: avatarSize,
-                backgroundColor: getAvatarColor(handleHash),
+              child: ModeratedContent(
+                subject: ModerationSubject.profile(
+                  labels: author.labels ?? const [],
+                  subjectDid: author.did,
+                ),
+                context: ModerationContext.avatar,
+                presentation: const ModerationPresentation.compact(),
+                child: UserAvatar(
+                  imageUrl: avatarUrl,
+                  username: username,
+                  size: avatarSize,
+                  backgroundColor: getAvatarColor(handleHash),
+                ),
               ),
             );
           }),
@@ -489,132 +507,140 @@ class _NotificationItemState extends ConsumerState<NotificationItem> {
     final primaryAuthor = notification.author;
     final username = primaryAuthor.displayName ?? primaryAuthor.handle;
 
-    return Material(
-      color: widget.groupedNotification.isRead
-          ? Colors.transparent
-          : AppColors.pink.withValues(alpha: 0.15),
-      child: InkWell(
-        onTap: () => _handleTap(context),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Action icon on the left (fixed width for alignment)
-              SizedBox(
-                width: 24,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: reasonIcon,
+    return ModeratedContent(
+      subject: ModerationSubject.content(
+        labels: notification.labels ?? const [],
+        authorLabels: notification.author.labels ?? const [],
+        subjectDid: primaryAuthor.did,
+      ),
+      context: ModerationContext.contentList,
+      child: Material(
+        color: widget.groupedNotification.isRead
+            ? Colors.transparent
+            : AppColors.pink.withValues(alpha: 0.15),
+        child: InkWell(
+          onTap: () => _handleTap(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Action icon on the left (fixed width for alignment)
+                SizedBox(
+                  width: 24,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: reasonIcon,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Avatars section
-              _buildAvatarsSection(),
-              const SizedBox(width: 12),
-              // Main content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Username, action, and timestamp in one line
-                    Builder(
-                      builder: (context) {
-                        final theme = Theme.of(context);
-                        final colorScheme = theme.colorScheme;
-                        return Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          spacing: 4,
-                          children: [
-                            Text(
-                              username,
-                              style: TextStyle(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                            Text(
-                              reasonText,
-                              style: TextStyle(
-                                color: colorScheme.onSurface.withAlpha(179),
-                                fontSize: 15,
-                              ),
-                            ),
-                            Text(
-                              '· $timeAgo',
-                              style: TextStyle(
-                                color: colorScheme.onSurface.withAlpha(102),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    // Content preview below (if available)
-                    if (contentPreview != null &&
-                        contentPreview.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                const SizedBox(width: 12),
+                // Avatars section
+                _buildAvatarsSection(),
+                const SizedBox(width: 12),
+                // Main content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Username, action, and timestamp in one line
                       Builder(
                         builder: (context) {
                           final theme = Theme.of(context);
                           final colorScheme = theme.colorScheme;
-                          return Text(
-                            contentPreview,
-                            style: TextStyle(
-                              color: colorScheme.onSurface.withAlpha(153),
-                              fontSize: 14,
-                            ),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
+                          return Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 4,
+                            children: [
+                              Text(
+                                username,
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                reasonText,
+                                style: TextStyle(
+                                  color: colorScheme.onSurface.withAlpha(179),
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                '· $timeAgo',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface.withAlpha(102),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           );
                         },
                       ),
+                      // Content preview below (if available)
+                      if (contentPreview != null &&
+                          contentPreview.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Builder(
+                          builder: (context) {
+                            final theme = Theme.of(context);
+                            final colorScheme = theme.colorScheme;
+                            return Text(
+                              contentPreview,
+                              style: TextStyle(
+                                color: colorScheme.onSurface.withAlpha(153),
+                                fontSize: 14,
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          },
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              // Media thumbnail on the right (if available)
-              if (mediaUrl != null) ...[
-                const SizedBox(width: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    mediaUrl,
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      // If image fails to load, don't show anything
-                      return const SizedBox.shrink();
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      final theme = Theme.of(context);
-                      final colorScheme = theme.colorScheme;
-                      return Container(
-                        width: 56,
-                        height: 56,
-                        color: colorScheme.surfaceContainerHighest,
-                        child: Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: colorScheme.onSurfaceVariant.withAlpha(
-                                138,
+                // Media thumbnail on the right (if available)
+                if (mediaUrl != null) ...[
+                  const SizedBox(width: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      mediaUrl,
+                      width: 56,
+                      height: 56,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // If image fails to load, don't show anything
+                        return const SizedBox.shrink();
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        final theme = Theme.of(context);
+                        final colorScheme = theme.colorScheme;
+                        return Container(
+                          width: 56,
+                          height: 56,
+                          color: colorScheme.surfaceContainerHighest,
+                          child: Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: colorScheme.onSurfaceVariant.withAlpha(
+                                  138,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

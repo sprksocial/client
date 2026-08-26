@@ -1,4 +1,5 @@
 import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +8,9 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/ui/widgets/image_content.dart';
@@ -37,21 +39,29 @@ class CommentItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final commentState = ref.watch(commentProvider(thread));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CommentBody(
-          thread: thread,
-          mainPostUri: mainPostUri,
-          isHighlighted: isHighlighted,
-        ),
+    final post = commentState.thread.post;
+    return ModeratedContent(
+      subject: ModerationSubject.content(
+        labels: post.labels ?? const [],
+        authorLabels: post.author.labels ?? const [],
+        subjectDid: post.author.did,
+      ),
+      context: ModerationContext.contentList,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CommentBody(
+            thread: thread,
+            mainPostUri: mainPostUri,
+            isHighlighted: isHighlighted,
+          ),
 
-        if (commentState.thread.post.replyCount != null &&
-            commentState.thread.post.replyCount! > 0)
-          _RepliesSection(commentState),
+          if (post.replyCount != null && post.replyCount! > 0)
+            _RepliesSection(commentState),
 
-        Container(height: 0.5, color: Theme.of(context).colorScheme.surface),
-      ],
+          Container(height: 0.5, color: Theme.of(context).colorScheme.surface),
+        ],
+      ),
     );
   }
 }
@@ -94,25 +104,15 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
   }
 
   void _handleReportComment() {
-    final sprkRepository = GetIt.instance<SprkRepository>();
     showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
-        postUri: commentState.thread.post.uri.toString(),
-        postCid: commentState.thread.post.cid,
-        onSubmit: (subject, reasonType, reason) async {
-          try {
-            await sprkRepository.repo.createReport(
-              input: ModerationCreateReportInput(
-                subject: subject,
-                reasonType: reasonType,
-                reason: reason,
-              ),
-            );
-          } catch (e) {
-            _logger.e('Error creating report', error: e);
-          }
-        },
+        subject: UModerationCreateReportSubject.repoStrongRef(
+          data: RepoStrongRef(
+            uri: commentState.thread.post.uri,
+            cid: commentState.thread.post.cid,
+          ),
+        ),
       ),
     );
   }
@@ -427,10 +427,15 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return UserAvatar(
-      imageUrl: thread.post.author.avatar.toString(),
-      username: thread.post.author.handle,
-      size: 36,
+    final author = thread.post.author;
+    return ModeratedProfileAvatar(
+      labels: author.labels ?? const [],
+      subjectDid: author.did,
+      child: UserAvatar(
+        imageUrl: author.avatar.toString(),
+        username: author.handle,
+        size: 36,
+      ),
     );
   }
 }

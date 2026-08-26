@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
-import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/features/stories/ui/pages/author_stories_page.dart';
 
 @RoutePage()
@@ -14,7 +14,7 @@ class AllStoriesPage extends StatefulWidget {
     this.initialStoryIndex,
   });
 
-  final Map<ProfileViewBasic, List<StoryView>> storiesByAuthor;
+  final Map<ProfileViewBasic, List<ModeratedStoryView>> storiesByAuthor;
   final int initialAuthorIndex;
   final int? initialStoryIndex;
 
@@ -24,7 +24,8 @@ class AllStoriesPage extends StatefulWidget {
 
 class _AllStoriesPageState extends State<AllStoriesPage> {
   late final PageController _pageController;
-  late final List<MapEntry<ProfileViewBasic, List<StoryView>>> _authorsList;
+  late final List<MapEntry<ProfileViewBasic, List<ModeratedStoryView>>>
+  _authorsList;
   int _currentAuthorIndex = 0;
 
   @override

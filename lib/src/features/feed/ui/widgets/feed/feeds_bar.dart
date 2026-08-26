@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_tag_list.dart';
 import 'package:spark/src/core/design_system/templates/feeds_bar_template.dart';
 import 'package:spark/src/features/posting/utils/create_media_actions.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
+import 'package:spark/src/features/feed/providers/visible_pinned_feeds_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 export 'package:spark/src/core/design_system/templates/feeds_bar_template.dart'
@@ -150,19 +153,28 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final settings = ref.watch(settingsProvider);
+    final visiblePinnedFeedsState = ref.watch(visiblePinnedFeedsProvider);
+    final visiblePinnedFeeds = visiblePinnedFeedsState.feeds;
+    final effectiveActiveFeed = visiblePinnedFeedsState.effectiveActiveFeed;
+    final engine = ref.watch(moderationEngineProvider).asData?.value;
+    final locale = Localizations.localeOf(context).toLanguageTag();
 
-    // Only show pinned feeds in the home view
-    final pinnedFeeds = settings.feeds
-        .where((feed) => feed.config.pinned)
-        .toList();
-
-    final tags = pinnedFeeds.map((feed) {
+    final tags = visiblePinnedFeeds.map((feed) {
       final isTimeline =
           feed.type == 'timeline' && feed.config.value == 'following';
+      final generator = feed.view;
+      var text = generator?.displayName ?? l10n.labelFollowing;
+      if (engine != null && generator != null) {
+        final decision = feedGeneratorModerationSubject(
+          generator,
+        ).evaluate(engine, preferredLocales: [locale]);
+        if (decision.forContext(ModerationContext.contentList).blur) {
+          text = l10n.moderationContentNotice;
+        }
+      }
       return FeedTagData(
         id: feed.config.id,
-        text: feed.view != null ? feed.view!.displayName : l10n.labelFollowing,
+        text: text,
         isTimeline: isTimeline,
         isLiked: feed.view?.viewer?.like != null,
         canDelete: !isTimeline,
@@ -171,23 +183,25 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
 
     return FeedsBarTemplate(
       tags: tags,
-      selectedTagId: settings.activeFeed.config.id,
+      selectedTagId: effectiveActiveFeed.config.id,
       onLeadingPressed: CreateMediaActions.onRecord(context, storyMode: false),
       onTagTap: (tagId) {
-        final feed = pinnedFeeds.firstWhere((f) => f.config.id == tagId);
+        final feed = visiblePinnedFeeds.firstWhere((f) => f.config.id == tagId);
 
-        if (settings.activeFeed == feed) {
+        if (effectiveActiveFeed.config.id == feed.config.id) {
           ref.read(feedRefreshTriggerProvider(feed).notifier).trigger();
         } else {
           ref.read(settingsProvider.notifier).setActiveFeed(feed);
-          final feedIndex = pinnedFeeds.indexOf(feed);
+          final feedIndex = visiblePinnedFeeds.indexOf(feed);
           if (feedIndex != -1 && widget.pageController.hasClients) {
             widget.pageController.jumpToPage(feedIndex);
           }
         }
       },
       onLongPress: (tagData) {
-        final feed = pinnedFeeds.firstWhere((f) => f.config.id == tagData.id);
+        final feed = visiblePinnedFeeds.firstWhere(
+          (f) => f.config.id == tagData.id,
+        );
         _showFeedOptionsSheet(context, feed);
       },
     );

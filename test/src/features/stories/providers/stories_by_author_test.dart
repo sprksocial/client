@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/features/stories/providers/stories_by_author.dart';
 import 'package:spark/src/features/stories/providers/story_repository_provider.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
@@ -39,13 +40,15 @@ void main() {
   });
 }
 
-StoryView _story(String id, {required ProfileViewBasic author}) {
-  return StoryView(
-    uri: AtUri('at://did:plc:me/so.sprk.story.post/$id'),
-    cid: 'cid-$id',
-    author: author,
-    record: const {},
-    indexedAt: DateTime.utc(2026, 7, 22, 10),
+ModeratedStoryView _story(String id, {required ProfileViewBasic author}) {
+  return ModeratedStoryView(
+    story: StoryView(
+      uri: AtUri('at://did:plc:me/so.sprk.story.post/$id'),
+      cid: 'cid-$id',
+      author: author,
+      record: const {},
+      indexedAt: DateTime.utc(2026, 7, 22, 10),
+    ),
   );
 }
 
@@ -53,7 +56,7 @@ class _FakeStoryTimelineRepository implements StoryRepository {
   _FakeStoryTimelineRepository({required this.timelineResult});
 
   final ({
-    Map<ProfileViewBasic, List<StoryView>> storiesByAuthor,
+    Map<ProfileViewBasic, List<ModeratedStoryView>> storiesByAuthor,
     String? cursor,
   })
   timelineResult;
@@ -61,7 +64,10 @@ class _FakeStoryTimelineRepository implements StoryRepository {
 
   @override
   Future<
-    ({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})
+    ({
+      String? cursor,
+      Map<ProfileViewBasic, List<ModeratedStoryView>> storiesByAuthor,
+    })
   >
   getStoriesTimeline({int limit = 30, String? cursor}) async {
     timelineCalls.add((limit: limit, cursor: cursor));

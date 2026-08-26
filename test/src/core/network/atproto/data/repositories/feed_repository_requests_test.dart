@@ -98,40 +98,34 @@ void main() {
       },
     );
 
-    test(
-      'getFeedView selects Bluesky and omits Spark labeler headers',
-      () async {
-        final harness = RepositoryHarness(
-          getResponse: const <String, dynamic>{
-            'cursor': 'bsky-next',
-            'feed': <dynamic>[],
-          },
-        );
-        final feedUri = AtUri(
-          'at://did:plc:generator/app.bsky.feed.generator/bsky-feed',
-        );
+    test('getFeedView selects Bluesky and sends subscribed labelers', () async {
+      final harness = RepositoryHarness(
+        getResponse: const <String, dynamic>{
+          'cursor': 'bsky-next',
+          'feed': <dynamic>[],
+        },
+      );
+      final feedUri = AtUri(
+        'at://did:plc:generator/app.bsky.feed.generator/bsky-feed',
+      );
 
-        final result = await repository(harness).getFeedView(
-          feedUri,
-          limit: 6,
-          cursor: 'bsky-cursor',
-          labelerDids: const ['did:plc:labeler'],
-        );
+      final result = await repository(harness).getFeedView(
+        feedUri,
+        limit: 6,
+        cursor: 'bsky-cursor',
+        labelerDids: const ['did:plc:labeler'],
+      );
 
-        final request = harness.transport.singleRequest;
-        expect(request.uri.path, '/xrpc/app.bsky.feed.getFeed');
-        expect(request.uri.queryParameters['feed'], feedUri.toString());
-        expect(request.uri.queryParameters['limit'], '6');
-        expect(request.uri.queryParameters['cursor'], 'bsky-cursor');
-        expect(
-          request.headers['atproto-proxy'],
-          FakeSprkRepository.testBskyDid,
-        );
-        expect(request.headers, isNot(contains('atproto-accept-labelers')));
-        expect(result.cursor, 'bsky-next');
-        expect(result.feed, isEmpty);
-      },
-    );
+      final request = harness.transport.singleRequest;
+      expect(request.uri.path, '/xrpc/app.bsky.feed.getFeed');
+      expect(request.uri.queryParameters['feed'], feedUri.toString());
+      expect(request.uri.queryParameters['limit'], '6');
+      expect(request.uri.queryParameters['cursor'], 'bsky-cursor');
+      expect(request.headers['atproto-proxy'], FakeSprkRepository.testBskyDid);
+      expect(request.headers['atproto-accept-labelers'], 'did:plc:labeler');
+      expect(result.cursor, 'bsky-next');
+      expect(result.feed, isEmpty);
+    });
 
     test('getFeedView rejects unauthenticated requests before transport', () {
       final harness = RepositoryHarness(authenticated: false);

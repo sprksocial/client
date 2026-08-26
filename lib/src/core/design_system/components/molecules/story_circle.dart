@@ -12,24 +12,28 @@ class StoryCircle extends StatelessWidget {
   final String userName;
   final String imageUrl;
   final String live;
+  final Widget Function(Widget avatar)? avatarBuilder;
 
   const StoryCircle._({
     required this.type,
     required this.userName,
     required this.imageUrl,
     required this.live,
+    this.avatarBuilder,
   });
 
   /// Constructor variant for an unread story with an accent border.
   factory StoryCircle.story({
     required String userName,
     required String imageUrl,
+    Widget Function(Widget avatar)? avatarBuilder,
   }) {
     return StoryCircle._(
       type: StoryType.story,
       userName: userName,
       imageUrl: imageUrl,
       live: '',
+      avatarBuilder: avatarBuilder,
     );
   }
 
@@ -38,22 +42,29 @@ class StoryCircle extends StatelessWidget {
     required String userName,
     required String imageUrl,
     required String live,
+    Widget Function(Widget avatar)? avatarBuilder,
   }) {
     return StoryCircle._(
       type: StoryType.live,
       userName: userName,
       imageUrl: imageUrl,
       live: live,
+      avatarBuilder: avatarBuilder,
     );
   }
 
   /// Constructor variant for a "Close Friends" story with a green border.
-  factory StoryCircle.cf({required String userName, required String imageUrl}) {
+  factory StoryCircle.cf({
+    required String userName,
+    required String imageUrl,
+    Widget Function(Widget avatar)? avatarBuilder,
+  }) {
     return StoryCircle._(
       type: StoryType.cf,
       userName: userName,
       imageUrl: imageUrl,
       live: '',
+      avatarBuilder: avatarBuilder,
     );
   }
 
@@ -62,12 +73,14 @@ class StoryCircle extends StatelessWidget {
   factory StoryCircle.create({
     required String userName,
     required String imageUrl,
+    Widget Function(Widget avatar)? avatarBuilder,
   }) {
     return StoryCircle._(
       type: StoryType.create,
       userName: userName,
       imageUrl: imageUrl,
       live: '',
+      avatarBuilder: avatarBuilder,
     );
   }
 
@@ -111,20 +124,9 @@ class StoryCircle extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(_ringGap),
                       child: ClipOval(
-                        child: imageUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                fadeInDuration: Duration.zero,
-                                fadeOutDuration: Duration.zero,
-                                imageUrl: imageUrl,
-                                width: _imageSize,
-                                height: _imageSize,
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) =>
-                                    const DefaultProfileAvatar(
-                                      size: _imageSize,
-                                    ),
-                              )
-                            : const DefaultProfileAvatar(size: _imageSize),
+                        child:
+                            avatarBuilder?.call(_buildAvatar()) ??
+                            _buildAvatar(),
                       ),
                     ),
                   ),
@@ -159,6 +161,22 @@ class StoryCircle extends StatelessWidget {
       case StoryType.create:
         return null;
     }
+  }
+
+  Widget _buildAvatar() {
+    if (imageUrl.isEmpty) {
+      return const DefaultProfileAvatar(size: _imageSize);
+    }
+    return CachedNetworkImage(
+      fadeInDuration: Duration.zero,
+      fadeOutDuration: Duration.zero,
+      imageUrl: imageUrl,
+      width: _imageSize,
+      height: _imageSize,
+      fit: BoxFit.cover,
+      errorWidget: (context, url, error) =>
+          const DefaultProfileAvatar(size: _imageSize),
+    );
   }
 }
 

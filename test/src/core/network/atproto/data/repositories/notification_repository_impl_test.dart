@@ -30,6 +30,10 @@ void main() {
         'priority': ['true'],
         'reasons': ['like', 'reply'],
       });
+      expect(
+        harness.transport.singleRequest.headers['atproto-accept-labelers'],
+        'did:web:mod.sprk.test',
+      );
     });
 
     test('getUnreadCount maps count and optional priority', () async {

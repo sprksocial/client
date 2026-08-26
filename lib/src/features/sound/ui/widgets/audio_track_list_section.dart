@@ -5,6 +5,9 @@ import 'package:spark/src/core/design_system/components/atoms/buttons/interactiv
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/features/sound/models/sound_audio_track.dart';
 import 'package:spark/src/features/sound/providers/sound_picker_search_provider.dart';
 import 'package:spark/src/features/sound/providers/sound_picker_search_state.dart';
@@ -68,12 +71,16 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(soundPickerSearchProvider);
-    final audioTracks = audioViewsToAudioTracks(state.audios);
+    final audioTracks = <({AudioView? audio, AudioTrack track})>[
+      for (final audio in state.audios)
+        if (audioViewToAudioTrack(audio) case final track?)
+          (audio: audio, track: track),
+    ];
     final selectedTrack = widget.selectedTrack;
     final tracks =
         selectedTrack != null &&
-            !audioTracks.any((track) => track.id == selectedTrack.id)
-        ? [selectedTrack, ...audioTracks]
+            !audioTracks.any((item) => item.track.id == selectedTrack.id)
+        ? [(audio: null, track: selectedTrack), ...audioTracks]
         : audioTracks;
 
     return Column(
@@ -122,7 +129,7 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
   Widget _buildTrackList(
     BuildContext context,
     SoundPickerSearchState state,
-    List<AudioTrack> tracks,
+    List<({AudioView? audio, AudioTrack track})> tracks,
   ) {
     if (state.isLoading && tracks.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -155,8 +162,9 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
           );
         }
 
-        final audioTrack = tracks[index];
-        return Padding(
+        final item = tracks[index];
+        final audioTrack = item.track;
+        final tile = Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: AudioTrackSelectionTile(
             audioTrack: audioTrack,
@@ -164,6 +172,18 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
             artworkBackgroundColor: widget.artworkBackgroundColor,
             onTap: () => widget.onTrackSelected(audioTrack),
           ),
+        );
+        final audio = item.audio;
+        if (audio == null) return tile;
+        return ModeratedContent(
+          subject: ModerationSubject.content(
+            labels: audio.labels ?? const [],
+            authorLabels: audio.author.labels ?? const [],
+            subjectDid: audio.author.did,
+          ),
+          context: ModerationContext.contentList,
+          presentation: const ModerationPresentation.compact(),
+          child: tile,
         );
       },
     );

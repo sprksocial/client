@@ -33,6 +33,24 @@ void main() {
       },
     );
 
+    test('getPreferences decodes Spark adult-content preference', () async {
+      final harness = RepositoryHarness();
+      harness.transport.enqueueGet({
+        'preferences': [
+          {r'$type': 'so.sprk.actor.defs#adultContentPref', 'enabled': true},
+        ],
+      });
+      final repository = PrefRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+
+      final preferences = await repository.getPreferences();
+
+      expect(preferences.preferences.single.isAdultContentPref, isTrue);
+      expect(preferences.adultContentEnabled, isTrue);
+    });
+
     test('getPreferences rejects unauthenticated requests without I/O', () {
       final harness = RepositoryHarness(authenticated: false);
       final repository = PrefRepositoryImpl(
@@ -84,6 +102,26 @@ void main() {
         containsPair(r'$type', 'so.sprk.actor.defs#savedFeedsPref'),
       );
       expect((sent.single as Map<String, dynamic>)['items'], hasLength(1));
+    });
+
+    test('putPreferences serializes Spark adult-content preference', () async {
+      final harness = RepositoryHarness();
+      harness.transport.enqueuePost(<String, dynamic>{});
+      final repository = PrefRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+      );
+      final preferences = Preferences(
+        preferences: [adultContentPreference(enabled: true)],
+      );
+
+      await repository.putPreferences(preferences);
+
+      final request = harness.transport.singleRequest;
+      final sent = request.jsonBody['preferences'] as List<dynamic>;
+      expect(sent, [
+        {r'$type': 'so.sprk.actor.defs#adultContentPref', 'enabled': true},
+      ]);
     });
   });
 }

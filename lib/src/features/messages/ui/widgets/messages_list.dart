@@ -10,6 +10,8 @@ import 'package:spark/src/core/design_system/components/molecules/post_tile.dart
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/image_content.dart';
 import 'package:spark/src/core/ui/widgets/video_content.dart';
@@ -712,20 +714,29 @@ class _PostEmbedPreview extends ConsumerWidget {
           return _embedUnavailableIndicator(context);
         }
 
-        final (thumbUrl, isVideo) = _deriveThumb(post);
+        final (thumbUrl, _) = _deriveThumb(post);
 
         final screenWidth = MediaQuery.of(context).size.width;
         final double targetWidth = math.min(screenWidth * 0.5, 170);
-        return SizedBox(
-          width: targetWidth,
-          child: AspectRatio(
-            aspectRatio: 9 / 16,
-            child: PostTile(
-              thumbnailUrl: thumbUrl ?? '',
-              likes: post.likeCount ?? 0,
-              seen: false,
-              onTap: () =>
-                  context.router.push(StandalonePostRoute(postUri: atUri)),
+        return ModeratedContent(
+          subject: ModerationSubject.content(
+            labels: post.labels ?? const [],
+            authorLabels: post.author.labels ?? const [],
+            subjectDid: post.author.did,
+          ),
+          context: ModerationContext.contentList,
+          presentation: const ModerationPresentation.compact(),
+          child: SizedBox(
+            width: targetWidth,
+            child: AspectRatio(
+              aspectRatio: 9 / 16,
+              child: PostTile(
+                thumbnailUrl: thumbUrl ?? '',
+                likes: post.likeCount ?? 0,
+                seen: false,
+                onTap: () =>
+                    context.router.push(StandalonePostRoute(postUri: atUri)),
+              ),
             ),
           ),
         );

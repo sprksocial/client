@@ -9,6 +9,8 @@ import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/features/search/providers/search_provider.dart';
 
 @RoutePage()
@@ -238,16 +240,28 @@ class _UserResultsState extends ConsumerState<_UserResults> {
 
         final actor = state.searchResults[index];
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: ProfileCard(
-            imageUrl: actor.avatar?.toString() ?? '',
-            userName: actor.displayName ?? actor.handle,
-            userHandle: '@${actor.handle}',
-            description: actor.description ?? '',
-            isFollowing: false,
-            showFollowButton: false, // Not relevant when starting a chat
-            onTap: () => _startChat(actor),
+        return ModeratedContent(
+          subject: ModerationSubject.profile(
+            labels: actor.labels ?? const [],
+            subjectDid: actor.did,
+          ),
+          context: ModerationContext.profileList,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: ProfileCard(
+              imageUrl: actor.avatar?.toString() ?? '',
+              avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                labels: actor.labels ?? const [],
+                subjectDid: actor.did,
+                child: avatar,
+              ),
+              userName: actor.displayName ?? actor.handle,
+              userHandle: '@${actor.handle}',
+              description: actor.description ?? '',
+              isFollowing: false,
+              showFollowButton: false, // Not relevant when starting a chat
+              onTap: () => _startChat(actor),
+            ),
           ),
         );
       },

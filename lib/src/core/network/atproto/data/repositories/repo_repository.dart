@@ -73,11 +73,10 @@ abstract class RepoRepository {
   /// [subject] The subject of the report (content or account)
   /// [reasonType] The reason for the report
   /// [reason] Optional additional context about the violation
-  /// [service] Optional moderation service to use
+  /// [serviceDid] Moderation service receiving the report
   ///
-  /// Returns true if the report was successfully created
-  Future<bool> createReport({
+  Future<void> createReport({
     required ModerationCreateReportInput input,
-    dynamic service,
+    required String serviceDid,
   });
 }

@@ -58,6 +58,7 @@ class ActorRepositoryImpl implements ActorRepository {
         final profile = await bskyActorAdapter.getProfileFromBluesky(
           blueskyClient,
           did,
+          headers: _client.appViewHeaders(_client.bskyDid),
         );
         _logger.d('Profile retrieved successfully from Bluesky');
         return profile;
@@ -67,7 +68,7 @@ class ActorRepositoryImpl implements ActorRepository {
       final result = await atproto.call(
         sprk_get_profile.soSprkActorGetProfile,
         parameters: sprk_get_profile.ActorGetProfileInput(actor: did),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       _logger.d('Profile retrieved successfully from Spark');
       return result.data;
@@ -100,7 +101,7 @@ class ActorRepositoryImpl implements ActorRepository {
       final result = await atproto.call(
         soSprkActorSearchActors,
         parameters: ActorSearchActorsInput(q: query, cursor: cursor),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
 
       _logger.d('Actor search completed successfully');
@@ -127,7 +128,7 @@ class ActorRepositoryImpl implements ActorRepository {
           q: query,
           limit: clampedLimit,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
 
       _logger.d('Actor typeahead search completed successfully');
@@ -151,6 +152,7 @@ class ActorRepositoryImpl implements ActorRepository {
     final response = await client.call(
       soSprkActorSearchActorsTypeahead,
       parameters: ActorSearchActorsTypeaheadInput(q: query, limit: limit),
+      headers: _client.appViewHeaders(null),
     );
 
     return response.data;
@@ -253,6 +255,7 @@ class ActorRepositoryImpl implements ActorRepository {
         final profiles = await bskyActorAdapter.getProfilesFromBluesky(
           blueskyClient,
           dids,
+          headers: _client.appViewHeaders(_client.bskyDid),
         );
         _logger.d('Profiles retrieved successfully from Bluesky');
         return profiles;
@@ -262,7 +265,7 @@ class ActorRepositoryImpl implements ActorRepository {
       final result = await atproto.call(
         sprk_get_profiles.soSprkActorGetProfiles,
         parameters: sprk_get_profiles.ActorGetProfilesInput(actors: dids),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       _logger.d('Profiles retrieved successfully from Spark');
       return result.data.profiles;

@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/sound/providers/sound_page_provider.dart';
@@ -62,17 +64,26 @@ class _SoundPageState extends ConsumerState<SoundPage> {
         leading: const AppLeadingButton(),
         actions: [
           soundState.maybeWhen(
-            data: (state) => IconButton(
-              tooltip: l10n.buttonAddSound,
-              onPressed: state.audio.audio == null
-                  ? null
-                  : () => context.router.push(
-                      RecordingRoute(
-                        storyMode: false,
-                        initialSound: state.audio,
+            data: (state) => ModeratedContent(
+              subject: ModerationSubject.content(
+                labels: state.audio.labels ?? const [],
+                authorLabels: state.audio.author.labels ?? const [],
+                subjectDid: state.audio.author.did,
+              ),
+              context: ModerationContext.contentView,
+              presentation: const ModerationPresentation.compact(),
+              child: IconButton(
+                tooltip: l10n.buttonAddSound,
+                onPressed: state.audio.audio == null
+                    ? null
+                    : () => context.router.push(
+                        RecordingRoute(
+                          storyMode: false,
+                          initialSound: state.audio,
+                        ),
                       ),
-                    ),
-              icon: const Icon(FluentIcons.camera_24_regular),
+                icon: const Icon(FluentIcons.camera_24_regular),
+              ),
             ),
             orElse: () => const SizedBox(width: 48),
           ),
@@ -86,7 +97,17 @@ class _SoundPageState extends ConsumerState<SoundPage> {
             controller: _scrollController,
             slivers: [
               // Header Card
-              SliverToBoxAdapter(child: SoundHeaderCard(audio: state.audio)),
+              SliverToBoxAdapter(
+                child: ModeratedContent(
+                  subject: ModerationSubject.content(
+                    labels: state.audio.labels ?? const [],
+                    authorLabels: state.audio.author.labels ?? const [],
+                    subjectDid: state.audio.author.did,
+                  ),
+                  context: ModerationContext.contentView,
+                  child: SoundHeaderCard(audio: state.audio),
+                ),
+              ),
 
               // Posts Grid
               if (state.posts.isEmpty)
@@ -140,10 +161,19 @@ class _SoundPageState extends ConsumerState<SoundPage> {
                         }
 
                         final post = state.posts[index];
-                        return _SoundPostTile(
-                          post: post,
-                          onTap: () => context.router.push(
-                            StandalonePostRoute(postUri: post.uri.toString()),
+                        return ModeratedContent(
+                          subject: ModerationSubject.content(
+                            labels: post.labels ?? const [],
+                            authorLabels: post.author.labels ?? const [],
+                            subjectDid: post.author.did,
+                          ),
+                          context: ModerationContext.contentList,
+                          presentation: const ModerationPresentation.compact(),
+                          child: _SoundPostTile(
+                            post: post,
+                            onTap: () => context.router.push(
+                              StandalonePostRoute(postUri: post.uri.toString()),
+                            ),
                           ),
                         );
                       },

@@ -8,6 +8,7 @@ import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/routing/pages.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -109,6 +110,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SettingsRoute.page, path: '/settings'),
     AutoRoute(page: LegalRoute.page, path: '/settings/legal'),
     AutoRoute(page: FeedListRoute.page, path: '/settings/feeds'),
+    AutoRoute(page: ModerationRoute.page, path: '/settings/moderation'),
     AutoRoute(page: LabelerManagementRoute.page, path: '/settings/labelers'),
     AutoRoute(page: BlocksRoute.page, path: '/settings/blocks'),
 

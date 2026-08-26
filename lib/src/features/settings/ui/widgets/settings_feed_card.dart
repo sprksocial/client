@@ -7,6 +7,8 @@ import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
@@ -91,7 +93,7 @@ class SettingsFeedCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
 
-    return _SettingsFeedCardView(
+    final card = _SettingsFeedCardView(
       title: _getTitle(l10n),
       subtitle: _getSubtitle(l10n),
       avatarUrl: _generator?.avatar?.toString() ?? '',
@@ -111,6 +113,13 @@ class SettingsFeedCard extends ConsumerWidget {
       onLikedChanged: _generator != null
           ? (liked) => _setLiked(context, ref, liked: liked)
           : null,
+    );
+    final generator = _generator;
+    if (generator == null) return card;
+    return ModeratedContent(
+      subject: feedGeneratorModerationSubject(generator),
+      context: ModerationContext.contentList,
+      child: card,
     );
   }
 }

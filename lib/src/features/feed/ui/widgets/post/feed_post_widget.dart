@@ -3,18 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:spark/src/core/ui/widgets/heart_animation.dart';
-import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_media_viewer.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
 import 'package:spark/src/features/home/providers/navigation_provider.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class FeedPostWidget extends ConsumerStatefulWidget {
   const FeedPostWidget({required this.index, required this.feed, super.key});
@@ -32,9 +31,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   final GlobalKey<PostMediaViewerState> _mediaViewerKey =
       GlobalKey<PostMediaViewerState>();
   bool _isAnimatingHeart = false;
-  bool _showWarningOverlay = false;
-  bool _userDismissedWarning = false;
-  List<String> _warningLabels = [];
+  bool _moderationConcealed = false;
   // Local UI override for like state to avoid needing a GlobalKey
   bool? _overrideIsLiked;
 
@@ -53,6 +50,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       _lastPostUri = currentUri;
       _postFuture = Future.value(post);
       _overrideIsLiked = null;
+      _moderationConcealed = false;
     }
   }
 
@@ -106,49 +104,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     }
   }
 
-  void _checkContentWarning(String postUri) {
-    final feedState = ref.read(feedProvider(widget.feed));
-    final preferences = ref.read(userPreferencesProvider).asData?.value;
-
-    if (widget.index < feedState.loadedPosts.length) {
-      final post = feedState.loadedPosts[widget.index];
-      if (post.uri.toString() != postUri) {
-        return;
-      }
-      final extraInfo = feedState.extraInfo[post.uri];
-
-      if (extraInfo != null &&
-          extraInfo.postLabels.isNotEmpty &&
-          !_userDismissedWarning &&
-          preferences != null) {
-        final shouldShowWarning = LabelUtils.shouldShowWarning(
-          preferences,
-          extraInfo.postLabels,
-        );
-        if (shouldShowWarning) {
-          final warningLabels = LabelUtils.getWarningLabels(
-            preferences,
-            extraInfo.postLabels,
-          );
-          setState(() {
-            _showWarningOverlay = true;
-            _warningLabels = warningLabels;
-          });
-        } else {
-          setState(() {
-            _showWarningOverlay = false;
-            _warningLabels = [];
-          });
-        }
-      } else {
-        setState(() {
-          _showWarningOverlay = false;
-          _warningLabels = [];
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -171,7 +126,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(_loadPost);
-            _checkContentWarning(currentUri);
           }
         });
       }
@@ -191,13 +145,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             snapshot.hasData) {
           final postData = snapshot.data!;
 
-          // Check for content warning on post load
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              _checkContentWarning(postData.uri.toString());
-            }
-          });
-
           // Get labels for the overlay and use the latest post from feed state
           var labels = <Label>[];
           // Use the post from feed state as it has the latest updates (e.g., after like/repost)
@@ -216,7 +163,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
               isOnFeedsTab &&
               feedState.index == widget.index &&
               !feedSettingsVisible &&
-              !_showWarningOverlay;
+              !_moderationConcealed;
 
           final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,
@@ -265,23 +212,21 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             ),
           );
 
-          // Return main content with warning overlay if needed
-          if (_showWarningOverlay && _warningLabels.isNotEmpty) {
-            return ContentWarningOverlay(
-              onViewContent: () {
-                setState(() {
-                  _showWarningOverlay = false;
-                  _userDismissedWarning =
-                      true; // User has dismissed the warning
-                });
-              },
-              warningLabels: _warningLabels,
-              shouldBlur: true,
-              child: mainContent,
-            );
-          }
-
-          return mainContent;
+          return ModeratedContent(
+            key: ValueKey(currentPost.uri.toString()),
+            subject: ModerationSubject.content(
+              labels: labels,
+              authorLabels: currentPost.author.labels ?? const [],
+              subjectDid: currentPost.author.did,
+            ),
+            context: ModerationContext.contentList,
+            onConcealChanged: (concealed) {
+              if (mounted && _moderationConcealed != concealed) {
+                setState(() => _moderationConcealed = concealed);
+              }
+            },
+            child: mainContent,
+          );
         }
         if (snapshot.hasError) {
           return DecoratedBox(

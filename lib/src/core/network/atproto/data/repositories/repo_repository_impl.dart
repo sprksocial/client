@@ -259,9 +259,9 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<bool> createReport({
+  Future<void> createReport({
     required ModerationCreateReportInput input,
-    dynamic service,
+    required String serviceDid,
   }) async {
     _logger.i('Creating moderation report for reason: ${input.reasonType}');
 
@@ -275,61 +275,35 @@ class RepoRepositoryImpl implements RepoRepository {
       if (atproto == null || atproto.oAuthSession == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
-      } else if (service != null) {
-        _logger.d('Using provided moderation service');
-        try {
-          final report = await service.createReport(
-            subject: input.subject,
-            reasonType: input.reasonType,
-            reason: input.reason,
-          );
-          return report.status.code == 200;
-        } catch (e) {
-          _logger.e('Error creating report with service', error: e);
-          throw Exception('Failed to create report: $e');
-        }
-      } else {
-        _logger.d('Using direct API call for moderation report');
-        final subjectData = input.subject.data;
-        if (subjectData is! RepoStrongRef) {
-          _logger.e('Invalid subject data type: ${subjectData.runtimeType}');
-          throw Exception('Invalid subject data');
-        }
+      }
 
-        // Check if this is a Bluesky post and route to appropriate moderation service
-        final isBskyPost = subjectData.uri.collection.toString().startsWith(
-          'app.bsky',
-        );
-        final modServiceDid = isBskyPost ? _client.bskyModDid : _client.modDid;
-        _logger.d(
-          'Routing report to ${isBskyPost ? 'Bluesky' : 'Spark'} moderation '
-          'service: $modServiceDid',
+      _logger.d('Routing report to moderation service: $serviceDid');
+      final headers = {'atproto-proxy': _moderationProxyDid(serviceDid)};
+
+      try {
+        final response = await atproto.call(
+          comAtprotoModerationCreateReport,
+          headers: headers,
+          input: input,
         );
 
-        final headers = {'atproto-proxy': modServiceDid};
-
-        try {
-          final response = await atproto.call(
-            comAtprotoModerationCreateReport,
-            headers: headers,
-            input: input,
+        if (response.status != HttpStatus.ok) {
+          _logger.e(
+            'Failed to create report: ${response.data}',
+            error: 'HTTP ${response.status}',
           );
-
-          if (response.status != HttpStatus.ok) {
-            _logger.e(
-              'Failed to create report: ${response.data}',
-              error: 'HTTP ${response.status}',
-            );
-            throw Exception('Failed to create report: ${response.data}');
-          }
-
-          _logger.i('Report created successfully');
-          return true;
-        } catch (e) {
-          _logger.e('Error creating report', error: e);
-          throw Exception('Failed to create report: $e');
+          throw Exception('Failed to create report: ${response.data}');
         }
+
+        _logger.i('Report created successfully');
+      } catch (e) {
+        _logger.e('Error creating report', error: e);
+        throw Exception('Failed to create report: $e');
       }
     });
+  }
+
+  String _moderationProxyDid(String did) {
+    return did.contains('#') ? did : '$did#atproto_labeler';
   }
 }

@@ -21,6 +21,7 @@ class InfoBar extends StatelessWidget {
     this.onHashtagTap,
     this.onDescriptionExpandToggle,
     this.audio,
+    this.avatarBuilder,
   });
   final String username;
   final String displayName;
@@ -35,6 +36,7 @@ class InfoBar extends StatelessWidget {
   final ValueChanged<String>? onHashtagTap;
   final ValueChanged<bool>? onDescriptionExpandToggle;
   final AudioView? audio;
+  final Widget Function(Widget avatar)? avatarBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +46,7 @@ class InfoBar extends StatelessWidget {
       description: description,
       informLabels: informLabels,
       avatarUrl: avatarUrl,
+      avatarBuilder: avatarBuilder,
       audio: audio,
       onTitleTap: onUsernameTap,
       onHandleTap: onUsernameTap,

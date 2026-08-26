@@ -6,21 +6,21 @@ import 'package:poptart/poptart.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 part 'feed_provider.g.dart';
 
 abstract interface class FeedSettingsGateway {
   Future<List<String>> getLabelers();
-
-  Future<LabelPreference> getLabelPreference(String value);
 }
 
 class _RiverpodFeedSettingsGateway implements FeedSettingsGateway {
@@ -33,7 +33,7 @@ class _RiverpodFeedSettingsGateway implements FeedSettingsGateway {
   Future<List<String>> getLabelers() async {
     try {
       return await ref
-          .read(settingsProvider.notifier)
+          .read(labelerSettingsControllerProvider)
           .getLabelers()
           .timeout(const Duration(seconds: 5), onTimeout: _fallbackLabelers);
     } catch (_) {
@@ -43,11 +43,6 @@ class _RiverpodFeedSettingsGateway implements FeedSettingsGateway {
 
   List<String> _fallbackLabelers() {
     return [sprkRepository.modDid.split('#').first];
-  }
-
-  @override
-  Future<LabelPreference> getLabelPreference(String value) {
-    return ref.read(settingsProvider.notifier).getLabelPreference(value);
   }
 }
 
@@ -215,65 +210,40 @@ class FeedNotifier extends _$FeedNotifier {
     try {
       // Labels are already included in post views from the appview
       // We just need to merge them with self-labels and process them
-      final allLabels = <Label>[];
+      final now = DateTime.now().toUtc();
+      final extraInfo = replaceExisting
+          ? LinkedHashMap<AtUri, ({List<Label> postLabels})>()
+          : LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
+              state.extraInfo,
+            );
       final postsWithMergedLabels = <PostView>[];
 
       for (final post in posts) {
         final key = post.uri.toString();
-        // Start with labels from the post view (from appview)
-        final postLabels = <Label>[...?post.labels];
+        final incomingLabels = <Label>[...?post.labels];
 
         // Add self-labels from the post record
         if (post.selfLabels != null) {
           for (final selfLabel in post.selfLabels!) {
-            postLabels.add(
+            incomingLabels.add(
               Label(
                 uri: key,
                 val: selfLabel.val,
-                src: key,
+                src: post.author.did,
                 cts: post.indexedAt,
               ),
             );
           }
         }
 
-        allLabels.addAll(postLabels);
-        postsWithMergedLabels.add(post.copyWith(labels: postLabels));
-      }
-
-      final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
-        state.extraInfo,
-      );
-
-      for (final newLabel in allLabels) {
-        final uri = AtUri.parse(newLabel.uri);
-        extraInfo.update(uri, (value) {
-          final existingLabels = value.postLabels;
-
-          // if new label in existing labels,
-          //check if it should replace existing one
-          if (existingLabels.any((label) => label.val == newLabel.val)) {
-            final existingLabel = existingLabels.firstWhere(
-              (label) => label.val == newLabel.val,
-            );
-
-            // if new label says that existing one is negated or expired,
-            // replace the existing one
-            if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) &&
-                    newLabel.isNeg) ||
-                existingLabel.exp != null &&
-                    existingLabel.exp!.isBefore(DateTime.now())) {
-              existingLabels.remove(existingLabel);
-              return (postLabels: [...existingLabels, newLabel]);
-            } else {
-              // if the new label is the same as the existing one, do nothing
-              return value;
-            }
-          } else {
-            // if the new label is not in the existing labels, add it
-            return (postLabels: [...existingLabels, newLabel]);
-          }
-        }, ifAbsent: () => (postLabels: [newLabel]));
+        final latestLabels = mergeLatestLabelEvents(
+          existing: extraInfo[post.uri]?.postLabels ?? const [],
+          incoming: incomingLabels,
+          now: now,
+        );
+        final activeLabels = activeLabelsFromEvents(latestLabels, now: now);
+        extraInfo[post.uri] = (postLabels: latestLabels);
+        postsWithMergedLabels.add(post.copyWith(labels: activeLabels));
       }
 
       final filteredPosts = await _filterHiddenPosts(
@@ -289,27 +259,32 @@ class FeedNotifier extends _$FeedNotifier {
         return false;
       }
 
-      if (filteredPosts.isEmpty) {
-        if (generation == null || generation == _fetchGeneration) {
-          state = state.copyWith(
-            cursor: cursor,
-            extraInfo: extraInfo,
-            loadingFirstLoad: false,
-          );
-        }
-        return false;
-      }
-
+      final receivedUris = postsWithMergedLabels
+          .map((post) => post.uri)
+          .toSet();
       final updatedPosts = replaceExisting
           ? filteredPosts
-          : [...state.loadedPosts, ...filteredPosts];
+          : [
+              ...state.loadedPosts.where(
+                (post) => !receivedUris.contains(post.uri),
+              ),
+              ...filteredPosts,
+            ];
+      final updatedIndex = updatedPosts.isEmpty
+          ? 0
+          : state.index.clamp(0, updatedPosts.length - 1);
       if (generation == null || generation == _fetchGeneration) {
         state = state.copyWith(
           loadedPosts: updatedPosts,
+          index: updatedIndex,
           cursor: cursor,
           extraInfo: extraInfo,
           loadingFirstLoad: false,
         );
+      }
+
+      if (filteredPosts.isEmpty) {
+        return false;
       }
 
       for (final post in filteredPosts) {
@@ -560,47 +535,30 @@ class FeedNotifier extends _$FeedNotifier {
     );
   }
 
-  /// Checks if a post should be hidden based on its labels and user preferences
-  Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
-    for (final label in postLabels) {
-      try {
-        final labelPreference = await _settingsGateway.getLabelPreference(
-          label.val,
-        );
-        if (labelPreference.setting == Setting.hide ||
-            labelPreference.adultOnly) {
-          return true;
-        }
-      } catch (e) {
-        // Label preference not found, continue checking other labels
-        continue;
-      }
-    }
-    return false;
-  }
-
   /// Filters based on label preferences, removing posts that should be hidden
   Future<List<PostView>> _filterHiddenPosts(
     List<PostView> posts,
     LinkedHashMap<AtUri, ({List<Label> postLabels})> extraInfo,
   ) async {
-    final filteredPosts = <PostView>[];
-
-    for (final post in posts) {
-      final postExtraInfo = extraInfo[post.uri];
-      if (postExtraInfo != null) {
-        final shouldHide = await _shouldHidePost(
-          post.uri,
-          postExtraInfo.postLabels,
-        );
-        if (!shouldHide) {
-          filteredPosts.add(post);
-        }
-      } else {
-        filteredPosts.add(post);
-      }
+    try {
+      final engine = await ref.read(moderationEngineProvider.future);
+      return posts.where((post) {
+        final labels = extraInfo[post.uri]?.postLabels;
+        if (labels == null) return true;
+        final decision = ModerationSubject.content(
+          labels: labels,
+          authorLabels: post.author.labels ?? const [],
+          subjectDid: post.author.did,
+        ).evaluate(engine);
+        return !decision.forContext(ModerationContext.contentList).filter;
+      }).toList();
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Could not moderate feed page',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return posts;
     }
-
-    return filteredPosts;
   }
 }

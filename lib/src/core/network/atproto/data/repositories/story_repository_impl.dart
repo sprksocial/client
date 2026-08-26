@@ -3,8 +3,10 @@ import 'package:poptart_lex/com/atproto/repo/list_records.dart'
     as repo_list_records;
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
+import 'package:spark/src/core/moderation/moderation_label_events.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_write_adapters.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
@@ -77,7 +79,10 @@ class StoryRepositoryImpl implements StoryRepository {
 
   @override
   Future<
-    ({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})
+    ({
+      String? cursor,
+      Map<ProfileViewBasic, List<ModeratedStoryView>> storiesByAuthor,
+    })
   >
   getStoriesTimeline({int limit = 30, String? cursor}) {
     return _client.executeWithRetry(() async {
@@ -96,7 +101,7 @@ class StoryRepositoryImpl implements StoryRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final response = (() {
         final jsonMap = rawResponse.data.toJson();
@@ -155,12 +160,27 @@ class StoryRepositoryImpl implements StoryRepository {
         );
       })();
 
-      return response;
+      final labelsByUri = await _getModerationLabels(
+        response.storiesByAuthor.values.expand((stories) => stories),
+      );
+      return (
+        storiesByAuthor: {
+          for (final entry in response.storiesByAuthor.entries)
+            entry.key: [
+              for (final story in entry.value)
+                ModeratedStoryView(
+                  story: story,
+                  moderationLabels: _labelsForStory(labelsByUri, story),
+                ),
+            ],
+        },
+        cursor: response.cursor,
+      );
     });
   }
 
   @override
-  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris) {
+  Future<List<ModeratedStoryView>> getStoryViews(List<AtUri> storyUris) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         throw Exception('Not authenticated');
@@ -174,7 +194,7 @@ class StoryRepositoryImpl implements StoryRepository {
       final rawResponse = await atproto.call(
         sprk_get_stories.soSprkStoryGetStories,
         parameters: sprk_get_stories.StoryGetStoriesInput(uris: storyUris),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final response = (() {
         final jsonMap = rawResponse.data.toJson();
@@ -201,8 +221,57 @@ class StoryRepositoryImpl implements StoryRepository {
             .toList();
       })();
 
-      return response;
+      final labelsByUri = await _getModerationLabels(response);
+      return [
+        for (final story in response)
+          ModeratedStoryView(
+            story: story,
+            moderationLabels: _labelsForStory(labelsByUri, story),
+          ),
+      ];
     });
+  }
+
+  Future<Map<String, List<Label>>> _getModerationLabels(
+    Iterable<StoryView> stories,
+  ) async {
+    final uris = stories.map((story) => story.uri).toSet().toList();
+    if (uris.isEmpty) return const {};
+
+    final labelsByUri = <String, List<Label>>{};
+    final seenCursors = <String>{};
+    String? cursor;
+    do {
+      if (cursor != null && !seenCursors.add(cursor)) {
+        throw StateError('Label query returned a repeated cursor');
+      }
+      final page = await _client.labeler.queryLabels(
+        uris,
+        limit: 250,
+        cursor: cursor,
+      );
+      for (final label in page.labels) {
+        labelsByUri.putIfAbsent(label.uri, () => []).add(label);
+      }
+      cursor = page.cursor;
+    } while (cursor != null && cursor.isNotEmpty);
+
+    return labelsByUri;
+  }
+
+  Iterable<Label> _labelsForStory(
+    Map<String, List<Label>> labelsByUri,
+    StoryView story,
+  ) {
+    final now = _now().toUtc();
+    final latest = mergeLatestLabelEvents(
+      existing: const [],
+      incoming: (labelsByUri[story.uri.toString()] ?? const []).where(
+        (label) => label.cid == null || label.cid == story.cid,
+      ),
+      now: now,
+    );
+    return activeLabelsFromEvents(latest, now: now);
   }
 
   @override

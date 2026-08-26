@@ -13,6 +13,7 @@ class ChatListItemData {
     this.avatarUrl,
     this.verified = false,
     this.unread = false,
+    this.avatarBuilder,
   });
 
   final String? avatarUrl;
@@ -22,6 +23,7 @@ class ChatListItemData {
   final String preview;
   final bool verified;
   final bool unread;
+  final Widget Function(Widget avatar)? avatarBuilder;
 }
 
 class ChatListPageTemplate extends StatelessWidget {
@@ -34,6 +36,7 @@ class ChatListPageTemplate extends StatelessWidget {
     this.loadingItemCount = 8,
     this.onAddTap,
     this.onRefresh,
+    this.itemWrapper,
   });
 
   const ChatListPageTemplate.loading({
@@ -42,6 +45,7 @@ class ChatListPageTemplate extends StatelessWidget {
     this.loadingItemCount = 8,
     this.onAddTap,
     this.onRefresh,
+    this.itemWrapper,
   }) : items = const [],
        onItemTap = _noopItemTap,
        loading = true;
@@ -53,6 +57,8 @@ class ChatListPageTemplate extends StatelessWidget {
   final int loadingItemCount;
   final VoidCallback? onAddTap;
   final Future<void> Function()? onRefresh;
+  final Widget Function(BuildContext context, int index, Widget child)?
+  itemWrapper;
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +92,13 @@ class ChatListPageTemplate extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       itemCount: items.length,
                       separatorBuilder: (_, _) => const SizedBox.shrink(),
-                      itemBuilder: (context, index) => _ChatTile(
-                        data: items[index],
-                        onTap: () => onItemTap(index),
-                      ),
+                      itemBuilder: (context, index) {
+                        final tile = _ChatTile(
+                          data: items[index],
+                          onTap: () => onItemTap(index),
+                        );
+                        return itemWrapper?.call(context, index, tile) ?? tile;
+                      },
                     ),
                   ),
           ),
@@ -110,16 +119,17 @@ class _ChatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final onSurface = theme.colorScheme.onSurface;
+    final avatar = UserAvatar(
+      imageUrl: data.avatarUrl ?? '',
+      username: data.handle,
+      size: 50.45,
+    );
 
     return ListTile(
       onTap: onTap,
       horizontalTitleGap: 12,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: UserAvatar(
-        imageUrl: data.avatarUrl ?? '',
-        username: data.handle,
-        size: 50.45,
-      ),
+      leading: data.avatarBuilder?.call(avatar) ?? avatar,
       title: Row(
         children: [
           Expanded(

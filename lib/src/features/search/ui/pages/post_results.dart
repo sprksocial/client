@@ -2,11 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/search/providers/post_search_provider.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class PostResults extends ConsumerStatefulWidget {
   const PostResults({super.key});
@@ -182,26 +182,25 @@ class _PostResultsState extends ConsumerState<PostResults>
               }
 
               final post = state.searchResults[index];
-              final preferences = ref
-                  .read(userPreferencesProvider)
-                  .asData
-                  ?.value;
-              final labels = post.labels ?? [];
-              final shouldBlur =
-                  preferences != null &&
-                  labels.isNotEmpty &&
-                  LabelUtils.shouldBlurContent(preferences, labels);
-
-              return PostTile(
-                thumbnailUrl: post.thumbnailUrl,
-                likes: post.likeCount ?? 0,
-                seen: false,
-                nsfwBlur: shouldBlur,
-                onTap: () {
-                  context.router.push(
-                    StandalonePostRoute(postUri: post.uri.toString()),
-                  );
-                },
+              return ModeratedContent(
+                subject: ModerationSubject.content(
+                  labels: post.labels ?? const [],
+                  authorLabels: post.author.labels ?? const [],
+                  subjectDid: post.author.did,
+                ),
+                context: ModerationContext.contentList,
+                presentation: const ModerationPresentation.compact(),
+                child: PostTile(
+                  thumbnailUrl: post.thumbnailUrl,
+                  likes: post.likeCount ?? 0,
+                  seen: false,
+                  nsfwBlur: false,
+                  onTap: () {
+                    context.router.push(
+                      StandalonePostRoute(postUri: post.uri.toString()),
+                    );
+                  },
+                ),
               );
             }, childCount: state.searchResults.length),
           ),

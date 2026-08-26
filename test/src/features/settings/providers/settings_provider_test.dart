@@ -7,19 +7,22 @@ import 'package:poptart/poptart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/storage/preferences/storage_manager.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 void main() {
   late _FakeAuthRepository authRepository;
   late _FakeFeedRepository feedRepository;
+  late _FakeSprkRepository sprkRepository;
   late _PreferencesController preferencesController;
 
   setUpAll(() async {
@@ -32,11 +35,10 @@ void main() {
     await StorageManager.instance.preferences.clear();
     authRepository = _FakeAuthRepository();
     feedRepository = _FakeFeedRepository();
+    sprkRepository = _FakeSprkRepository(authRepository, feedRepository);
     preferencesController = _PreferencesController();
     GetIt.I
-      ..registerSingleton<SprkRepository>(
-        _FakeSprkRepository(authRepository, feedRepository),
-      )
+      ..registerSingleton<SprkRepository>(sprkRepository)
       ..registerSingleton<StorageManager>(StorageManager.instance)
       ..registerSingleton<LogService>(LogService());
   });
@@ -48,7 +50,7 @@ void main() {
   ProviderContainer createContainer() => ProviderContainer.test(
     overrides: [
       userPreferencesProvider.overrideWith(
-        () => _FakeUserPreferences(preferencesController),
+        () => _FakeUserPreferences(preferencesController, sprkRepository),
       ),
     ],
     retry: (retryCount, error) => null,
@@ -329,69 +331,6 @@ void main() {
   });
 
   group('labeler preferences', () {
-    test('maps stored visibility into label policy state', () async {
-      preferencesController.current = Preferences(
-        preferences: [
-          savedFeedsPreference([_savedFeed('following')]),
-          contentLabelPreference(
-            labelerDid: 'did:plc:labeler',
-            label: 'nsfl',
-            visibility: 'warn',
-          ),
-        ],
-      );
-      final container = createContainer();
-      final notifier = await loadSettings(container);
-
-      final preference = await notifier.getLabelPreference('nsfl');
-
-      expect(preference.setting, Setting.warn);
-      expect(preference.blurs, Blurs.media);
-      expect(preference.severity, Severity.alert);
-      expect(preference.adultOnly, isTrue);
-    });
-
-    test(
-      'setLabelPreference updates the target and preserves others',
-      () async {
-        preferencesController.current = Preferences(
-          preferences: [
-            savedFeedsPreference([_savedFeed('following')]),
-            contentLabelPreference(
-              labelerDid: 'did:plc:labeler',
-              label: 'gore',
-              visibility: 'warn',
-            ),
-            contentLabelPreference(
-              labelerDid: 'did:plc:labeler',
-              label: 'nudity',
-              visibility: 'ignore',
-            ),
-          ],
-        );
-        final container = createContainer();
-        final notifier = await loadSettings(container);
-
-        await notifier.setLabelPreference(
-          'gore',
-          Blurs.content,
-          Severity.alert,
-          false,
-          Setting.hide,
-        );
-
-        final written = preferencesController.writes.single.contentLabelPrefs!;
-        expect(
-          written.firstWhere((pref) => pref.label == 'gore').visibilityValue,
-          'hide',
-        );
-        expect(
-          written.firstWhere((pref) => pref.label == 'nudity').visibilityValue,
-          'ignore',
-        );
-      },
-    );
-
     test('labeler-specific update changes only the matching policy', () async {
       preferencesController.current = Preferences(
         preferences: [
@@ -409,28 +348,28 @@ void main() {
         ],
       );
       final container = createContainer();
-      final notifier = await loadSettings(container);
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
 
-      await notifier.setLabelPreferenceForLabeler(
+      await labelers.setLabelPreference(
         'did:plc:a',
         'custom',
-        Blurs.content,
-        Severity.alert,
-        false,
-        Setting.hide,
+        ModerationSetting.hide,
       );
 
       final written = preferencesController.writes.single.contentLabelPrefs!;
       expect(
         written
             .firstWhere((pref) => pref.labelerDid == 'did:plc:a')
-            .visibilityValue,
+            .visibility
+            .toJson(),
         'hide',
       );
       expect(
         written
             .firstWhere((pref) => pref.labelerDid == 'did:plc:b')
-            .visibilityValue,
+            .visibility
+            .toJson(),
         'ignore',
       );
     });
@@ -442,27 +381,182 @@ void main() {
           preferences: [
             savedFeedsPreference([_savedFeed('following')]),
             labelersPreference([LabelerPrefItem(did: 'did:plc:mod')]),
+            contentLabelPreference(
+              labelerDid: 'did:plc:other',
+              label: 'custom',
+              visibility: 'warn',
+            ),
           ],
         );
         final container = createContainer();
-        final notifier = await loadSettings(container);
+        await loadSettings(container);
+        final labelers = container.read(labelerSettingsControllerProvider);
 
-        await notifier.addLabeler('did:plc:other');
+        await labelers.addLabeler('did:plc:other');
         expect(
           preferencesController.current.labelers?.map((item) => item.did),
           ['did:plc:mod', 'did:plc:other'],
         );
 
-        await notifier.removeLabeler('did:plc:other');
+        await labelers.removeLabeler('did:plc:other');
         expect(
           preferencesController.current.labelers?.map((item) => item.did),
           ['did:plc:mod'],
         );
+        expect(
+          preferencesController.current.contentLabelPrefs?.where(
+                (pref) => pref.labelerDid == 'did:plc:other',
+              ) ??
+              const [],
+          isEmpty,
+        );
         await expectLater(
-          notifier.removeLabeler('did:plc:mod'),
+          labelers.removeLabeler('did:plc:mod'),
           throwsA(isA<Exception>()),
         );
         expect(preferencesController.writes, hasLength(2));
+      },
+    );
+
+    test('resolves and validates a handle before persisting it', () async {
+      preferencesController.current = Preferences(
+        preferences: [
+          savedFeedsPreference([_savedFeed('following')]),
+          labelersPreference([LabelerPrefItem(did: 'did:plc:mod')]),
+        ],
+      );
+      final container = createContainer();
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
+
+      await labelers.addLabeler('@labeler.test');
+
+      expect(preferencesController.current.labelers?.map((item) => item.did), [
+        'did:plc:mod',
+        'did:plc:resolved',
+      ]);
+      expect(sprkRepository.labelerDids, ['did:plc:mod', 'did:plc:resolved']);
+    });
+
+    test('does not persist a service that fails validation', () async {
+      preferencesController.current = Preferences(
+        preferences: [
+          savedFeedsPreference([_savedFeed('following')]),
+          labelersPreference([LabelerPrefItem(did: 'did:plc:mod')]),
+        ],
+      );
+      sprkRepository._labelerRepository.invalidDids.add('did:plc:invalid');
+      final container = createContainer();
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
+
+      await expectLater(
+        labelers.addLabeler('did:plc:invalid'),
+        throwsA(isA<Exception>()),
+      );
+
+      expect(preferencesController.writes, isEmpty);
+      expect(preferencesController.current.labelers?.map((item) => item.did), [
+        'did:plc:mod',
+      ]);
+    });
+
+    test('enforces the 20-labeler subscription limit', () async {
+      preferencesController.current = Preferences(
+        preferences: [
+          savedFeedsPreference([_savedFeed('following')]),
+          labelersPreference([
+            LabelerPrefItem(did: 'did:plc:mod'),
+            for (var index = 1; index < 20; index++)
+              LabelerPrefItem(did: 'did:plc:$index'),
+          ]),
+        ],
+      );
+      final container = createContainer();
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
+
+      await expectLater(
+        labelers.addLabeler('did:plc:overflow'),
+        throwsA(isA<StateError>()),
+      );
+
+      expect(preferencesController.writes, isEmpty);
+      expect(preferencesController.current.labelers, hasLength(20));
+    });
+
+    test('sync removes unavailable labelers and their preferences', () async {
+      preferencesController.current = Preferences(
+        preferences: [
+          savedFeedsPreference([_savedFeed('following')]),
+          labelersPreference([
+            LabelerPrefItem(did: 'did:plc:mod'),
+            LabelerPrefItem(did: 'did:plc:unavailable'),
+          ]),
+          contentLabelPreference(
+            labelerDid: 'did:plc:unavailable',
+            label: 'custom',
+            visibility: 'warn',
+          ),
+        ],
+      );
+      sprkRepository._labelerRepository.invalidDids.add('did:plc:unavailable');
+      final container = createContainer();
+      await loadSettings(container);
+      final labelers = container.read(labelerSettingsControllerProvider);
+
+      await labelers.syncLabelers();
+
+      expect(preferencesController.current.labelers?.map((item) => item.did), [
+        'did:plc:mod',
+      ]);
+      expect(
+        preferencesController.current.contentLabelPrefs?.where(
+              (pref) => pref.labelerDid == 'did:plc:unavailable',
+            ) ??
+            const [],
+        isEmpty,
+      );
+      expect(sprkRepository.labelerDids, ['did:plc:mod']);
+    });
+
+    test(
+      'sync caps persisted labelers with the required default first',
+      () async {
+        preferencesController.current = Preferences(
+          preferences: [
+            savedFeedsPreference([_savedFeed('following')]),
+            labelersPreference([
+              for (var index = 0; index < 20; index++)
+                LabelerPrefItem(did: 'did:plc:$index'),
+            ]),
+            contentLabelPreference(
+              labelerDid: 'did:plc:19',
+              label: 'custom',
+              visibility: 'warn',
+            ),
+          ],
+        );
+        final container = createContainer();
+        await loadSettings(container);
+        final labelers = container.read(labelerSettingsControllerProvider);
+
+        await labelers.syncLabelers();
+
+        final persisted = preferencesController.current;
+        expect(persisted.labelers, hasLength(20));
+        expect(persisted.labelers?.first.did, 'did:plc:mod');
+        expect(
+          persisted.labelers?.map((labeler) => labeler.did),
+          sprkRepository.labelerDids,
+        );
+        expect(
+          persisted.contentLabelPrefs?.where(
+                (preference) => preference.labelerDid == 'did:plc:19',
+              ) ??
+              const [],
+          isEmpty,
+        );
       },
     );
   });
@@ -493,36 +587,53 @@ class _PreferencesController {
 }
 
 class _FakeUserPreferences extends UserPreferences {
-  _FakeUserPreferences(this.controller);
+  _FakeUserPreferences(this.controller, this.repository);
 
   final _PreferencesController controller;
+  final SprkRepository repository;
 
   @override
-  Future<Preferences> build() async => controller.current;
+  Future<Preferences> build() async => _configureLabelers(controller.current);
 
   @override
   Future<void> refresh() async {
     controller.refreshCalls++;
     final error = controller.refreshError;
     if (error != null) {
-      state = AsyncValue.error(error, StackTrace.current);
       throw error;
     }
     final refreshed = controller.refreshResult ?? controller.current;
     controller.current = refreshed;
-    state = AsyncValue.data(refreshed);
+    state = AsyncValue.data(_configureLabelers(refreshed));
   }
 
   @override
-  Future<void> updatePreferences(Preferences preferences) async {
+  Future<Preferences> updatePreferences(Preferences preferences) async {
     controller.writes.add(preferences);
     final error = controller.updateError;
     if (error != null) {
-      state = AsyncValue.error(error, StackTrace.current);
       throw error;
     }
     controller.current = preferences;
-    state = AsyncValue.data(preferences);
+    state = AsyncValue.data(_configureLabelers(preferences));
+    return preferences;
+  }
+
+  @override
+  Future<Preferences> updatePreferencesWithFn(
+    Preferences Function(Preferences current) updater,
+  ) async {
+    final current = controller.current;
+    final updated = updater(current);
+    if (identical(updated, current)) return current;
+    return updatePreferences(updated);
+  }
+
+  Preferences _configureLabelers(Preferences preferences) {
+    repository.configureLabelers(
+      preferences.labelers?.map((labeler) => labeler.did) ?? const [],
+    );
+    return preferences;
   }
 }
 
@@ -548,11 +659,37 @@ class _FakeFeedRepository implements FeedRepository {
 class _FakeSprkRepository implements SprkRepository {
   _FakeSprkRepository(this.authRepository, this.feed);
 
+  final _FakeLabelerRepository _labelerRepository = _FakeLabelerRepository();
+  List<String> _labelerDids = ['did:plc:mod'];
+
   @override
   final AuthRepository authRepository;
 
   @override
   final FeedRepository feed;
+
+  @override
+  LabelerRepository get labeler => _labelerRepository;
+
+  @override
+  List<String> get labelerDids => List.unmodifiable(_labelerDids);
+
+  @override
+  void configureLabelers(Iterable<String> labelerDids) {
+    _labelerDids = {'did:plc:mod', ...labelerDids}.take(20).toList();
+  }
+
+  @override
+  Map<String, String> appViewHeaders(
+    String? proxyDid, {
+    Iterable<String>? labelerDids,
+  }) {
+    final accepted = labelerDids?.toList() ?? _labelerDids;
+    return {
+      'atproto-proxy': ?proxyDid,
+      if (accepted.isNotEmpty) 'atproto-accept-labelers': accepted.join(','),
+    };
+  }
 
   @override
   String get modDid => 'did:plc:mod#spark-labeler';
@@ -562,6 +699,28 @@ class _FakeSprkRepository implements SprkRepository {
 
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) => apiCall();
+
+  @override
+  Never noSuchMethod(Invocation invocation) =>
+      throw UnsupportedError('${invocation.memberName} is not used');
+}
+
+class _FakeLabelerRepository implements LabelerRepository {
+  final Set<String> invalidDids = {};
+
+  @override
+  Future<String> resolveIdentifier(String identifier) async {
+    final normalized = identifier.trim().replaceFirst(RegExp(r'^@'), '');
+    if (normalized == 'labeler.test') return 'did:plc:resolved';
+    return normalized;
+  }
+
+  @override
+  Future<void> validateService(String did) async {
+    if (invalidDids.contains(did)) {
+      throw const LabelerServiceUnavailableException('Not a labeler');
+    }
+  }
 
   @override
   Never noSuchMethod(Invocation invocation) =>

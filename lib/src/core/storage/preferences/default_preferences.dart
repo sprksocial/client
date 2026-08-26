@@ -25,50 +25,6 @@ class DefaultPreferences {
       ),
     ];
 
-    // Default label preferences
-    final defaultLabelPrefs = [
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: '!hide',
-        visibility: 'hide',
-      ),
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: '!no-promote',
-        visibility: 'hide',
-      ),
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: '!warn',
-        visibility: 'warn',
-      ),
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: '!no-unauthenticated',
-        visibility: 'ignore',
-      ),
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: 'dmca-violation',
-        visibility: 'hide',
-      ),
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: 'doxxing',
-        visibility: 'warn',
-      ),
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: 'nsfl',
-        visibility: 'warn',
-      ),
-      contentLabelPreference(
-        labelerDid: labelerDid,
-        label: 'gore',
-        visibility: 'warn',
-      ),
-    ];
-
     // Default labelers
     final defaultLabelers = [LabelerPrefItem(did: labelerDid)];
 
@@ -76,7 +32,6 @@ class DefaultPreferences {
       preferences: [
         savedFeedsPreference(defaultFeeds),
         labelersPreference(defaultLabelers),
-        ...defaultLabelPrefs,
       ],
     );
   }

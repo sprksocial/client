@@ -35,6 +35,10 @@ void main() {
         request.headers['atproto-proxy'],
         'did:web:sprk.test#sprk_appview',
       );
+      expect(
+        request.headers['atproto-accept-labelers'],
+        'did:web:mod.sprk.test',
+      );
       expect(output.cursor, 'next-page');
       expect(output.followers.single.did, 'did:plc:bob');
     });

@@ -1,30 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/providers/debounce_scheduler.dart';
-import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/search/data/repositories/post_search_repository.dart';
 import 'package:spark/src/features/search/providers/post_search_state.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 part 'post_search_provider.g.dart';
 
 final postSearchRepositoryProvider = Provider<PostSearchRepository>((ref) {
   return PostSearchRepositoryImpl(
     GetIt.instance<SprkRepository>().feed,
-    GetIt.instance<AuthRepository>(),
+    GetIt.instance<SprkRepository>(),
     GetIt.instance<LogService>().getLogger('PostSearchRepository'),
   );
-});
-
-final postSearchPreferencesProvider = Provider<Preferences?>((ref) {
-  return ref.watch(userPreferencesProvider).asData?.value;
 });
 
 /// Search provider for post search functionality
@@ -107,23 +101,20 @@ class PostSearch extends _$PostSearch {
   /// Search for posts with the given query
   Future<void> _searchPosts(String query, {required int requestToken}) async {
     if (query.isEmpty) return;
-    if (requestToken != _activeSearchToken || state.query != query) {
-      return;
-    }
+    if (!_isCurrentRequest(query, requestToken)) return;
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final response = await _repository.search(query);
 
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
-      final filteredSprkPosts = _filterHiddenPosts(response.sprk.posts);
-      final filteredBskyPosts = _filterHiddenPosts(response.bsky.posts);
+      final filteredSprkPosts = await _filterHiddenPosts(response.sprk.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
+
+      final filteredBskyPosts = await _filterHiddenPosts(response.bsky.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       final combinedPosts = [...filteredSprkPosts, ...filteredBskyPosts];
 
@@ -140,11 +131,7 @@ class PostSearch extends _$PostSearch {
         await _loadMorePostsForToken(requestToken);
       }
     } catch (e) {
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       _logger.e('Error searching posts: $e');
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -190,13 +177,11 @@ class PostSearch extends _$PostSearch {
     if (sprkCursor != null && sprkCursor.isNotEmpty) {
       final response = await _repository.searchSprk(query, cursor: sprkCursor);
 
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
-      final filteredPosts = _filterHiddenPosts(response.posts);
+      final filteredPosts = await _filterHiddenPosts(response.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
+
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredPosts],
         sprkNextCursor: response.cursor,
@@ -214,14 +199,12 @@ class PostSearch extends _$PostSearch {
     if (bskyCursor != null && bskyCursor.isNotEmpty) {
       final response = await _repository.searchBsky(query, cursor: bskyCursor);
 
-      if (!ref.mounted ||
-          requestToken != _activeSearchToken ||
-          state.query != query) {
-        return;
-      }
+      if (!_isCurrentRequest(query, requestToken)) return;
 
       final initialCount = state.searchResults.length;
-      final filteredBskyPosts = _filterHiddenPosts(response.posts);
+      final filteredBskyPosts = await _filterHiddenPosts(response.posts);
+      if (!_isCurrentRequest(query, requestToken)) return;
+
       state = state.copyWith(
         searchResults: [...state.searchResults, ...filteredBskyPosts],
         bskyNextCursor: response.cursor,
@@ -236,19 +219,30 @@ class PostSearch extends _$PostSearch {
     }
   }
 
-  List<PostView> _filterHiddenPosts(List<PostView> posts) {
-    final preferences = ref.read(postSearchPreferencesProvider);
-    if (preferences == null) {
-      return posts; // Can't filter without preferences
-    }
+  bool _isCurrentRequest(String query, int requestToken) {
+    return ref.mounted &&
+        requestToken == _activeSearchToken &&
+        state.query == query;
+  }
 
-    final filteredPosts = <PostView>[];
-    for (final post in posts) {
-      if (!LabelUtils.shouldHideContent(preferences, post.labels ?? [])) {
-        filteredPosts.add(post);
-      }
+  Future<List<PostView>> _filterHiddenPosts(List<PostView> posts) async {
+    try {
+      final engine = await ref.read(moderationEngineProvider.future);
+      return posts.where((post) {
+        final decision = ModerationSubject.content(
+          labels: post.labels ?? const [],
+          authorLabels: post.author.labels ?? const [],
+          subjectDid: post.author.did,
+        ).evaluate(engine);
+        return !decision.forContext(ModerationContext.contentList).filter;
+      }).toList();
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Could not moderate search results',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return posts;
     }
-
-    return filteredPosts;
   }
 }

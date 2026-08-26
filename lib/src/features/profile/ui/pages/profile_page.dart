@@ -1,4 +1,6 @@
 import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/admin/defs.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +19,8 @@ import 'package:spark/src/core/utils/blocking_utils.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/utils/text_formatter.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/ui/pages/recording_page.dart';
@@ -57,6 +61,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
     'ProfilePage',
   );
+  late final SprkRepository _sprkRepository = GetIt.instance<SprkRepository>();
   late final IdentityRepository _identityRepository =
       GetIt.instance<IdentityRepository>();
   late final ScrollController _scrollController = ScrollController();
@@ -254,191 +259,212 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         final links = TextFormatter.extractUrls(description);
         final uniqueLinks = links.toSet().toList();
 
-        return ProfilePageTemplate(
-          displayName: profile.displayName ?? profile.handle,
-          handle: profile.handle,
-          postsCount: TextFormatter.formatCount(profile.postsCount),
-          followersCount: TextFormatter.formatCount(profile.followersCount),
-          followingCount: TextFormatter.formatCount(profile.followsCount),
-          avatarUrl: profile.avatar?.toString(),
-          description: description.isNotEmpty ? description : null,
-          links: uniqueLinks.isNotEmpty ? uniqueLinks : null,
-          knownFollowers: profile.viewer?.knownFollowers,
-          onKnownFollowersTap: () => context.router.push(
-            UserListRoute(did: widget.did, type: UserListType.knownFollowers),
+        return ModeratedContent(
+          subject: ModerationSubject.profile(
+            labels: profile.labels ?? const [],
+            subjectDid: profile.did,
           ),
-          hasStories: profile.stories?.isNotEmpty ?? false,
-          isCurrentUser: isCurrentUser,
-          isFollowing: profile.viewer?.following != null,
-          isBlocking: isBlocking(profile.viewer),
-          onAvatarTap: (profile.stories?.isNotEmpty ?? false)
-              ? () => _openStoriesViewer(profile)
-              : null,
-          onFollowersTap: () => context.router.push(
-            UserListRoute(did: widget.did, type: UserListType.followers),
-          ),
-          onFollowingTap: () => context.router.push(
-            UserListRoute(did: widget.did, type: UserListType.following),
-          ),
-          onEditTap: () {
-            context.router.push(EditProfileRoute(profile: profile)).then((
-              updated,
-            ) {
-              if (updated == true) {
-                notifier.refreshProfile();
+          context: ModerationContext.profileView,
+          child: ProfilePageTemplate(
+            displayName: profile.displayName ?? profile.handle,
+            handle: profile.handle,
+            postsCount: TextFormatter.formatCount(profile.postsCount),
+            followersCount: TextFormatter.formatCount(profile.followersCount),
+            followingCount: TextFormatter.formatCount(profile.followsCount),
+            avatarUrl: profile.avatar?.toString(),
+            avatarBuilder: (avatar) => ModeratedProfileAvatar(
+              labels: profile.labels ?? const [],
+              subjectDid: profile.did,
+              child: avatar,
+            ),
+            description: description.isNotEmpty ? description : null,
+            links: uniqueLinks.isNotEmpty ? uniqueLinks : null,
+            knownFollowers: profile.viewer?.knownFollowers,
+            onKnownFollowersTap: () => context.router.push(
+              UserListRoute(did: widget.did, type: UserListType.knownFollowers),
+            ),
+            hasStories: profile.stories?.isNotEmpty ?? false,
+            isCurrentUser: isCurrentUser,
+            isFollowing: profile.viewer?.following != null,
+            isBlocking: isBlocking(profile.viewer),
+            onAvatarTap: (profile.stories?.isNotEmpty ?? false)
+                ? () => _openStoriesViewer(profile)
+                : null,
+            onFollowersTap: () => context.router.push(
+              UserListRoute(did: widget.did, type: UserListType.followers),
+            ),
+            onFollowingTap: () => context.router.push(
+              UserListRoute(did: widget.did, type: UserListType.following),
+            ),
+            onEditTap: () {
+              context.router.push(EditProfileRoute(profile: profile)).then((
+                updated,
+              ) {
+                if (updated == true) {
+                  notifier.refreshProfile();
+                }
+              });
+            },
+            onFollowingChanged: (following) async {
+              try {
+                await notifier.setFollowing(following: following);
+              } catch (e) {
+                _logger.e('Error updating follow state', error: e);
               }
-            });
-          },
-          onFollowingChanged: (following) async {
-            try {
-              await notifier.setFollowing(following: following);
-            } catch (e) {
-              _logger.e('Error updating follow state', error: e);
-            }
-          },
-          onUnblockTap: () async {
-            try {
-              await notifier.toggleBlock();
-            } catch (e) {
-              _logger.e('Error unblocking profile', error: e);
-            }
-          },
-          onMentionTap: _handleUsernameTap,
-          onAddStoryTap: isCurrentUser ? () => _handleAddStory(context) : null,
-          appBarTitle: profile.handle,
-          leading: isCurrentUser && !context.router.canPop()
-              ? SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onPressed: CreateMediaActions.onRecord(
-                      context,
-                      storyMode: false,
+            },
+            onUnblockTap: () async {
+              try {
+                await notifier.toggleBlock();
+              } catch (e) {
+                _logger.e('Error unblocking profile', error: e);
+              }
+            },
+            onMentionTap: _handleUsernameTap,
+            onAddStoryTap: isCurrentUser
+                ? () => _handleAddStory(context)
+                : null,
+            appBarTitle: profile.handle,
+            leading: isCurrentUser && !context.router.canPop()
+                ? SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      onPressed: CreateMediaActions.onRecord(
+                        context,
+                        storyMode: false,
+                      ),
+                      icon: AppIcons.addPostFilled(size: 28),
                     ),
-                    icon: AppIcons.addPostFilled(size: 28),
-                  ),
+                  )
+                : null,
+            appBarActions: [
+              if (isCurrentUser)
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onPressed: () => context.router.push(const SettingsRoute()),
+                  icon: AppIcons.gear(color: colorScheme.onSurface, size: 28),
                 )
-              : null,
-          appBarActions: [
-            if (isCurrentUser)
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onPressed: () => context.router.push(const SettingsRoute()),
-                icon: AppIcons.gear(color: colorScheme.onSurface, size: 28),
-              )
-            else
-              IconButton(
-                onPressed: () => OptionsPanel.show(
-                  context: context,
-                  onReport: () => showDialog<void>(
+              else
+                IconButton(
+                  onPressed: () => OptionsPanel.show(
                     context: context,
-                    useRootNavigator: false,
-                    builder: (dContext) => ReportDialog(
-                      postUri:
-                          'at://${profile.did}/app.bsky.actor.profile/self',
-                      postCid: profile.did,
-                      onSubmit: (subject, reasonType, reason) async {
-                        try {
+                    onReport: () => showDialog<void>(
+                      context: context,
+                      useRootNavigator: false,
+                      builder: (dContext) => ReportDialog(
+                        subject: UModerationCreateReportSubject.repoRef(
+                          data: RepoRef(did: profile.did),
+                        ),
+                        fallbackServiceDid: widget.bsky
+                            ? _sprkRepository.bskyModDid
+                            : _sprkRepository.modDid,
+                        onSubmit: (input, serviceDid) async {
                           await notifier.createReport(
                             did: profile.did,
-                            reasonType: reasonType,
-                            reason: reason,
+                            reasonType: input.reasonType,
+                            reason: input.reason,
+                            serviceDid: serviceDid,
                           );
-                        } catch (e) {
-                          _logger.e('Error creating report', error: e);
-                        }
-                      },
+                        },
+                      ),
                     ),
-                  ),
-                  onBlock: () async {
-                    final wasBlocked = isBlocking(profile.viewer);
+                    onBlock: () async {
+                      final wasBlocked = isBlocking(profile.viewer);
 
-                    // Show confirmation dialog
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) {
-                        final dialogL10n = AppLocalizations.of(context);
-                        return AlertDialog(
-                          title: Text(
-                            wasBlocked
-                                ? dialogL10n.dialogUnblockUser
-                                : dialogL10n.dialogBlockUser,
-                          ),
-                          content: Text(
-                            wasBlocked
-                                ? dialogL10n.dialogUnblockUserConfirm
-                                : dialogL10n.dialogBlockUserConfirm,
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: Text(dialogL10n.buttonCancel),
+                      // Show confirmation dialog
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          final dialogL10n = AppLocalizations.of(context);
+                          return AlertDialog(
+                            title: Text(
+                              wasBlocked
+                                  ? dialogL10n.dialogUnblockUser
+                                  : dialogL10n.dialogBlockUser,
                             ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              style: TextButton.styleFrom(
-                                foregroundColor: wasBlocked ? null : Colors.red,
-                              ),
-                              child: Text(
-                                wasBlocked
-                                    ? dialogL10n.buttonUnblock
-                                    : dialogL10n.buttonBlock,
-                              ),
+                            content: Text(
+                              wasBlocked
+                                  ? dialogL10n.dialogUnblockUserConfirm
+                                  : dialogL10n.dialogBlockUserConfirm,
                             ),
-                          ],
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: Text(dialogL10n.buttonCancel),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: wasBlocked
+                                      ? null
+                                      : Colors.red,
+                                ),
+                                child: Text(
+                                  wasBlocked
+                                      ? dialogL10n.buttonUnblock
+                                      : dialogL10n.buttonBlock,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      if (confirmed != true) return;
+
+                      try {
+                        await notifier.toggleBlock();
+                      } catch (e) {
+                        _logger.e(
+                          'Error blocking/unblocking profile',
+                          error: e,
                         );
-                      },
-                    );
-
-                    if (confirmed != true) return;
-
-                    try {
-                      await notifier.toggleBlock();
-                    } catch (e) {
-                      _logger.e('Error blocking/unblocking profile', error: e);
-                    }
-                  },
-                  isBlocked: isBlocking(profile.viewer),
-                  isProfile: true,
+                      }
+                    },
+                    isBlocked: isBlocking(profile.viewer),
+                    isProfile: true,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  icon: AppIcons.moreHoriz(
+                    color: colorScheme.onSurface,
+                    size: 28,
+                  ),
                 ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                icon: AppIcons.moreHoriz(
-                  color: colorScheme.onSurface,
-                  size: 28,
-                ),
+            ],
+            tabsWidget: ProfileTabBar(
+              selectedIndex: _activeTabIndex,
+              tabs: _buildTabItems(
+                context,
+                _activeTabIndex,
+                isCurrentUser: isCurrentUser,
               ),
-          ],
-          tabsWidget: ProfileTabBar(
-            selectedIndex: _activeTabIndex,
-            tabs: _buildTabItems(
-              context,
-              _activeTabIndex,
-              isCurrentUser: isCurrentUser,
             ),
+            onTabChanged: (index) {
+              setState(() {
+                _activeTabIndex = index;
+              });
+            },
+            contentWidget:
+                const SizedBox.shrink(), // Not used when contentSlivers provided
+            contentSlivers: contentSlivers,
+            scrollController: _scrollController,
+            onRefresh: () async {
+              await notifier.refreshProfile();
+              ref.invalidate(profileFeedProvider);
+            },
           ),
-          onTabChanged: (index) {
-            setState(() {
-              _activeTabIndex = index;
-            });
-          },
-          contentWidget:
-              const SizedBox.shrink(), // Not used when contentSlivers provided
-          contentSlivers: contentSlivers,
-          scrollController: _scrollController,
-          onRefresh: () async {
-            await notifier.refreshProfile();
-            ref.invalidate(profileFeedProvider);
-          },
         );
       },
       loading: () {
@@ -448,11 +474,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         final isCurrentUserLoading =
             currentUserDid != null && currentUserDid == widget.did;
 
-        return ProfilePageTemplate(
+        final page = ProfilePageTemplate(
           isLoading: true,
           displayName: initial?.displayName ?? initial?.handle ?? 'Loading...',
           handle: initial?.handle ?? 'loading',
           avatarUrl: initial?.avatar?.toString(),
+          avatarBuilder: initial == null
+              ? null
+              : (avatar) => ModeratedProfileAvatar(
+                  labels: initial.labels ?? const [],
+                  subjectDid: initial.did,
+                  child: avatar,
+                ),
           postsCount: '0',
           followersCount: '0',
           followingCount: '0',
@@ -481,6 +514,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           contentSlivers:
               contentSlivers, // Tabs load even while profile is loading
           scrollController: _scrollController,
+        );
+
+        if (initial == null) return page;
+        return ModeratedContent(
+          subject: ModerationSubject.profile(
+            labels: initial.labels ?? const [],
+            subjectDid: initial.did,
+          ),
+          context: ModerationContext.profileView,
+          child: page,
         );
       },
       error: (error, stackTrace) {
@@ -603,6 +646,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         displayName: profile.displayName,
         avatar: profile.avatar,
         viewer: profile.viewer,
+        labels: profile.labels,
       );
 
       if (mounted) {

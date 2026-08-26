@@ -61,7 +61,7 @@ class GraphRepositoryImpl implements GraphRepository {
             actor: did,
             cursor: cursor,
           ),
-          headers: {'atproto-proxy': _client.sprkDid},
+          headers: _client.appViewHeaders(_client.sprkDid),
         );
         _logger.d('Followers retrieved successfully');
         return result.data;
@@ -98,7 +98,7 @@ class GraphRepositoryImpl implements GraphRepository {
             actor: did,
             cursor: cursor,
           ),
-          headers: {'atproto-proxy': _client.sprkDid},
+          headers: _client.appViewHeaders(_client.sprkDid),
         );
         _logger.d('Known followers retrieved successfully');
         return result.data;
@@ -137,7 +137,7 @@ class GraphRepositoryImpl implements GraphRepository {
             actor: did,
             cursor: cursor,
           ),
-          headers: {'atproto-proxy': _client.sprkDid},
+          headers: _client.appViewHeaders(_client.sprkDid),
         );
         _logger.d('Follows retrieved successfully');
         return result.data;
@@ -256,7 +256,7 @@ class GraphRepositoryImpl implements GraphRepository {
         final result = await atproto.call(
           sprk_get_blocks.soSprkGraphGetBlocks,
           parameters: sprk_get_blocks.GraphGetBlocksInput(cursor: cursor),
-          headers: {'atproto-proxy': _client.sprkDid},
+          headers: _client.appViewHeaders(_client.sprkDid),
         );
         _logger.d('Blocks retrieved successfully');
         return result.data;

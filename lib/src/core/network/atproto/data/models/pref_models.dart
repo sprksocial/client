@@ -1,4 +1,5 @@
 import 'package:poptart/poptart.dart';
+import 'package:sprk_poptart/so/sprk/actor/defs/adult_content_pref.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref_visibility.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/labeler_pref_item.dart';
@@ -10,6 +11,7 @@ import 'package:sprk_poptart/so/sprk/actor/defs/saved_feeds_pref.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs/union_preferences.dart';
 import 'package:sprk_poptart/so/sprk/actor/get_preferences/output.dart';
 
+export 'package:sprk_poptart/so/sprk/actor/defs/adult_content_pref.dart';
 export 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref.dart';
 export 'package:sprk_poptart/so/sprk/actor/defs/content_label_pref_visibility.dart';
 export 'package:sprk_poptart/so/sprk/actor/defs/feed_view_pref.dart';
@@ -74,7 +76,18 @@ Preference contentLabelPreference({
   );
 }
 
+Preference adultContentPreference({required bool enabled}) =>
+    Preference.adultContentPref(data: AdultContentPref(enabled: enabled));
+
 extension PreferencesConvenience on Preferences {
+  bool get adultContentEnabled {
+    for (final preference in preferences) {
+      final adultContentPref = preference.adultContentPref;
+      if (adultContentPref != null) return adultContentPref.enabled;
+    }
+    return false;
+  }
+
   List<ContentLabelPref>? get contentLabelPrefs {
     final prefs = preferences
         .map((preference) => preference.contentLabelPref)
@@ -152,8 +165,4 @@ extension PreferencesConvenience on Preferences {
 
 extension SavedFeedConvenience on SavedFeed {
   String get typeValue => type.toJson();
-}
-
-extension ContentLabelPrefConvenience on ContentLabelPref {
-  String get visibilityValue => visibility.toJson();
 }

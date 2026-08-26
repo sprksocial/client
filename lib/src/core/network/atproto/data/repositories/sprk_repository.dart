@@ -25,6 +25,18 @@ abstract class SprkRepository {
   String get modDid;
   String get bskyModDid;
 
+  /// The labeler subscriptions used for all Spark and Bluesky appview reads.
+  List<String> get labelerDids;
+
+  /// Replaces the active labeler subscriptions after preferences change.
+  void configureLabelers(Iterable<String> labelerDids);
+
+  /// Builds headers for an appview request while preserving proxy routing.
+  Map<String, String> appViewHeaders(
+    String? proxyDid, {
+    Iterable<String>? labelerDids,
+  });
+
   ActorRepository get actor;
   RepoRepository get repo;
   FeedRepository get feed;

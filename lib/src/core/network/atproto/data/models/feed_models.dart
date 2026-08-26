@@ -589,6 +589,11 @@ sealed class ThreadPost with _$ThreadPost {
     ThreadReplyView(:final reply) => reply.indexedAt,
   };
 
+  List<Label>? get labels => switch (this) {
+    ThreadPostView(:final post) => post.labels,
+    ThreadReplyView(:final reply) => reply.labels,
+  };
+
   String get videoUrl => switch (this) {
     ThreadPostView(:final post) => post.videoUrl,
     ThreadReplyView() => '', // Replies cannot have videos
@@ -630,7 +635,7 @@ sealed class Thread with _$Thread {
   /// Delegates to [bskyFeedAdapter.convertBskyThreadToSparkThread] which
   /// handles all Bluesky-specific conversion logic.
   factory Thread.fromBsky({
-    required UFeedGetPostThreadThread thread,
+    required UFeedGetPostThreadOutputThread thread,
     required AtUri uri,
   }) {
     return bskyFeedAdapter.convertBskyThreadToSparkThread(

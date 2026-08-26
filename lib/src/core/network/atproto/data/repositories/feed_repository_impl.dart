@@ -2,8 +2,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:poptart_lex/com/atproto/label/defs.dart';
-import 'package:poptart_lex/com/atproto/label/query_labels.dart'
-    as label_query_labels;
 import 'package:bluesky_poptart/app/bsky/feed/get_author_feed.dart'
     as bsky_feed_get_author_feed;
 import 'package:bluesky_poptart/app/bsky/feed/get_feed.dart'
@@ -86,12 +84,6 @@ class FeedRepositoryImpl implements FeedRepository {
   final SparkLogger _logger;
   final DateTime Function() _now;
   late final VideoUploadService _videoUploadService;
-
-  /// Formats labeler DIDs into the atproto-accept-labelers header format
-  /// Format: "did1,did2,did3" (comma-separated list)
-  String _formatLabelerHeader(List<String> labelerDids) {
-    return labelerDids.join(',');
-  }
 
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
 
@@ -217,6 +209,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final posts = await blueskyClient.call(
         bsky_feed_get_posts.appBskyFeedGetPosts,
         parameters: bsky_feed_get_posts.FeedGetPostsInput(uris: uris),
+        headers: _client.appViewHeaders(_client.bskyDid),
       );
 
       // Use adapter to process Bluesky posts
@@ -237,13 +230,10 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = <String, String>{'atproto-proxy': _client.sprkDid};
-      // Note: labeler header could be added here if needed for getPosts
-
       final result = await atproto.call(
         sprk_get_posts.soSprkFeedGetPosts,
         parameters: sprk_get_posts.FeedGetPostsInput(uris: uris),
-        headers: headers,
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final posts = result.data.toJson()['posts']! as List<dynamic>;
       _logger.d(
@@ -326,12 +316,13 @@ class FeedRepositoryImpl implements FeedRepository {
             limit: limit,
             cursor: cursor,
             filter: videosOnly
-                ? sprk_get_author_feed.FeedGetAuthorFeedFilter.valueOf(
+                ? sprk_get_author_feed
+                      .FeedGetAuthorFeedParametersFilter.valueOf(
                     'posts_with_video',
                   )
                 : null,
           ),
-          headers: {'atproto-proxy': _client.sprkDid},
+          headers: _client.appViewHeaders(_client.sprkDid),
         );
         final output = result.data;
         final outputJson = output.toJson();
@@ -387,10 +378,12 @@ class FeedRepositoryImpl implements FeedRepository {
                 limit: limit,
                 cursor: cursor,
                 filter:
-                    bsky_feed_get_author_feed.FeedGetAuthorFeedFilter.valueOf(
+                    bsky_feed_get_author_feed
+                        .FeedGetAuthorFeedParametersFilter.valueOf(
                       videosOnly ? 'posts_with_video' : 'posts_with_media',
                     ),
               ),
+              headers: _client.appViewHeaders(_client.bskyDid),
             );
 
         // Use adapter to process Bluesky author feed
@@ -425,18 +418,16 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = <String, String>{'atproto-proxy': _client.sprkDid};
-      if (labelerDids != null && labelerDids.isNotEmpty) {
-        headers['atproto-accept-labelers'] = _formatLabelerHeader(labelerDids);
-      }
-
       final result = await atproto.call(
         sprk_get_timeline.soSprkFeedGetTimeline,
         parameters: sprk_get_timeline.FeedGetTimelineInput(
           limit: limit,
           cursor: cursor,
         ),
-        headers: headers,
+        headers: _client.appViewHeaders(
+          _client.sprkDid,
+          labelerDids: labelerDids,
+        ),
       );
       final output = result.data;
       final feedData = output.toJson()['feed'] as List<dynamic>;
@@ -496,12 +487,10 @@ class FeedRepositoryImpl implements FeedRepository {
       final isBskyFeed =
           feedUri.collection == NSID.parse('app.bsky.feed.generator');
 
-      final headers = <String, String>{
-        'atproto-proxy': isBskyFeed ? _client.bskyDid : _client.sprkDid,
-      };
-      if (!isBskyFeed && labelerDids != null && labelerDids.isNotEmpty) {
-        headers['atproto-accept-labelers'] = _formatLabelerHeader(labelerDids);
-      }
+      final headers = _client.appViewHeaders(
+        isBskyFeed ? _client.bskyDid : _client.sprkDid,
+        labelerDids: labelerDids,
+      );
 
       final FeedView feedView;
       if (isBskyFeed) {
@@ -575,9 +564,9 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = isBskyFeed
-          ? {'atproto-proxy': _client.bskyDid}
-          : {'atproto-proxy': _client.sprkDid};
+      final headers = _client.appViewHeaders(
+        isBskyFeed ? _client.bskyDid : _client.sprkDid,
+      );
       if (isBskyFeed) {
         final response = await atproto.call(
           bsky_feed_get_feed_generator.appBskyFeedGetFeedGenerator,
@@ -624,9 +613,9 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = bluesky
-          ? {'atproto-proxy': _client.bskyDid}
-          : {'atproto-proxy': _client.sprkDid};
+      final headers = _client.appViewHeaders(
+        bluesky ? _client.bskyDid : _client.sprkDid,
+      );
       final List<dynamic> feedsData;
       if (bluesky) {
         final response = await atproto.call(
@@ -682,9 +671,9 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = bluesky
-          ? {'atproto-proxy': _client.bskyDid}
-          : {'atproto-proxy': _client.sprkDid};
+      final headers = _client.appViewHeaders(
+        bluesky ? _client.bskyDid : _client.sprkDid,
+      );
       final List<dynamic> feedsData;
       if (bluesky) {
         final response = await atproto.call(
@@ -1043,6 +1032,7 @@ class FeedRepositoryImpl implements FeedRepository {
     bool crosspostToBsky = false,
     List<Facet> facets = const [],
     RepoStrongRef? soundRef,
+    List<SelfLabel>? selfLabels,
   }) async {
     if (imageFiles.isEmpty) {
       _logger.e('No images provided for image post');
@@ -1070,6 +1060,7 @@ class FeedRepositoryImpl implements FeedRepository {
       media: Media.images(images: uploadedImageMaps),
       createdAt: _now().toUtc(),
       sound: soundRef,
+      selfLabels: selfLabels,
     );
 
     final result = await _client.repo.createRecord(
@@ -1090,6 +1081,7 @@ class FeedRepositoryImpl implements FeedRepository {
           result,
           altTexts,
           facets,
+          selfLabels,
         );
         finalResult = await _client.repo.editRecordJson(
           uri: result.uri,
@@ -1251,6 +1243,7 @@ class FeedRepositoryImpl implements FeedRepository {
     RepoStrongRef sparkPostData,
     Map<String, String> altTexts,
     List<Facet> sparkFacets,
+    List<SelfLabel>? selfLabels,
   ) async {
     _logger.d('Crossposting to Bluesky with ${sparkImages.length} images');
 
@@ -1307,9 +1300,14 @@ class FeedRepositoryImpl implements FeedRepository {
       facets: bskyFacets.isNotEmpty ? bskyFacets : null,
     );
 
+    final bskyPostJson = bskyPost.toJson();
+    if (selfLabels != null && selfLabels.isNotEmpty) {
+      bskyPostJson['labels'] = SelfLabels(values: selfLabels).toJson();
+    }
+
     final bskyResult = await _client.repo.createRecord(
       collection: 'app.bsky.feed.post',
-      record: bskyPost.toJson(),
+      record: bskyPostJson,
       rkey: sparkPostData.uri.rkey,
     );
 
@@ -1397,6 +1395,7 @@ class FeedRepositoryImpl implements FeedRepository {
             depth: depth,
             parentHeight: parentHeight,
           ),
+          headers: _client.appViewHeaders(_client.bskyDid),
         );
         // Use adapter to convert Bluesky thread to Spark thread
         return bskyFeedAdapter.convertBskyThreadToSparkThread(
@@ -1411,7 +1410,7 @@ class FeedRepositoryImpl implements FeedRepository {
           depth: depth,
           parentHeight: parentHeight,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final threadItems = response.data.toJson()['thread']! as List<dynamic>;
       return Thread.fromSparkFlatList(threadItems: threadItems);
@@ -1454,13 +1453,12 @@ class FeedRepositoryImpl implements FeedRepository {
             anchor: anchor,
             depth: depth,
             parentHeight: parentHeight,
-            sort: sprk_get_crosspost_thread.FeedGetCrosspostThreadSort.valueOf(
-              sort,
-            ),
+            sort: sprk_get_crosspost_thread
+                .FeedGetCrosspostThreadParametersSort.valueOf(sort),
             limit: 100,
             cursor: cursor,
           ),
-          headers: {'atproto-proxy': _client.sprkDid},
+          headers: _client.appViewHeaders(_client.sprkDid),
         );
 
         final pageItems =
@@ -1482,64 +1480,6 @@ class FeedRepositoryImpl implements FeedRepository {
         threadItems: threadItems,
         isCrosspostThread: true,
       );
-    });
-  }
-
-  @override
-  Future<({List<Label> labels, String? cursor})> getLabels(
-    List<AtUri> uris, {
-    List<String>? sources,
-    int? limit,
-    String? cursor,
-  }) async {
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      final labels = <Label>[];
-
-      // Use modDid from repository as fallback if no sources provided
-      final defaultLabelerDid = _client.modDid.split('#').first;
-      final labelers = sources?.isNotEmpty ?? true
-          ? sources!
-          : [defaultLabelerDid];
-
-      final parameters = label_query_labels.LabelQueryLabelsInput(
-        uriPatterns: uris.map((uri) => uri.toString()).toList(),
-        sources: labelers,
-        limit: limit ?? 50,
-        cursor: cursor,
-      );
-
-      final response = await atproto.call(
-        label_query_labels.comAtprotoLabelQueryLabels,
-        headers: {'atproto-proxy': _client.modDid},
-        parameters: parameters,
-      );
-      final responseJson = response.data.toJson();
-      _logger
-        ..d('parameters: ${parameters.toJson()}')
-        ..d('Labels retrieved: $responseJson');
-
-      for (final label in responseJson['labels']! as List<dynamic>) {
-        final cleanLabel = label as Map<String, Object?>
-          ..remove('sig')
-          ..putIfAbsent(
-            'src',
-            () => defaultLabelerDid,
-          ); // Use default labeler DID if src is missing from response
-        labels.add(Label.fromJson(cleanLabel));
-      }
-
-      return (labels: labels, cursor: responseJson['cursor'] as String?);
     });
   }
 
@@ -1572,10 +1512,10 @@ class FeedRepositoryImpl implements FeedRepository {
         parameters: sprk_search_posts.FeedSearchPostsInput(
           q: query,
           limit: limit,
-          sort: sprk_search_posts.FeedSearchPostsSort.valueOf(sort),
+          sort: sprk_search_posts.FeedSearchPostsParametersSort.valueOf(sort),
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
 
       final output = response.data;
@@ -1621,7 +1561,7 @@ class FeedRepositoryImpl implements FeedRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final output = result.data;
       _logger.d('Likes retrieved successfully: ${output.likes.length} actors');
@@ -1664,7 +1604,7 @@ class FeedRepositoryImpl implements FeedRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final output = result.data;
       final rawFeed = output.toJson()['feed']! as List<dynamic>;
@@ -1733,7 +1673,7 @@ class FeedRepositoryImpl implements FeedRepository {
           limit: limit,
           cursor: cursor,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
       final output = result.data;
       final rawFeed = output.toJson()['feed']! as List<dynamic>;

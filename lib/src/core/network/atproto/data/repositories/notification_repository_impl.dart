@@ -65,7 +65,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
           priority: priority,
           reasons: reasons == null || reasons.isEmpty ? null : reasons,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
 
       _logger.d('Notifications retrieved successfully');
@@ -93,7 +93,7 @@ class NotificationRepositoryImpl implements NotificationRepository {
         parameters: sprk_get_unread_count.NotificationGetUnreadCountInput(
           priority: priority,
         ),
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: _client.appViewHeaders(_client.sprkDid),
       );
 
       final output = result.data;
@@ -160,10 +160,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
         serviceDid: serviceDid,
         token: token,
         platform:
-            sprk_register_push.NotificationRegisterPushPlatform.valueOf(
+            sprk_register_push.NotificationRegisterPushInputPlatform.valueOf(
               platform,
             ) ??
-            sprk_register_push.NotificationRegisterPushPlatform.unknown(
+            sprk_register_push.NotificationRegisterPushInputPlatform.unknown(
               data: platform,
             ),
         appId: appId,
@@ -205,10 +205,10 @@ class NotificationRepositoryImpl implements NotificationRepository {
         serviceDid: serviceDid,
         token: token,
         platform:
-            sprk_unregister_push.NotificationUnregisterPushPlatform.valueOf(
-              platform,
-            ) ??
-            sprk_unregister_push.NotificationUnregisterPushPlatform.unknown(
+            sprk_unregister_push
+                .NotificationUnregisterPushInputPlatform.valueOf(platform) ??
+            sprk_unregister_push
+                .NotificationUnregisterPushInputPlatform.unknown(
               data: platform,
             ),
         appId: appId,

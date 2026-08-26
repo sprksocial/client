@@ -99,6 +99,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pageTitleSettings => 'Settings';
 
   @override
+  String get pageTitleModeration => 'Moderation';
+
+  @override
   String get pageTitleStoryManager => 'Story Manager';
 
   @override
@@ -963,6 +966,119 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return 'Followed by $firstName, $secondName, and $_temp0';
   }
+
+  @override
+  String get moderationContentWarning => 'Content warning';
+
+  @override
+  String get moderationContentNotice => 'Content notice';
+
+  @override
+  String get buttonViewContent => 'View content';
+
+  @override
+  String get buttonModerationDetails => 'Why am I seeing this?';
+
+  @override
+  String get moderationCannotOverride =>
+      'This restriction cannot be overridden.';
+
+  @override
+  String get moderationDetailsTitle => 'Moderation details';
+
+  @override
+  String get moderationAppliedBy => 'Applied by';
+
+  @override
+  String get moderationExpires => 'Expires';
+
+  @override
+  String get buttonAppealLabel => 'Appeal label';
+
+  @override
+  String get moderationAppealReason => 'I am appealing this label.';
+
+  @override
+  String get moderationAppealSent => 'Appeal sent';
+
+  @override
+  String get moderationAppealFailed => 'Could not send the appeal';
+
+  @override
+  String get settingAdultContent => 'Show adult content';
+
+  @override
+  String get settingAdultContentDescription =>
+      'When off, adult-only labels are hidden and cannot be overridden.';
+
+  @override
+  String get labelShow => 'Show';
+
+  @override
+  String get labelOff => 'Off';
+
+  @override
+  String get labelWarn => 'Warn';
+
+  @override
+  String get labelBadge => 'Badge';
+
+  @override
+  String get labelHide => 'Hide';
+
+  @override
+  String get moderationConfiguredGlobally =>
+      'Configured in Moderation settings.';
+
+  @override
+  String get moderationLabelPornName => 'Adult Content';
+
+  @override
+  String get moderationLabelPornDescription => 'Explicit sexual images.';
+
+  @override
+  String get moderationLabelSexualName => 'Sexually Suggestive';
+
+  @override
+  String get moderationLabelSexualDescription => 'Does not include nudity.';
+
+  @override
+  String get moderationLabelNudityName => 'Non-sexual Nudity';
+
+  @override
+  String get moderationLabelNudityDescription => 'For example, artistic nudes.';
+
+  @override
+  String get moderationLabelGraphicMediaName => 'Graphic Media';
+
+  @override
+  String get moderationLabelGraphicMediaDescription =>
+      'Explicit or potentially disturbing media.';
+
+  @override
+  String get moderationLabelGoreName => 'Gore';
+
+  @override
+  String get moderationLabelGoreDescription =>
+      'Graphic depictions of severe injury, blood, or death.';
+
+  @override
+  String get errorAddingLabeler =>
+      'Could not add that labeler. Check the DID or handle and try again.';
+
+  @override
+  String get moderationService => 'Moderation service';
+
+  @override
+  String get moderationDefaultService => 'Default moderation service';
+
+  @override
+  String get moderationNoCompatibleService =>
+      'None of your moderation services accepts this type of report.';
+
+  @override
+  String get moderationServiceLoadFailed =>
+      'Could not load moderation services.';
 
   @override
   String get buttonSend => 'Send';

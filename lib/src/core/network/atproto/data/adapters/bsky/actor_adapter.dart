@@ -19,11 +19,13 @@ class BskyActorAdapter {
   /// Get a single profile from Bluesky and convert to Spark format
   Future<ProfileViewDetailed> getProfileFromBluesky(
     PoptartClient bluesky,
-    String did,
-  ) async {
+    String did, {
+    Map<String, String>? headers,
+  }) async {
     final profile = await bluesky.call(
       bsky_actor_get_profile.appBskyActorGetProfile,
       parameters: bsky_actor_get_profile.ActorGetProfileInput(actor: did),
+      headers: headers,
     );
     return convertBskyProfileToSpark(profile.data.toJson());
   }
@@ -31,11 +33,13 @@ class BskyActorAdapter {
   /// Get multiple profiles from Bluesky and convert to Spark format
   Future<List<ProfileViewDetailed>> getProfilesFromBluesky(
     PoptartClient bluesky,
-    List<String> dids,
-  ) async {
+    List<String> dids, {
+    Map<String, String>? headers,
+  }) async {
     final profiles = await bluesky.call(
       bsky_actor_get_profiles.appBskyActorGetProfiles,
       parameters: bsky_actor_get_profiles.ActorGetProfilesInput(actors: dids),
+      headers: headers,
     );
     return profiles.data.profiles
         .map((p) => convertBskyProfileToSpark(p.toJson()))

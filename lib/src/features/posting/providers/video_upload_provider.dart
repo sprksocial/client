@@ -241,19 +241,6 @@ Future<RepoStrongRef?> _postVideoRecord({
   return finalResult;
 }
 
-/// Crosspost video to Bluesky using same blob but Bluesky models
-@riverpod
-Future<RepoStrongRef> _crosspostVideoToBlueSky(
-  Ref _,
-  String text,
-  Blob blob,
-  String altText,
-  String rkey,
-  List<Facet> sparkFacets,
-) async {
-  return _crosspostVideoToBlueSkyRecord(text, blob, altText, rkey, sparkFacets);
-}
-
 Future<RepoStrongRef> _crosspostVideoToBlueSkyRecord(
   String text,
   Blob blob,

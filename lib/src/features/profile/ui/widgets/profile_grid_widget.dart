@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 
@@ -148,7 +150,7 @@ List<Widget> buildProfileGridSlivers({
   );
 }
 
-class ProfileGridTile extends StatelessWidget {
+class ProfileGridTile extends ConsumerWidget {
   const ProfileGridTile({
     required this.postView,
     required this.onTap,
@@ -157,42 +159,58 @@ class ProfileGridTile extends StatelessWidget {
   final PostView postView;
   final VoidCallback onTap;
 
-  /// Check for adult content labels synchronously without network calls
-  bool _hasAdultLabel() {
-    final labels = postView.labels;
-    if (labels == null || labels.isEmpty) return false;
-
-    // Check for common adult content labels synchronously
-    const adultLabels = {'porn', 'sexual', 'nudity', 'nsfw', 'adult'};
-    return labels.any((label) => adultLabels.contains(label.val.toLowerCase()));
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final thumbnailUrl = postView.thumbnailUrl;
-    final shouldBlur = _hasAdultLabel();
 
     // Use like count as a proxy for views, or 0 if not available
     final likeCount = postView.likeCount ?? 0;
 
     if (thumbnailUrl.isEmpty) {
-      return GestureDetector(
-        onTap: onTap,
-        child: ColoredBox(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          child: const Center(
-            child: Icon(FluentIcons.image_off_24_regular, size: 20),
+      return ModeratedContent(
+        subject: ModerationSubject.content(
+          labels: postView.labels ?? const [],
+          authorLabels: postView.author.labels ?? const [],
+          subjectDid: postView.author.did,
+        ),
+        context: ModerationContext.contentList,
+        presentation: const ModerationPresentation.compact(),
+        child: GestureDetector(
+          onTap: onTap,
+          child: ColoredBox(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: const Center(
+              child: Icon(FluentIcons.image_off_24_regular, size: 20),
+            ),
           ),
         ),
       );
     }
 
-    return PostTile(
-      thumbnailUrl: thumbnailUrl,
-      likes: likeCount,
-      seen: false,
-      nsfwBlur: shouldBlur,
-      onTap: onTap,
+    return ModeratedContent(
+      subject: ModerationSubject.content(
+        labels: postView.labels ?? const [],
+        authorLabels: postView.author.labels ?? const [],
+        subjectDid: postView.author.did,
+      ),
+      context: ModerationContext.contentList,
+      presentation: ModerationPresentation.compact(
+        onConcealedTap: onTap,
+        blurredChild: PostTile(
+          thumbnailUrl: thumbnailUrl,
+          likes: likeCount,
+          seen: false,
+          nsfwBlur: true,
+          onTap: onTap,
+        ),
+      ),
+      child: PostTile(
+        thumbnailUrl: thumbnailUrl,
+        likes: likeCount,
+        seen: false,
+        nsfwBlur: false,
+        onTap: onTap,
+      ),
     );
   }
 }

@@ -6,23 +6,27 @@ import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
+import 'package:spark/src/core/providers/preferences_provider.dart';
+import 'package:spark/src/features/settings/providers/labeler_settings_controller.dart';
 
 void main() {
   late _FakeAuthRepository authRepository;
   late _FakePrefRepository prefRepository;
+  late _FakeSprkRepository sprkRepository;
 
   setUp(() async {
     await GetIt.I.reset();
     authRepository = _FakeAuthRepository();
     prefRepository = _FakePrefRepository();
+    sprkRepository = _FakeSprkRepository(authRepository);
     GetIt.I
       ..registerSingleton<PrefRepository>(prefRepository)
-      ..registerSingleton<SprkRepository>(_FakeSprkRepository(authRepository))
+      ..registerSingleton<SprkRepository>(sprkRepository)
       ..registerSingleton<LogService>(LogService());
   });
 
@@ -41,6 +45,7 @@ void main() {
 
     expect(preferences.preferences, isEmpty);
     expect(prefRepository.getCalls, 0);
+    expect(sprkRepository.labelerConfigurations, [<String>[]]);
   });
 
   test('loads preferences when authenticated', () async {
@@ -56,6 +61,9 @@ void main() {
       container.read(userPreferencesProvider.notifier).currentPreferences,
       expected,
     );
+    expect(sprkRepository.labelerConfigurations, [
+      ['did:plc:labeler'],
+    ]);
   });
 
   test('exposes an error when initial loading fails', () async {
@@ -87,10 +95,15 @@ void main() {
 
     expect(container.read(userPreferencesProvider).value, refreshed);
     expect(prefRepository.getCalls, 2);
+    expect(sprkRepository.labelerConfigurations, [
+      ['did:plc:labeler'],
+      ['did:plc:labeler'],
+    ]);
   });
 
-  test('refresh exposes and rethrows repository errors', () async {
-    prefRepository.getResult = _preferences('initial');
+  test('refresh rethrows errors without discarding committed data', () async {
+    final initial = _preferences('initial');
+    prefRepository.getResult = initial;
     final container = createContainer();
     await container.read(userPreferencesProvider.future);
     final notifier = container.read(userPreferencesProvider.notifier);
@@ -99,7 +112,8 @@ void main() {
 
     await expectLater(notifier.refresh(), throwsA(same(error)));
 
-    expect(container.read(userPreferencesProvider).error, same(error));
+    expect(container.read(userPreferencesProvider).requireValue, initial);
+    expect(notifier.currentPreferences, initial);
   });
 
   test('update persists and publishes preferences', () async {
@@ -109,13 +123,94 @@ void main() {
     final notifier = container.read(userPreferencesProvider.notifier);
     final updated = _preferences('updated');
 
-    await notifier.updatePreferences(updated);
+    final committed = await notifier.updatePreferences(updated);
 
+    expect(committed, updated);
     expect(prefRepository.putCalls, [updated]);
     expect(container.read(userPreferencesProvider).value, updated);
+    expect(sprkRepository.labelerConfigurations, [
+      ['did:plc:labeler'],
+      ['did:plc:labeler'],
+    ]);
   });
 
-  test('update exposes and rethrows repository errors', () async {
+  test(
+    'adult content updates preserve other preferences and replace prior state',
+    () async {
+      final initial = Preferences(
+        preferences: [
+          ..._preferences('preserved').preferences,
+          adultContentPreference(enabled: false),
+        ],
+      );
+      prefRepository.getResult = initial;
+      final container = createContainer();
+      await container.read(userPreferencesProvider.future);
+      final notifier = container.read(userPreferencesProvider.notifier);
+
+      await notifier.setAdultContentEnabled(true);
+
+      final updated = container.read(userPreferencesProvider).value!;
+      expect(updated.adultContentEnabled, isTrue);
+      expect(updated.contentLabelPrefs?.single.label, 'preserved');
+      expect(
+        updated.preferences.where(
+          (preference) => preference.isAdultContentPref,
+        ),
+        hasLength(1),
+      );
+      expect(prefRepository.putCalls.single, updated);
+    },
+  );
+
+  test('global adult label update replaces every scoped copy', () async {
+    final initial = Preferences(
+      preferences: [
+        contentLabelPreference(
+          labelerDid: 'did:plc:one',
+          label: 'porn',
+          visibility: 'warn',
+        ),
+        contentLabelPreference(
+          labelerDid: 'did:plc:two',
+          label: 'porn',
+          visibility: 'ignore',
+        ),
+        contentLabelPreference(
+          labelerDid: 'did:plc:one',
+          label: 'sexual',
+          visibility: 'warn',
+        ),
+      ],
+    );
+    prefRepository.getResult = initial;
+    final container = createContainer();
+    await container.read(userPreferencesProvider.future);
+
+    await container
+        .read(userPreferencesProvider.notifier)
+        .setGlobalLabelPreference('porn', ModerationSetting.hide);
+
+    final prefs = container
+        .read(userPreferencesProvider)
+        .requireValue
+        .contentLabelPrefs!;
+    expect(
+      prefs.where((preference) => preference.label == 'porn'),
+      hasLength(1),
+    );
+    final porn = prefs.singleWhere((preference) => preference.label == 'porn');
+    expect(porn.labelerDid, isNull);
+    expect(porn.visibility.toJson(), 'hide');
+    expect(
+      prefs
+          .singleWhere((preference) => preference.label == 'sexual')
+          .labelerDid,
+      'did:plc:one',
+    );
+  });
+
+  test('update rethrows errors without discarding committed data', () async {
     final initial = _preferences('initial');
     prefRepository.getResult = initial;
     final container = createContainer();
@@ -131,7 +226,8 @@ void main() {
     );
 
     expect(prefRepository.putCalls, [updated]);
-    expect(container.read(userPreferencesProvider).error, same(error));
+    expect(container.read(userPreferencesProvider).requireValue, initial);
+    expect(notifier.currentPreferences, initial);
   });
 
   test(
@@ -145,16 +241,98 @@ void main() {
       final notifier = container.read(userPreferencesProvider.notifier);
       Preferences? updaterInput;
 
-      await notifier.updatePreferencesWithFn((current) {
+      final committed = await notifier.updatePreferencesWithFn((current) {
         updaterInput = current;
         return updated;
       });
 
+      expect(committed, updated);
       expect(updaterInput, initial);
       expect(prefRepository.putCalls, [updated]);
       expect(container.read(userPreferencesProvider).value, updated);
     },
   );
+
+  test(
+    'serializes a rapid labeler setting against the latest document',
+    () async {
+      final initial = Preferences(
+        preferences: [
+          labelersPreference([LabelerPrefItem(did: 'did:plc:labeler')]),
+        ],
+      );
+      prefRepository.getResult = initial;
+      final firstWriteGate = Completer<void>();
+      prefRepository.putHandler = (call, preferences) async {
+        if (call == 1) await firstWriteGate.future;
+      };
+      final container = createContainer();
+      await container.read(userPreferencesProvider.future);
+      final notifier = container.read(userPreferencesProvider.notifier);
+
+      final adultUpdate = notifier.setAdultContentEnabled(true);
+      await pumpEventQueue();
+      final labelUpdate = container
+          .read(labelerSettingsControllerProvider)
+          .setLabelPreference(
+            'did:plc:labeler',
+            'custom',
+            ModerationSetting.hide,
+          );
+      await pumpEventQueue();
+
+      expect(prefRepository.putCalls, hasLength(1));
+      firstWriteGate.complete();
+      await Future.wait([adultUpdate, labelUpdate]);
+
+      expect(prefRepository.putCalls, hasLength(2));
+      final persisted = prefRepository.putCalls.last;
+      expect(persisted.adultContentEnabled, isTrue);
+      final labelPreference = persisted.contentLabelPrefs?.single;
+      expect(labelPreference?.labelerDid, 'did:plc:labeler');
+      expect(labelPreference?.label, 'custom');
+      expect(labelPreference?.visibility.toJson(), 'hide');
+    },
+  );
+
+  test('continues queued transformations after a failed write', () async {
+    final initial = _preferences('initial');
+    prefRepository.getResult = initial;
+    final firstWriteGate = Completer<void>();
+    final error = StateError('first write failed');
+    prefRepository.putHandler = (call, preferences) async {
+      if (call == 1) {
+        await firstWriteGate.future;
+        throw error;
+      }
+    };
+    final container = createContainer();
+    await container.read(userPreferencesProvider.future);
+    final notifier = container.read(userPreferencesProvider.notifier);
+
+    final failedUpdate = notifier.setAdultContentEnabled(true);
+    await pumpEventQueue();
+    final succeedingUpdate = notifier.setGlobalLabelPreference(
+      'porn',
+      ModerationSetting.warn,
+    );
+    firstWriteGate.complete();
+
+    await expectLater(failedUpdate, throwsA(same(error)));
+    await succeedingUpdate;
+
+    expect(prefRepository.putCalls, hasLength(2));
+    final persisted = prefRepository.putCalls.last;
+    expect(persisted.adultContentEnabled, isFalse);
+    expect(
+      persisted.contentLabelPrefs
+          ?.singleWhere((preference) => preference.label == 'porn')
+          .visibility
+          .toJson(),
+      'warn',
+    );
+    expect(container.read(userPreferencesProvider).requireValue, persisted);
+  });
 
   test('updatePreferencesWithFn rejects unloaded state', () async {
     final initialization = Completer<void>();
@@ -183,6 +361,7 @@ void main() {
 
 Preferences _preferences(String label) => Preferences(
   preferences: [
+    labelersPreference([LabelerPrefItem(did: 'did:plc:labeler')]),
     contentLabelPreference(
       labelerDid: 'did:plc:labeler',
       label: label,
@@ -195,6 +374,7 @@ class _FakePrefRepository implements PrefRepository {
   Preferences getResult = Preferences(preferences: []);
   Object? getError;
   Object? putError;
+  Future<void> Function(int call, Preferences preferences)? putHandler;
   int getCalls = 0;
   final List<Preferences> putCalls = [];
 
@@ -209,6 +389,7 @@ class _FakePrefRepository implements PrefRepository {
   @override
   Future<void> putPreferences(Preferences preferences) async {
     putCalls.add(preferences);
+    await putHandler?.call(putCalls.length, preferences);
     final error = putError;
     if (error != null) throw error;
   }
@@ -219,6 +400,22 @@ class _FakeSprkRepository implements SprkRepository {
 
   @override
   final AuthRepository authRepository;
+
+  final List<List<String>> labelerConfigurations = [];
+
+  @override
+  List<String> get labelerDids => const [];
+
+  @override
+  void configureLabelers(Iterable<String> labelerDids) {
+    labelerConfigurations.add(labelerDids.toList(growable: false));
+  }
+
+  @override
+  Map<String, String> appViewHeaders(
+    String? proxyDid, {
+    Iterable<String>? labelerDids,
+  }) => const {};
 
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) => apiCall();

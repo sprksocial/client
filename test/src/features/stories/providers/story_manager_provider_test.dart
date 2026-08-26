@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
@@ -237,13 +238,15 @@ ProviderContainer _managerContainer({
   return container;
 }
 
-StoryView _story(String id, {required int hour}) {
-  return StoryView(
-    uri: AtUri('at://did:plc:me/so.sprk.story.post/$id'),
-    cid: 'cid-$id',
-    author: ProfileViewBasic(did: 'did:plc:me', handle: 'me.sprk.so'),
-    record: const {},
-    indexedAt: DateTime.utc(2026, 7, 22, hour),
+ModeratedStoryView _story(String id, {required int hour}) {
+  return ModeratedStoryView(
+    story: StoryView(
+      uri: AtUri('at://did:plc:me/so.sprk.story.post/$id'),
+      cid: 'cid-$id',
+      author: ProfileViewBasic(did: 'did:plc:me', handle: 'me.sprk.so'),
+      record: const {},
+      indexedAt: DateTime.utc(2026, 7, 22, hour),
+    ),
   );
 }
 
@@ -251,7 +254,7 @@ class _FakeStoryRepository implements StoryRepository {
   Future<StoryRecordPage> Function({required String did, String? cursor})?
   recordPageLoader;
   Future<void> Function(AtUri uri)? deleteRecord;
-  List<StoryView> storyViews = [];
+  List<ModeratedStoryView> storyViews = [];
   final List<List<AtUri>> storyViewCalls = [];
 
   @override
@@ -268,9 +271,9 @@ class _FakeStoryRepository implements StoryRepository {
   }
 
   @override
-  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris) async {
+  Future<List<ModeratedStoryView>> getStoryViews(List<AtUri> storyUris) async {
     storyViewCalls.add(List<AtUri>.of(storyUris));
-    return List<StoryView>.of(storyViews);
+    return List<ModeratedStoryView>.of(storyViews);
   }
 
   @override

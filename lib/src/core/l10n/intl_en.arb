@@ -152,6 +152,11 @@
     "description": "Settings page title"
   },
 
+  "pageTitleModeration": "Moderation",
+  "@pageTitleModeration": {
+    "description": "Moderation settings page title"
+  },
+
   "pageTitleStoryManager": "Story Manager",
   "@pageTitleStoryManager": {
     "description": "Story manager page title"
@@ -1501,6 +1506,147 @@
         "type": "int"
       }
     }
+  },
+
+  "moderationContentWarning": "Content warning",
+  "@moderationContentWarning": {
+    "description": "Heading over content concealed by moderation"
+  },
+  "moderationContentNotice": "Content notice",
+  "@moderationContentNotice": {
+    "description": "Generic fallback for a labeler notice with no localized label strings"
+  },
+  "buttonViewContent": "View content",
+  "@buttonViewContent": {
+    "description": "Button that reveals moderated content"
+  },
+  "buttonModerationDetails": "Why am I seeing this?",
+  "@buttonModerationDetails": {
+    "description": "Button that opens moderation label details"
+  },
+  "moderationCannotOverride": "This restriction cannot be overridden.",
+  "@moderationCannotOverride": {
+    "description": "Message for an imperative or age-gated moderation decision"
+  },
+  "moderationDetailsTitle": "Moderation details",
+  "@moderationDetailsTitle": {
+    "description": "Title of the moderation details sheet"
+  },
+  "moderationAppliedBy": "Applied by",
+  "@moderationAppliedBy": {
+    "description": "Label before the DID of the labeler that applied a label"
+  },
+  "moderationExpires": "Expires",
+  "@moderationExpires": {
+    "description": "Label before a moderation label expiration timestamp"
+  },
+  "buttonAppealLabel": "Appeal label",
+  "@buttonAppealLabel": {
+    "description": "Button for appealing a moderation label applied to the current user"
+  },
+  "moderationAppealReason": "I am appealing this label.",
+  "@moderationAppealReason": {
+    "description": "Default text sent with a label appeal"
+  },
+  "moderationAppealSent": "Appeal sent",
+  "@moderationAppealSent": {
+    "description": "Confirmation after a moderation label appeal succeeds"
+  },
+  "moderationAppealFailed": "Could not send the appeal",
+  "@moderationAppealFailed": {
+    "description": "Error after a moderation label appeal fails"
+  },
+  "settingAdultContent": "Show adult content",
+  "@settingAdultContent": {
+    "description": "Settings toggle for allowing configurable adult-only labels"
+  },
+  "settingAdultContentDescription": "When off, adult-only labels are hidden and cannot be overridden.",
+  "@settingAdultContentDescription": {
+    "description": "Explanation for the adult content setting"
+  },
+  "labelShow": "Show",
+  "@labelShow": {
+    "description": "Moderation preference that shows labeled content"
+  },
+  "labelOff": "Off",
+  "@labelOff": {
+    "description": "Moderation preference that turns off treatment for a label"
+  },
+  "labelWarn": "Warn",
+  "@labelWarn": {
+    "description": "Moderation preference that warns before showing labeled content"
+  },
+  "labelBadge": "Badge",
+  "@labelBadge": {
+    "description": "Moderation preference that shows an informational badge on labeled content"
+  },
+  "labelHide": "Hide",
+  "@labelHide": {
+    "description": "Moderation preference that hides labeled content"
+  },
+  "moderationConfiguredGlobally": "Configured in Moderation settings.",
+  "@moderationConfiguredGlobally": {
+    "description": "Explanation for a global label shown on a labeler settings page"
+  },
+  "moderationLabelPornName": "Adult Content",
+  "@moderationLabelPornName": {
+    "description": "Name of the built-in porn moderation label"
+  },
+  "moderationLabelPornDescription": "Explicit sexual images.",
+  "@moderationLabelPornDescription": {
+    "description": "Description of the built-in porn moderation label"
+  },
+  "moderationLabelSexualName": "Sexually Suggestive",
+  "@moderationLabelSexualName": {
+    "description": "Name of the built-in sexually suggestive moderation label"
+  },
+  "moderationLabelSexualDescription": "Does not include nudity.",
+  "@moderationLabelSexualDescription": {
+    "description": "Description of the built-in sexually suggestive moderation label"
+  },
+  "moderationLabelNudityName": "Non-sexual Nudity",
+  "@moderationLabelNudityName": {
+    "description": "Name of the built-in non-sexual nudity moderation label"
+  },
+  "moderationLabelNudityDescription": "For example, artistic nudes.",
+  "@moderationLabelNudityDescription": {
+    "description": "Description of the built-in non-sexual nudity moderation label"
+  },
+  "moderationLabelGraphicMediaName": "Graphic Media",
+  "@moderationLabelGraphicMediaName": {
+    "description": "Name of the built-in graphic media moderation label"
+  },
+  "moderationLabelGraphicMediaDescription": "Explicit or potentially disturbing media.",
+  "@moderationLabelGraphicMediaDescription": {
+    "description": "Description of the built-in graphic media moderation label"
+  },
+  "moderationLabelGoreName": "Gore",
+  "@moderationLabelGoreName": {
+    "description": "Name of the built-in gore moderation label"
+  },
+  "moderationLabelGoreDescription": "Graphic depictions of severe injury, blood, or death.",
+  "@moderationLabelGoreDescription": {
+    "description": "Description of the built-in gore moderation label"
+  },
+  "errorAddingLabeler": "Could not add that labeler. Check the DID or handle and try again.",
+  "@errorAddingLabeler": {
+    "description": "Error shown when a labeler cannot be resolved, validated, or saved"
+  },
+  "moderationService": "Moderation service",
+  "@moderationService": {
+    "description": "Label for choosing the service that receives a moderation report"
+  },
+  "moderationDefaultService": "Default moderation service",
+  "@moderationDefaultService": {
+    "description": "Fallback name for the app's default moderation service"
+  },
+  "moderationNoCompatibleService": "None of your moderation services accepts this type of report.",
+  "@moderationNoCompatibleService": {
+    "description": "Message when no subscribed moderation service supports a report"
+  },
+  "moderationServiceLoadFailed": "Could not load moderation services.",
+  "@moderationServiceLoadFailed": {
+    "description": "Error shown when compatible moderation services cannot be loaded"
   },
 
   "buttonSend": "Send",

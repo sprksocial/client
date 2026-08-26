@@ -56,6 +56,10 @@ void main() {
         'cursor': 'page',
       });
       expect(request.headers['atproto-proxy'], harness.sprk.sprkDid);
+      expect(
+        request.headers['atproto-accept-labelers'],
+        'did:web:mod.sprk.test',
+      );
       expect(result.cursor, 'next');
     });
 

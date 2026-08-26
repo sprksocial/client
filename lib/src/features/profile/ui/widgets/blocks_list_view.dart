@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/profile/providers/blocks_provider.dart';
@@ -41,26 +43,41 @@ class BlocksListView extends ConsumerWidget {
           );
         }
         final user = users[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: ProfileCard(
-            imageUrl: user.avatar?.toString() ?? '',
-            userName: user.displayName ?? user.handle,
-            userHandle: '@${user.handle}',
-            description: user.description,
-            isFollowing: false,
-            isBlocking: true,
-            onUnblock: () {
-              ref.read(blocksProvider(did: did).notifier).unblockUser(user.did);
-            },
-            onTap: () => context.router.push(
-              ProfileRoute(
-                did: user.did,
-                initialProfile: ProfileViewBasic(
+        return ModeratedContent(
+          subject: ModerationSubject.profile(
+            labels: user.labels ?? const [],
+            subjectDid: user.did,
+          ),
+          context: ModerationContext.profileList,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: ProfileCard(
+              imageUrl: user.avatar?.toString() ?? '',
+              avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                labels: user.labels ?? const [],
+                subjectDid: user.did,
+                child: avatar,
+              ),
+              userName: user.displayName ?? user.handle,
+              userHandle: '@${user.handle}',
+              description: user.description,
+              isFollowing: false,
+              isBlocking: true,
+              onUnblock: () {
+                ref
+                    .read(blocksProvider(did: did).notifier)
+                    .unblockUser(user.did);
+              },
+              onTap: () => context.router.push(
+                ProfileRoute(
                   did: user.did,
-                  handle: user.handle,
-                  displayName: user.displayName,
-                  avatar: user.avatar,
+                  initialProfile: ProfileViewBasic(
+                    did: user.did,
+                    handle: user.handle,
+                    displayName: user.displayName,
+                    avatar: user.avatar,
+                    labels: user.labels,
+                  ),
                 ),
               ),
             ),

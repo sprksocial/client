@@ -5,16 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
-import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:spark/src/core/ui/widgets/heart_animation.dart';
-import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_media_viewer.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:spark/src/features/home/providers/feed_settings_visibility_provider.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   const ProfileFeedPostWidget({
@@ -48,9 +47,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   final GlobalKey<PostMediaViewerState> _mediaViewerKey =
       GlobalKey<PostMediaViewerState>();
   bool _isAnimatingHeart = false;
-  bool _showWarningOverlay = false;
-  bool _shouldBlurContent = false;
-  List<String> _warningLabels = [];
+  bool _moderationConcealed = false;
   bool? _overrideIsLiked;
   PostView? _currentPost;
   Future<PostView?>? _postFuture;
@@ -59,11 +56,6 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   void initState() {
     super.initState();
     _postFuture = _loadPostWithFallback();
-    _postFuture!.then((post) {
-      if (post != null && mounted) {
-        _checkContentWarning(post);
-      }
-    });
   }
 
   Future<PostView?> _loadPostWithFallback() async {
@@ -127,48 +119,6 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     }
   }
 
-  void _checkContentWarning(PostView postData) {
-    final labels = postData.labels ?? [];
-    final preferences = ref.read(userPreferencesProvider).asData?.value;
-
-    if (labels.isNotEmpty && preferences != null) {
-      final shouldShowWarning = LabelUtils.shouldShowWarning(
-        preferences,
-        labels,
-      );
-
-      final shouldBlurContent = LabelUtils.shouldBlurContent(
-        preferences,
-        labels,
-      );
-
-      if (shouldShowWarning) {
-        final warningLabels = LabelUtils.getWarningLabels(preferences, labels);
-        if (mounted) {
-          setState(() {
-            _showWarningOverlay = true;
-            _warningLabels = warningLabels;
-            _shouldBlurContent = shouldBlurContent;
-          });
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _showWarningOverlay = false;
-            _warningLabels = [];
-          });
-        }
-      }
-    } else {
-      if (mounted) {
-        setState(() {
-          _showWarningOverlay = false;
-          _warningLabels = [];
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<PostView?>(
@@ -202,7 +152,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
         final feedSettingsVisible = ref.watch(feedSettingsVisibilityProvider);
         final isMediaActive =
             !feedSettingsVisible &&
-            !_showWarningOverlay &&
+            !_moderationConcealed &&
             (widget.index == null ||
                 profileFeedIndex == widget.index ||
                 (profileFeedIndex == -1 && widget.isInitialPost));
@@ -251,20 +201,21 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
           ),
         );
 
-        if (_showWarningOverlay) {
-          return ContentWarningOverlay(
-            onViewContent: () {
-              setState(() {
-                _showWarningOverlay = false;
-              });
-            },
-            warningLabels: _warningLabels,
-            shouldBlur: _shouldBlurContent,
-            child: mainContent,
-          );
-        }
-
-        return mainContent;
+        return ModeratedContent(
+          key: ValueKey(post.uri.toString()),
+          subject: ModerationSubject.content(
+            labels: post.labels ?? const [],
+            authorLabels: post.author.labels ?? const [],
+            subjectDid: post.author.did,
+          ),
+          context: ModerationContext.contentList,
+          onConcealChanged: (concealed) {
+            if (mounted && _moderationConcealed != concealed) {
+              setState(() => _moderationConcealed = concealed);
+            }
+          },
+          child: mainContent,
+        );
       },
     );
   }

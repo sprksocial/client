@@ -3,12 +3,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/moderation/moderated_content.dart';
+import 'package:spark/src/core/moderation/moderation.dart';
+import 'package:spark/src/core/moderation/moderation_provider.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/utils/label_utils.dart';
 import 'package:spark/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/info_bar.dart';
-import 'package:spark/src/features/settings/providers/preferences_provider.dart';
 
 class PostOverlay extends ConsumerWidget {
   const PostOverlay({
@@ -55,7 +57,7 @@ class PostOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final preferences = ref.watch(userPreferencesProvider).asData?.value;
+    final engine = ref.watch(moderationEngineProvider).asData?.value;
 
     return Stack(
       children: [
@@ -111,17 +113,37 @@ class PostOverlay extends ConsumerWidget {
                         // Author info and caption
                         Builder(
                           builder: (context) {
-                            final informLabels = preferences != null
-                                ? LabelUtils.getInformLabels(
-                                    preferences,
-                                    labels,
-                                  )
-                                : <String>[];
+                            final l10n = AppLocalizations.of(context);
+                            final locale = Localizations.localeOf(
+                              context,
+                            ).toLanguageTag();
+                            final informLabels =
+                                engine
+                                    ?.evaluate(
+                                      labels,
+                                      target: ModerationTarget.content,
+                                      subjectDid: post.author.did,
+                                      preferredLocales: [locale],
+                                    )
+                                    .forContext(ModerationContext.contentView)
+                                    .informs
+                                    .map(
+                                      (cause) =>
+                                          cause.localizedStrings(l10n)?.name,
+                                    )
+                                    .nonNulls
+                                    .toList() ??
+                                const <String>[];
                             return InfoBar(
                               username: post.author.handle,
                               displayName:
                                   post.author.displayName ?? post.author.handle,
                               avatarUrl: post.author.avatar?.toString(),
+                              avatarBuilder: (avatar) => ModeratedProfileAvatar(
+                                labels: post.author.labels ?? const [],
+                                subjectDid: post.author.did,
+                                child: avatar,
+                              ),
                               description: post.displayText,
                               hashtags: post.hashtags,
                               informLabels: informLabels,

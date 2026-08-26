@@ -1,4 +1,6 @@
 import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -311,8 +313,9 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
-        postUri: currentPost.uri.toString(),
-        postCid: currentPost.cid,
+        subject: UModerationCreateReportSubject.repoStrongRef(
+          data: RepoStrongRef(uri: currentPost.uri, cid: currentPost.cid),
+        ),
       ),
     );
   }
