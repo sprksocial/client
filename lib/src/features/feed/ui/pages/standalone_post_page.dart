@@ -40,7 +40,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Future<ResolvedStandalonePost>? _postFuture;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey =
       GlobalKey<PostVideoPlayerState>();
-  bool _moderationConcealed = false;
+  bool _moderationConcealed = true;
   bool _hasOpenedHighlightedReply = false;
   String? _activePostUri;
   ProviderSubscription<int>? _anchorUpdateSubscription;
@@ -64,12 +64,12 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   }
 
   void _loadPost() {
+    _moderationConcealed = true;
     _postFuture = _loadResolvedPost();
     _postFuture?.then((resolvedPost) {
       if (mounted) {
         _activePostUri = resolvedPost.post.uri.toString();
         _bindResolvedPostUpdates(_activePostUri);
-        _openHighlightedReplyIfNeeded(resolvedPost);
       }
     });
   }
@@ -172,12 +172,13 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
         Widget content;
 
         if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
+            resolvedPost != null &&
+            postData != null) {
           final mainContent = Stack(
             children: [
               // Main content
               Positioned.fill(
-                child: postData!.videoUrl.isNotEmpty
+                child: postData.videoUrl.isNotEmpty
                     ? MediaPlaybackGate(
                         isActive: !_moderationConcealed,
                         builder: (context, shouldPlay) {
@@ -218,6 +219,9 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
             ),
             context: ModerationContext.contentView,
             onConcealChanged: (concealed) {
+              if (!concealed) {
+                _openHighlightedReplyIfNeeded(resolvedPost);
+              }
               if (mounted && _moderationConcealed != concealed) {
                 setState(() => _moderationConcealed = concealed);
               }
@@ -255,15 +259,17 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
               ? null
               : _CommentBar(
                   bottomPadding: bottomPadding,
-                  onTap: () {
-                    context.router.push(
-                      CommentsRoute(
-                        postUri: postData.uri.toString(),
-                        isSprk: postData.isSprk,
-                        post: postData,
-                      ),
-                    );
-                  },
+                  onTap: _moderationConcealed
+                      ? null
+                      : () {
+                          context.router.push(
+                            CommentsRoute(
+                              postUri: postData.uri.toString(),
+                              isSprk: postData.isSprk,
+                              post: postData,
+                            ),
+                          );
+                        },
                 ),
         );
       },
@@ -275,7 +281,7 @@ class _CommentBar extends StatelessWidget {
   const _CommentBar({required this.bottomPadding, required this.onTap});
 
   final double bottomPadding;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

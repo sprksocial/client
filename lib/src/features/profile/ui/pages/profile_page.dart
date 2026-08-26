@@ -479,7 +479,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         final isCurrentUserLoading =
             currentUserDid != null && currentUserDid == widget.did;
 
-        return ProfilePageTemplate(
+        final page = ProfilePageTemplate(
           isLoading: true,
           displayName: initial?.displayName ?? initial?.handle ?? 'Loading...',
           handle: initial?.handle ?? 'loading',
@@ -519,6 +519,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           contentSlivers:
               contentSlivers, // Tabs load even while profile is loading
           scrollController: _scrollController,
+        );
+
+        if (initial == null) return page;
+        return ModeratedContent(
+          subject: ModerationSubject.profile(
+            labels: initial.labels ?? const [],
+            subjectDid: initial.did,
+          ),
+          context: ModerationContext.profileView,
+          child: page,
         );
       },
       error: (error, stackTrace) {
