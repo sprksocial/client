@@ -38,10 +38,12 @@ final class LabelerSettingsController {
         _ref.read(userPreferencesProvider.future);
   }
 
-  Future<void> _update(Preferences preferences) async {
-    await _ref
+  Future<Preferences> _update(
+    Preferences Function(Preferences current) updater,
+  ) {
+    return _ref
         .read(userPreferencesProvider.notifier)
-        .updatePreferences(preferences);
+        .updatePreferencesWithFn(updater);
   }
 
   Future<List<String>> getLabelers() async {
@@ -51,8 +53,15 @@ final class LabelerSettingsController {
 
     if (!_defaultEnsured) {
       if (!labelers.contains(_defaultDid)) {
-        labelers = _normalizeLabelers(labelers);
-        await _update(_withLabelers(preferences, labelers));
+        final updated = await _update((current) {
+          final currentLabelers =
+              current.labelers?.map((labeler) => labeler.did) ?? const [];
+          final normalized = _normalizeLabelers(currentLabelers);
+          if (_sameLabelers(currentLabelers, normalized)) return current;
+          return _withLabelers(current, normalized);
+        });
+        labelers =
+            updated.labelers?.map((labeler) => labeler.did).toList() ?? [];
       }
       _defaultEnsured = true;
     }
@@ -73,12 +82,20 @@ final class LabelerSettingsController {
         );
       }
       await _repository.labeler.validateService(did);
-      await _update(
-        _withLabelers(preferences, [
-          ...current.map((labeler) => labeler.did),
+      await _update((latest) {
+        final latestLabelers = latest.labelers ?? const [];
+        if (latestLabelers.any((labeler) => labeler.did == did)) return latest;
+        if (latestLabelers.length >= AppViewLabelerHeaders.maxLabelers) {
+          throw StateError(
+            'Cannot subscribe to more than '
+            '${AppViewLabelerHeaders.maxLabelers} labelers',
+          );
+        }
+        return _withLabelers(latest, [
+          ...latestLabelers.map((labeler) => labeler.did),
           did,
-        ]),
-      );
+        ]);
+      });
     } catch (error, stackTrace) {
       _logger.e(
         'Could not add labeler $identifier',
@@ -93,42 +110,39 @@ final class LabelerSettingsController {
     if (did == _defaultDid) {
       throw Exception('Cannot remove the default moderation service');
     }
-    final preferences = await _preferences();
-    await _update(
-      _withLabelers(
-        preferences,
-        (preferences.labelers ?? const [])
+    await _update((current) {
+      final currentLabelers = current.labelers ?? const [];
+      if (!currentLabelers.any((labeler) => labeler.did == did)) return current;
+      return _withLabelers(
+        current,
+        currentLabelers
             .map((labeler) => labeler.did)
             .where((labelerDid) => labelerDid != did),
-      ),
-    );
+      );
+    });
   }
 
   Future<void> syncLabelers() async {
     resetSessionCache();
     await _ref.read(userPreferencesProvider.notifier).refresh();
-    var preferences = await _preferences();
-    var labelers = _normalizeLabelers(
+    final preferences = await _update((current) {
+      final currentLabelers =
+          current.labelers?.map((labeler) => labeler.did) ?? const [];
+      final normalized = _normalizeLabelers(currentLabelers);
+      if (_sameLabelers(currentLabelers, normalized)) return current;
+      return _withLabelers(current, normalized);
+    });
+    final labelers = _normalizeLabelers(
       (preferences.labelers ?? const []).map((labeler) => labeler.did),
     );
-    if (!_sameLabelers(
-      preferences.labelers?.map((labeler) => labeler.did) ?? const [],
-      labelers,
-    )) {
-      preferences = _withLabelers(preferences, labelers);
-      await _update(preferences);
-    }
 
-    final available = <String>[];
+    final unavailable = <String>{};
     for (final did in labelers) {
-      if (did == _defaultDid) {
-        available.add(did);
-        continue;
-      }
+      if (did == _defaultDid) continue;
       try {
         await _repository.labeler.validateService(did);
-        available.add(did);
       } on LabelerServiceUnavailableException catch (error, stackTrace) {
+        unavailable.add(did);
         _logger.w(
           'Removing unavailable labeler $did',
           error: error,
@@ -136,10 +150,18 @@ final class LabelerSettingsController {
         );
       }
     }
-    if (!_sameLabelers(labelers, available)) {
-      preferences = _withLabelers(preferences, available);
-      await _update(preferences);
-      labelers = available;
+    if (unavailable.isNotEmpty) {
+      await _update((current) {
+        final currentLabelers = current.labelers ?? const [];
+        return _withLabelers(
+          current,
+          _normalizeLabelers(
+            currentLabelers
+                .map((labeler) => labeler.did)
+                .where((did) => !unavailable.contains(did)),
+          ),
+        );
+      });
     }
     _defaultEnsured = true;
   }
@@ -190,13 +212,26 @@ final class LabelerSettingsController {
     String value,
     Setting setting,
   ) async {
-    final preferences = await _preferences();
-    final updated = <Preference>[];
-    var replaced = false;
-    for (final preference in preferences.preferences) {
-      final contentLabel = preference.contentLabelPref;
-      if (contentLabel?.labelerDid == labelerDid &&
-          contentLabel?.label == value) {
+    await _update((current) {
+      final updated = <Preference>[];
+      var replaced = false;
+      for (final preference in current.preferences) {
+        final contentLabel = preference.contentLabelPref;
+        if (contentLabel?.labelerDid == labelerDid &&
+            contentLabel?.label == value) {
+          updated.add(
+            contentLabelPreference(
+              labelerDid: labelerDid,
+              label: value,
+              visibility: setting.name,
+            ),
+          );
+          replaced = true;
+        } else {
+          updated.add(preference);
+        }
+      }
+      if (!replaced) {
         updated.add(
           contentLabelPreference(
             labelerDid: labelerDid,
@@ -204,21 +239,9 @@ final class LabelerSettingsController {
             visibility: setting.name,
           ),
         );
-        replaced = true;
-      } else {
-        updated.add(preference);
       }
-    }
-    if (!replaced) {
-      updated.add(
-        contentLabelPreference(
-          labelerDid: labelerDid,
-          label: value,
-          visibility: setting.name,
-        ),
-      );
-    }
-    await _update(Preferences(preferences: updated));
+      return Preferences(preferences: updated);
+    });
   }
 
   Map<String, Setting> _savedSettings(

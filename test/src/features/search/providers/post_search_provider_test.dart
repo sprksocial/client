@@ -68,6 +68,7 @@ void main() {
               definitions: [
                 ModerationLabelDefinition(
                   identifier: 'blocked',
+                  definedBy: 'did:plc:mod',
                   severity: ModerationSeverity.alert,
                   blurs: ModerationBlur.content,
                   defaultSetting: ModerationSetting.hide,
@@ -364,7 +365,9 @@ Label _authorLabel({bool profileRecord = false}) => Label(
 );
 
 ModerationEngine _engine() => ModerationEngine(
-  definitions: ModerationLabelDefinitions(),
+  definitions: ModerationLabelDefinitions.fromLabelers(const {
+    'did:plc:mod': [],
+  }),
   preferences: ModerationPreferences(
     labels: const [],
     adultContentEnabled: true,

@@ -70,15 +70,64 @@ void main() {
 
     expect(decision.causes.single.sourceHandle, 'moderator.test');
   });
+
+  test('only accepts labels from currently configured labelers', () async {
+    GetIt.I
+      ..registerSingleton<PrefRepository>(
+        _FakePrefRepository(
+          Preferences(
+            preferences: [
+              labelersPreference(const [
+                LabelerPrefItem(did: ' did:plc:selected#atproto_labeler '),
+              ]),
+            ],
+          ),
+        ),
+      )
+      ..registerSingleton<SprkRepository>(
+        _FakeSprkRepository(_SuccessfulLabelerRepository()),
+      )
+      ..registerSingleton<LogService>(LogService());
+    final container = ProviderContainer.test();
+    addTearDown(container.dispose);
+
+    final engine = await container.read(moderationEngineProvider.future);
+    final decision = engine.evaluate(
+      [
+        _label(src: 'did:plc:removed', value: '!hide'),
+        _label(src: 'did:plc:removed', value: 'porn'),
+        _label(src: 'did:plc:selected', value: '!warn'),
+        _label(src: 'did:plc:moderator', value: 'sexual'),
+      ],
+      target: ModerationTarget.content,
+      subjectDid: 'did:plc:author',
+    );
+
+    expect(decision.causes.map((cause) => cause.sourceDid).toSet(), {
+      'did:plc:selected',
+      'did:plc:moderator',
+    });
+  });
 }
 
 class _FakePrefRepository implements PrefRepository {
+  _FakePrefRepository([this.preferences = const Preferences(preferences: [])]);
+
+  final Preferences preferences;
+
   @override
-  Future<Preferences> getPreferences() async => Preferences(preferences: []);
+  Future<Preferences> getPreferences() async => preferences;
 
   @override
   Future<void> putPreferences(Preferences preferences) async {}
 }
+
+Label _label({required String src, required String value}) => Label(
+  src: src,
+  uri: 'at://did:plc:author/so.sprk.feed.post/example',
+  val: value,
+  cts: DateTime.utc(2026),
+);
 
 class _FakeSprkRepository implements SprkRepository {
   _FakeSprkRepository(this.labeler);

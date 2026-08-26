@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/molecules/app_choice_group.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -89,6 +90,67 @@ void main() {
 
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('disables every label control while a save is pending', (
+    tester,
+  ) async {
+    await GetIt.I.unregister<SprkRepository>();
+    GetIt.I.registerSingleton<SprkRepository>(
+      _FakeSprkRepository(_customService(labelerDid)),
+    );
+    final preferences = _PendingPreferences();
+
+    await tester.pumpWidget(_page(labelerDid, preferences: preferences));
+    await tester.pumpAndSettle();
+
+    final firstControl = find.byKey(const Key('labeler-label-topic-one'));
+    await tester.tap(
+      find
+          .descendant(
+            of: firstControl,
+            matching: find.byType(InteractivePressable),
+          )
+          .last,
+    );
+    final secondControl = find.byKey(const Key('labeler-label-topic-two'));
+    await tester.tap(
+      find
+          .descendant(
+            of: secondControl,
+            matching: find.byType(InteractivePressable),
+          )
+          .last,
+    );
+    expect(preferences.updateCount, 1);
+
+    await tester.pump();
+
+    expect(preferences.updateCount, 1);
+    expect(
+      tester
+          .widgetList<AppChoiceGroup<ModerationSetting>>(
+            find.byType(AppChoiceGroup<ModerationSetting>),
+          )
+          .every((group) => !group.enabled),
+      isTrue,
+    );
+
+    await tester.tap(
+      find
+          .descendant(
+            of: secondControl,
+            matching: find.byType(InteractivePressable),
+          )
+          .last,
+    );
+    expect(preferences.updateCount, 1);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    preferences.save.complete();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }
 
 Future<void> _pumpPage(WidgetTester tester, String labelerDid) async {
@@ -96,14 +158,19 @@ Future<void> _pumpPage(WidgetTester tester, String labelerDid) async {
   await tester.pumpAndSettle();
 }
 
-Widget _page(String labelerDid) => ProviderScope(
-  overrides: [userPreferencesProvider.overrideWith(_FakePreferences.new)],
-  child: MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: LabelerLabelSettingsPage(did: labelerDid),
-  ),
-);
+Widget _page(String labelerDid, {UserPreferences? preferences}) =>
+    ProviderScope(
+      overrides: [
+        userPreferencesProvider.overrideWith(
+          preferences == null ? _FakePreferences.new : () => preferences,
+        ),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: LabelerLabelSettingsPage(did: labelerDid),
+      ),
+    );
 
 LabelerViewDetailed _service(String did) => LabelerViewDetailed(
   uri: AtUri.parse('at://$did/app.bsky.labeler.service/self'),
@@ -128,6 +195,19 @@ LabelerViewDetailed _informService(String did) => LabelerViewDetailed(
         blurs: LabelValueDefinitionBlurs.valueOf('none')!,
         locales: const [],
       ),
+    ],
+  ),
+  indexedAt: DateTime.utc(2026),
+);
+
+LabelerViewDetailed _customService(String did) => LabelerViewDetailed(
+  uri: AtUri.parse('at://$did/app.bsky.labeler.service/self'),
+  cid: 'cid',
+  creator: ProfileView(did: did, handle: 'labeler.test'),
+  policies: LabelerPolicies(
+    labelValues: const [
+      LabelValue.unknown(data: 'topic-one'),
+      LabelValue.unknown(data: 'topic-two'),
     ],
   ),
   indexedAt: DateTime.utc(2026),
@@ -194,4 +274,20 @@ class _FakeLabelerRepository implements LabelerRepository {
 class _FakePreferences extends UserPreferences {
   @override
   Future<Preferences> build() async => Preferences(preferences: []);
+}
+
+class _PendingPreferences extends _FakePreferences {
+  final save = Completer<void>();
+  int updateCount = 0;
+  Preferences current = Preferences(preferences: []);
+
+  @override
+  Future<Preferences> updatePreferencesWithFn(
+    Preferences Function(Preferences current) updater,
+  ) async {
+    updateCount++;
+    current = updater(current);
+    await save.future;
+    return current;
+  }
 }

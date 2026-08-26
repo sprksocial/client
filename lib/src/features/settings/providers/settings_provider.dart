@@ -82,20 +82,21 @@ class Settings extends _$Settings {
 
   /// Updates preferences through the UserPreferences provider.
   /// This ensures all watchers are notified of changes.
-  Future<void> _updatePreferences(Preferences preferences) async {
-    await ref
+  Future<Preferences> _updatePreferences(
+    Preferences Function(Preferences current) updater,
+  ) {
+    return ref
         .read(userPreferencesProvider.notifier)
-        .updatePreferences(preferences);
+        .updatePreferencesWithFn(updater);
   }
 
-  Future<Preferences> _getCurrentPreferencesForFeedUpdate() async {
+  Future<void> _refreshPreferencesForFeedUpdate() async {
     try {
       await ref.read(userPreferencesProvider.notifier).refresh();
       final preferences = _currentPreferences;
       if (preferences == null) {
         throw const SavedFeedsUnavailableException();
       }
-      return preferences;
     } catch (e, st) {
       logger.e(
         'Cannot update feeds because current saved feeds could not be loaded',
@@ -109,16 +110,19 @@ class Settings extends _$Settings {
   Future<List<Feed>> _updateSavedFeeds(
     List<SavedFeed> Function(List<SavedFeed> currentSavedFeeds) update,
   ) async {
-    final preferences = await _getCurrentPreferencesForFeedUpdate();
-    final updatedSavedFeeds = update(
-      List<SavedFeed>.of(_getSavedFeedsFromPreferences(preferences)),
-    );
-
-    final updatedPreferencesList =
-        preferences.preferences.where((pref) => !pref.isSavedFeedsPref).toList()
-          ..add(savedFeedsPreference(updatedSavedFeeds));
-
-    await _updatePreferences(Preferences(preferences: updatedPreferencesList));
+    await _refreshPreferencesForFeedUpdate();
+    final updatedPreferences = await _updatePreferences((current) {
+      final updatedSavedFeeds = update(
+        List<SavedFeed>.of(_getSavedFeedsFromPreferences(current)),
+      );
+      final updatedPreferencesList =
+          current.preferences
+              .where((preference) => !preference.isSavedFeedsPref)
+              .toList()
+            ..add(savedFeedsPreference(updatedSavedFeeds));
+      return Preferences(preferences: updatedPreferencesList);
+    });
+    final updatedSavedFeeds = _getSavedFeedsFromPreferences(updatedPreferences);
     return _loadFeedsFromSavedFeeds(updatedSavedFeeds);
   }
 
@@ -245,28 +249,29 @@ class Settings extends _$Settings {
           final defaultPrefs = DefaultPreferences.defaultPreferences(
             modServiceDid: modServiceDid,
           );
-          final mergedDefaults = Preferences(
-            preferences: [
-              ...preferences.preferences.where(
-                (preference) => !preference.isSavedFeedsPref,
-              ),
-              ...defaultPrefs.preferences.where((preference) {
-                if (preference.isSavedFeedsPref) return true;
-                if (preference.isLabelersPref) {
-                  return preferences.labelers == null;
-                }
-                if (preference.isContentLabelPref) {
-                  return preferences.contentLabelPrefs == null;
-                }
-                return false;
-              }),
-            ],
-          );
-          await _updatePreferences(mergedDefaults);
+          final updatedPreferences = await _updatePreferences((current) {
+            if (_getSavedFeedsFromPreferences(current).isNotEmpty) {
+              return current;
+            }
+            return Preferences(
+              preferences: [
+                ...current.preferences.where(
+                  (preference) => !preference.isSavedFeedsPref,
+                ),
+                ...defaultPrefs.preferences.where((preference) {
+                  if (preference.isSavedFeedsPref) return true;
+                  if (preference.isLabelersPref) {
+                    return current.labelers == null;
+                  }
+                  if (preference.isContentLabelPref) {
+                    return current.contentLabelPrefs == null;
+                  }
+                  return false;
+                }),
+              ],
+            );
+          });
 
-          // Get updated preferences from provider
-          final updatedPreferences =
-              ref.read(userPreferencesProvider).asData?.value ?? mergedDefaults;
           final updatedSavedFeeds = _getSavedFeedsFromPreferences(
             updatedPreferences,
           );

@@ -428,6 +428,39 @@ void main() {
       expect(decision.forContext(ModerationContext.contentList).blur, isFalse);
     });
 
+    test('keeps profile-record imperatives out of authored content', () {
+      for (final namespace in [
+        'app.bsky.actor.profile',
+        'so.sprk.actor.profile',
+      ]) {
+        for (final value in ['!hide', '!takedown', '!warn']) {
+          final decision = _engine().evaluateProfileLabels(
+            [_label(val: value, uri: 'at://did:plc:subject/$namespace/self')],
+            subjectDid: 'did:plc:subject',
+            now: now,
+          );
+
+          expect(decision.causes.single.target, ModerationTarget.profile);
+          expect(
+            decision.forContext(ModerationContext.profileView).blur,
+            isTrue,
+            reason: '$namespace $value profile',
+          );
+          for (final context in [
+            ModerationContext.contentList,
+            ModerationContext.contentView,
+            ModerationContext.contentMedia,
+          ]) {
+            final ui = decision.forContext(context);
+            expect(ui.filter, isFalse, reason: '$namespace $value $context');
+            expect(ui.blur, isFalse, reason: '$namespace $value $context');
+            expect(ui.alert, isFalse, reason: '$namespace $value $context');
+            expect(ui.inform, isFalse, reason: '$namespace $value $context');
+          }
+        }
+      }
+    });
+
     test('classifies profile-record imperatives exactly once', () {
       final decision = _engine(authenticated: false).evaluateProfileLabels(
         [
@@ -442,6 +475,8 @@ void main() {
 
       expect(decision.causes, hasLength(1));
       expect(decision.causes.single.target, ModerationTarget.account);
+      expect(decision.hideFromUnauthenticated, isTrue);
+      expect(decision.forContext(ModerationContext.contentView).blur, isTrue);
     });
 
     test(
@@ -582,6 +617,37 @@ void main() {
       expect(decision.causes.single.sourceDid, 'did:plc:beta');
     });
 
+    test('ignores labels from non-configured sources', () {
+      final engine = _engine(
+        configuredLabelerDids: const {'did:plc:configured'},
+      );
+      final decision = engine.evaluate(
+        [
+          _label(src: 'did:plc:removed', val: '!hide'),
+          _label(src: 'did:plc:removed', val: 'porn'),
+          _label(src: 'did:plc:configured', val: '!warn'),
+        ],
+        target: ModerationTarget.content,
+        now: now,
+      );
+
+      expect(decision.causes, hasLength(1));
+      expect(decision.causes.single.sourceDid, 'did:plc:configured');
+      expect(decision.causes.single.definition.identifier, '!warn');
+    });
+
+    test('keeps supported self labels from non-configured authors', () {
+      final decision = _engine(configuredLabelerDids: const {}).evaluate(
+        [_label(src: 'did:plc:author', val: 'sexual')],
+        target: ModerationTarget.content,
+        subjectDid: 'did:plc:author',
+        now: now,
+      );
+
+      expect(decision.causes.single.sourceDid, 'did:plc:author');
+      expect(decision.causes.single.definition.identifier, 'sexual');
+    });
+
     test('selects labeler-authored cause strings for the viewer locale', () {
       final engine = _engine(
         definitions: {
@@ -654,9 +720,13 @@ ModerationEngine _engine({
   bool authenticated = true,
   String? currentUserDid,
   String? selfLabelerDid,
+  Set<String> configuredLabelerDids = const {'did:plc:labeler'},
 }) {
   return ModerationEngine(
-    definitions: ModerationLabelDefinitions.fromLabelers(definitions),
+    definitions: ModerationLabelDefinitions.fromLabelers({
+      for (final did in configuredLabelerDids) did: const [],
+      ...definitions,
+    }),
     preferences: ModerationPreferences(
       labels: labelPreferences,
       adultContentEnabled: adultContentEnabled,

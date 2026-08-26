@@ -22,6 +22,7 @@ class UserPreferences extends _$UserPreferences {
   late final PrefRepository _prefRepository;
   late final SprkRepository _sprkRepository;
   late final SparkLogger _logger;
+  Future<void> _operationTail = Future<void>.value();
 
   @override
   Future<Preferences> build() async {
@@ -46,50 +47,53 @@ class UserPreferences extends _$UserPreferences {
   }
 
   /// Gets the current preferences synchronously if available.
-  /// Returns null if preferences haven't been loaded yet or there was an error.
+  /// Returns null if preferences have never loaded successfully.
   Preferences? get currentPreferences => state.asData?.value;
 
   /// Refreshes preferences from the server.
   /// This should be called when logging in or when syncing from another device.
-  Future<void> refresh() async {
-    state = const AsyncValue.loading();
-
+  Future<void> refresh() => _enqueue(() async {
     try {
       final preferences = await _prefRepository.getPreferences();
       state = AsyncValue.data(_configureLabelers(preferences));
-    } catch (e, st) {
+    } catch (e) {
       _logger.e('Error refreshing preferences: $e');
-      state = AsyncValue.error(e, st);
       rethrow;
     }
-  }
+  });
 
-  /// Updates preferences on the server and in local state.
-  /// This should be called whenever preferences are modified.
-  Future<void> updatePreferences(Preferences preferences) async {
+  /// Replaces the complete preference document on the server and in local state.
+  /// Feature-level edits should use [updatePreferencesWithFn] so their document
+  /// transformation runs after any earlier mutation has completed.
+  Future<Preferences> updatePreferences(Preferences preferences) =>
+      _enqueue(() => _persistPreferences(preferences));
+
+  Future<Preferences> _persistPreferences(Preferences preferences) async {
     try {
       await _prefRepository.putPreferences(preferences);
-      state = AsyncValue.data(_configureLabelers(preferences));
-    } catch (e, st) {
+      final committed = _configureLabelers(preferences);
+      state = AsyncValue.data(committed);
+      return committed;
+    } catch (e) {
       _logger.e('Error updating preferences: $e');
-      state = AsyncValue.error(e, st);
       rethrow;
     }
   }
 
   /// Updates preferences by applying a transformation function.
   /// This is useful for making partial updates without fetching first.
-  Future<void> updatePreferencesWithFn(
+  Future<Preferences> updatePreferencesWithFn(
     Preferences Function(Preferences current) updater,
-  ) async {
+  ) => _enqueue(() async {
     final current = state.asData?.value;
     if (current == null) {
       throw Exception('Cannot update preferences: not loaded yet');
     }
 
     final updated = updater(current);
-    await updatePreferences(updated);
-  }
+    if (identical(updated, current)) return current;
+    return _persistPreferences(updated);
+  });
 
   Future<void> setAdultContentEnabled(bool enabled) async {
     await updatePreferencesWithFn((current) {
@@ -129,6 +133,15 @@ class UserPreferences extends _$UserPreferences {
         ],
       );
     });
+  }
+
+  Future<T> _enqueue<T>(Future<T> Function() operation) {
+    final result = _operationTail.then((_) => operation());
+    _operationTail = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return result;
   }
 
   Preferences _configureLabelers(Preferences preferences) {

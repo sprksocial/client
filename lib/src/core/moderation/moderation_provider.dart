@@ -4,6 +4,7 @@ import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/network/atproto/data/services/appview_labeler_headers.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/providers/preferences_provider.dart';
 
@@ -15,10 +16,11 @@ final moderationEngineProvider = FutureProvider<ModerationEngine>((ref) async {
   final preferences = await ref.watch(userPreferencesProvider.future);
   final repository = GetIt.I<SprkRepository>();
   final logger = GetIt.I<LogService>().getLogger('ModerationEngine');
-  final labelerDids = <String>{
-    repository.modDid.split('#').first,
-    ...?preferences.labelers?.map((labeler) => labeler.did),
-  };
+  final labelerDids = AppViewLabelerHeaders.normalize(
+    defaultLabelerDid: repository.modDid,
+    labelerDids:
+        preferences.labelers?.map((labeler) => labeler.did) ?? const [],
+  );
 
   final definitions = <String, Iterable<LabelValueDefinition>>{};
   final labelerHandles = <String, String>{};
@@ -47,7 +49,7 @@ final moderationEngineProvider = FutureProvider<ModerationEngine>((ref) async {
       authenticated: repository.authRepository.isAuthenticated,
     ),
     currentUserDid: repository.authRepository.did,
-    selfLabelerDid: repository.modDid.split('#').first,
+    selfLabelerDid: labelerDids.first,
     labelerHandles: labelerHandles,
   );
 });

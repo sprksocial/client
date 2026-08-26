@@ -34,6 +34,9 @@ final class ModerationEngine {
       if (!isLabelActiveAt(label, now: evaluationTime)) continue;
 
       final isSelfLabel = subjectDid != null && label.src == subjectDid;
+      if (!isSelfLabel && !definitions.isConfiguredSource(label.src)) {
+        continue;
+      }
       final definition = isSelfLabel
           ? definitions.lookupSelfLabel(label, labelerDid: selfLabelerDid)
           : definitions.lookup(label);

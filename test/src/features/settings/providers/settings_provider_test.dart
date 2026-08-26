@@ -596,7 +596,6 @@ class _FakeUserPreferences extends UserPreferences {
     controller.refreshCalls++;
     final error = controller.refreshError;
     if (error != null) {
-      state = AsyncValue.error(error, StackTrace.current);
       throw error;
     }
     final refreshed = controller.refreshResult ?? controller.current;
@@ -605,15 +604,25 @@ class _FakeUserPreferences extends UserPreferences {
   }
 
   @override
-  Future<void> updatePreferences(Preferences preferences) async {
+  Future<Preferences> updatePreferences(Preferences preferences) async {
     controller.writes.add(preferences);
     final error = controller.updateError;
     if (error != null) {
-      state = AsyncValue.error(error, StackTrace.current);
       throw error;
     }
     controller.current = preferences;
     state = AsyncValue.data(_configureLabelers(preferences));
+    return preferences;
+  }
+
+  @override
+  Future<Preferences> updatePreferencesWithFn(
+    Preferences Function(Preferences current) updater,
+  ) async {
+    final current = controller.current;
+    final updated = updater(current);
+    if (identical(updated, current)) return current;
+    return updatePreferences(updated);
   }
 
   Preferences _configureLabelers(Preferences preferences) {

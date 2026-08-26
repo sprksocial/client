@@ -22,10 +22,13 @@ class ModerationPage extends ConsumerStatefulWidget {
 
 class _ModerationPageState extends ConsumerState<ModerationPage> {
   static const _adultLabels = ['porn', 'sexual', 'graphic-media', 'nudity'];
+  bool _isSaving = false;
 
   Future<void> _setAdultContentEnabled(bool enabled) async {
+    if (_isSaving) return;
     final l10n = AppLocalizations.of(context);
     final logger = GetIt.instance<LogService>().getLogger('ModerationPage');
+    setState(() => _isSaving = true);
 
     try {
       await ref
@@ -41,6 +44,8 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.errorGeneric)));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -48,8 +53,10 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
     String label,
     ModerationSetting setting,
   ) async {
+    if (_isSaving) return;
     final l10n = AppLocalizations.of(context);
     final logger = GetIt.instance<LogService>().getLogger('ModerationPage');
+    setState(() => _isSaving = true);
 
     try {
       await ref
@@ -65,6 +72,8 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.errorGeneric)));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -107,7 +116,7 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
                     ),
                     subtitle: Text(l10n.settingAdultContentDescription),
                     value: adultContentEnabled,
-                    onChanged: preferences == null
+                    onChanged: preferences == null || _isSaving
                         ? null
                         : _setAdultContentEnabled,
                   ),
@@ -130,6 +139,7 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
                               preferences!,
                               definition,
                             ),
+                            enabled: !_isSaving,
                             onChanged: (setting) =>
                                 _setGlobalLabelPreference(label, setting),
                           );

@@ -136,6 +136,7 @@ ModerationEngine _engine() => ModerationEngine(
     definitions: [
       ModerationLabelDefinition(
         identifier: 'blocked',
+        definedBy: 'did:plc:moderator',
         severity: ModerationSeverity.alert,
         blurs: ModerationBlur.content,
         defaultSetting: ModerationSetting.hide,

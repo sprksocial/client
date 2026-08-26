@@ -191,7 +191,9 @@ Label _label(String value) => Label(
 );
 
 ModerationEngine _engine() => ModerationEngine(
-  definitions: ModerationLabelDefinitions(),
+  definitions: ModerationLabelDefinitions.fromLabelers(const {
+    'did:plc:moderator': [],
+  }),
   preferences: ModerationPreferences(
     labels: const [],
     adultContentEnabled: true,

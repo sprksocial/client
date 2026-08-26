@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +41,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('An error occurred'), findsOneWidget);
+    expect(
+      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
+      isNotNull,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -108,6 +114,71 @@ void main() {
       expect(find.text(strings.value), findsOneWidget);
     }
   });
+
+  testWidgets('disables all moderation controls while a save is pending', (
+    tester,
+  ) async {
+    final preferences = _PendingAdultPreferences();
+    await _pumpPage(tester, () => preferences);
+
+    final pornControl = find.byKey(const Key('global-label-porn'));
+    await tester.tap(
+      find
+          .descendant(
+            of: pornControl,
+            matching: find.byType(InteractivePressable),
+          )
+          .first,
+    );
+    final sexualControl = find.byKey(const Key('global-label-sexual'));
+    await tester.tap(
+      find
+          .descendant(
+            of: sexualControl,
+            matching: find.byType(InteractivePressable),
+          )
+          .last,
+    );
+    expect(preferences.updateCount, 1);
+
+    await tester.pump();
+
+    expect(preferences.updateCount, 1);
+    expect(
+      tester
+          .widgetList<AppChoiceGroup<ModerationSetting>>(
+            find.byType(AppChoiceGroup<ModerationSetting>),
+          )
+          .every((group) => !group.enabled),
+      isTrue,
+    );
+    expect(
+      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
+      isNull,
+    );
+
+    await tester.tap(
+      find
+          .descendant(
+            of: sexualControl,
+            matching: find.byType(InteractivePressable),
+          )
+          .last,
+    );
+    expect(preferences.updateCount, 1);
+
+    preferences.save.complete();
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widgetList<AppChoiceGroup<ModerationSetting>>(
+            find.byType(AppChoiceGroup<ModerationSetting>),
+          )
+          .every((group) => group.enabled),
+      isTrue,
+    );
+  });
 }
 
 Future<void> _pumpPage(
@@ -162,5 +233,23 @@ class _AdultPreferences extends UserPreferences {
   ) async {
     lastLabel = label;
     lastSetting = setting;
+  }
+}
+
+class _PendingAdultPreferences extends UserPreferences {
+  final save = Completer<void>();
+  int updateCount = 0;
+
+  @override
+  Future<Preferences> build() async =>
+      Preferences(preferences: [adultContentPreference(enabled: true)]);
+
+  @override
+  Future<void> setGlobalLabelPreference(
+    String label,
+    ModerationSetting setting,
+  ) async {
+    updateCount++;
+    await save.future;
   }
 }

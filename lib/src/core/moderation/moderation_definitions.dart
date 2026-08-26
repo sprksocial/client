@@ -4,9 +4,24 @@ import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/moderation/moderation_models.dart';
 
 final class ModerationLabelDefinitions {
-  ModerationLabelDefinitions({
+  factory ModerationLabelDefinitions({
     Iterable<ModerationLabelDefinition> definitions = const [],
     bool includeBuiltIns = true,
+  }) {
+    final items = definitions.toList(growable: false);
+    return ModerationLabelDefinitions._(
+      definitions: items,
+      configuredLabelerDids: items
+          .map((definition) => definition.definedBy)
+          .nonNulls,
+      includeBuiltIns: includeBuiltIns,
+    );
+  }
+
+  ModerationLabelDefinitions._({
+    required Iterable<ModerationLabelDefinition> definitions,
+    required Iterable<String> configuredLabelerDids,
+    required bool includeBuiltIns,
   }) {
     final all = <ModerationLabelDefinition>[
       if (includeBuiltIns) ...builtInLabelDefinitions,
@@ -36,14 +51,16 @@ final class ModerationLabelDefinitions {
             definition.identifier: definition,
         }),
     });
+    _configuredLabelerDids = Set.unmodifiable(configuredLabelerDids);
   }
 
   factory ModerationLabelDefinitions.fromLabelers(
     Map<String, Iterable<LabelValueDefinition>> definitionsByLabeler, {
     bool includeBuiltIns = true,
   }) {
-    return ModerationLabelDefinitions(
+    return ModerationLabelDefinitions._(
       includeBuiltIns: includeBuiltIns,
+      configuredLabelerDids: definitionsByLabeler.keys,
       definitions: [
         for (final entry in definitionsByLabeler.entries)
           for (final definition in entry.value)
@@ -54,10 +71,13 @@ final class ModerationLabelDefinitions {
 
   late final Map<String, ModerationLabelDefinition> _global;
   late final Map<String, Map<String, ModerationLabelDefinition>> _bySource;
+  late final Set<String> _configuredLabelerDids;
 
   Map<String, ModerationLabelDefinition> get global => _global;
 
   Map<String, Map<String, ModerationLabelDefinition>> get bySource => _bySource;
+
+  bool isConfiguredSource(String did) => _configuredLabelerDids.contains(did);
 
   ModerationLabelDefinition? lookup(Label label) {
     if (label.val.startsWith('!')) return _global[label.val];
@@ -203,15 +223,21 @@ ModerationLabelDefinition _imperativeDefinition({
   required ModerationSetting defaultSetting,
   required Set<ModerationLabelFlag> flags,
 }) {
-  final allBlurred = ModerationBehavior({
+  final profileBlurred = ModerationBehavior({
     ModerationContext.profileList: ModerationAction.blur,
     ModerationContext.profileView: ModerationAction.blur,
     ModerationContext.avatar: ModerationAction.blur,
     ModerationContext.banner: ModerationAction.blur,
     ModerationContext.displayName: ModerationAction.blur,
+  });
+  final contentBlurred = ModerationBehavior({
     ModerationContext.contentList: ModerationAction.blur,
     ModerationContext.contentView: ModerationAction.blur,
     ModerationContext.contentMedia: ModerationAction.blur,
+  });
+  final accountBlurred = ModerationBehavior({
+    ...profileBlurred.actions,
+    ...contentBlurred.actions,
   });
   return ModerationLabelDefinition(
     identifier: identifier,
@@ -224,9 +250,9 @@ ModerationLabelDefinition _imperativeDefinition({
     flags: flags,
     locales: const [],
     behaviors: {
-      ModerationTarget.account: allBlurred,
-      ModerationTarget.profile: allBlurred,
-      ModerationTarget.content: allBlurred,
+      ModerationTarget.account: accountBlurred,
+      ModerationTarget.profile: profileBlurred,
+      ModerationTarget.content: contentBlurred,
     },
   );
 }

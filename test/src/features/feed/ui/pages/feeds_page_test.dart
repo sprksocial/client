@@ -237,6 +237,7 @@ ModerationEngine _engine({required bool hideLabeledFeed}) => ModerationEngine(
     definitions: [
       ModerationLabelDefinition(
         identifier: 'blocked',
+        definedBy: 'did:plc:moderator',
         severity: ModerationSeverity.alert,
         blurs: ModerationBlur.content,
         defaultSetting: hideLabeledFeed

@@ -89,7 +89,9 @@ PostLike _like(String name, {bool hidden = false}) {
 }
 
 ModerationEngine _engine() => ModerationEngine(
-  definitions: ModerationLabelDefinitions(),
+  definitions: ModerationLabelDefinitions.fromLabelers(const {
+    'did:plc:moderator': [],
+  }),
   preferences: ModerationPreferences(
     labels: const [],
     adultContentEnabled: true,

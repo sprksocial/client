@@ -37,6 +37,7 @@ class _LabelerLabelSettingsPageState
   Map<String, LabelPreference> _labelPreferences = {};
   Map<String, ModerationLabelDefinition> _labelDefinitions = {};
   bool _isLoading = true;
+  bool _isSaving = false;
   String? _errorMessage;
 
   String get _defaultModServiceDid {
@@ -98,6 +99,9 @@ class _LabelerLabelSettingsPageState
   }
 
   Future<void> _updateLabelPreference(String label, {Setting? setting}) async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+
     try {
       final currentPref = _labelPreferences[label];
       if (currentPref != null) {
@@ -107,12 +111,15 @@ class _LabelerLabelSettingsPageState
             .read(labelerSettingsControllerProvider)
             .setLabelPreference(widget.did, label, newSetting);
 
+        if (!mounted) return;
         setState(() {
           _labelPreferences[label] = currentPref.copyWith(setting: newSetting);
         });
       }
     } catch (e) {
       _logger.e('Error updating label preference: $e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -349,6 +356,7 @@ class _LabelerLabelSettingsPageState
                     );
 
                     return LabelSettingTile(
+                      key: Key('labeler-label-${entry.key}'),
                       label: entry.key,
                       controlContext: entry.value.severity == Severity.inform
                           ? LabelSettingTileContext.informLabel
@@ -366,6 +374,7 @@ class _LabelerLabelSettingsPageState
                           ? l10n.moderationConfiguredGlobally
                           : null,
                       enabled:
+                          !_isSaving &&
                           !configuredGlobally &&
                           (!entry.value.adultOnly || adultContentEnabled),
                     );

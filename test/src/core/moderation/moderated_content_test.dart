@@ -549,7 +549,11 @@ ModerationEngine _engine({
   Map<String, String> labelerHandles = const {},
 }) {
   return ModerationEngine(
-    definitions: ModerationLabelDefinitions.fromLabelers(definitions),
+    definitions: ModerationLabelDefinitions.fromLabelers({
+      'did:plc:author': const [],
+      'did:plc:labeler': const [],
+      ...definitions,
+    }),
     preferences: ModerationPreferences(
       labels: const [],
       adultContentEnabled: adultContentEnabled,

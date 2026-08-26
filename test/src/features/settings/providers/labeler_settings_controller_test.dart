@@ -115,10 +115,21 @@ class _FakeUserPreferences extends UserPreferences {
   }
 
   @override
-  Future<void> updatePreferences(Preferences preferences) async {
+  Future<Preferences> updatePreferences(Preferences preferences) async {
     controller.writes.add(preferences);
     controller.current = preferences;
     state = AsyncValue.data(preferences);
+    return preferences;
+  }
+
+  @override
+  Future<Preferences> updatePreferencesWithFn(
+    Preferences Function(Preferences current) updater,
+  ) async {
+    final current = controller.current;
+    final updated = updater(current);
+    if (identical(updated, current)) return current;
+    return updatePreferences(updated);
   }
 }
 

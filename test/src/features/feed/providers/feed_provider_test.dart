@@ -556,6 +556,7 @@ ModerationEngine _moderationEngine(Iterable<String> hiddenLabels) {
         for (final value in hiddenLabels)
           ModerationLabelDefinition(
             identifier: value,
+            definedBy: 'did:plc:moderator',
             severity: ModerationSeverity.alert,
             blurs: ModerationBlur.content,
             defaultSetting: ModerationSetting.hide,
