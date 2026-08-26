@@ -78,6 +78,7 @@ class VideoReviewPageTemplate extends StatelessWidget {
         leading: AppLeadingButton(
           color: theme.textTheme.titleLarge?.color,
           tooltip: l10n.buttonBack,
+          onPressed: onBack,
         ),
         title: Text(title),
         centerTitle: false,

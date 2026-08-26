@@ -15,9 +15,12 @@ import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/core/utils/error_messages.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
+import 'package:spark/src/features/posting/ui/controllers/video_review_playback_session.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -52,24 +55,29 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   bool _crosspostToBsky = false;
   late XFile _video;
   late final FeedRepository _feedRepository;
-  VideoPlayerController? _player;
+  late final Future<void> _playerInitialization;
+  late final SparkLogger _logger;
+  VideoReviewPlaybackSession? _playbackSession;
   VideoUploadResult? _uploadResult;
   String? _uploadErrorMessage;
   double _uploadProgress = 0;
   _VideoUploadPhase? _uploadPhase;
   bool _isUploadingVideo = false;
+  bool _isLeaving = false;
 
   @override
   void initState() {
     super.initState();
     _video = XFile(widget.videoPath);
     _feedRepository = GetIt.I<SprkRepository>().feed;
+    _logger = GetIt.I<LogService>().getLogger('VideoReviewPage');
     _descriptionController.textController.addListener(
       _handleDescriptionChanged,
     );
+    _playerInitialization = _initPlayer();
     unawaited(
-      _initPlayer().whenComplete(() {
-        if (mounted) {
+      _playerInitialization.whenComplete(() {
+        if (mounted && !_isLeaving) {
           _startVideoUpload();
         }
       }),
@@ -82,10 +90,10 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       _handleDescriptionChanged,
     );
     _descriptionController.dispose();
-    final player = _player;
-    _player = null;
-    if (player != null) {
-      unawaited(_disposePlayer(player));
+    final session = _playbackSession;
+    _playbackSession = null;
+    if (session != null) {
+      unawaited(session.dispose());
     }
     super.dispose();
   }
@@ -96,51 +104,58 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
   Future<void> _initPlayer() async {
     final c = VideoPlayerController.file(File(_video.path));
+    final session = VideoReviewPlaybackSession(c, (error, stackTrace) {
+      _logger.e(
+        'Video review playback failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    });
     try {
       await c.initialize();
-      if (!mounted) {
-        await _disposePlayer(c);
-        return;
-      }
-
-      await c.setLooping(true);
-      if (!mounted) {
-        await _disposePlayer(c);
+      if (!mounted || _isLeaving) {
+        await session.dispose();
         return;
       }
 
       await c.setVolume(1);
-      if (!mounted) {
-        await _disposePlayer(c);
+      if (!mounted || _isLeaving) {
+        await session.dispose();
         return;
       }
 
-      setState(() => _player = c);
-      unawaited(c.play());
-    } catch (_) {
-      await _disposePlayer(c);
-      if (!mounted) return;
+      setState(() => _playbackSession = session);
+      await session.play();
+    } on Exception catch (error, stackTrace) {
+      _playbackSession = null;
+      await session.dispose();
+      _logger.e(
+        'Unable to initialize video review playback',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (!mounted || _isLeaving) return;
       _showPostError('Unable to preview this video. Please try again.');
     }
   }
 
-  Future<void> _pausePlayer(VideoPlayerController player) async {
-    try {
-      if (player.value.isPlaying) {
-        await player.pause();
-      }
-    } catch (_) {
-      // Best-effort native player cleanup.
-    }
+  Future<void> _close() async {
+    if (!await _prepareToLeave() || !mounted) return;
+    context.router.pop();
   }
 
-  Future<void> _disposePlayer(VideoPlayerController player) async {
-    await _pausePlayer(player);
-    try {
-      await player.dispose();
-    } catch (_) {
-      // Best-effort native player cleanup.
+  Future<bool> _prepareToLeave() async {
+    if (_isLeaving) return false;
+    final session = _playbackSession;
+    setState(() {
+      _isLeaving = true;
+      _playbackSession = null;
+    });
+    await _playerInitialization;
+    if (session != null) {
+      await session.dispose();
     }
+    return mounted;
   }
 
   Future<void> _editAltText() async {
@@ -248,7 +263,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   }
 
   Future<void> _postVideo() async {
-    if (_isPosting) return;
+    if (_isPosting || _isLeaving) return;
     final uploadResult = _uploadResult;
     if (uploadResult == null) {
       if (_uploadErrorMessage != null) {
@@ -279,11 +294,10 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       );
 
       if (!mounted) return;
-      setState(() {
-        _isPosting = false;
-      });
-
       if (postRef == null) {
+        setState(() {
+          _isPosting = false;
+        });
         _showPostError('Unable to create post. Please try again');
         return;
       }
@@ -299,11 +313,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           );
       }
 
-      final player = _player;
-      if (player != null) {
-        await _pausePlayer(player);
-        if (!mounted) return;
-      }
+      if (!await _prepareToLeave() || !mounted) return;
 
       final router = context.router;
       router.popUntilRoot();
@@ -327,7 +337,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   }
 
   MediaAspectRatio? get _videoAspectRatio {
-    final player = _player;
+    final player = _playbackSession?.videoController;
     if (player == null) return null;
 
     final size = player.value.size;
@@ -341,7 +351,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     final metadataAspectRatio = _videoAspectRatio?.value;
     if (metadataAspectRatio != null) return metadataAspectRatio;
 
-    final rawAspectRatio = _player?.value.aspectRatio;
+    final rawAspectRatio = _playbackSession?.videoController.value.aspectRatio;
     return rawAspectRatio != null && rawAspectRatio > 0 ? rawAspectRatio : 1.0;
   }
 
@@ -354,41 +364,50 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     final uploadStatusLabel = _uploadStatusLabel(l10n);
     final canPost =
         !_isPosting &&
+        !_isLeaving &&
         _uploadResult != null &&
         _uploadErrorMessage == null &&
         !isOverLimit;
 
-    return VideoReviewPageTemplate(
-      title: l10n.pageTitleReviewVideo,
-      onBack: () => context.maybePop(),
-      aspectRatio: ar,
-      videoPreview: _player == null
-          ? const Center(child: CircularProgressIndicator())
-          : VideoPlayer(_player!),
-      onAltEdit: _editAltText,
-      uploadProgress: _uploadProgress,
-      uploadStatusLabel: uploadStatusLabel,
-      uploadIndeterminate: _uploadPhase == _VideoUploadPhase.processing,
-      hasUploadError: _uploadErrorMessage != null,
-      onUploadRetry: _uploadErrorMessage == null
-          ? null
-          : () => _startVideoUpload(),
-      mentionController: _descriptionController,
-      onMentionsChanged: (mentions) {
-        // Mentions are automatically tracked in the controller
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          unawaited(_close());
+        }
       },
-      descriptionMaxChars: AppConstants.postDescriptionMaxChars,
-      showCrossPost: !widget.storyMode,
-      crossPostValue: _crosspostToBsky,
-      onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
-      postLabel: _postLabel(l10n),
-      isPosting: _isPosting,
-      isOverLimit: isOverLimit,
-      onPost: canPost
-          ? () async {
-              await _postVideo();
-            }
-          : null,
+      child: VideoReviewPageTemplate(
+        title: l10n.pageTitleReviewVideo,
+        onBack: () => unawaited(_close()),
+        aspectRatio: ar,
+        videoPreview: _playbackSession == null
+            ? const Center(child: CircularProgressIndicator())
+            : VideoPlayer(_playbackSession!.videoController),
+        onAltEdit: _editAltText,
+        uploadProgress: _uploadProgress,
+        uploadStatusLabel: uploadStatusLabel,
+        uploadIndeterminate: _uploadPhase == _VideoUploadPhase.processing,
+        hasUploadError: _uploadErrorMessage != null,
+        onUploadRetry: _uploadErrorMessage == null
+            ? null
+            : () => _startVideoUpload(),
+        mentionController: _descriptionController,
+        onMentionsChanged: (mentions) {
+          // Mentions are automatically tracked in the controller
+        },
+        descriptionMaxChars: AppConstants.postDescriptionMaxChars,
+        showCrossPost: !widget.storyMode,
+        crossPostValue: _crosspostToBsky,
+        onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
+        postLabel: _postLabel(l10n),
+        isPosting: _isPosting,
+        isOverLimit: isOverLimit,
+        onPost: canPost
+            ? () async {
+                await _postVideo();
+              }
+            : null,
+      ),
     );
   }
 }
