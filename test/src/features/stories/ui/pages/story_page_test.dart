@@ -152,7 +152,7 @@ Future<void> _cacheImage(String url) async {
   PaintingBinding.instance.imageCache.putIfAbsent(
     key,
     () => OneFrameImageStreamCompleter(
-      Future.value(ImageInfo(image: frame.image)),
+      Future.value(ImageInfo(image: frame.image.clone())),
     ),
   );
   addTearDown(() {
