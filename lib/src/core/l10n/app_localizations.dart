@@ -352,11 +352,29 @@ abstract class AppLocalizations {
   /// **'Add your display name'**
   String get onboardingNameStepTitle;
 
+  /// Placeholder shown when onboarding has no imported display name
+  ///
+  /// In en, this message translates to:
+  /// **'Your display name'**
+  String get onboardingDisplayNameHint;
+
   /// Onboarding bio step title
   ///
   /// In en, this message translates to:
   /// **'Add a bio'**
   String get onboardingBioStepTitle;
+
+  /// Placeholder shown when onboarding has no imported bio
+  ///
+  /// In en, this message translates to:
+  /// **'Tell people a little about yourself'**
+  String get onboardingBioHint;
+
+  /// Error shown when onboarding profile creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn’t save your profile. Check your connection and try again.'**
+  String get onboardingProfileSaveFailed;
 
   /// Small label on the onboarding avatar step
   ///

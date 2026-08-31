@@ -5,11 +5,13 @@ import 'package:spark/src/core/ui/widgets/custom_text_field.dart';
 class OnboardingBioStep extends StatefulWidget {
   const OnboardingBioStep({
     this.initialDescription = '',
+    this.onDescriptionChanged,
     this.onUndoDescription,
     super.key,
   });
 
   final String initialDescription;
+  final ValueChanged<String>? onDescriptionChanged;
   final VoidCallback? onUndoDescription;
 
   @override
@@ -25,7 +27,23 @@ class OnboardingBioStepState extends State<OnboardingBioStep> {
   @override
   void initState() {
     super.initState();
-    _descriptionController = TextEditingController();
+    _descriptionController = TextEditingController(
+      text: widget.initialDescription,
+    );
+  }
+
+  @override
+  void didUpdateWidget(OnboardingBioStep oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialDescription != widget.initialDescription &&
+        _descriptionController.text != widget.initialDescription) {
+      _descriptionController.value = TextEditingValue(
+        text: widget.initialDescription,
+        selection: TextSelection.collapsed(
+          offset: widget.initialDescription.length,
+        ),
+      );
+    }
   }
 
   @override
@@ -43,7 +61,7 @@ class OnboardingBioStepState extends State<OnboardingBioStep> {
     final l10n = AppLocalizations.of(context);
     final placeholder = widget.initialDescription.trim().isNotEmpty
         ? widget.initialDescription
-        : 'This is my bio. There are many like it but this one is mine.';
+        : l10n.onboardingBioHint;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
@@ -64,6 +82,7 @@ class OnboardingBioStepState extends State<OnboardingBioStep> {
             color: colorScheme.onSurfaceVariant,
           ),
           borderRadius: 16,
+          onChanged: widget.onDescriptionChanged,
           onUndo: widget.onUndoDescription,
           validator: (value) {
             if (value != null && value.trim().length > 256) {

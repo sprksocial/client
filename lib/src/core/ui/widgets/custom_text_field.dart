@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
     this.fillColor,
     this.maxLines = 1,
     this.onUndo,
+    this.onChanged,
     this.validator,
     this.contentPadding,
     this.textStyle,
@@ -21,6 +22,7 @@ class CustomTextField extends StatelessWidget {
   final Color? fillColor;
   final int maxLines;
   final VoidCallback? onUndo;
+  final ValueChanged<String>? onChanged;
   final String? Function(String?)? validator;
   final EdgeInsetsGeometry? contentPadding;
   final TextStyle? textStyle;
@@ -35,6 +37,7 @@ class CustomTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      onChanged: onChanged,
       validator: validator,
       style: textStyle,
       decoration: InputDecoration(

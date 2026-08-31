@@ -91,8 +91,10 @@ class OnboardingState extends _$OnboardingState {
       if (!ref.mounted) return;
       state = const AsyncData(null);
     } catch (e, stackTrace) {
-      if (!ref.mounted) return;
-      state = AsyncError(e, stackTrace);
+      if (ref.mounted) {
+        state = AsyncError(e, stackTrace);
+      }
+      Error.throwWithStackTrace(e, stackTrace);
     }
   }
 

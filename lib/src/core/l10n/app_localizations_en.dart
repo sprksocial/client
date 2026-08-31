@@ -141,7 +141,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingNameStepTitle => 'Add your display name';
 
   @override
+  String get onboardingDisplayNameHint => 'Your display name';
+
+  @override
   String get onboardingBioStepTitle => 'Add a bio';
+
+  @override
+  String get onboardingBioHint => 'Tell people a little about yourself';
+
+  @override
+  String get onboardingProfileSaveFailed =>
+      'We couldn’t save your profile. Check your connection and try again.';
 
   @override
   String get onboardingAvatarEyebrow => 'Profile photo';

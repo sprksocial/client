@@ -225,9 +225,24 @@
     "description": "Onboarding display name step title"
   },
 
+  "onboardingDisplayNameHint": "Your display name",
+  "@onboardingDisplayNameHint": {
+    "description": "Placeholder shown when onboarding has no imported display name"
+  },
+
   "onboardingBioStepTitle": "Add a bio",
   "@onboardingBioStepTitle": {
     "description": "Onboarding bio step title"
+  },
+
+  "onboardingBioHint": "Tell people a little about yourself",
+  "@onboardingBioHint": {
+    "description": "Placeholder shown when onboarding has no imported bio"
+  },
+
+  "onboardingProfileSaveFailed": "We couldn’t save your profile. Check your connection and try again.",
+  "@onboardingProfileSaveFailed": {
+    "description": "Error shown when onboarding profile creation fails"
   },
 
   "onboardingAvatarEyebrow": "Profile photo",

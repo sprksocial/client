@@ -26,9 +26,11 @@ class OnboardingPage extends ConsumerStatefulWidget {
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final _displayNameStepKey = GlobalKey<OnboardingDisplayNameStepState>();
   final _bioStepKey = GlobalKey<OnboardingBioStepState>();
-  bool _isLoading = false;
+  bool _isCompleting = false;
 
   Future<void> _handleCompleteOnboarding() async {
+    if (_isCompleting) return;
+
     final displayNameState = _displayNameStepKey.currentState;
     final bioState = _bioStepKey.currentState;
     final isValid =
@@ -36,7 +38,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         (bioState?.validate() ?? false);
     if (!isValid) return;
 
-    setState(() => _isLoading = true);
+    setState(() => _isCompleting = true);
 
     try {
       final onboardingState = ref.read(onboardingStateProvider.notifier);
@@ -65,8 +67,24 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       context.router.replaceAll([const MainRoute()]);
     } catch (_) {
       if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).onboardingProfileSaveFailed,
+            ),
+            action: SnackBarAction(
+              label: AppLocalizations.of(context).buttonRetry,
+              onPressed: _handleCompleteOnboarding,
+            ),
+          ),
+        );
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isCompleting = false);
+      }
     }
   }
 
@@ -74,6 +92,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final onboardingStateAsync = ref.watch(onboardingProvider);
+    final profileSaveState = ref.watch(onboardingStateProvider);
     final notifier = ref.read(onboardingProvider.notifier);
 
     return Scaffold(
@@ -141,6 +160,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               builder: (context) => OnboardingDisplayNameStep(
                 key: _displayNameStepKey,
                 initialDisplayName: state.displayName,
+                onDisplayNameChanged: notifier.updateDisplayName,
                 onUndoDisplayName:
                     (state.bskyProfileRecord?.displayName != null &&
                         state.displayName !=
@@ -156,6 +176,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               builder: (context) => OnboardingBioStep(
                 key: _bioStepKey,
                 initialDescription: state.description,
+                onDescriptionChanged: notifier.updateDescription,
                 onUndoDescription:
                     (state.bskyProfileRecord?.description != null &&
                         state.description !=
@@ -169,7 +190,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
           return OnboardingSequence(
             steps: steps,
-            isCompleteLoading: _isLoading,
+            isCompleteLoading: _isCompleting || profileSaveState.isLoading,
             onComplete: _handleCompleteOnboarding,
           );
         },

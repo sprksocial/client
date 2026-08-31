@@ -5,11 +5,13 @@ import 'package:spark/src/core/ui/widgets/custom_text_field.dart';
 class OnboardingDisplayNameStep extends StatefulWidget {
   const OnboardingDisplayNameStep({
     this.initialDisplayName = '',
+    this.onDisplayNameChanged,
     this.onUndoDisplayName,
     super.key,
   });
 
   final String initialDisplayName;
+  final ValueChanged<String>? onDisplayNameChanged;
   final VoidCallback? onUndoDisplayName;
 
   @override
@@ -26,7 +28,23 @@ class OnboardingDisplayNameStepState extends State<OnboardingDisplayNameStep> {
   @override
   void initState() {
     super.initState();
-    _displayNameController = TextEditingController();
+    _displayNameController = TextEditingController(
+      text: widget.initialDisplayName,
+    );
+  }
+
+  @override
+  void didUpdateWidget(OnboardingDisplayNameStep oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialDisplayName != widget.initialDisplayName &&
+        _displayNameController.text != widget.initialDisplayName) {
+      _displayNameController.value = TextEditingValue(
+        text: widget.initialDisplayName,
+        selection: TextSelection.collapsed(
+          offset: widget.initialDisplayName.length,
+        ),
+      );
+    }
   }
 
   @override
@@ -44,7 +62,7 @@ class OnboardingDisplayNameStepState extends State<OnboardingDisplayNameStep> {
     final l10n = AppLocalizations.of(context);
     final placeholder = widget.initialDisplayName.trim().isNotEmpty
         ? widget.initialDisplayName
-        : 'Jane Doe';
+        : l10n.onboardingDisplayNameHint;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
@@ -64,6 +82,7 @@ class OnboardingDisplayNameStepState extends State<OnboardingDisplayNameStep> {
             color: colorScheme.onSurfaceVariant,
           ),
           borderRadius: 16,
+          onChanged: widget.onDisplayNameChanged,
           onUndo: widget.onUndoDisplayName,
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
