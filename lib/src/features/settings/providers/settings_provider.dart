@@ -39,8 +39,9 @@ class Settings extends _$Settings {
   /// Tracks if settings have been loaded to prevent resetting state on rebuild
   bool _hasLoadedSettings = false;
 
-  /// Tracks if loadSettings currently in progress to prevent concurrent calls
-  bool _isLoadingSettings = false;
+  Future<void>? _settingsOperation;
+
+  bool _createdDefaultFeedsThisSession = false;
 
   SettingsState? _preservedState;
 
@@ -59,6 +60,11 @@ class Settings extends _$Settings {
   String get _activeFeedStorageKey {
     final did = sprkRepository.authRepository.did ?? 'anonymous';
     return 'active_feed_$did';
+  }
+
+  String get _pendingInitialFeedStorageKey {
+    final did = sprkRepository.authRepository.did ?? 'anonymous';
+    return 'pending_initial_feed_$did';
   }
 
   String get _defaultModServiceDid {
@@ -172,14 +178,43 @@ class Settings extends _$Settings {
   }
 
   /// Saves the active feed to local storage
-  Future<void> _saveActiveFeedToStorage(Feed feed) async {
+  Future<void> _saveActiveFeedToStorage(
+    Feed feed, {
+    bool rethrowErrors = false,
+  }) async {
     try {
       final storage = GetIt.instance<StorageManager>().preferences;
       await storage.setObject(_activeFeedStorageKey, feed.toJson());
       logger.d('Saved active feed to storage: ${feed.config.value}');
-    } catch (e) {
-      logger.w('Error saving active feed: $e');
+    } catch (e, st) {
+      logger.w('Error saving active feed', error: e, stackTrace: st);
+      if (rethrowErrors) rethrow;
     }
+  }
+
+  Future<void> _markInitialFeedSelectionPending() async {
+    try {
+      final storage = GetIt.instance<StorageManager>().preferences;
+      await storage.setBool(_pendingInitialFeedStorageKey, true);
+    } catch (e, st) {
+      logger.w(
+        'Error marking initial feed selection as pending',
+        error: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  Future<bool> _isInitialFeedSelectionPending() async {
+    if (_createdDefaultFeedsThisSession) return true;
+    final storage = GetIt.instance<StorageManager>().preferences;
+    return await storage.getBool(_pendingInitialFeedStorageKey) ?? false;
+  }
+
+  Future<void> _clearInitialFeedSelectionPending() async {
+    final storage = GetIt.instance<StorageManager>().preferences;
+    await storage.remove(_pendingInitialFeedStorageKey);
+    _createdDefaultFeedsThisSession = false;
   }
 
   @override
@@ -201,7 +236,7 @@ class Settings extends _$Settings {
 
     // Load settings asynchronously but return a temporary state immediately
     // This prevents blocking the UI while loading
-    if (!_hasLoadedSettings && !_isLoadingSettings) {
+    if (!_hasLoadedSettings && _settingsOperation == null) {
       Future.microtask(loadSettings);
     }
 
@@ -210,21 +245,14 @@ class Settings extends _$Settings {
   }
 
   /// Loads all settings from the preferences provider
-  Future<void> loadSettings() async {
-    // Guard against concurrent calls
-    if (_isLoadingSettings) {
-      logger.d('loadSettings already in progress, skipping duplicate call');
-      return;
-    }
+  Future<void> loadSettings() =>
+      _runSettingsOperation(() => _loadSettings(rethrowErrors: false));
 
-    // Skip if already loaded
-    // (but allow explicit refresh via syncPreferencesFromServer)
+  Future<void> _loadSettings({required bool rethrowErrors}) async {
     if (_hasLoadedSettings) {
       logger.d('Settings already loaded, skipping');
       return;
     }
-
-    _isLoadingSettings = true;
 
     try {
       logger.d('Loading settings from preferences...');
@@ -235,6 +263,9 @@ class Settings extends _$Settings {
 
       // Don't load settings if not authenticated - wait for login
       if (!authRepository.isAuthenticated) {
+        if (rethrowErrors) {
+          throw StateError('Cannot prepare feeds while unauthenticated');
+        }
         return;
       }
 
@@ -245,6 +276,7 @@ class Settings extends _$Settings {
       // If there are no feeds, set default preferences
       if (savedFeeds.isEmpty) {
         try {
+          var createdDefaultFeeds = false;
           final modServiceDid = _defaultModServiceDid;
           final defaultPrefs = DefaultPreferences.defaultPreferences(
             modServiceDid: modServiceDid,
@@ -253,6 +285,7 @@ class Settings extends _$Settings {
             if (_getSavedFeedsFromPreferences(current).isNotEmpty) {
               return current;
             }
+            createdDefaultFeeds = true;
             return Preferences(
               preferences: [
                 ...current.preferences.where(
@@ -278,10 +311,9 @@ class Settings extends _$Settings {
           final updatedFeeds = await _loadFeedsFromSavedFeeds(
             updatedSavedFeeds,
           );
-          final updatedActiveFeed = _getActiveFeedFromFeeds(
-            updatedFeeds,
-            updatedSavedFeeds,
-          );
+          final updatedActiveFeed = createdDefaultFeeds
+              ? _getPreferredInitialFeed(updatedFeeds)
+              : _getActiveFeedFromFeeds(updatedFeeds, updatedSavedFeeds);
 
           // Update liked feeds based on viewer state
           final likedFeeds = updatedFeeds
@@ -295,11 +327,21 @@ class Settings extends _$Settings {
           );
           _hasLoadedSettings = true;
 
+          if (createdDefaultFeeds) {
+            _createdDefaultFeedsThisSession = true;
+            await _markInitialFeedSelectionPending();
+          }
+
           // Save the default active feed to storage
           await _saveActiveFeedToStorage(updatedActiveFeed);
           return;
-        } catch (e) {
-          logger.e('Error setting default preferences: $e');
+        } catch (e, st) {
+          logger.e(
+            'Error setting default preferences',
+            error: e,
+            stackTrace: st,
+          );
+          if (rethrowErrors) rethrow;
           // Continue with default feed if setting defaults fails
         }
       }
@@ -344,10 +386,30 @@ class Settings extends _$Settings {
       _hasLoadedSettings = true;
 
       logger.d('Settings state updated successfully');
-    } catch (e) {
-      logger.e('Error loading settings: $e');
+    } catch (e, st) {
+      logger.e('Error loading settings', error: e, stackTrace: st);
+      if (rethrowErrors) rethrow;
+    }
+  }
+
+  Future<void> _runSettingsOperation(Future<void> Function() operation) async {
+    while (_settingsOperation != null) {
+      try {
+        await _settingsOperation;
+      } catch (_) {
+        // The caller that started the operation owns its error. A queued
+        // operation should still get an opportunity to run.
+      }
+    }
+
+    final future = operation();
+    _settingsOperation = future;
+    try {
+      await future;
     } finally {
-      _isLoadingSettings = false;
+      if (identical(_settingsOperation, future)) {
+        _settingsOperation = null;
+      }
     }
   }
 
@@ -420,20 +482,50 @@ class Settings extends _$Settings {
   /// - Manually from the settings UI if user wants to refresh preferences
   Future<void> syncPreferencesFromServer() async {
     try {
-      // Reset all load state to force a fresh load from server
-      // Reset flags to handle race conditions (e.g., login while loading)
+      await _runSettingsOperation(
+        () => _syncPreferencesFromServer(rethrowErrors: false),
+      );
+      logger.d('Preferences synced successfully');
+    } catch (e, st) {
+      logger.e(
+        'Error syncing preferences from server',
+        error: e,
+        stackTrace: st,
+      );
+    }
+  }
+
+  /// Prepares a deterministic first feed before onboarding enters the app.
+  ///
+  /// Unlike background preference synchronization, this method reports
+  /// failures to its caller. It selects Discover only when this installation
+  /// previously created the user's default feeds, preserving established
+  /// active-feed choices.
+  Future<void> preparePostOnboardingFeed() => _runSettingsOperation(() async {
+    await _syncPreferencesFromServer(rethrowErrors: true);
+    if (!await _isInitialFeedSelectionPending()) return;
+
+    final initialFeed = _getPreferredInitialFeed(state.feeds);
+    state = state.copyWith(activeFeed: initialFeed);
+    await _saveActiveFeedToStorage(initialFeed, rethrowErrors: true);
+    await _clearInitialFeedSelectionPending();
+  });
+
+  Future<void> _syncPreferencesFromServer({required bool rethrowErrors}) async {
+    try {
       _hasLoadedSettings = false;
-      _isLoadingSettings = false;
       ref.read(labelerSettingsControllerProvider).resetSessionCache();
-      // Refresh preferences from server - use Future to avoid modifying
-      // provider during widget build phase
       await Future(() async {
         await ref.read(userPreferencesProvider.notifier).refresh();
       });
-      await loadSettings();
-      logger.d('Preferences synced successfully');
-    } catch (e) {
-      logger.e('Error syncing preferences from server: $e');
+      await _loadSettings(rethrowErrors: rethrowErrors);
+    } catch (e, st) {
+      logger.e(
+        'Error syncing preferences from server',
+        error: e,
+        stackTrace: st,
+      );
+      if (rethrowErrors) rethrow;
     }
   }
 
@@ -521,6 +613,15 @@ class Settings extends _$Settings {
   Future<void> setActiveFeed(Feed feed) async {
     state = state.copyWith(activeFeed: feed);
     await _saveActiveFeedToStorage(feed);
+    try {
+      await _clearInitialFeedSelectionPending();
+    } catch (e, st) {
+      logger.w(
+        'Error clearing initial feed selection after user choice',
+        error: e,
+        stackTrace: st,
+      );
+    }
   }
 
   // Helper methods for working with Preferences
@@ -556,6 +657,22 @@ class Settings extends _$Settings {
       // Fallback to creating feed without view if not found
       return Feed(type: activeSavedFeed.typeValue, config: activeSavedFeed);
     }
+  }
+
+  Feed _getPreferredInitialFeed(List<Feed> feeds) {
+    for (final feed in feeds) {
+      if (feed.config.pinned &&
+          feed.config.value == DefaultPreferences.discoverFeedUri) {
+        return feed;
+      }
+    }
+    for (final feed in feeds) {
+      if (feed.config.pinned && feed.type != 'timeline') return feed;
+    }
+    for (final feed in feeds) {
+      if (feed.config.pinned) return feed;
+    }
+    return feeds.isEmpty ? defaultFeed : feeds.first;
   }
 
   Future<Feed> getActiveFeed() async {

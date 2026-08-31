@@ -13,6 +13,7 @@ import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/storage/preferences/default_preferences.dart';
 import 'package:spark/src/core/storage/preferences/storage_manager.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/providers/preferences_provider.dart';
@@ -110,11 +111,122 @@ void main() {
       expect(written.labelers?.map((labeler) => labeler.did), ['did:plc:mod']);
       final state = container.read(settingsProvider);
       expect(state.feeds, hasLength(3));
-      expect(state.activeFeed.config.value, 'following');
+      expect(state.activeFeed.config.value, DefaultPreferences.discoverFeedUri);
       final stored = await StorageManager.instance.preferences
           .getObject<Map<String, dynamic>>('active_feed_did:plc:me');
-      expect(Feed.fromJson(stored!).config.value, 'following');
+      expect(
+        Feed.fromJson(stored!).config.value,
+        DefaultPreferences.discoverFeedUri,
+      );
     });
+
+    test(
+      'post-onboarding preparation selects Discover after an app restart',
+      () async {
+        preferencesController.current = Preferences(preferences: []);
+        final firstContainer = createContainer();
+        await loadSettings(firstContainer);
+
+        expect(
+          firstContainer.read(settingsProvider).activeFeed.config.value,
+          DefaultPreferences.discoverFeedUri,
+        );
+        expect(
+          await StorageManager.instance.preferences.getBool(
+            'pending_initial_feed_did:plc:me',
+          ),
+          isTrue,
+        );
+        final following = firstContainer
+            .read(settingsProvider)
+            .feeds
+            .firstWhere((feed) => feed.type == 'timeline');
+        await StorageManager.instance.preferences.setObject(
+          'active_feed_did:plc:me',
+          following.toJson(),
+        );
+        firstContainer.dispose();
+
+        final secondContainer = createContainer();
+        final secondNotifier = secondContainer.read(settingsProvider.notifier);
+        await secondNotifier.preparePostOnboardingFeed();
+
+        expect(
+          secondContainer.read(settingsProvider).activeFeed.config.value,
+          DefaultPreferences.discoverFeedUri,
+        );
+        final stored = await StorageManager.instance.preferences
+            .getObject<Map<String, dynamic>>('active_feed_did:plc:me');
+        expect(
+          Feed.fromJson(stored!).config.value,
+          DefaultPreferences.discoverFeedUri,
+        );
+        expect(
+          await StorageManager.instance.preferences.getBool(
+            'pending_initial_feed_did:plc:me',
+          ),
+          isNull,
+        );
+        secondContainer.dispose();
+      },
+    );
+
+    test(
+      'post-onboarding preparation preserves an existing active feed',
+      () async {
+        final following = _savedFeed(
+          'following',
+          type: 'timeline',
+          value: 'following',
+        );
+        final existing = _savedFeed('existing');
+        preferencesController.current = _feedPreferences([following, existing]);
+        await StorageManager.instance.preferences.setObject(
+          'active_feed_did:plc:me',
+          Feed(type: 'feed', config: existing).toJson(),
+        );
+        final container = createContainer();
+        final notifier = await loadSettings(container);
+
+        await notifier.preparePostOnboardingFeed();
+
+        expect(
+          container.read(settingsProvider).activeFeed.config.id,
+          'existing',
+        );
+        expect(preferencesController.writes, isEmpty);
+      },
+    );
+
+    test('post-onboarding preparation reports refresh failures', () async {
+      preferencesController.current = _feedPreferences([_savedFeed('feed')]);
+      final container = createContainer();
+      final notifier = await loadSettings(container);
+      final error = StateError('refresh failed');
+      preferencesController.refreshError = error;
+
+      await expectLater(
+        notifier.preparePostOnboardingFeed(),
+        throwsA(same(error)),
+      );
+    });
+
+    test(
+      'post-onboarding preparation falls back when Discover is unavailable',
+      () async {
+        preferencesController.current = Preferences(preferences: []);
+        feedRepository.omittedValues.add(DefaultPreferences.discoverFeedUri);
+        final container = createContainer();
+        final notifier = await loadSettings(container);
+
+        await notifier.preparePostOnboardingFeed();
+
+        expect(
+          container.read(settingsProvider).activeFeed.config.value,
+          DefaultPreferences.theVidsFeedUri,
+        );
+      },
+    );
 
     test('restores a still-pinned active feed from storage', () async {
       final following = _savedFeed(
@@ -321,6 +433,10 @@ void main() {
     final container = createContainer();
     final notifier = await loadSettings(container);
     final selected = Feed(type: 'feed', config: discover);
+    await StorageManager.instance.preferences.setBool(
+      'pending_initial_feed_did:plc:me',
+      true,
+    );
 
     await notifier.setActiveFeed(selected);
 
@@ -328,6 +444,12 @@ void main() {
     final stored = await StorageManager.instance.preferences
         .getObject<Map<String, dynamic>>('active_feed_did:plc:me');
     expect(Feed.fromJson(stored!), selected);
+    expect(
+      await StorageManager.instance.preferences.getBool(
+        'pending_initial_feed_did:plc:me',
+      ),
+      isNull,
+    );
   });
 
   group('labeler preferences', () {
@@ -639,6 +761,7 @@ class _FakeUserPreferences extends UserPreferences {
 
 class _FakeFeedRepository implements FeedRepository {
   final List<List<SavedFeed>> loadCalls = [];
+  final Set<String> omittedValues = {};
   Object? loadError;
 
   @override
@@ -647,6 +770,7 @@ class _FakeFeedRepository implements FeedRepository {
     final error = loadError;
     if (error != null) throw error;
     return savedFeeds
+        .where((savedFeed) => !omittedValues.contains(savedFeed.value))
         .map((savedFeed) => Feed(type: savedFeed.typeValue, config: savedFeed))
         .toList();
   }

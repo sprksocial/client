@@ -376,6 +376,12 @@ abstract class AppLocalizations {
   /// **'We couldn’t save your profile. Check your connection and try again.'**
   String get onboardingProfileSaveFailed;
 
+  /// Error shown when feed setup fails after the onboarding profile is saved
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile is saved, but we couldn’t prepare your feeds. Check your connection and try again.'**
+  String get onboardingFeedSetupFailed;
+
   /// Small label on the onboarding avatar step
   ///
   /// In en, this message translates to:
@@ -591,6 +597,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error loading feed'**
   String get errorLoadingFeed;
+
+  /// Title shown when the Following feed has no posts
+  ///
+  /// In en, this message translates to:
+  /// **'Your Following feed is empty'**
+  String get emptyFollowingFeedTitle;
+
+  /// Guidance shown when the Following feed has no posts
+  ///
+  /// In en, this message translates to:
+  /// **'Follow people to see their posts here.'**
+  String get emptyFollowingFeedDescription;
+
+  /// Title shown when a non-Following feed has no posts
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get emptyFeedTitle;
+
+  /// Description shown when a non-Following feed has no posts
+  ///
+  /// In en, this message translates to:
+  /// **'This feed doesn’t have any posts right now.'**
+  String get emptyFeedDescription;
+
+  /// Description shown after the user reaches the end of a feed
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh to check for new posts.'**
+  String get caughtUpFeedDescription;
+
+  /// Refresh feed button text
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get buttonRefresh;
+
+  /// Button that opens people search from an empty feed
+  ///
+  /// In en, this message translates to:
+  /// **'Find people'**
+  String get buttonFindPeople;
+
+  /// Button that switches from an empty feed to Discover
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Discover'**
+  String get buttonExploreDiscover;
 
   /// Error shown when the app cannot safely update saved feeds
   ///

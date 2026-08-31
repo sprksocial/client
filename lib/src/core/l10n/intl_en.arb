@@ -245,6 +245,11 @@
     "description": "Error shown when onboarding profile creation fails"
   },
 
+  "onboardingFeedSetupFailed": "Your profile is saved, but we couldn’t prepare your feeds. Check your connection and try again.",
+  "@onboardingFeedSetupFailed": {
+    "description": "Error shown when feed setup fails after the onboarding profile is saved"
+  },
+
   "onboardingAvatarEyebrow": "Profile photo",
   "@onboardingAvatarEyebrow": {
     "description": "Small label on the onboarding avatar step"
@@ -423,6 +428,46 @@
   "errorLoadingFeed": "Error loading feed",
   "@errorLoadingFeed": {
     "description": "Error loading feed message"
+  },
+
+  "emptyFollowingFeedTitle": "Your Following feed is empty",
+  "@emptyFollowingFeedTitle": {
+    "description": "Title shown when the Following feed has no posts"
+  },
+
+  "emptyFollowingFeedDescription": "Follow people to see their posts here.",
+  "@emptyFollowingFeedDescription": {
+    "description": "Guidance shown when the Following feed has no posts"
+  },
+
+  "emptyFeedTitle": "Nothing here yet",
+  "@emptyFeedTitle": {
+    "description": "Title shown when a non-Following feed has no posts"
+  },
+
+  "emptyFeedDescription": "This feed doesn’t have any posts right now.",
+  "@emptyFeedDescription": {
+    "description": "Description shown when a non-Following feed has no posts"
+  },
+
+  "caughtUpFeedDescription": "Refresh to check for new posts.",
+  "@caughtUpFeedDescription": {
+    "description": "Description shown after the user reaches the end of a feed"
+  },
+
+  "buttonRefresh": "Refresh",
+  "@buttonRefresh": {
+    "description": "Refresh feed button text"
+  },
+
+  "buttonFindPeople": "Find people",
+  "@buttonFindPeople": {
+    "description": "Button that opens people search from an empty feed"
+  },
+
+  "buttonExploreDiscover": "Explore Discover",
+  "@buttonExploreDiscover": {
+    "description": "Button that switches from an empty feed to Discover"
   },
 
   "errorUpdatingFeeds": "Could not update feeds. Try again.",

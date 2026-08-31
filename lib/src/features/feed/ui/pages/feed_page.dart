@@ -1,16 +1,23 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/storage/preferences/default_preferences.dart';
 import 'package:spark/src/features/feed/providers/feed_action_controller.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
+import 'package:spark/src/features/feed/providers/visible_pinned_feeds_provider.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/feed_post_skeleton.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/feed_post_widget.dart';
-import 'package:spark/src/features/feed/ui/widgets/post/no_more_posts.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/feed_terminal_state.dart';
+import 'package:spark/src/features/home/providers/navigation_provider.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 class FeedPage extends ConsumerStatefulWidget {
   const FeedPage({required this.feed, required this.isActive, super.key});
@@ -84,6 +91,24 @@ class _FeedPageState extends ConsumerState<FeedPage>
     notifier.removePostAtIndex(currentIndex);
   }
 
+  Feed? _discoverFeed(List<Feed> visiblePinnedFeeds) {
+    for (final feed in visiblePinnedFeeds) {
+      if (feed.config.value == DefaultPreferences.discoverFeedUri) {
+        return feed;
+      }
+    }
+    return null;
+  }
+
+  void _exploreDiscover(Feed feed) {
+    unawaited(ref.read(settingsProvider.notifier).setActiveFeed(feed));
+  }
+
+  void _findPeople() {
+    AutoTabsRouter.of(context).setActiveIndex(1);
+    ref.read(navigationProvider.notifier).updateIndex(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
@@ -146,85 +171,95 @@ class _FeedPageState extends ConsumerState<FeedPage>
       }
     }
 
+    final visiblePinnedFeeds = ref.watch(visiblePinnedFeedsProvider).feeds;
+    final discoverFeed = _discoverFeed(visiblePinnedFeeds);
+    final VoidCallback? onExploreDiscover =
+        discoverFeed != null && discoverFeed.config.id != widget.feed.config.id
+        ? () => _exploreDiscover(discoverFeed)
+        : null;
+    final Widget content;
+    if (state.loadingFirstLoad) {
+      content = const FeedPostSkeleton();
+    } else if (state.error) {
+      content = Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(l10n.errorLoadingFeed),
+            TextButton(onPressed: onRefresh, child: Text(l10n.buttonTryAgain)),
+          ],
+        ),
+      );
+    } else if (state.length == 0 && state.isEndOfNetworkFeed) {
+      final isFollowing =
+          widget.feed.type == 'timeline' &&
+          widget.feed.config.value == 'following';
+      content = FeedTerminalState(
+        variant: isFollowing
+            ? FeedTerminalStateVariant.emptyFollowing
+            : FeedTerminalStateVariant.emptyFeed,
+        onRefresh: onRefresh,
+        onFindPeople: isFollowing ? _findPeople : null,
+        onExploreDiscover: onExploreDiscover,
+      );
+    } else {
+      content = CacheablePageView.builder(
+        cachePageExtent: 1,
+        controller: pageController,
+        key: PageStorageKey(widget.feed.config.id),
+        itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
+        scrollDirection: Axis.vertical,
+        restorationId: widget.feed.config.id,
+        physics: shouldBeActive
+            ? const SnappyPageScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
+        allowImplicitScrolling: true,
+        onPageChanged: (index) {
+          if (shouldBeActive) {
+            if (index > state.index) {
+              notifier.scrollDown();
+            }
+            notifier.setIndex(index);
+          }
+        },
+        itemBuilder: (context, index) {
+          if (index == state.length) {
+            return FeedTerminalState(
+              variant: FeedTerminalStateVariant.caughtUp,
+              onRefresh: onRefresh,
+              onExploreDiscover: onExploreDiscover,
+            );
+          }
+          if (index == state.length - 1 &&
+              !state.isEndOfNetworkFeed &&
+              shouldBeActive) {
+            return Stack(
+              children: [
+                FeedPostWidget(index: index, feed: widget.feed),
+                const Positioned(
+                  bottom: 10,
+                  left: 10,
+                  child: SizedBox(
+                    width: 15,
+                    height: 15,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+          return FeedPostWidget(index: index, feed: widget.feed);
+        },
+      );
+    }
+
     return RefreshIndicator(
       key: _refreshIndicatorKey,
       onRefresh: onRefresh,
-      child: state.loadingFirstLoad
-          ? const FeedPostSkeleton()
-          : state.error
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(l10n.errorLoadingFeed),
-                  TextButton(
-                    onPressed: onRefresh,
-                    child: Text(l10n.buttonTryAgain),
-                  ),
-                ],
-              ),
-            )
-          : CacheablePageView.builder(
-              cachePageExtent: 1,
-              controller: pageController,
-              key: PageStorageKey(widget.feed.config.id),
-              itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
-              scrollDirection: Axis.vertical,
-              restorationId: widget.feed.config.id,
-              physics: shouldBeActive
-                  ? const SnappyPageScrollPhysics()
-                  : const NeverScrollableScrollPhysics(),
-              allowImplicitScrolling: true,
-              onPageChanged: (index) {
-                // Only handle page changes when active
-                if (shouldBeActive) {
-                  if (index > state.index) {
-                    notifier.scrollDown();
-                  }
-                  notifier.setIndex(index);
-                }
-              },
-              itemBuilder: (context, index) {
-                // Handle end of feed
-                if (index == state.length) {
-                  return const NoMorePosts();
-                }
-                // Handle last item with loading indicator
-                else if (index == state.length - 1 &&
-                    !state.isEndOfNetworkFeed) {
-                  if (shouldBeActive) {
-                    return Stack(
-                      children: [
-                        FeedPostWidget(index: index, feed: widget.feed),
-                        const Positioned(
-                          bottom: 10,
-                          left: 10,
-                          child: SizedBox(
-                            width: 15,
-                            height: 15,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  return FeedPostWidget(index: index, feed: widget.feed);
-                }
-                // Handle empty state
-                else if (state.length == 0 && !state.loadingFirstLoad) {
-                  return shouldBeActive
-                      ? const NoMorePosts()
-                      : const DecoratedBox(
-                          decoration: BoxDecoration(color: AppColors.black),
-                        );
-                } else {
-                  return FeedPostWidget(index: index, feed: widget.feed);
-                }
-              },
-            ),
+      child: content,
     );
   }
 }

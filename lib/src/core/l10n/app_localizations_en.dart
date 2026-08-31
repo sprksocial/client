@@ -154,6 +154,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn’t save your profile. Check your connection and try again.';
 
   @override
+  String get onboardingFeedSetupFailed =>
+      'Your profile is saved, but we couldn’t prepare your feeds. Check your connection and try again.';
+
+  @override
   String get onboardingAvatarEyebrow => 'Profile photo';
 
   @override
@@ -270,6 +274,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorLoadingFeed => 'Error loading feed';
+
+  @override
+  String get emptyFollowingFeedTitle => 'Your Following feed is empty';
+
+  @override
+  String get emptyFollowingFeedDescription =>
+      'Follow people to see their posts here.';
+
+  @override
+  String get emptyFeedTitle => 'Nothing here yet';
+
+  @override
+  String get emptyFeedDescription =>
+      'This feed doesn’t have any posts right now.';
+
+  @override
+  String get caughtUpFeedDescription => 'Refresh to check for new posts.';
+
+  @override
+  String get buttonRefresh => 'Refresh';
+
+  @override
+  String get buttonFindPeople => 'Find people';
+
+  @override
+  String get buttonExploreDiscover => 'Explore Discover';
 
   @override
   String get errorUpdatingFeeds => 'Could not update feeds. Try again.';

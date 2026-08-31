@@ -27,6 +27,13 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final _displayNameStepKey = GlobalKey<OnboardingDisplayNameStepState>();
   final _bioStepKey = GlobalKey<OnboardingBioStepState>();
   bool _isCompleting = false;
+  bool _profileCreated = false;
+
+  void _handleStepChanged(int _) {
+    if (!_profileCreated) return;
+    _profileCreated = false;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  }
 
   Future<void> _handleCompleteOnboarding() async {
     if (_isCompleting) return;
@@ -52,15 +59,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         avatarToUse = currentState!.bskyProfileRecord!.avatar;
       }
 
-      await onboardingState.createCustomProfile(
-        displayName: displayNameState!.displayName.trim(),
-        description: bioState!.description.trim(),
-        avatar: avatarToUse,
-      );
+      if (!_profileCreated) {
+        await onboardingState.createCustomProfile(
+          displayName: displayNameState!.displayName.trim(),
+          description: bioState!.description.trim(),
+          avatar: avatarToUse,
+        );
+        _profileCreated = true;
+      }
 
       if (!mounted) return;
 
-      await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
+      await ref.read(settingsProvider.notifier).preparePostOnboardingFeed();
 
       if (!mounted) return;
 
@@ -73,7 +83,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         ..showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).onboardingProfileSaveFailed,
+              _profileCreated
+                  ? AppLocalizations.of(context).onboardingFeedSetupFailed
+                  : AppLocalizations.of(context).onboardingProfileSaveFailed,
             ),
             action: SnackBarAction(
               label: AppLocalizations.of(context).buttonRetry,
@@ -176,12 +188,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               builder: (context) => OnboardingBioStep(
                 key: _bioStepKey,
                 initialDescription: state.description,
-                onDescriptionChanged: notifier.updateDescription,
+                onDescriptionChanged: (description) {
+                  _profileCreated = false;
+                  notifier.updateDescription(description);
+                },
                 onUndoDescription:
                     (state.bskyProfileRecord?.description != null &&
                         state.description !=
                             (state.bskyProfileRecord?.description ?? ''))
-                    ? notifier.resetDescription
+                    ? () {
+                        _profileCreated = false;
+                        notifier.resetDescription();
+                      }
                     : null,
               ),
               canProceed: () => _bioStepKey.currentState?.validate() ?? false,
@@ -191,6 +209,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           return OnboardingSequence(
             steps: steps,
             isCompleteLoading: _isCompleting || profileSaveState.isLoading,
+            onIndexChanged: _handleStepChanged,
             onComplete: _handleCompleteOnboarding,
           );
         },

@@ -136,7 +136,9 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
                       Expanded(
                         child: AppButton(
                           label: l10n.buttonBack,
-                          onPressed: _goToPrevious,
+                          onPressed: widget.isCompleteLoading
+                              ? null
+                              : _goToPrevious,
                           variant: AppButtonVariant.neutral,
                           size: AppButtonSize.medium,
                           fullWidth: true,

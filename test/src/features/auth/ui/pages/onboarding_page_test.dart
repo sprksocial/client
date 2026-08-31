@@ -87,11 +87,51 @@ void main() {
     );
   });
 
-  testWidgets('prevents duplicate submission while settings sync is pending', (
+  testWidgets(
+    'prevents duplicate submission while feed preparation is pending',
+    (tester) async {
+      final saveNotifier = _SuccessfulOnboardingState();
+      final settingsNotifier = _BlockingSettings();
+      final container = _container(
+        saveNotifier,
+        settingsNotifier: settingsNotifier,
+      );
+      addTearDown(container.dispose);
+
+      await _pumpPage(tester, container);
+      await _tapButton(tester, 'Continue');
+      await _tapButton(tester, 'Continue');
+      await _tapButton(tester, 'Continue');
+
+      final confirmButton = find.widgetWithText(AppButton, 'Confirm');
+      await tester.tap(confirmButton);
+      await tester.pump();
+
+      expect(saveNotifier.calls, 1);
+      expect(settingsNotifier.prepareCalls, 1);
+      expect(tester.widget<AppButton>(confirmButton).onPressed, isNull);
+      expect(
+        tester
+            .widget<AppButton>(find.widgetWithText(AppButton, 'Back'))
+            .onPressed,
+        isNull,
+      );
+
+      await tester.tap(confirmButton);
+      await tester.pump();
+
+      expect(saveNotifier.calls, 1);
+
+      settingsNotifier.completePreparation();
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets('retries only feed setup after the profile is saved', (
     tester,
   ) async {
     final saveNotifier = _SuccessfulOnboardingState();
-    final settingsNotifier = _BlockingSettings();
+    final settingsNotifier = _FailingSettings();
     final container = _container(
       saveNotifier,
       settingsNotifier: settingsNotifier,
@@ -102,22 +142,111 @@ void main() {
     await _tapButton(tester, 'Continue');
     await _tapButton(tester, 'Continue');
     await _tapButton(tester, 'Continue');
-
-    final confirmButton = find.widgetWithText(AppButton, 'Confirm');
-    await tester.tap(confirmButton);
-    await tester.pump();
+    await _tapButton(tester, 'Confirm');
 
     expect(saveNotifier.calls, 1);
-    expect(settingsNotifier.syncCalls, 1);
-    expect(tester.widget<AppButton>(confirmButton).onPressed, isNull);
+    expect(settingsNotifier.prepareCalls, 1);
+    expect(
+      find.text(
+        'Your profile is saved, but we couldn’t prepare your feeds. '
+        'Check your connection and try again.',
+      ),
+      findsOneWidget,
+    );
 
-    await tester.tap(confirmButton);
-    await tester.pump();
-
-    expect(saveNotifier.calls, 1);
-
-    settingsNotifier.completeSync();
+    await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
+
+    expect(saveNotifier.calls, 1);
+    expect(settingsNotifier.prepareCalls, 2);
+  });
+
+  testWidgets('saves profile edits made after feed setup fails', (
+    tester,
+  ) async {
+    final saveNotifier = _SuccessfulOnboardingState();
+    final settingsNotifier = _FailingSettings();
+    final container = _container(
+      saveNotifier,
+      settingsNotifier: settingsNotifier,
+    );
+    addTearDown(container.dispose);
+
+    await _pumpPage(tester, container);
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Confirm');
+
+    ScaffoldMessenger.of(
+      tester.element(find.byType(OnboardingPage)),
+    ).hideCurrentSnackBar();
+    await tester.pumpAndSettle();
+    await _tapButton(tester, 'Back');
+    await tester.enterText(find.byType(TextFormField).first, 'Updated name');
+    await tester.pump();
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Confirm');
+
+    expect(saveNotifier.calls, 2);
+    expect(saveNotifier.lastDisplayName, 'Updated name');
+    expect(settingsNotifier.prepareCalls, 2);
+  });
+
+  testWidgets('saves bio edits made on the final step after feed setup fails', (
+    tester,
+  ) async {
+    final saveNotifier = _SuccessfulOnboardingState();
+    final settingsNotifier = _FailingSettings();
+    final container = _container(
+      saveNotifier,
+      settingsNotifier: settingsNotifier,
+    );
+    addTearDown(container.dispose);
+
+    await _pumpPage(tester, container);
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Confirm');
+
+    await tester.enterText(find.byType(TextFormField), 'Updated biography');
+    await tester.pump();
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    expect(saveNotifier.calls, 2);
+    expect(saveNotifier.lastDescription, 'Updated biography');
+    expect(settingsNotifier.prepareCalls, 2);
+  });
+
+  testWidgets('saves a final-step bio revert after feed setup fails', (
+    tester,
+  ) async {
+    final saveNotifier = _SuccessfulOnboardingState();
+    final settingsNotifier = _FailingSettings();
+    final container = _container(
+      saveNotifier,
+      settingsNotifier: settingsNotifier,
+    );
+    addTearDown(container.dispose);
+
+    await _pumpPage(tester, container);
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Continue');
+    await _tapButton(tester, 'Continue');
+    await tester.enterText(find.byType(TextFormField), 'Custom biography');
+    await tester.pump();
+    await _tapButton(tester, 'Confirm');
+
+    await tester.tap(find.byTooltip('Revert'));
+    await tester.pump();
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    expect(saveNotifier.calls, 2);
+    expect(saveNotifier.lastDescription, 'Imported biography');
+    expect(settingsNotifier.prepareCalls, 2);
   });
 }
 
@@ -198,6 +327,8 @@ class _FailingOnboardingState extends OnboardingState {
 
 class _SuccessfulOnboardingState extends OnboardingState {
   int calls = 0;
+  String? lastDisplayName;
+  String? lastDescription;
 
   @override
   Future<void> build() async {}
@@ -209,12 +340,14 @@ class _SuccessfulOnboardingState extends OnboardingState {
     dynamic avatar,
   }) async {
     calls++;
+    lastDisplayName = displayName;
+    lastDescription = description;
   }
 }
 
 class _BlockingSettings extends Settings {
-  final _syncCompleter = Completer<void>();
-  int syncCalls = 0;
+  final _preparationCompleter = Completer<void>();
+  int prepareCalls = 0;
 
   @override
   SettingsState build() => SettingsState(
@@ -225,10 +358,28 @@ class _BlockingSettings extends Settings {
   );
 
   @override
-  Future<void> syncPreferencesFromServer() {
-    syncCalls++;
-    return _syncCompleter.future;
+  Future<void> preparePostOnboardingFeed() {
+    prepareCalls++;
+    return _preparationCompleter.future;
   }
 
-  void completeSync() => _syncCompleter.complete();
+  void completePreparation() => _preparationCompleter.complete();
+}
+
+class _FailingSettings extends Settings {
+  int prepareCalls = 0;
+
+  @override
+  SettingsState build() => SettingsState(
+    activeFeed: Feed(
+      type: 'timeline',
+      config: makeSavedFeed(type: 'timeline', value: 'following', pinned: true),
+    ),
+  );
+
+  @override
+  Future<void> preparePostOnboardingFeed() async {
+    prepareCalls++;
+    throw StateError('Feed preparation failed');
+  }
 }
