@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/auth/data/models/onboarding_screen_state.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/bluesky_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -14,13 +14,13 @@ part 'onboarding_notifier.g.dart';
 @riverpod
 class OnboardingNotifier extends _$OnboardingNotifier {
   late final SparkLogger _logger;
-  late final OnboardingRepository _onboardingRepository;
+  late final BlueskyRepository _blueskyRepository;
   late final AuthRepository _authRepository;
 
   @override
   Future<OnboardingScreenState> build() async {
     _logger = GetIt.instance<LogService>().getLogger('OnboardingNotifier');
-    _onboardingRepository = GetIt.instance<OnboardingRepository>();
+    _blueskyRepository = GetIt.instance<BlueskyRepository>();
     _authRepository = GetIt.instance<AuthRepository>();
 
     return _fetchInitialProfileData();
@@ -37,9 +37,9 @@ class OnboardingNotifier extends _$OnboardingNotifier {
         );
       }
 
-      final profileDataMap = await _onboardingRepository.getBskyProfile();
+      final profileDataMap = await _blueskyRepository.getProfileRecord();
       final avatarCid = profileDataMap?.avatar?.ref.link;
-      final avatarUrl = await _onboardingRepository.getBskyAvatarUrl();
+      final avatarUrl = await _blueskyRepository.getAvatarUrl();
 
       return OnboardingScreenState(
         isLoading: false,

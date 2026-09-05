@@ -472,6 +472,90 @@ abstract class AppLocalizations {
   /// **'Bio cannot exceed 256 characters'**
   String get onboardingBioTooLong;
 
+  /// Title of the optional Bluesky follow import screen
+  ///
+  /// In en, this message translates to:
+  /// **'Find people you know'**
+  String get onboardingFollowImportStepTitle;
+
+  /// Heading on the optional Bluesky follow import screen
+  ///
+  /// In en, this message translates to:
+  /// **'Start with familiar faces.'**
+  String get onboardingFollowImportTitle;
+
+  /// Explanation on the optional Bluesky follow import screen
+  ///
+  /// In en, this message translates to:
+  /// **'These people you follow on Bluesky are already on Spark. Choose who you want to follow here.'**
+  String get onboardingFollowImportDescription;
+
+  /// Loading message while matching Bluesky follows to Spark profiles
+  ///
+  /// In en, this message translates to:
+  /// **'Finding people you know on Spark…'**
+  String get onboardingFollowImportLoading;
+
+  /// Primary action for importing selected Bluesky follows
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Follow 1 person} other{Follow {count} people}}'**
+  String onboardingFollowImportAction(int count);
+
+  /// Error shown when some selected Bluesky follows could not be imported
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile is saved, but we couldn’t follow everyone you selected. Confirm to retry the remaining people, or continue without them.'**
+  String get onboardingFollowImportFailed;
+
+  /// Secondary action that skips the optional follow import
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get onboardingSkipForNow;
+
+  /// Action that completes onboarding without retrying failed follow imports
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without'**
+  String get onboardingContinueWithoutFollows;
+
+  /// Action to select all matched profiles for follow import
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get onboardingSelectAll;
+
+  /// Action to deselect all matched profiles for follow import
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get onboardingDeselectAll;
+
+  /// Title of the final onboarding review screen
+  ///
+  /// In en, this message translates to:
+  /// **'Review and confirm'**
+  String get onboardingReviewStepTitle;
+
+  /// Heading on the final onboarding review screen
+  ///
+  /// In en, this message translates to:
+  /// **'Everything look right?'**
+  String get onboardingReviewTitle;
+
+  /// Explanation on the final onboarding review screen
+  ///
+  /// In en, this message translates to:
+  /// **'We’ll create your Spark profile with these details.'**
+  String get onboardingReviewDescription;
+
+  /// Summary of selected Bluesky follows on the review screen
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You’ll also follow 1 person from Bluesky.} other{You’ll also follow {count} people from Bluesky.}}'**
+  String onboardingReviewFollowCount(int count);
+
   /// Labeler settings page title
   ///
   /// In en, this message translates to:
@@ -2017,6 +2101,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load moderation services.'**
   String get moderationServiceLoadFailed;
+
+  /// Title of the standalone Bluesky follow import page
+  ///
+  /// In en, this message translates to:
+  /// **'Find people from Bluesky'**
+  String get pageTitleFollowImport;
+
+  /// Settings entry that opens Bluesky follow import
+  ///
+  /// In en, this message translates to:
+  /// **'Connections'**
+  String get settingsFollowImportTitle;
+
+  /// Button that opens Bluesky follow import
+  ///
+  /// In en, this message translates to:
+  /// **'Import from Bluesky'**
+  String get buttonImportFromBluesky;
+
+  /// Loading message while checking for a Bluesky profile
+  ///
+  /// In en, this message translates to:
+  /// **'Checking for your Bluesky profile…'**
+  String get followImportLoadingProfile;
+
+  /// Title when the current account has no Bluesky profile record
+  ///
+  /// In en, this message translates to:
+  /// **'No Bluesky profile found'**
+  String get followImportNoProfileTitle;
+
+  /// Explanation when Bluesky follow import is unavailable
+  ///
+  /// In en, this message translates to:
+  /// **'Add a Bluesky profile before importing people you follow there.'**
+  String get followImportNoProfileDescription;
+
+  /// Title when the Bluesky profile check fails
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn’t check your Bluesky profile'**
+  String get followImportProfileCheckFailedTitle;
+
+  /// Recovery guidance when the Bluesky profile check fails
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again.'**
+  String get followImportProfileCheckFailedDescription;
+
+  /// Title when no unfollowed Bluesky connections are on Spark
+  ///
+  /// In en, this message translates to:
+  /// **'No new matches yet'**
+  String get followImportNoMatchesTitle;
+
+  /// Explanation when Bluesky follow import finds no matches
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody new from your Bluesky follows has a Spark profile right now. Check again later.'**
+  String get followImportNoMatchesDescription;
+
+  /// Title when Bluesky follow discovery fails
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn’t find your matches'**
+  String get followImportDiscoveryFailedTitle;
+
+  /// Recovery guidance when follow discovery fails
+  ///
+  /// In en, this message translates to:
+  /// **'Your follows haven’t changed. Check your connection and try again.'**
+  String get followImportDiscoveryFailedDescription;
+
+  /// Error shown after only part of an existing-user follow import succeeds
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn’t finish following everyone. Retry the remaining people or finish for now.'**
+  String get followImportPartialFailure;
+
+  /// Success title after importing Bluesky follows
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You’re following 1 new person} other{You’re following {count} new people}}'**
+  String followImportSuccessTitle(int count);
+
+  /// Success explanation after importing Bluesky follows
+  ///
+  /// In en, this message translates to:
+  /// **'Their posts can now appear in your Following feed.'**
+  String get followImportSuccessDescription;
+
+  /// Action that exits after a partially successful follow import
+  ///
+  /// In en, this message translates to:
+  /// **'Finish for now'**
+  String get buttonFinishForNow;
 
   /// Send button text
   ///

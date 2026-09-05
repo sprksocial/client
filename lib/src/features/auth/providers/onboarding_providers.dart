@@ -5,7 +5,6 @@ import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sprk_poptart/so/sprk/graph/get_follows/output.dart';
 
 part 'onboarding_providers.g.dart';
 
@@ -26,20 +25,6 @@ OnboardingRepository onboardingRepository(Ref ref) {
 Future<bool> hasSparkProfile(Ref ref) async {
   final repository = ref.watch(onboardingRepositoryProvider);
   return repository.hasSparkProfile();
-}
-
-/// Provider to get the user's Bluesky profile for import
-@riverpod
-Future<ActorProfileRecord?> bskyProfile(Ref ref) async {
-  final repository = ref.watch(onboardingRepositoryProvider);
-  return repository.getBskyProfile();
-}
-
-/// Provider to get Bluesky follows
-@riverpod
-Future<GraphGetFollowsOutput> bskyFollows(Ref ref, {String? cursor}) async {
-  final repository = ref.watch(onboardingRepositoryProvider);
-  return repository.getBskyFollows(cursor: cursor);
 }
 
 /// Provider to manage the onboarding state
@@ -95,36 +80,6 @@ class OnboardingState extends _$OnboardingState {
         state = AsyncError(e, stackTrace);
       }
       Error.throwWithStackTrace(e, stackTrace);
-    }
-  }
-
-  /// Import follows from Bluesky
-  Future<void> importFollows() async {
-    state = const AsyncLoading();
-
-    try {
-      final repository = ref.read(onboardingRepositoryProvider);
-      String? cursor;
-      var hasMore = true;
-
-      // Loop to get all follows with pagination
-      while (hasMore) {
-        final bskyFollows = await repository.getBskyFollows(cursor: cursor);
-
-        // Create a follow record for each DID
-        for (final follow in bskyFollows.follows) {
-          await repository.createSparkFollow(follow.did);
-        }
-
-        cursor = bskyFollows.cursor;
-        hasMore = cursor != null;
-      }
-
-      if (!ref.mounted) return;
-      state = const AsyncData(null);
-    } catch (e, stackTrace) {
-      if (!ref.mounted) return;
-      state = AsyncError(e, stackTrace);
     }
   }
 }

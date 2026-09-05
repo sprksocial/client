@@ -21,13 +21,26 @@ Widget buildOnboardingSequenceUseCase(BuildContext context) {
   return OnboardingSequence(
     initialIndex: initialIndex,
     steps: const [
-      OnboardingStep(title: 'Set up your profile', builder: _buildWelcomeStep),
-      OnboardingStep(title: 'Add a profile photo', builder: _buildAvatarStep),
       OnboardingStep(
+        id: OnboardingStepId.welcome,
+        title: 'Set up your profile',
+        builder: _buildWelcomeStep,
+      ),
+      OnboardingStep(
+        id: OnboardingStepId.avatar,
+        title: 'Add a profile photo',
+        builder: _buildAvatarStep,
+      ),
+      OnboardingStep(
+        id: OnboardingStepId.displayName,
         title: 'Add your display name',
         builder: _buildDisplayNameStep,
       ),
-      OnboardingStep(title: 'Add a bio', builder: _buildBioStep),
+      OnboardingStep(
+        id: OnboardingStepId.bio,
+        title: 'Add a bio',
+        builder: _buildBioStep,
+      ),
     ],
     onComplete: () {
       ScaffoldMessenger.of(

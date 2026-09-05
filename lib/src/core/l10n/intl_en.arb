@@ -325,6 +325,86 @@
     "description": "Validation error when onboarding bio is too long"
   },
 
+  "onboardingFollowImportStepTitle": "Find people you know",
+  "@onboardingFollowImportStepTitle": {
+    "description": "Title of the optional Bluesky follow import screen"
+  },
+
+  "onboardingFollowImportTitle": "Start with familiar faces.",
+  "@onboardingFollowImportTitle": {
+    "description": "Heading on the optional Bluesky follow import screen"
+  },
+
+  "onboardingFollowImportDescription": "These people you follow on Bluesky are already on Spark. Choose who you want to follow here.",
+  "@onboardingFollowImportDescription": {
+    "description": "Explanation on the optional Bluesky follow import screen"
+  },
+
+  "onboardingFollowImportLoading": "Finding people you know on Spark…",
+  "@onboardingFollowImportLoading": {
+    "description": "Loading message while matching Bluesky follows to Spark profiles"
+  },
+
+  "onboardingFollowImportAction": "{count, plural, =1{Follow 1 person} other{Follow {count} people}}",
+  "@onboardingFollowImportAction": {
+    "description": "Primary action for importing selected Bluesky follows",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "onboardingFollowImportFailed": "Your profile is saved, but we couldn’t follow everyone you selected. Confirm to retry the remaining people, or continue without them.",
+  "@onboardingFollowImportFailed": {
+    "description": "Error shown when some selected Bluesky follows could not be imported"
+  },
+
+  "onboardingSkipForNow": "Skip for now",
+  "@onboardingSkipForNow": {
+    "description": "Secondary action that skips the optional follow import"
+  },
+
+  "onboardingContinueWithoutFollows": "Continue without",
+  "@onboardingContinueWithoutFollows": {
+    "description": "Action that completes onboarding without retrying failed follow imports"
+  },
+
+  "onboardingSelectAll": "Select all",
+  "@onboardingSelectAll": {
+    "description": "Action to select all matched profiles for follow import"
+  },
+
+  "onboardingDeselectAll": "Deselect all",
+  "@onboardingDeselectAll": {
+    "description": "Action to deselect all matched profiles for follow import"
+  },
+
+  "onboardingReviewStepTitle": "Review and confirm",
+  "@onboardingReviewStepTitle": {
+    "description": "Title of the final onboarding review screen"
+  },
+
+  "onboardingReviewTitle": "Everything look right?",
+  "@onboardingReviewTitle": {
+    "description": "Heading on the final onboarding review screen"
+  },
+
+  "onboardingReviewDescription": "We’ll create your Spark profile with these details.",
+  "@onboardingReviewDescription": {
+    "description": "Explanation on the final onboarding review screen"
+  },
+
+  "onboardingReviewFollowCount": "{count, plural, =1{You’ll also follow 1 person from Bluesky.} other{You’ll also follow {count} people from Bluesky.}}",
+  "@onboardingReviewFollowCount": {
+    "description": "Summary of selected Bluesky follows on the review screen",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
   "pageTitleLabelerSettings": "Labeler Settings",
   "@pageTitleLabelerSettings": {
     "description": "Labeler settings page title"
@@ -1707,6 +1787,76 @@
   "moderationServiceLoadFailed": "Could not load moderation services.",
   "@moderationServiceLoadFailed": {
     "description": "Error shown when compatible moderation services cannot be loaded"
+  },
+
+  "pageTitleFollowImport": "Find people from Bluesky",
+  "@pageTitleFollowImport": {
+    "description": "Title of the standalone Bluesky follow import page"
+  },
+  "settingsFollowImportTitle": "Connections",
+  "@settingsFollowImportTitle": {
+    "description": "Settings entry that opens Bluesky follow import"
+  },
+  "buttonImportFromBluesky": "Import from Bluesky",
+  "@buttonImportFromBluesky": {
+    "description": "Button that opens Bluesky follow import"
+  },
+  "followImportLoadingProfile": "Checking for your Bluesky profile…",
+  "@followImportLoadingProfile": {
+    "description": "Loading message while checking for a Bluesky profile"
+  },
+  "followImportNoProfileTitle": "No Bluesky profile found",
+  "@followImportNoProfileTitle": {
+    "description": "Title when the current account has no Bluesky profile record"
+  },
+  "followImportNoProfileDescription": "Add a Bluesky profile before importing people you follow there.",
+  "@followImportNoProfileDescription": {
+    "description": "Explanation when Bluesky follow import is unavailable"
+  },
+  "followImportProfileCheckFailedTitle": "We couldn’t check your Bluesky profile",
+  "@followImportProfileCheckFailedTitle": {
+    "description": "Title when the Bluesky profile check fails"
+  },
+  "followImportProfileCheckFailedDescription": "Check your connection and try again.",
+  "@followImportProfileCheckFailedDescription": {
+    "description": "Recovery guidance when the Bluesky profile check fails"
+  },
+  "followImportNoMatchesTitle": "No new matches yet",
+  "@followImportNoMatchesTitle": {
+    "description": "Title when no unfollowed Bluesky connections are on Spark"
+  },
+  "followImportNoMatchesDescription": "Nobody new from your Bluesky follows has a Spark profile right now. Check again later.",
+  "@followImportNoMatchesDescription": {
+    "description": "Explanation when Bluesky follow import finds no matches"
+  },
+  "followImportDiscoveryFailedTitle": "We couldn’t find your matches",
+  "@followImportDiscoveryFailedTitle": {
+    "description": "Title when Bluesky follow discovery fails"
+  },
+  "followImportDiscoveryFailedDescription": "Your follows haven’t changed. Check your connection and try again.",
+  "@followImportDiscoveryFailedDescription": {
+    "description": "Recovery guidance when follow discovery fails"
+  },
+  "followImportPartialFailure": "We couldn’t finish following everyone. Retry the remaining people or finish for now.",
+  "@followImportPartialFailure": {
+    "description": "Error shown after only part of an existing-user follow import succeeds"
+  },
+  "followImportSuccessTitle": "{count, plural, =1{You’re following 1 new person} other{You’re following {count} new people}}",
+  "@followImportSuccessTitle": {
+    "description": "Success title after importing Bluesky follows",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "followImportSuccessDescription": "Their posts can now appear in your Following feed.",
+  "@followImportSuccessDescription": {
+    "description": "Success explanation after importing Bluesky follows"
+  },
+  "buttonFinishForNow": "Finish for now",
+  "@buttonFinishForNow": {
+    "description": "Action that exits after a partially successful follow import"
   },
 
   "buttonSend": "Send",

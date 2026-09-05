@@ -14,6 +14,7 @@ import 'package:spark/src/features/feed/providers/visible_pinned_feeds_provider.
 import 'package:spark/src/features/feed/ui/pages/feed_page.dart';
 import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/feed_terminal_state.dart';
+import 'package:spark/src/features/follow_import/providers/follow_import_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_state.dart';
 
@@ -168,6 +169,32 @@ void main() {
     expect(controller.page, 0);
     expect(find.byKey(const Key('previous-post')), findsOneWidget);
   });
+
+  testWidgets('an available Bluesky import is the primary Following action', (
+    tester,
+  ) async {
+    var importCalls = 0;
+    var searchCalls = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: FeedTerminalState(
+          variant: FeedTerminalStateVariant.emptyFollowing,
+          onRefresh: () {},
+          onImportFromBluesky: () => importCalls++,
+          onFindPeople: () => searchCalls++,
+        ),
+      ),
+    );
+
+    await tester.tap(find.widgetWithText(AppButton, 'Import from Bluesky'));
+    await tester.tap(find.widgetWithText(AppButton, 'Find people'));
+
+    expect(importCalls, 1);
+    expect(searchCalls, 1);
+  });
 }
 
 Future<void> _disposeFeedPage(WidgetTester tester) async {
@@ -181,6 +208,7 @@ ProviderContainer _container({
   required List<Feed> visibleFeeds,
 }) => ProviderContainer.test(
   overrides: [
+    followImportBskyProfileProvider.overrideWith((ref) async => null),
     settingsProvider.overrideWith(() => settings),
     feedProvider.overrideWith2((feed) => _FakeFeedNotifier(feedState)),
     visiblePinnedFeedsProvider.overrideWithValue((

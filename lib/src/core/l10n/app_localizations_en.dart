@@ -210,6 +210,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingBioTooLong => 'Bio cannot exceed 256 characters';
 
   @override
+  String get onboardingFollowImportStepTitle => 'Find people you know';
+
+  @override
+  String get onboardingFollowImportTitle => 'Start with familiar faces.';
+
+  @override
+  String get onboardingFollowImportDescription =>
+      'These people you follow on Bluesky are already on Spark. Choose who you want to follow here.';
+
+  @override
+  String get onboardingFollowImportLoading =>
+      'Finding people you know on Spark…';
+
+  @override
+  String onboardingFollowImportAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Follow $count people',
+      one: 'Follow 1 person',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingFollowImportFailed =>
+      'Your profile is saved, but we couldn’t follow everyone you selected. Confirm to retry the remaining people, or continue without them.';
+
+  @override
+  String get onboardingSkipForNow => 'Skip for now';
+
+  @override
+  String get onboardingContinueWithoutFollows => 'Continue without';
+
+  @override
+  String get onboardingSelectAll => 'Select all';
+
+  @override
+  String get onboardingDeselectAll => 'Deselect all';
+
+  @override
+  String get onboardingReviewStepTitle => 'Review and confirm';
+
+  @override
+  String get onboardingReviewTitle => 'Everything look right?';
+
+  @override
+  String get onboardingReviewDescription =>
+      'We’ll create your Spark profile with these details.';
+
+  @override
+  String onboardingReviewFollowCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You’ll also follow $count people from Bluesky.',
+      one: 'You’ll also follow 1 person from Bluesky.',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get pageTitleLabelerSettings => 'Labeler Settings';
 
   @override
@@ -1119,6 +1181,70 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get moderationServiceLoadFailed =>
       'Could not load moderation services.';
+
+  @override
+  String get pageTitleFollowImport => 'Find people from Bluesky';
+
+  @override
+  String get settingsFollowImportTitle => 'Connections';
+
+  @override
+  String get buttonImportFromBluesky => 'Import from Bluesky';
+
+  @override
+  String get followImportLoadingProfile => 'Checking for your Bluesky profile…';
+
+  @override
+  String get followImportNoProfileTitle => 'No Bluesky profile found';
+
+  @override
+  String get followImportNoProfileDescription =>
+      'Add a Bluesky profile before importing people you follow there.';
+
+  @override
+  String get followImportProfileCheckFailedTitle =>
+      'We couldn’t check your Bluesky profile';
+
+  @override
+  String get followImportProfileCheckFailedDescription =>
+      'Check your connection and try again.';
+
+  @override
+  String get followImportNoMatchesTitle => 'No new matches yet';
+
+  @override
+  String get followImportNoMatchesDescription =>
+      'Nobody new from your Bluesky follows has a Spark profile right now. Check again later.';
+
+  @override
+  String get followImportDiscoveryFailedTitle =>
+      'We couldn’t find your matches';
+
+  @override
+  String get followImportDiscoveryFailedDescription =>
+      'Your follows haven’t changed. Check your connection and try again.';
+
+  @override
+  String get followImportPartialFailure =>
+      'We couldn’t finish following everyone. Retry the remaining people or finish for now.';
+
+  @override
+  String followImportSuccessTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You’re following $count new people',
+      one: 'You’re following 1 new person',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get followImportSuccessDescription =>
+      'Their posts can now appear in your Following feed.';
+
+  @override
+  String get buttonFinishForNow => 'Finish for now';
 
   @override
   String get buttonSend => 'Send';

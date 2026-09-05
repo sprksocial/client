@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/storage/preferences/default_preferences.dart';
 import 'package:spark/src/features/feed/providers/feed_action_controller.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
@@ -16,6 +17,7 @@ import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physi
 import 'package:spark/src/features/feed/ui/widgets/post/feed_post_skeleton.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/feed_terminal_state.dart';
+import 'package:spark/src/features/follow_import/providers/follow_import_provider.dart';
 import 'package:spark/src/features/home/providers/navigation_provider.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
@@ -171,6 +173,13 @@ class _FeedPageState extends ConsumerState<FeedPage>
       }
     }
 
+    Future<void> openFollowImport() async {
+      final imported = await context.router.push<bool>(
+        const FollowImportRoute(),
+      );
+      if (imported == true && mounted) await onRefresh();
+    }
+
     final visiblePinnedFeeds = ref.watch(visiblePinnedFeedsProvider).feeds;
     final discoverFeed = _discoverFeed(visiblePinnedFeeds);
     final VoidCallback? onExploreDiscover =
@@ -194,11 +203,17 @@ class _FeedPageState extends ConsumerState<FeedPage>
       final isFollowing =
           widget.feed.type == 'timeline' &&
           widget.feed.config.value == 'following';
+      final hasBskyProfile =
+          isFollowing &&
+          ref.watch(followImportBskyProfileProvider).value != null;
       content = FeedTerminalState(
         variant: isFollowing
             ? FeedTerminalStateVariant.emptyFollowing
             : FeedTerminalStateVariant.emptyFeed,
         onRefresh: onRefresh,
+        onImportFromBluesky: hasBskyProfile
+            ? () => unawaited(openFollowImport())
+            : null,
         onFindPeople: isFollowing ? _findPeople : null,
         onExploreDiscover: onExploreDiscover,
       );

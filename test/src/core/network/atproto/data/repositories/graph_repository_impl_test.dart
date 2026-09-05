@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
@@ -118,6 +119,80 @@ void main() {
       },
     );
 
+    test('ensureFollowingBatch scans existing follows only once', () async {
+      final harness = RepositoryHarness();
+      harness.transport.enqueueGet({
+        'cursor': 'next-page',
+        'records': [_followRecord('did:plc:bob', 'bob', 'bob-cid')],
+      });
+      harness.transport.enqueueGet({
+        'records': [_followRecord('did:plc:other', 'other', 'other-cid')],
+      });
+      final repository = GraphRepositoryImpl(
+        harness.sprk,
+        logger: SparkLogger(),
+        now: () => fixedNow,
+      );
+
+      await repository.ensureFollowingBatch([
+        'did:plc:alice',
+        'did:plc:bob',
+        'did:plc:carol',
+      ]);
+
+      expect(harness.transport.requests, hasLength(2));
+      expect(
+        harness.transport.requests.first.uri.queryParameters['cursor'],
+        isNull,
+      );
+      expect(
+        harness.transport.requests.last.uri.queryParameters['cursor'],
+        'next-page',
+      );
+      expect(harness.repo.createCalls.map((call) => call.record['subject']), [
+        'did:plc:alice',
+        'did:plc:carol',
+      ]);
+    });
+
+    test(
+      'ensureFollowingBatch reports the ensured prefix on failure',
+      () async {
+        final harness = RepositoryHarness();
+        harness.transport.enqueueGet({
+          'records': [_followRecord('did:plc:bob', 'bob', 'bob-cid')],
+        });
+        harness.repo.createError = StateError('write failed');
+        final repository = GraphRepositoryImpl(
+          harness.sprk,
+          logger: SparkLogger(),
+          now: () => fixedNow,
+        );
+
+        await expectLater(
+          repository.ensureFollowingBatch([
+            'did:plc:bob',
+            'did:plc:alice',
+            'did:plc:carol',
+          ]),
+          throwsA(
+            isA<EnsureFollowingBatchException>()
+                .having((error) => error.ensuredDids, 'ensuredDids', {
+                  'did:plc:bob',
+                })
+                .having(
+                  (error) => error.failedDid,
+                  'failedDid',
+                  'did:plc:alice',
+                ),
+          ),
+        );
+
+        expect(harness.transport.requests, hasLength(1));
+        expect(harness.repo.createCalls, hasLength(1));
+      },
+    );
+
     test(
       'unfollow delegates exact URI and suppresses crosspost cleanup',
       () async {
@@ -145,4 +220,11 @@ Map<String, dynamic> _profile(String did) => {
   r'$type': 'so.sprk.actor.defs#profileView',
   'did': did,
   'handle': '${did.split(':').last}.test',
+};
+
+Map<String, dynamic> _followRecord(String subject, String rkey, String cid) => {
+  r'$type': 'com.atproto.repo.listRecords#record',
+  'uri': 'at://did:plc:viewer/so.sprk.graph.follow/$rkey',
+  'cid': cid,
+  'value': {'subject': subject},
 };

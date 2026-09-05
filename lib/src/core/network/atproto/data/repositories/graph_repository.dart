@@ -34,6 +34,12 @@ abstract class GraphRepository {
   /// [bsky] Whether to use Bluesky follow records instead of Spark
   Future<RepoStrongRef> followUser(String did, {bool bsky = false});
 
+  /// Ensures every requested follow exists using a single relationship scan.
+  ///
+  /// Existing relationships are treated as success. If a write fails, throws
+  /// [EnsureFollowingBatchException] with the successfully ensured prefix.
+  Future<void> ensureFollowingBatch(Iterable<String> dids, {bool bsky = false});
+
   /// Unfollow a user
   ///
   /// [followUri] The URI of the follow record to delete
@@ -61,4 +67,20 @@ abstract class GraphRepository {
   /// [currentBlockUri] The current block URI if blocking, null if not blocking
   /// Returns the block URI if now blocking, null if unblocked
   Future<String?> toggleBlock(String did, AtUri? currentBlockUri);
+}
+
+class EnsureFollowingBatchException implements Exception {
+  const EnsureFollowingBatchException({
+    required this.ensuredDids,
+    required this.failedDid,
+    required this.cause,
+  });
+
+  final Set<String> ensuredDids;
+  final String failedDid;
+  final Object cause;
+
+  @override
+  String toString() =>
+      'EnsureFollowingBatchException(failedDid: $failedDid, cause: $cause)';
 }

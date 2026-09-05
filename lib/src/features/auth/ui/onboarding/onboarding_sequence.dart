@@ -9,7 +9,7 @@ class OnboardingSequence extends StatefulWidget {
   const OnboardingSequence({
     required this.steps,
     this.initialIndex = 0,
-    this.onIndexChanged,
+    this.onStepChanged,
     this.onComplete,
     this.isCompleteLoading = false,
     super.key,
@@ -17,7 +17,7 @@ class OnboardingSequence extends StatefulWidget {
 
   final List<OnboardingStep> steps;
   final int initialIndex;
-  final ValueChanged<int>? onIndexChanged;
+  final ValueChanged<OnboardingStepId>? onStepChanged;
   final VoidCallback? onComplete;
   final bool isCompleteLoading;
 
@@ -34,29 +34,67 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
     _currentIndex = widget.initialIndex;
   }
 
+  @override
+  void didUpdateWidget(OnboardingSequence oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_isIncluded(widget.steps[_currentIndex])) return;
+
+    final nextIndex = _nextIncludedIndex();
+    if (nextIndex != null) {
+      _currentIndex = nextIndex;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onStepChanged?.call(widget.steps[nextIndex].id);
+      });
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onComplete?.call();
+    });
+  }
+
+  bool _isIncluded(OnboardingStep step) => step.shouldInclude?.call() ?? true;
+
+  int? _nextIncludedIndex() {
+    for (var index = _currentIndex + 1; index < widget.steps.length; index++) {
+      if (_isIncluded(widget.steps[index])) return index;
+    }
+    return null;
+  }
+
+  int? _previousIncludedIndex() {
+    for (var index = _currentIndex - 1; index >= 0; index--) {
+      if (_isIncluded(widget.steps[index])) return index;
+    }
+    return null;
+  }
+
+  void _advanceToNextIncludedStep() {
+    final nextIndex = _nextIncludedIndex();
+    if (nextIndex == null) {
+      widget.onComplete?.call();
+      return;
+    }
+
+    setState(() => _currentIndex = nextIndex);
+    widget.onStepChanged?.call(widget.steps[_currentIndex].id);
+  }
+
   void _goToNext() {
     final currentStep = widget.steps[_currentIndex];
     if (currentStep.canProceed != null && !currentStep.canProceed!()) {
       return;
     }
 
-    if (_currentIndex < widget.steps.length - 1) {
-      setState(() {
-        _currentIndex++;
-      });
-      widget.onIndexChanged?.call(_currentIndex);
-    } else {
-      widget.onComplete?.call();
-    }
+    _advanceToNextIncludedStep();
   }
 
   void _goToPrevious() {
-    if (_currentIndex > 0) {
-      setState(() {
-        _currentIndex--;
-      });
-      widget.onIndexChanged?.call(_currentIndex);
-    }
+    final previousIndex = _previousIncludedIndex();
+    if (previousIndex == null) return;
+
+    setState(() => _currentIndex = previousIndex);
+    widget.onStepChanged?.call(widget.steps[_currentIndex].id);
   }
 
   @override
@@ -64,7 +102,12 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
-    final currentStepNumber = _currentIndex + 1;
+    final currentStep = widget.steps[_currentIndex];
+    final includedSteps = widget.steps.where(_isIncluded).toList();
+    final currentStepNumber = includedSteps.indexOf(currentStep) + 1;
+    final includedStepCount = includedSteps.length;
+    final hasPreviousStep = _previousIncludedIndex() != null;
+    final hasNextStep = _nextIncludedIndex() != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -75,17 +118,14 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                l10n.onboardingStepCount(
-                  currentStepNumber,
-                  widget.steps.length,
-                ),
+                l10n.onboardingStepCount(currentStepNumber, includedStepCount),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                widget.steps[_currentIndex].title,
+                currentStep.title,
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -93,7 +133,7 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
               const SizedBox(height: 16),
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(
-                  end: currentStepNumber / widget.steps.length,
+                  end: currentStepNumber / includedStepCount,
                 ),
                 duration: const Duration(milliseconds: 220),
                 curve: Curves.easeOutCubic,
@@ -132,7 +172,7 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Row(
                   children: [
-                    if (_currentIndex > 0)
+                    if (hasPreviousStep)
                       Expanded(
                         child: AppButton(
                           label: l10n.buttonBack,
@@ -150,15 +190,15 @@ class _OnboardingSequenceState extends State<OnboardingSequence> {
                     Expanded(
                       flex: 2,
                       child: AppButton(
-                        label: _currentIndex < widget.steps.length - 1
-                            ? l10n.buttonContinue
-                            : l10n.buttonConfirm,
+                        label:
+                            currentStep.primaryLabel ??
+                            (hasNextStep
+                                ? l10n.buttonContinue
+                                : l10n.buttonConfirm),
                         onPressed: widget.isCompleteLoading ? null : _goToNext,
                         size: AppButtonSize.medium,
                         fullWidth: true,
-                        leading:
-                            widget.isCompleteLoading &&
-                                _currentIndex == widget.steps.length - 1
+                        leading: widget.isCompleteLoading && !hasNextStep
                             ? SizedBox(
                                 width: 18,
                                 height: 18,

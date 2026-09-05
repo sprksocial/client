@@ -10,6 +10,7 @@ export 'package:spark/src/features/feed/ui/pages/feed_page.dart';
 export 'package:spark/src/features/feed/ui/pages/feeds_page.dart';
 export 'package:spark/src/features/feed/ui/pages/shared_post_page.dart';
 export 'package:spark/src/features/feed/ui/pages/standalone_post_page.dart';
+export 'package:spark/src/features/follow_import/ui/pages/follow_import_page.dart';
 export 'package:spark/src/features/home/ui/pages/empty_page.dart';
 export 'package:spark/src/features/home/ui/pages/main_page.dart';
 export 'package:spark/src/features/messages/ui/pages/chat_page.dart';

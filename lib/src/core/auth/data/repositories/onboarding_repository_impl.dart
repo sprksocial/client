@@ -1,44 +1,26 @@
 import 'dart:typed_data';
-import 'package:bluesky_poptart/app/bsky/actor/get_profile.dart'
-    as bsky_actor_get_profile;
-import 'package:bluesky_poptart/app/bsky/graph/get_follows.dart'
-    as bsky_graph_get_follows;
+
 import 'package:poptart_lex/com/atproto/repo/get_record.dart'
     as repo_get_record;
 import 'package:poptart/poptart.dart';
-import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
-
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
-import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
-import 'package:sprk_poptart/so/sprk/graph/get_follows/output.dart'
-    as sprk_get_follows;
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
   OnboardingRepositoryImpl({
     required this._repoRepository,
     required this._authRepository,
     SparkLogger? logger,
-    DateTime Function()? now,
-    PoptartClient Function(OAuthSession session)? oauthClient,
-    PoptartClient Function()? anonymousBskyClient,
   }) : _logger =
            logger ??
-           GetIt.instance<LogService>().getLogger('OnboardingRepository'),
-       _now = now ?? DateTime.now,
-       _oauthClient = oauthClient ?? PoptartClient.fromOAuthSession,
-       _anonymousBskyClient =
-           anonymousBskyClient ?? (() => PoptartClient.anonymous());
+           GetIt.instance<LogService>().getLogger('OnboardingRepository');
   final RepoRepository _repoRepository;
   final AuthRepository _authRepository;
   final SparkLogger _logger;
-  final DateTime Function() _now;
-  final PoptartClient Function(OAuthSession session) _oauthClient;
-  final PoptartClient Function() _anonymousBskyClient;
 
   String? get _did => _authRepository.did;
   PoptartClient? get _atproto => _authRepository.atproto;
@@ -79,72 +61,6 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       }
       _logger.e('Error checking Spark profile', error: e);
       rethrow;
-    }
-  }
-
-  @override
-  Future<ActorProfileRecord?> getBskyProfile() async {
-    await _authRepository.initializationComplete;
-
-    if (_did == null || _did!.isEmpty) return null;
-
-    try {
-      final atproto = _atproto;
-      if (atproto == null) {
-        _logger.w('AtProto not initialized while fetching Bluesky profile');
-        return null;
-      }
-
-      final uri = AtUri.parse('at://$_did/app.bsky.actor.profile/self');
-      final response = await atproto.call(
-        repo_get_record.comAtprotoRepoGetRecord,
-        parameters: repo_get_record.RepoGetRecordInput(
-          repo: uri.hostname,
-          collection: uri.collection.toString(),
-          rkey: uri.rkey,
-        ),
-      );
-
-      return ActorProfileRecord.fromJson(response.data.value);
-    } catch (e) {
-      _logger.i('Bluesky profile not found', error: e);
-      return null;
-    }
-  }
-
-  @override
-  Future<String?> getBskyAvatarUrl() async {
-    await _authRepository.initializationComplete;
-
-    if (_did == null || _did!.isEmpty) return null;
-
-    try {
-      final atproto = _atproto;
-      if (atproto == null) {
-        _logger.w('AtProto not initialized while fetching Bluesky avatar URL');
-        return null;
-      }
-
-      final oauthSession = atproto.oAuthSession;
-      if (oauthSession == null) {
-        _logger.w('OAuth session missing while fetching Bluesky avatar URL');
-        return null;
-      }
-
-      final bluesky = _oauthClient(oauthSession);
-      final profile = await bluesky.call(
-        bsky_actor_get_profile.appBskyActorGetProfile,
-        parameters: bsky_actor_get_profile.ActorGetProfileInput(actor: _did!),
-      );
-
-      return profile.data.avatar;
-    } catch (e, s) {
-      _logger.i(
-        'Failed to resolve Bluesky avatar URL',
-        error: e,
-        stackTrace: s,
-      );
-      return null;
     }
   }
 
@@ -193,63 +109,5 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       record: record,
       rkey: 'self',
     );
-  }
-
-  @override
-  Future<sprk_get_follows.GraphGetFollowsOutput> getBskyFollows({
-    String? cursor,
-  }) async {
-    if (_did == null || _atproto == null) {
-      throw Exception('Not authenticated');
-    }
-
-    // Use the PoptartClient client's OAuth session if available, otherwise anonymous
-    final bsky = _atproto!.oAuthSession != null
-        ? _oauthClient(_atproto!.oAuthSession!)
-        : _anonymousBskyClient();
-
-    final response = await bsky.call(
-      bsky_graph_get_follows.appBskyGraphGetFollows,
-      parameters: bsky_graph_get_follows.GraphGetFollowsInput(
-        actor: _did!,
-        limit: 100,
-        cursor: cursor,
-      ),
-    );
-
-    // Convert raw data to our structured model
-    final rawData = response.data.toJson();
-    final rawFollows = rawData['follows'] as List<dynamic>;
-
-    final follows = rawFollows
-        .map(
-          (followData) =>
-              ProfileView.fromJson(followData as Map<String, dynamic>),
-        )
-        .toList();
-
-    return sprk_get_follows.GraphGetFollowsOutput(
-      subject: ProfileView.fromJson(rawData['subject'] as Map<String, dynamic>),
-      follows: follows,
-      cursor: rawData['cursor'] as String?,
-    );
-  }
-
-  @override
-  Future<void> createSparkFollow(String subject) async {
-    final record = <String, dynamic>{
-      r'$type': 'so.sprk.graph.follow',
-      'subject': subject,
-      'createdAt': _now().toUtc().toIso8601String(),
-    };
-
-    final response = await _repoRepository.createRecord(
-      collection: 'so.sprk.graph.follow',
-      record: record,
-    );
-
-    if (response.uri.toString().isEmpty) {
-      throw Exception('Failed to create Spark follow');
-    }
   }
 }

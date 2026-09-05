@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 
+enum OnboardingStepId {
+  welcome,
+  avatar,
+  displayName,
+  bio,
+  followImport,
+  review,
+}
+
 /// Represents a single step within an [OnboardingSequence].
 class OnboardingStep {
   const OnboardingStep({
+    required this.id,
     required this.title,
     required this.builder,
     this.canProceed,
+    this.shouldInclude,
+    this.primaryLabel,
   });
+
+  /// Stable identity used for transitions independent of list position.
+  final OnboardingStepId id;
 
   /// Title shown above the progress indicator for this step.
   final String title;
@@ -17,4 +32,10 @@ class OnboardingStep {
   /// Optional validation called before advancing to the next step.
   /// Return `false` to block navigation.
   final bool Function()? canProceed;
+
+  /// Whether this step belongs in the current flow.
+  final bool Function()? shouldInclude;
+
+  /// Optional override for the primary action label.
+  final String? primaryLabel;
 }

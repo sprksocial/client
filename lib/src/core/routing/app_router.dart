@@ -113,6 +113,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: ModerationRoute.page, path: '/settings/moderation'),
     AutoRoute(page: LabelerManagementRoute.page, path: '/settings/labelers'),
     AutoRoute(page: BlocksRoute.page, path: '/settings/blocks'),
+    AutoRoute(page: FollowImportRoute.page, path: '/connections/bluesky'),
 
     // Messages/DMs routes
     AutoRoute(page: ChatRoute.page, path: '/chat/:conversationId'),

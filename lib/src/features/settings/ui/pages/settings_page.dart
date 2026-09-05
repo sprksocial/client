@@ -9,6 +9,7 @@ import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/auth/auth.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/follow_import/providers/follow_import_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
@@ -91,6 +92,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
+  Future<void> _handleFollowImport() async {
+    final imported = await context.router.push<bool>(const FollowImportRoute());
+    if (!mounted || imported != true) return;
+
+    await ref
+        .read(followImportControllerProvider.notifier)
+        .refreshFollowingFeed();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -125,6 +135,33 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
                 trailing: const Icon(FluentIcons.list_24_regular),
                 onTap: () => context.router.push(const FeedListRoute()),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Material(
+              color: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                key: const Key('settings-follow-import'),
+                splashColor: Colors.transparent,
+                title: Text(
+                  l10n.settingsFollowImportTitle,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                trailing: const Icon(FluentIcons.people_24_regular),
+                onTap: _handleFollowImport,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,

@@ -13,12 +13,14 @@ class FeedTerminalState extends StatelessWidget {
     super.key,
     this.onExploreDiscover,
     this.onFindPeople,
+    this.onImportFromBluesky,
   });
 
   final FeedTerminalStateVariant variant;
   final VoidCallback onRefresh;
   final VoidCallback? onExploreDiscover;
   final VoidCallback? onFindPeople;
+  final VoidCallback? onImportFromBluesky;
 
   @override
   Widget build(BuildContext context) {
@@ -81,15 +83,29 @@ class FeedTerminalState extends StatelessWidget {
 
   List<Widget> _actions(AppLocalizations l10n) {
     final actions = <Widget>[];
-    if (variant == FeedTerminalStateVariant.emptyFollowing &&
-        onFindPeople != null) {
-      actions.add(
-        AppButton(
-          label: l10n.buttonFindPeople,
-          onPressed: onFindPeople,
-          fullWidth: true,
-        ),
-      );
+    if (variant == FeedTerminalStateVariant.emptyFollowing) {
+      if (onImportFromBluesky != null) {
+        actions.add(
+          AppButton(
+            label: l10n.buttonImportFromBluesky,
+            onPressed: onImportFromBluesky,
+            fullWidth: true,
+          ),
+        );
+      }
+      if (onFindPeople != null) {
+        if (actions.isNotEmpty) actions.add(const SizedBox(height: 12));
+        actions.add(
+          AppButton(
+            label: l10n.buttonFindPeople,
+            onPressed: onFindPeople,
+            variant: onImportFromBluesky == null
+                ? AppButtonVariant.primary
+                : AppButtonVariant.secondary,
+            fullWidth: true,
+          ),
+        );
+      }
     } else {
       actions.add(
         AppButton(
@@ -101,16 +117,15 @@ class FeedTerminalState extends StatelessWidget {
     }
 
     if (onExploreDiscover != null) {
-      actions
-        ..add(const SizedBox(height: 12))
-        ..add(
-          AppButton(
-            label: l10n.buttonExploreDiscover,
-            onPressed: onExploreDiscover,
-            variant: AppButtonVariant.secondary,
-            fullWidth: true,
-          ),
-        );
+      if (actions.isNotEmpty) actions.add(const SizedBox(height: 12));
+      actions.add(
+        AppButton(
+          label: l10n.buttonExploreDiscover,
+          onPressed: onExploreDiscover,
+          variant: AppButtonVariant.secondary,
+          fullWidth: true,
+        ),
+      );
     }
     return actions;
   }

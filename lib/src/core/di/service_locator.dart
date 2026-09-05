@@ -6,6 +6,8 @@ import 'package:spark/src/core/media_processing/video/pro_video_processing_servi
 import 'package:spark/src/core/media_processing/video/video_processing_service.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/bluesky_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/bluesky_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/notification_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/notification_repository_impl.dart';
@@ -78,6 +80,9 @@ Future<void> initServiceLocator({
     )
     ..registerSingleton<ActorRepository>(
       ActorRepositoryImpl(sl.get<SprkRepository>()),
+    )
+    ..registerSingleton<BlueskyRepository>(
+      BlueskyRepositoryImpl(sl<AuthRepository>()),
     )
     ..registerSingleton<GraphRepository>(
       GraphRepositoryImpl(sl.get<SprkRepository>()),
