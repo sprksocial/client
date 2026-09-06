@@ -1248,4 +1248,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get buttonSend => 'Send';
+
+  @override
+  String get refreshIndicatorPull => 'Pull to refresh';
+
+  @override
+  String get refreshIndicatorRelease => 'Release to refresh';
+
+  @override
+  String get refreshIndicatorRefreshing => 'Refreshing';
 }

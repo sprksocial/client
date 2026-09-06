@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -227,7 +228,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
         title: Text(l10n.pageTitleLabelers),
         centerTitle: true,
       ),
-      body: RefreshIndicator(
+      body: DSRefreshIndicator(
         onRefresh: _loadLabelers,
         child: CustomScrollView(
           slivers: [

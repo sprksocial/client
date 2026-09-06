@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
@@ -86,7 +87,7 @@ class ChatListPageTemplate extends StatelessWidget {
           Expanded(
             child: loading
                 ? _ChatListSkeleton(itemCount: loadingItemCount)
-                : RefreshIndicator(
+                : DSRefreshIndicator(
                     onRefresh: onRefresh ?? () async {},
                     child: ListView.separated(
                       padding: EdgeInsets.zero,

@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
@@ -90,7 +91,7 @@ class _SoundPageState extends ConsumerState<SoundPage> {
         ],
       ),
       body: soundState.when(
-        data: (state) => RefreshIndicator(
+        data: (state) => DSRefreshIndicator(
           onRefresh: () =>
               ref.read(soundPageProvider(_audioAtUri).notifier).refresh(),
           child: CustomScrollView(

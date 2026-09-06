@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/profile/providers/user_list_provider.dart';
 import 'package:spark/src/features/profile/ui/widgets/user_list_view.dart';
@@ -62,7 +63,7 @@ class _UserListPageState extends ConsumerState<UserListPage> {
         leading: AppLeadingButton(tooltip: l10n.tooltipBack),
         title: Text(title),
       ),
-      body: RefreshIndicator(
+      body: DSRefreshIndicator(
         onRefresh: () async {
           ref.invalidate(userListProvider(did: widget.did, type: widget.type));
           await ref.read(

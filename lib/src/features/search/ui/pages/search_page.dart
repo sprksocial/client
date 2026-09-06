@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/design_system/templates/explore_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -134,7 +135,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 state: typeaheadState,
                 onSuggestionSelected: _onSuggestionSelected,
               )
-            : RefreshIndicator(
+            : DSRefreshIndicator(
                 onRefresh: () async {
                   ref
                     ..invalidate(storiesByAuthorProvider())

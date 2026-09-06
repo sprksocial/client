@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
@@ -71,7 +72,7 @@ class StoryManagerPage extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.pageTitleStoryManager)),
       body: asyncState.when(
         data: (data) {
-          return RefreshIndicator(
+          return DSRefreshIndicator(
             onRefresh: () => ref.read(storyManagerProvider.notifier).refresh(),
             child: ListView.separated(
               padding: const EdgeInsets.all(16),

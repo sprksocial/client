@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
@@ -34,7 +35,7 @@ class FeedPage extends ConsumerStatefulWidget {
 class _FeedPageState extends ConsumerState<FeedPage>
     with AutomaticKeepAliveClientMixin {
   late final PageController pageController;
-  final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  final _refreshIndicatorKey = GlobalKey<DSRefreshIndicatorState>();
   bool _hasInitialized = false;
   bool _isRefreshing = false;
   FeedActionControllerNotifier? _actionControllerNotifier;
@@ -271,8 +272,9 @@ class _FeedPageState extends ConsumerState<FeedPage>
       );
     }
 
-    return RefreshIndicator(
+    return DSRefreshIndicator(
       key: _refreshIndicatorKey,
+      edgeOffset: MediaQuery.paddingOf(context).top,
       onRefresh: onRefresh,
       child: content,
     );

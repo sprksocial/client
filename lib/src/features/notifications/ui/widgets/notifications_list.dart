@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/notifications/providers/notification_provider.dart';
 import 'package:spark/src/features/notifications/ui/widgets/notification_item.dart';
@@ -161,7 +162,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
       final errorMsg = notificationState.errorMessage;
       final theme = Theme.of(context);
       final colorScheme = theme.colorScheme;
-      return RefreshIndicator(
+      return DSRefreshIndicator(
         onRefresh: () async {
           await ref
               .read(
@@ -232,7 +233,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
     if (notificationState.notifications.isEmpty) {
       final theme = Theme.of(context);
       final colorScheme = theme.colorScheme;
-      return RefreshIndicator(
+      return DSRefreshIndicator(
         onRefresh: () async {
           await ref
               .read(
@@ -286,7 +287,7 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
       _scheduleVisibilityCheck();
     });
 
-    return RefreshIndicator(
+    return DSRefreshIndicator(
       onRefresh: () async {
         await ref
             .read(

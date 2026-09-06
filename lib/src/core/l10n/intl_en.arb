@@ -1862,5 +1862,17 @@
   "buttonSend": "Send",
   "@buttonSend": {
     "description": "Send button text"
+  },
+  "refreshIndicatorPull": "Pull to refresh",
+  "@refreshIndicatorPull": {
+    "description": "Accessibility hint while pulling down to refresh"
+  },
+  "refreshIndicatorRelease": "Release to refresh",
+  "@refreshIndicatorRelease": {
+    "description": "Accessibility announcement when pull to refresh is armed"
+  },
+  "refreshIndicatorRefreshing": "Refreshing",
+  "@refreshIndicatorRefreshing": {
+    "description": "Accessibility announcement while refreshing content"
   }
 }

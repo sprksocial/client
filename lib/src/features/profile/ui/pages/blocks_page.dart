@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/profile/providers/blocks_provider.dart';
@@ -64,7 +65,7 @@ class _BlocksPageState extends ConsumerState<BlocksPage> {
         leading: AppLeadingButton(tooltip: l10n.buttonCancel),
         title: Text(l10n.pageTitleBlockedUsers),
       ),
-      body: RefreshIndicator(
+      body: DSRefreshIndicator(
         onRefresh: () async {
           ref.invalidate(blocksProvider(did: currentDid));
           await ref.read(blocksProvider(did: currentDid).future);

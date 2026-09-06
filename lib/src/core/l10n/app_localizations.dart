@@ -2203,6 +2203,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send'**
   String get buttonSend;
+
+  /// Accessibility hint while pulling down to refresh
+  ///
+  /// In en, this message translates to:
+  /// **'Pull to refresh'**
+  String get refreshIndicatorPull;
+
+  /// Accessibility announcement when pull to refresh is armed
+  ///
+  /// In en, this message translates to:
+  /// **'Release to refresh'**
+  String get refreshIndicatorRelease;
+
+  /// Accessibility announcement while refreshing content
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing'**
+  String get refreshIndicatorRefreshing;
 }
 
 class _AppLocalizationsDelegate

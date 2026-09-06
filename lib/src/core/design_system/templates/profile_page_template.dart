@@ -3,6 +3,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/atoms/avatar_stack.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_action_buttons.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_info.dart';
@@ -100,7 +101,7 @@ class ProfilePageTemplate extends StatelessWidget {
         actions: appBarActions,
         leading: leading ?? const AppLeadingButton(),
       ),
-      body: RefreshIndicator(
+      body: DSRefreshIndicator(
         onRefresh: onRefresh ?? () async {},
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {

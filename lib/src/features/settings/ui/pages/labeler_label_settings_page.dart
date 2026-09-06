@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
@@ -216,7 +217,7 @@ class _LabelerLabelSettingsPageState
         centerTitle: true,
         leading: const AppLeadingButton(),
       ),
-      body: RefreshIndicator(
+      body: DSRefreshIndicator(
         onRefresh: _loadLabelerSettings,
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 8),
