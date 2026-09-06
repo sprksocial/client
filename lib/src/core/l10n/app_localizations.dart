@@ -1294,6 +1294,12 @@ abstract class AppLocalizations {
   /// **'Posting story...'**
   String get messagePostingStory;
 
+  /// Placeholder when the recorder has no available camera
+  ///
+  /// In en, this message translates to:
+  /// **'No cameras available'**
+  String get messageNoCamerasAvailable;
+
   /// Processing video progress message
   ///
   /// In en, this message translates to:

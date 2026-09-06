@@ -123,7 +123,6 @@ Widget buildImageReviewPageTemplateUseCase(BuildContext context) {
 Widget buildRecordingPageTemplateUseCase(BuildContext context) {
   return RecordingPageTemplate(
     cameraPreview: const ColoredBox(color: Colors.black),
-    aspectRatio: 9 / 16,
     isRecording: false,
     elapsedDuration: Duration.zero,
     maxDuration: const Duration(minutes: 1),

@@ -26,6 +26,7 @@ import 'package:spark/src/features/posting/providers/camera_provider.dart';
 import 'package:spark/src/features/posting/providers/recording_provider.dart';
 import 'package:spark/src/features/posting/ui/models/media_selection.dart';
 import 'package:spark/src/features/posting/ui/pages/media_picker_page.dart';
+import 'package:spark/src/features/posting/ui/widgets/recording_camera_preview.dart';
 import 'package:spark/src/features/posting/utils/captured_photo_flow.dart';
 import 'package:spark/src/features/posting/utils/story_direct_post.dart';
 import 'package:spark/src/features/sound/models/sound_audio_track.dart';
@@ -938,25 +939,31 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           return RecordingPageTemplate(
             cameraPreview: Container(
               color: Colors.black,
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AppIcon(
-                      AppIconData.mediaUnavailable,
-                      color: Colors.white54,
-                      size: 64,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'No cameras available',
-                      style: TextStyle(color: Colors.white54, fontSize: 16),
-                    ),
-                  ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const AppIcon(
+                        AppIconData.mediaUnavailable,
+                        color: Colors.white54,
+                        size: 64,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        AppLocalizations.of(context).messageNoCamerasAvailable,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            aspectRatio: 9 / 16,
             isRecording: false,
             elapsedDuration: Duration.zero,
             maxDuration: recordingState.maxDuration,
@@ -984,7 +991,6 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             availableLensDirections.contains(CameraLensDirection.back) &&
             !_isStartingRecording &&
             !cameraState.isFlipping;
-        final aspectRatio = controller.value.aspectRatio;
         final canFinalizeSession =
             recordingState.canFinalize &&
             !_isProcessing &&
@@ -1003,8 +1009,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             : _handleTap;
 
         return RecordingPageTemplate(
-          cameraPreview: RepaintBoundary(child: CameraPreview(controller)),
-          aspectRatio: aspectRatio,
+          cameraPreview: RecordingCameraPreview(controller: controller),
           isRecording: recordingState.isRecording,
           elapsedDuration: recordingState.elapsedDuration,
           maxDuration: recordingState.maxDuration,

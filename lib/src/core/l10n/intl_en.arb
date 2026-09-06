@@ -1048,6 +1048,11 @@
     "description": "Posting story progress message"
   },
 
+  "messageNoCamerasAvailable": "No cameras available",
+  "@messageNoCamerasAvailable": {
+    "description": "Placeholder when the recorder has no available camera"
+  },
+
   "messageProcessingVideo": "Processing video...",
   "@messageProcessingVideo": {
     "description": "Processing video progress message"

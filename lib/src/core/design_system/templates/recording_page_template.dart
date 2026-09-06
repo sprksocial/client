@@ -14,7 +14,6 @@ export 'package:spark/src/core/design_system/components/molecules/recording_butt
 class RecordingPageTemplate extends StatelessWidget {
   const RecordingPageTemplate({
     required this.cameraPreview,
-    required this.aspectRatio,
     required this.isRecording,
     required this.elapsedDuration,
     required this.maxDuration,
@@ -37,7 +36,6 @@ class RecordingPageTemplate extends StatelessWidget {
   });
 
   final Widget cameraPreview;
-  final double aspectRatio;
   final bool isRecording;
   final Duration elapsedDuration;
   final Duration maxDuration;
@@ -77,71 +75,51 @@ class RecordingPageTemplate extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final viewportSize = Size(
-                    constraints.maxWidth,
-                    constraints.maxHeight,
-                  );
-
-                  // Calculate scale against the real preview viewport instead
-                  // of the full screen to avoid over-zooming.
-                  var scale = viewportSize.aspectRatio * aspectRatio;
-                  if (scale < 1) scale = 1 / scale;
-
-                  return ClipRRect(
-                    borderRadius: recordingPagePreviewBorderRadius,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // Camera preview fills rounded view area
-                        Positioned.fill(
-                          child: Transform.scale(
-                            scale: scale,
-                            child: Center(child: cameraPreview),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: _CameraFlipGesture(
-                            onFlipCamera: canFlipCamera ? onFlipCamera : null,
-                          ),
-                        ),
-                        // Top controls aligned within rounded view
-                        _TopOverlay(
-                          onBack: onBack,
-                          timer: RecordingTimer(
-                            duration: elapsedDuration,
-                            maxDuration: maxDuration,
-                          ),
-                          trailing: onDone != null
-                              ? _ActionButton(
-                                  label: doneLabel ?? 'Done',
-                                  onPressed: onDone!,
-                                )
-                              : const SizedBox(width: 40),
-                        ),
-                        // Bottom overlay sits inside rounded view
-                        _BottomOverlay(
-                          soundLabel: soundLabel,
-                          onSelectSound: onSelectSound,
-                          onClearSound: onClearSound,
-                          recordingButton: RecordingButton(
-                            isRecording: isRecording,
-                            mode: captureMode,
-                            onTap: onTap,
-                            onRecordStart: onRecordStart,
-                            onRecordStop: onRecordStop,
-                          ),
-                          bottomPadding: 24,
-                        ),
-                        if (isProcessing)
-                          _ProcessingOverlay(
-                            label: processingLabel ?? 'Processing...',
-                          ),
-                      ],
+              child: ClipRRect(
+                borderRadius: recordingPagePreviewBorderRadius,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned.fill(child: cameraPreview),
+                    Positioned.fill(
+                      child: _CameraFlipGesture(
+                        onFlipCamera: canFlipCamera ? onFlipCamera : null,
+                      ),
                     ),
-                  );
-                },
+                    // Top controls aligned within rounded view
+                    _TopOverlay(
+                      onBack: onBack,
+                      timer: RecordingTimer(
+                        duration: elapsedDuration,
+                        maxDuration: maxDuration,
+                      ),
+                      trailing: onDone != null
+                          ? _ActionButton(
+                              label: doneLabel ?? 'Done',
+                              onPressed: onDone!,
+                            )
+                          : const SizedBox(width: 40),
+                    ),
+                    // Bottom overlay sits inside rounded view
+                    _BottomOverlay(
+                      soundLabel: soundLabel,
+                      onSelectSound: onSelectSound,
+                      onClearSound: onClearSound,
+                      recordingButton: RecordingButton(
+                        isRecording: isRecording,
+                        mode: captureMode,
+                        onTap: onTap,
+                        onRecordStart: onRecordStart,
+                        onRecordStop: onRecordStop,
+                      ),
+                      bottomPadding: 24,
+                    ),
+                    if (isProcessing)
+                      _ProcessingOverlay(
+                        label: processingLabel ?? 'Processing...',
+                      ),
+                  ],
+                ),
               ),
             ),
             _FooterBar(

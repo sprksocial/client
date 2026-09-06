@@ -665,6 +665,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagePostingStory => 'Posting story...';
 
   @override
+  String get messageNoCamerasAvailable => 'No cameras available';
+
+  @override
   String get messageProcessingVideo => 'Processing video...';
 
   @override
