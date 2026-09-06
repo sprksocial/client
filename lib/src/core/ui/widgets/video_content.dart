@@ -1,5 +1,5 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:video_player/video_player.dart';
 
@@ -83,8 +83,8 @@ class _VideoContentState extends State<VideoContent> {
                   color: Colors.black.withValues(alpha: 128),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  FluentIcons.play_24_filled,
+                child: const AppIcon(
+                  AppIconData.play,
                   size: 24,
                   color: Colors.white,
                 ),

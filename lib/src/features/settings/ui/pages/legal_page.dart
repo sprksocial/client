@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -95,7 +95,7 @@ class LegalPage extends StatelessWidget {
                 ),
               ),
               subtitle: Text('sprk.so$path'),
-              trailing: const Icon(FluentIcons.open_24_regular),
+              trailing: const AppIcon(AppIconData.externalLink),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 4,

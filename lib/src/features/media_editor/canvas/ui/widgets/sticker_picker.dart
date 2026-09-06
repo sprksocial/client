@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 
@@ -170,7 +171,7 @@ class _SheetHeader extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: const AppIcon(AppIconData.cancel, color: Colors.white),
             onPressed: onClose,
           ),
         ],
@@ -372,8 +373,8 @@ class _StickerContent extends StatelessWidget {
           return const ColoredBox(
             color: AppColors.grey700,
             child: Center(
-              child: Icon(
-                Icons.broken_image_outlined,
+              child: AppIcon(
+                AppIconData.mediaUnavailable,
                 color: Colors.white70,
                 size: 20,
               ),

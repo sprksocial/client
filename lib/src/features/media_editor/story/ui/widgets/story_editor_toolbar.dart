@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 
@@ -31,44 +32,44 @@ class StoryEditorToolbar extends StatelessWidget {
     final items = <Widget>[
       _ToolbarItem(
         key: const ValueKey('story-editor-tool-text'),
-        icon: Icons.text_fields_rounded,
+        icon: AppIconData.typo,
         label: l10n.labelText,
         onTap: onText,
       ),
       _ToolbarItem(
         key: const ValueKey('story-editor-tool-stickers'),
-        icon: Icons.sticky_note_2_rounded,
+        icon: AppIconData.sticker,
         label: l10n.labelStickers,
         onTap: onStickers,
       ),
       _ToolbarItem(
         key: const ValueKey('story-editor-tool-draw'),
-        icon: Icons.brush_rounded,
+        icon: AppIconData.edit,
         label: l10n.labelDraw,
         onTap: onPaint,
       ),
       if (onMention != null)
         _ToolbarItem(
           key: const ValueKey('story-editor-tool-mention'),
-          icon: Icons.alternate_email_rounded,
+          icon: AppIconData.at,
           label: l10n.labelMention,
           onTap: () => onMention!.call(),
         ),
       _ToolbarItem(
         key: const ValueKey('story-editor-tool-emoji'),
-        icon: Icons.emoji_emotions_rounded,
+        icon: AppIconData.smiley,
         label: l10n.labelEmoji,
         onTap: onEmoji,
       ),
       _ToolbarItem(
         key: const ValueKey('story-editor-tool-filter'),
-        icon: Icons.auto_awesome_rounded,
+        icon: AppIconData.effects,
         label: l10n.labelFilter,
         onTap: onFilter,
       ),
       _ToolbarItem(
         key: const ValueKey('story-editor-tool-blur'),
-        icon: Icons.blur_on_rounded,
+        icon: AppIconData.blur,
         label: l10n.labelBlur,
         onTap: onBlur,
       ),
@@ -101,7 +102,7 @@ class _ToolbarItem extends StatelessWidget {
     super.key,
   });
 
-  final IconData icon;
+  final AppIconData icon;
   final String label;
   final VoidCallback onTap;
 
@@ -122,7 +123,7 @@ class _ToolbarItem extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.grey900.withAlpha(150),
             ),
-            child: Icon(icon, color: AppColors.greyWhite, size: 22),
+            child: AppIcon(icon, color: AppColors.greyWhite, size: 22),
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pro_image_editor/pro_image_editor.dart' show AudioTrack;
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -21,7 +22,7 @@ class AudioTrackListSection extends ConsumerStatefulWidget {
   const AudioTrackListSection({
     required this.onTrackSelected,
     this.selectedTrack,
-    this.emptyStateIcon = Icons.music_note,
+    this.emptyStateIcon = AppIconData.music,
     this.artworkBackgroundColor = defaultAudioTrackArtworkBackground,
     super.key,
   });
@@ -29,7 +30,7 @@ class AudioTrackListSection extends ConsumerStatefulWidget {
   /// Currently selected track (if any).
   final AudioTrack? selectedTrack;
 
-  final IconData emptyStateIcon;
+  final AppIconData emptyStateIcon;
 
   final Color artworkBackgroundColor;
 
@@ -101,11 +102,11 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
         textInputAction: TextInputAction.search,
         decoration: InputDecoration(
           hintText: l10n.hintSearchSounds,
-          prefixIcon: const Icon(Icons.search_rounded),
+          prefixIcon: const AppIcon(AppIconData.search),
           suffixIcon: _searchController.text.isEmpty
               ? null
               : IconButton(
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const AppIcon(AppIconData.cancel),
                   onPressed: () {
                     _searchController.clear();
                     ref
@@ -198,7 +199,7 @@ class _AudioTrackListSectionState extends ConsumerState<AudioTrackListSection> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            AppIcon(
               widget.emptyStateIcon,
               size: 48,
               color: colorScheme.onSurfaceVariant.withAlpha(128),

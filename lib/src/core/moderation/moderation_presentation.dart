@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation_label_localizations.dart';
 import 'package:spark/src/core/moderation/moderation_models.dart';
@@ -107,10 +108,7 @@ final class CompactModerationPresentation extends ModerationPresentation {
               child: InkWell(
                 onTap: onConcealedTap ?? (ui.noOverride ? showDetails : reveal),
                 child: const Center(
-                  child: Icon(
-                    Icons.visibility_off_outlined,
-                    color: Colors.white,
-                  ),
+                  child: AppIcon(AppIconData.hidden, color: Colors.white),
                 ),
               ),
             ),
@@ -155,7 +153,9 @@ class ModerationPending extends StatelessWidget {
                     label: AppLocalizations.of(context).buttonRetry,
                     child: InkWell(
                       onTap: onRetry,
-                      child: const Center(child: Icon(Icons.refresh)),
+                      child: const Center(
+                        child: AppIcon(AppIconData.arrowFlip),
+                      ),
                     ),
                   )
                 : const Center(
@@ -189,7 +189,7 @@ class _CompactModerationNotice extends StatelessWidget {
           radius: 16,
           child: const Padding(
             padding: EdgeInsets.all(5),
-            child: Icon(Icons.info_outline, size: 16),
+            child: AppIcon(AppIconData.warning, size: 16),
           ),
         ),
       ),
@@ -225,11 +225,7 @@ class _ModerationCover extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.white,
-                size: 44,
-              ),
+              const AppIcon(AppIconData.warning, color: Colors.white, size: 44),
               const SizedBox(height: 12),
               Text(
                 l10n.moderationContentWarning,
@@ -286,7 +282,7 @@ class _ModerationNotice extends StatelessWidget {
         .nonNulls
         .firstOrNull;
     return ActionChip(
-      avatar: const Icon(Icons.info_outline, size: 18),
+      avatar: const AppIcon(AppIconData.warning, size: 18),
       label: Text(name ?? l10n.moderationContentNotice),
       onPressed: onTap,
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/layout/video_toolbar.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/timeline_selection.dart';
@@ -68,7 +69,7 @@ class VideoEditorToolbar extends StatelessWidget {
       actions.add(
         VideoToolbarAction(
           id: 'edit-text',
-          icon: Icons.text_fields,
+          icon: AppIconData.typo,
           label: l10n.buttonEditText,
           onPressed: () => editor.editTextLayer(layer),
         ),
@@ -80,7 +81,7 @@ class VideoEditorToolbar extends StatelessWidget {
       actions.add(
         VideoToolbarAction(
           id: 'edit-paint',
-          icon: Icons.brush,
+          icon: AppIconData.edit,
           label: l10n.buttonEditPaint,
           onPressed: () => editor.editPaintLayer(layer),
         ),
@@ -92,7 +93,7 @@ class VideoEditorToolbar extends StatelessWidget {
       actions.add(
         VideoToolbarAction(
           id: 'forward',
-          icon: Icons.flip_to_front,
+          icon: AppIconData.layersForward,
           label: l10n.buttonMoveForward,
           onPressed: () => editor.moveLayerForward(layer),
         ),
@@ -102,7 +103,7 @@ class VideoEditorToolbar extends StatelessWidget {
       actions.add(
         VideoToolbarAction(
           id: 'backward',
-          icon: Icons.flip_to_back,
+          icon: AppIconData.layersBackward,
           label: l10n.buttonMoveBackward,
           onPressed: () => editor.moveLayerBackward(layer),
         ),
@@ -111,7 +112,7 @@ class VideoEditorToolbar extends StatelessWidget {
     actions.add(
       VideoToolbarAction(
         id: 'delete',
-        icon: Icons.delete_outline,
+        icon: AppIconData.delete,
         label: l10n.buttonDelete,
         onPressed: () => editor.removeLayer(layer),
         isDestructive: true,
@@ -130,25 +131,25 @@ class VideoEditorToolbar extends StatelessWidget {
       ),
       VideoToolbarAction(
         id: 'crop',
-        icon: Icons.crop_rotate,
+        icon: AppIconData.crop,
         label: l10n.labelCrop,
         onPressed: editor.openCropRotateEditor,
       ),
       VideoToolbarAction(
         id: 'tune',
-        icon: Icons.tune,
+        icon: AppIconData.filters,
         label: l10n.labelTune,
         onPressed: editor.openTuneEditor,
       ),
       VideoToolbarAction(
         id: 'filter',
-        icon: Icons.filter,
+        icon: AppIconData.colors,
         label: l10n.labelFilter,
         onPressed: editor.openFilterEditor,
       ),
       VideoToolbarAction(
         id: 'blur',
-        icon: Icons.blur_on,
+        icon: AppIconData.blur,
         label: l10n.labelBlur,
         onPressed: editor.openBlurEditor,
       ),
@@ -160,13 +161,13 @@ class VideoEditorToolbar extends StatelessWidget {
     return [
       VideoToolbarAction(
         id: 'adjust-audio',
-        icon: Icons.graphic_eq,
+        icon: AppIconData.waveform,
         label: l10n.buttonAdjustClip,
         onPressed: onAdjustSound,
       ),
       VideoToolbarAction(
         id: 'replace-audio',
-        icon: Icons.library_music,
+        icon: AppIconData.music,
         label: l10n.buttonReplace,
         onPressed: onAddSound,
       ),
@@ -177,7 +178,7 @@ class VideoEditorToolbar extends StatelessWidget {
       ),
       VideoToolbarAction(
         id: 'remove-audio',
-        icon: Icons.delete_outline,
+        icon: AppIconData.delete,
         label: l10n.buttonRemove,
         onPressed: () {
           onRemoveSound();
@@ -195,7 +196,7 @@ class VideoEditorToolbar extends StatelessWidget {
   }) {
     return VideoToolbarAction(
       id: 'mute',
-      icon: isMuted ? Icons.volume_up : Icons.volume_off,
+      icon: isMuted ? AppIconData.volume : AppIconData.volumeOff,
       label: isMuted ? l10n.buttonUnmute : l10n.buttonMute,
       onPressed: onPressed,
     );
@@ -206,55 +207,55 @@ class VideoEditorToolbar extends StatelessWidget {
     return [
       VideoToolbarAction(
         id: 'sound',
-        icon: Icons.music_note,
+        icon: AppIconData.music,
         label: l10n.labelSound,
         onPressed: onAddSound,
       ),
       VideoToolbarAction(
         id: 'paint',
-        icon: Icons.brush,
+        icon: AppIconData.edit,
         label: l10n.labelPaint,
         onPressed: editor.openPaintEditor,
       ),
       VideoToolbarAction(
         id: 'text',
-        icon: Icons.text_fields,
+        icon: AppIconData.typo,
         label: l10n.labelText,
         onPressed: editor.openTextEditor,
       ),
       VideoToolbarAction(
         id: 'crop',
-        icon: Icons.crop_rotate,
+        icon: AppIconData.crop,
         label: l10n.labelCrop,
         onPressed: editor.openCropRotateEditor,
       ),
       VideoToolbarAction(
         id: 'tune',
-        icon: Icons.tune,
+        icon: AppIconData.filters,
         label: l10n.labelTune,
         onPressed: editor.openTuneEditor,
       ),
       VideoToolbarAction(
         id: 'filter',
-        icon: Icons.filter,
+        icon: AppIconData.colors,
         label: l10n.labelFilter,
         onPressed: editor.openFilterEditor,
       ),
       VideoToolbarAction(
         id: 'blur',
-        icon: Icons.blur_on,
+        icon: AppIconData.blur,
         label: l10n.labelBlur,
         onPressed: editor.openBlurEditor,
       ),
       VideoToolbarAction(
         id: 'emoji',
-        icon: Icons.emoji_emotions,
+        icon: AppIconData.smiley,
         label: l10n.labelEmoji,
         onPressed: editor.openEmojiEditor,
       ),
       VideoToolbarAction(
         id: 'stickers',
-        icon: Icons.star,
+        icon: AppIconData.effects,
         label: l10n.labelStickers,
         onPressed: editor.openStickerEditor,
       ),

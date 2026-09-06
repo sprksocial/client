@@ -345,8 +345,8 @@ class _PlayButtonWithProgress extends StatelessWidget {
           ),
 
           // Play/Pause icon
-          Icon(
-            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          AppIcon(
+            isPlaying ? AppIconData.pause : AppIconData.play,
             color: AppColors.greyWhite,
             size: 24,
           ),

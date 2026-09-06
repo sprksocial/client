@@ -1,8 +1,8 @@
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
@@ -83,7 +83,7 @@ class _SoundPageState extends ConsumerState<SoundPage> {
                           initialSound: state.audio,
                         ),
                       ),
-                icon: const Icon(FluentIcons.camera_24_regular),
+                icon: const AppIcon(AppIconData.camera),
               ),
             ),
             orElse: () => const SizedBox(width: 48),
@@ -117,8 +117,8 @@ class _SoundPageState extends ConsumerState<SoundPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          FluentIcons.video_24_regular,
+                        AppIcon(
+                          AppIconData.video,
                           size: 48,
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -191,7 +191,7 @@ class _SoundPageState extends ConsumerState<SoundPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(FluentIcons.error_circle_24_regular, size: 48),
+              const AppIcon(AppIconData.warning, size: 48),
               const SizedBox(height: 16),
               Text(l10n.errorWithDetail(error.toString())),
               const SizedBox(height: 16),
@@ -225,7 +225,7 @@ class _SoundPostTile extends StatelessWidget {
         child: ColoredBox(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: const Center(
-            child: Icon(FluentIcons.image_off_24_regular, size: 20),
+            child: AppIcon(AppIconData.mediaUnavailable, size: 20),
           ),
         ),
       );

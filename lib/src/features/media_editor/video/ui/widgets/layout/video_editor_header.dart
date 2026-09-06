@@ -29,7 +29,7 @@ class VideoEditorHeader extends StatelessWidget {
           CircleIconButton(
             onPressed: onNext,
             backgroundColor: AppColors.primary500,
-            icon: const Icon(Icons.arrow_forward, size: 22),
+            icon: const AppIcon(AppIconData.arrowRight, size: 22),
             iconColor: AppColors.greyWhite,
             semanticLabel: 'Done',
           ),

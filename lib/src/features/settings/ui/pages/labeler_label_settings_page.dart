@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -174,7 +175,11 @@ class _LabelerLabelSettingsPageState
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+                AppIcon(
+                  AppIconData.warning,
+                  size: 48,
+                  color: colorScheme.error,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.errorLoadingLabelerSettings,
@@ -315,8 +320,8 @@ class _LabelerLabelSettingsPageState
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      Icon(
-                        Icons.label_outline,
+                      AppIcon(
+                        AppIconData.tag,
                         size: 48,
                         color: colorScheme.onSurface.withAlpha(128),
                       ),
@@ -430,8 +435,8 @@ class _LabelerLabelSettingsPageState
                                   message:
                                       'Default mod service labeler '
                                       '(cannot be removed)',
-                                  child: Icon(
-                                    Icons.verified,
+                                  child: AppIcon(
+                                    AppIconData.verified,
                                     size: 16,
                                     color: colorScheme.primary,
                                   ),

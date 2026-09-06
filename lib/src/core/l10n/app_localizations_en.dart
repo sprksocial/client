@@ -1257,4 +1257,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refreshIndicatorRefreshing => 'Refreshing';
+
+  @override
+  String get tooltipRotateScale => 'Rotate and scale';
+
+  @override
+  String get emojiCategoryRecent => 'Recent';
+
+  @override
+  String get emojiCategorySmileys => 'Smileys and people';
+
+  @override
+  String get emojiCategoryAnimals => 'Animals and nature';
+
+  @override
+  String get emojiCategoryFoods => 'Food and drink';
+
+  @override
+  String get emojiCategoryTravel => 'Travel and places';
+
+  @override
+  String get emojiCategoryActivities => 'Activities';
+
+  @override
+  String get emojiCategoryObjects => 'Objects';
+
+  @override
+  String get emojiCategorySymbols => 'Symbols';
+
+  @override
+  String get emojiCategoryFlags => 'Flags';
 }

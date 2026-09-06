@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -84,7 +85,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(AudioSelectionBottomSheet), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is AppIcon && widget.icon == AppIconData.cancel,
+      ),
+    );
     await tester.pumpAndSettle();
   });
 
@@ -204,7 +209,11 @@ void main() {
 
     _selectTrack(tester, _track('pending'));
     await tester.pump();
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is AppIcon && widget.icon == AppIconData.cancel,
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(result, isNull);

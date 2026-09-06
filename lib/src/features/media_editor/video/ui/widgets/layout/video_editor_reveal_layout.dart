@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/video_timeline_state.dart';
@@ -649,8 +650,8 @@ class _VideoPlaybackIndicator extends StatelessWidget {
                 shape: CircleBorder(),
                 color: Color.fromARGB(128, 0, 0, 0),
               ),
-              child: const Icon(
-                Icons.play_arrow,
+              child: const AppIcon(
+                AppIconData.play,
                 color: Colors.white,
                 size: 44,
               ),
@@ -684,8 +685,8 @@ class _RevealCue extends StatelessWidget {
       child: const SizedBox(
         width: 38,
         height: 24,
-        child: Icon(
-          Icons.keyboard_arrow_up_rounded,
+        child: AppIcon(
+          AppIconData.chevronUp,
           size: 21,
           color: AppColors.greyWhite,
         ),

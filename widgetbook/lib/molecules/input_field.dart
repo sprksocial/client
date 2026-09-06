@@ -68,13 +68,17 @@ Widget buildInputFieldSearchUseCase(BuildContext context) {
           initialValue: 'Search...',
         ),
         leadingWidgets: [
-          const Icon(Icons.search, size: 18, color: Colors.white70),
+          const AppIcon(AppIconData.search, size: 18, color: Colors.white70),
         ],
         actionWidgets: [
           if (context.knobs.boolean(label: 'show_clear', initialValue: true))
             GestureDetector(
               onTap: () => print('Clear pressed'),
-              child: const Icon(Icons.close, size: 16, color: Colors.white70),
+              child: const AppIcon(
+                AppIconData.cancel,
+                size: 16,
+                color: Colors.white70,
+              ),
             ),
         ],
       ),
@@ -159,7 +163,7 @@ class _ChatDemo extends ConsumerWidget {
             controller: controller,
             hintText: placeholder,
             leadingWidgets: const [
-              Icon(Icons.chat_bubble_outline, size: 18, color: Colors.white70),
+              AppIcon(AppIconData.comment, size: 18, color: Colors.white70),
             ],
             onSendMessage: showSend
                 ? () {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/theme/action_icon_theme.dart';
 import 'package:spark/src/core/design_system/theme/color_scheme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -9,6 +10,7 @@ class AppTheme {
   static ThemeData get light {
     return ThemeData(
       useMaterial3: true,
+      actionIconTheme: appActionIconTheme,
       fontFamily: 'SN Pro',
       brightness: Brightness.light,
       colorScheme: AppColorScheme.light,
@@ -96,6 +98,7 @@ class AppTheme {
   static ThemeData get dark {
     return ThemeData(
       useMaterial3: true,
+      actionIconTheme: appActionIconTheme,
       fontFamily: 'SN Pro',
       brightness: Brightness.dark,
       colorScheme: AppColorScheme.dark,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// A widget that displays an initializing screen while the video editor starts.
@@ -29,8 +30,8 @@ class VideoInitializingWidget extends StatelessWidget {
                       ),
                     ),
                     child: const Center(
-                      child: Icon(
-                        Icons.video_settings_outlined,
+                      child: AppIcon(
+                        AppIconData.video,
                         size: 34,
                         color: AppColors.primary500,
                       ),

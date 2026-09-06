@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -167,7 +167,7 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: const Icon(FluentIcons.tag_24_regular),
+                trailing: const AppIcon(AppIconData.tag),
                 onTap: () =>
                     context.router.push(const LabelerManagementRoute()),
                 contentPadding: const EdgeInsets.symmetric(

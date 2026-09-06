@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -344,8 +345,8 @@ class _ConvoProfileChip extends StatelessWidget {
                                 width: 2,
                               ),
                             ),
-                            child: Icon(
-                              Icons.check,
+                            child: AppIcon(
+                              AppIconData.check,
                               size: 15,
                               color: theme.colorScheme.onPrimary,
                             ),

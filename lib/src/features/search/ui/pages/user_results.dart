@@ -2,6 +2,7 @@ import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -68,8 +69,8 @@ class _UserResultsState extends ConsumerState<UserResults>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
+              AppIcon(
+                AppIconData.warning,
                 size: 48,
                 color: theme.colorScheme.error,
               ),
@@ -101,8 +102,8 @@ class _UserResultsState extends ConsumerState<UserResults>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.people_outline,
+              AppIcon(
+                AppIconData.people,
                 size: 64,
                 color: theme.colorScheme.onSurfaceVariant.withValues(
                   alpha: 0.5,
@@ -137,8 +138,8 @@ class _UserResultsState extends ConsumerState<UserResults>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.person_search,
+              AppIcon(
+                AppIconData.search,
                 size: 64,
                 color: theme.colorScheme.onSurfaceVariant.withValues(
                   alpha: 0.5,

@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -273,8 +273,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   enabled: !isLoading,
                                   decoration: InputDecoration(
                                     hintText: 'jerry.sprk.so',
-                                    prefixIcon: Icon(
-                                      FluentIcons.person_24_regular,
+                                    prefixIcon: AppIcon(
+                                      AppIconData.person,
                                       color: colorScheme.primary,
                                     ),
                                     filled: true,
@@ -796,8 +796,8 @@ class _LoginHandleSuggestionTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                FluentIcons.arrow_enter_20_regular,
+              AppIcon(
+                AppIconData.arrowRight,
                 size: 18,
                 color: colorScheme.onSurfaceVariant.withAlpha(180),
               ),

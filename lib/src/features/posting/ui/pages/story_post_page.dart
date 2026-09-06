@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -178,7 +179,7 @@ class _StoryPostingProgressCard extends StatelessWidget {
     final title = isVideoStory
         ? 'Publishing video story'
         : 'Publishing photo story';
-    final icon = isVideoStory ? Icons.movie_creation_outlined : Icons.image;
+    final icon = isVideoStory ? AppIconData.video : AppIconData.gallery;
 
     return _StoryPostingCard(
       key: const ValueKey('story-progress-card'),
@@ -192,7 +193,7 @@ class _StoryPostingProgressCard extends StatelessWidget {
               color: const Color(0x26FF2696),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: AppColors.primary200, size: 28),
+            child: AppIcon(icon, color: AppColors.primary200, size: 28),
           ),
           const SizedBox(height: 18),
           Text(
@@ -260,8 +261,8 @@ class _StoryPostingErrorCard extends StatelessWidget {
               color: const Color(0x26EF4444),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(
-              Icons.error_outline,
+            child: const AppIcon(
+              AppIconData.warning,
               color: Color(0xFFFCA5A5),
               size: 28,
             ),

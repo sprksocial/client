@@ -756,7 +756,6 @@ class _VideoEditorPageState extends State<VideoEditorPage>
       hostSpan: _playbackSpan,
       audition: audition,
       isCurrent: () => mounted && identical(_media, media),
-      emptyStateIcon: _configs.audioEditor.icons.audioTrackDefaultIcon,
       artworkBackgroundColor:
           _configs.audioEditor.style.audioTrackImageBackground,
       onError: (message, error, stackTrace) =>

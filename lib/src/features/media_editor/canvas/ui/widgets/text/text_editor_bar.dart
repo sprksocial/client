@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_bottom_action_bar.dart';
 
@@ -109,7 +110,7 @@ class _TextEditorBarState extends State<TextEditorBar> {
   List<Widget> _buildConfigs() {
     return [
       _buildIconTextButton(
-        icon: Icons.color_lens_outlined,
+        icon: AppIconData.colors,
         label: widget.i18nColor,
         onPressed: () {
           widget.showColorPicker(widget.editor.primaryColor);
@@ -124,14 +125,14 @@ class _TextEditorBarState extends State<TextEditorBar> {
       ),
       if (textEditorConfigs.showFontScaleButton)
         _buildIconTextButton(
-          icon: textEditorConfigs.icons.fontScale,
+          icon: AppIconData.typo,
           label: i18n.textEditor.fontScale,
           onPressed: () {
             widget.editor.openFontScaleBottomSheet();
           },
         ),
       _buildIconTextButton(
-        icon: textEditorConfigs.icons.backgroundMode,
+        icon: AppIconData.colors,
         label: i18n.textEditor.backgroundMode,
         onPressed: () {
           widget.editor.toggleBackgroundMode();
@@ -170,7 +171,7 @@ class _TextEditorBarState extends State<TextEditorBar> {
   }
 
   Widget _buildIconTextButton({
-    required IconData icon,
+    required AppIconData icon,
     required String label,
     required VoidCallback onPressed,
   }) {
@@ -183,7 +184,7 @@ class _TextEditorBarState extends State<TextEditorBar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, color: _foreGroundColor),
+          AppIcon(icon, color: _foreGroundColor),
           const SizedBox(height: 5),
           Text(
             label,
@@ -194,17 +195,17 @@ class _TextEditorBarState extends State<TextEditorBar> {
     );
   }
 
-  IconData _getAlignIcon() {
+  AppIconData _getAlignIcon() {
     switch (widget.editor.align) {
       case TextAlign.left:
-        return textEditorConfigs.icons.alignLeft;
+        return AppIconData.alignLeft;
       case TextAlign.right:
-        return textEditorConfigs.icons.alignRight;
+        return AppIconData.alignRight;
       case TextAlign.center:
       case TextAlign.justify:
       case TextAlign.start:
       case TextAlign.end:
-        return textEditorConfigs.icons.alignCenter;
+        return AppIconData.alignCenter;
     }
   }
 

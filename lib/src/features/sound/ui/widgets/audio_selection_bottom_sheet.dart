@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/sound/controllers/audio_audition_controller.dart';
@@ -13,7 +14,7 @@ Future<void> showAudioSelectionFlow({
   required AudioAuditionController audition,
   required bool Function() isCurrent,
   required AudioAuditionErrorHandler onError,
-  IconData emptyStateIcon = Icons.music_note,
+  AppIconData emptyStateIcon = AppIconData.music,
   Color artworkBackgroundColor = defaultAudioTrackArtworkBackground,
 }) async {
   try {
@@ -56,13 +57,13 @@ Future<void> showAudioSelectionFlow({
 class AudioSelectionBottomSheet extends StatelessWidget {
   const AudioSelectionBottomSheet({
     required this.audition,
-    this.emptyStateIcon = Icons.music_note,
+    this.emptyStateIcon = AppIconData.music,
     this.artworkBackgroundColor = defaultAudioTrackArtworkBackground,
     super.key,
   });
 
   final AudioAuditionController audition;
-  final IconData emptyStateIcon;
+  final AppIconData emptyStateIcon;
   final Color artworkBackgroundColor;
 
   @override

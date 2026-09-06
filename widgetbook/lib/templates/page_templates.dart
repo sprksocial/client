@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_tag_list.dart';
 import 'package:spark/src/core/design_system/components/molecules/story_circle.dart';
 import 'package:spark/src/core/design_system/templates/chat_list_page_template.dart';
@@ -189,7 +190,7 @@ class _StoriesPreview extends StatelessWidget {
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.manage_history_outlined, size: 20),
+                icon: const AppIcon(AppIconData.history, size: 20),
                 onPressed: () {},
               ),
             ],

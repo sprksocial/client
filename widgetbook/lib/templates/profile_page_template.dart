@@ -1,4 +1,3 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/templates/profile_page_template.dart';
@@ -168,7 +167,7 @@ Widget buildProfilePageTemplateOtherUserNotFollowingUseCase(
     onMentionTap: (username) => print('Mention tapped: $username'),
     appBarActions: [
       IconButton(
-        icon: const Icon(FluentIcons.more_vertical_24_regular),
+        icon: const AppIcon(AppIconData.more),
         onPressed: () => print('More options tapped'),
       ),
     ],
@@ -224,7 +223,7 @@ Widget buildProfilePageTemplateOtherUserFollowingUseCase(BuildContext context) {
     onMentionTap: (username) => print('Mention tapped: $username'),
     appBarActions: [
       IconButton(
-        icon: const Icon(FluentIcons.more_vertical_24_regular),
+        icon: const AppIcon(AppIconData.more),
         onPressed: () => print('More options tapped'),
       ),
     ],
@@ -264,7 +263,7 @@ Widget buildProfilePageTemplateMinimalProfileUseCase(BuildContext context) {
         print(isFollowing ? 'Follow tapped' : 'Unfollow tapped'),
     appBarActions: [
       IconButton(
-        icon: const Icon(FluentIcons.more_vertical_24_regular),
+        icon: const AppIcon(AppIconData.more),
         onPressed: () => print('More options tapped'),
       ),
     ],
@@ -296,14 +295,9 @@ class _MockTabsWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
+          _MockTabItem(icon: AppIconData.video, isSelected: selectedIndex == 0),
           _MockTabItem(
-            icon: FluentIcons.video_24_regular,
-            filledIcon: FluentIcons.video_24_filled,
-            isSelected: selectedIndex == 0,
-          ),
-          _MockTabItem(
-            icon: FluentIcons.image_24_regular,
-            filledIcon: FluentIcons.image_24_filled,
+            icon: AppIconData.gallery,
             isSelected: selectedIndex == 1,
           ),
         ],
@@ -313,14 +307,9 @@ class _MockTabsWidget extends StatelessWidget {
 }
 
 class _MockTabItem extends StatelessWidget {
-  const _MockTabItem({
-    required this.icon,
-    required this.filledIcon,
-    required this.isSelected,
-  });
+  const _MockTabItem({required this.icon, required this.isSelected});
 
-  final IconData icon;
-  final IconData filledIcon;
+  final AppIconData icon;
   final bool isSelected;
 
   @override
@@ -343,7 +332,7 @@ class _MockTabItem extends StatelessWidget {
             ),
           ),
         ),
-        child: Icon(isSelected ? filledIcon : icon, color: iconColor, size: 26),
+        child: AppIcon(icon, color: iconColor, size: 26),
       ),
     );
   }
@@ -363,8 +352,8 @@ class _MockContentWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              FluentIcons.video_24_regular,
+            AppIcon(
+              AppIconData.video,
               size: 64,
               color: Theme.of(
                 context,
@@ -403,7 +392,7 @@ class _MockContentWidget extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Theme.of(context).colorScheme.surfaceContainer,
-                    child: const Icon(FluentIcons.image_24_regular),
+                    child: const AppIcon(AppIconData.gallery),
                   ),
                 ),
               ),
@@ -411,8 +400,8 @@ class _MockContentWidget extends StatelessWidget {
                 const Positioned(
                   top: 8,
                   right: 8,
-                  child: Icon(
-                    FluentIcons.play_circle_24_filled,
+                  child: AppIcon(
+                    AppIconData.play,
                     color: Colors.white,
                     size: 20,
                   ),

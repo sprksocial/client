@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
@@ -131,7 +132,11 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, color: AppColors.white, size: 48),
+                  AppIcon(
+                    AppIconData.warning,
+                    color: AppColors.white,
+                    size: 48,
+                  ),
                   SizedBox(height: 16),
                   Text(
                     'Failed to load post',

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -65,8 +66,8 @@ class _PostResultsState extends ConsumerState<PostResults>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
+              AppIcon(
+                AppIconData.warning,
                 size: 48,
                 color: theme.colorScheme.error,
               ),
@@ -98,8 +99,8 @@ class _PostResultsState extends ConsumerState<PostResults>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.search,
+              AppIcon(
+                AppIconData.search,
                 size: 64,
                 color: theme.colorScheme.onSurfaceVariant.withValues(
                   alpha: 0.5,
@@ -134,8 +135,8 @@ class _PostResultsState extends ConsumerState<PostResults>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.search_off,
+              AppIcon(
+                AppIconData.search,
                 size: 64,
                 color: theme.colorScheme.onSurfaceVariant.withValues(
                   alpha: 0.5,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/features/crop_rotate_editor/widgets/crop_aspect_ratio_button.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_bottom_action_bar.dart';
 
@@ -114,7 +115,7 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
     if (cropRotateEditorConfigs.tools.contains(CropRotateTool.rotate)) {
       widgets.add(
         _buildIconTextButton(
-          icon: cropRotateEditorConfigs.icons.rotate,
+          icon: AppIconData.rotate,
           label: i18n.cropRotateEditor.rotate,
           onPressed: () {
             widget.editor.rotate();
@@ -126,7 +127,7 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
     if (cropRotateEditorConfigs.tools.contains(CropRotateTool.flip)) {
       widgets.add(
         _buildIconTextButton(
-          icon: cropRotateEditorConfigs.icons.flip,
+          icon: AppIconData.arrowFlip,
           label: i18n.cropRotateEditor.flip,
           onPressed: () {
             widget.editor.flip();
@@ -184,7 +185,7 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
   }
 
   Widget _buildIconTextButton({
-    required IconData icon,
+    required AppIconData icon,
     required String label,
     required VoidCallback onPressed,
   }) {
@@ -197,7 +198,7 @@ class _CropRotateEditorBarState extends State<CropRotateEditorBar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, color: _foreGroundColor),
+          AppIcon(icon, color: _foreGroundColor),
           const SizedBox(height: 5),
           Text(
             label,

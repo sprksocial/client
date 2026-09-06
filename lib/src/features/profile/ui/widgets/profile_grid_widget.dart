@@ -1,8 +1,8 @@
 import 'package:poptart/poptart.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
@@ -36,12 +36,12 @@ List<Widget> buildProfileGridSlivers({
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  AppIcon(
                     both
-                        ? FluentIcons.grid_24_regular
+                        ? AppIconData.grid
                         : (videosOnly
-                              ? FluentIcons.video_24_regular
-                              : FluentIcons.image_24_regular),
+                              ? AppIconData.video
+                              : AppIconData.gallery),
                     size: 48,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -124,7 +124,7 @@ List<Widget> buildProfileGridSlivers({
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(FluentIcons.error_circle_24_regular, size: 48),
+              const AppIcon(AppIconData.warning, size: 48),
               const SizedBox(height: 16),
               Text(
                 AppLocalizations.of(context).errorWithDetail(error.toString()),
@@ -180,7 +180,7 @@ class ProfileGridTile extends ConsumerWidget {
           child: ColoredBox(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: const Center(
-              child: Icon(FluentIcons.image_off_24_regular, size: 20),
+              child: AppIcon(AppIconData.mediaUnavailable, size: 20),
             ),
           ),
         ),

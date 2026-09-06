@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_emoji_categories.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_slider_controls.dart';
+import 'package:spark/src/core/design_system/theme/action_icon_theme.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_layer_interactions.dart';
 import 'package:spark/src/core/design_system/theme/color_scheme.dart';
 import 'package:spark/src/core/design_system/theme/text_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
@@ -39,8 +43,12 @@ class StoryImageEditorConfigs {
       designMode: platformDesignMode,
       theme: ThemeData(
         useMaterial3: true,
+        actionIconTheme: appActionIconTheme,
         colorScheme: AppColorScheme.dark,
         textTheme: AppTextTheme.dark,
+      ),
+      layerInteraction: LayerInteractionConfigs(
+        widgets: buildEditorLayerInteractions(),
       ),
       // Force output to story dimensions
       imageGeneration: const ImageGenerationConfigs(
@@ -74,6 +82,8 @@ class StoryImageEditorConfigs {
           initialStrokeWidth: 5,
         ),
         widgets: PaintEditorWidgets(
+          lineWidthCloseButton: buildEditorSliderCloseButton,
+          changeOpacityCloseButton: buildEditorSliderCloseButton,
           appBar: (paintEditor, rebuildStream) => null,
           colorPicker: (paintEditor, rebuildStream, currentColor, setColor) =>
               null,
@@ -112,6 +122,8 @@ class StoryImageEditorConfigs {
               : MainAxisAlignment.start,
         ),
         widgets: TextEditorWidgets(
+          fontSizeCloseButton: buildEditorSliderCloseButton,
+          sliderFontSize: buildEditorFontScaleSlider,
           appBar: (textEditor, rebuildStream) => null,
           colorPicker: (textEditor, rebuildStream, currentColor, setColor) {
             return ReactiveWidget(
@@ -207,6 +219,11 @@ class StoryImageEditorConfigs {
         checkPlatformCompatibility: !kIsWeb,
         style: EmojiEditorStyle(
           backgroundColor: Colors.transparent,
+          categoryViewConfig: CategoryViewConfig(
+            backgroundColor: Colors.transparent,
+            customCategoryView: (config, state, tabs, pages) =>
+                EditorEmojiCategories(config, state, tabs, pages),
+          ),
           textStyle: DefaultEmojiTextStyle.copyWith(
             fontFamily: !kIsWeb
                 ? null

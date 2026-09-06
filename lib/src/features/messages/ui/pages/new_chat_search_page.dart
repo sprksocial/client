@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
@@ -70,7 +70,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: l10n.hintSearchUsers,
-                          prefixIcon: const Icon(FluentIcons.search_24_regular),
+                          prefixIcon: const AppIcon(AppIconData.search),
                           suffixIcon: _searchController.text.isNotEmpty
                               ? IconButton(
                                   iconSize: 20,
@@ -81,9 +81,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                                         .read(searchProvider.notifier)
                                         .updateQuery('');
                                   },
-                                  icon: const Icon(
-                                    FluentIcons.dismiss_24_regular,
-                                  ),
+                                  icon: const AppIcon(AppIconData.cancel),
                                 )
                               : null,
                         ),
@@ -99,8 +97,8 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          FluentIcons.search_24_regular,
+                        AppIcon(
+                          AppIconData.search,
                           size: 48,
                           color: theme.textTheme.bodyMedium?.color,
                         ),

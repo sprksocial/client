@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 
 class OptionsPanel {
@@ -31,7 +32,7 @@ class OptionsPanel {
             children: [
               if (onDelete != null)
                 ListTile(
-                  leading: Icon(Icons.delete_outline, color: textColor),
+                  leading: AppIcon(AppIconData.delete, color: textColor),
                   title: Text(
                     l10n.buttonDelete,
                     style: TextStyle(color: textColor),
@@ -43,7 +44,7 @@ class OptionsPanel {
                 ),
               if (onBlock != null)
                 ListTile(
-                  leading: Icon(Icons.block, color: textColor),
+                  leading: AppIcon(AppIconData.block, color: textColor),
                   title: Text(
                     isBlocked ? l10n.buttonUnblock : l10n.buttonBlock,
                     style: TextStyle(color: textColor),
@@ -55,7 +56,7 @@ class OptionsPanel {
                 ),
               if (onReport != null)
                 ListTile(
-                  leading: const Icon(Icons.report_outlined),
+                  leading: AppIcon(AppIconData.warning, color: textColor),
                   title: Text(
                     isProfile ? l10n.buttonReportProfile : l10n.buttonReport,
                     style: TextStyle(color: textColor),
@@ -66,7 +67,7 @@ class OptionsPanel {
                   },
                 ),
               ListTile(
-                leading: const Icon(Icons.close),
+                leading: AppIcon(AppIconData.cancel, color: textColor),
                 title: Text(
                   l10n.buttonClose,
                   style: TextStyle(color: textColor),

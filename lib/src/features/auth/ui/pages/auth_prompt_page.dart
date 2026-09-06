@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
@@ -23,8 +23,8 @@ class AuthPromptPage extends StatelessWidget {
               leading: IconButton(
                 padding: EdgeInsets.zero,
                 onPressed: onClose,
-                icon: Icon(
-                  FluentIcons.dismiss_24_regular,
+                icon: AppIcon(
+                  AppIconData.cancel,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),

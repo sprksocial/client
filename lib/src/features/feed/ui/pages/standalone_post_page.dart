@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -233,7 +234,11 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error, color: Colors.white, size: 48),
+                const AppIcon(
+                  AppIconData.warning,
+                  color: Colors.white,
+                  size: 48,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   l10n.errorWithDetail(snapshot.error.toString()),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_bottom_action_bar.dart';
 
@@ -102,7 +103,7 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
               ),
               if (paintEditorConfigs.enableZoom) ...[
                 _buildIconTextButton(
-                  icon: paintEditorConfigs.icons.moveAndZoom,
+                  icon: AppIconData.move,
                   label: i18n.paintEditor.moveAndZoom,
                   onPressed: () {
                     widget.editor.setMode(PaintMode.moveAndZoom);
@@ -122,21 +123,21 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
   List<Widget> _buildConfigs() {
     return [
       _buildIconTextButton(
-        icon: Icons.color_lens_outlined,
+        icon: AppIconData.colors,
         label: widget.i18nColor,
         onPressed: () {
           widget.showColorPicker(widget.editor.activeColor);
         },
       ),
       _buildIconTextButton(
-        icon: paintEditorConfigs.icons.lineWeight,
+        icon: AppIconData.less,
         label: i18n.paintEditor.lineWidth,
         onPressed: () {
           widget.editor.openLinWidthBottomSheet();
         },
       ),
       _buildIconTextButton(
-        icon: paintEditorConfigs.icons.changeOpacity,
+        icon: AppIconData.blur,
         label: i18n.paintEditor.changeOpacity,
         onPressed: () {
           widget.editor.openOpacityBottomSheet();
@@ -159,8 +160,8 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
             ? Center(
                 child: _buildIconTextButton(
                   icon: widget.editor.fillBackground
-                      ? paintEditorConfigs.icons.fill
-                      : paintEditorConfigs.icons.noFill,
+                      ? AppIconData.rectangleFilled
+                      : AppIconData.selectionSingle,
                   label: i18n.paintEditor.toggleFill,
                   onPressed: () {
                     widget.editor.toggleFill();
@@ -178,7 +179,7 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
       final isActive = widget.editor.paintMode == item.mode;
 
       return _buildIconTextButton(
-        icon: item.icon,
+        icon: _paintIcon(item.mode),
         label: item.label,
         onPressed: () {
           widget.editor.setMode(item.mode);
@@ -188,8 +189,30 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
     });
   }
 
+  AppIconData _paintIcon(PaintMode mode) => switch (mode) {
+    PaintMode.moveAndZoom => AppIconData.move,
+    PaintMode.freeStyle ||
+    PaintMode.freeStyleArrowStart ||
+    PaintMode.freeStyleArrowEnd ||
+    PaintMode.freeStyleArrowStartEnd => AppIconData.edit,
+    PaintMode.line ||
+    PaintMode.dashLine ||
+    PaintMode.dashDotLine => AppIconData.less,
+    PaintMode.rect ||
+    PaintMode.hexagon ||
+    PaintMode.polygon => AppIconData.selectionSingle,
+    PaintMode.arrow => AppIconData.arrowRight,
+    PaintMode.circle => AppIconData.circle,
+    PaintMode.eraser => AppIconData.eraser,
+    PaintMode.blur => AppIconData.blur,
+    PaintMode.pixelate => AppIconData.grid,
+    PaintMode.custom1 ||
+    PaintMode.custom2 ||
+    PaintMode.custom3 => AppIconData.edit,
+  };
+
   Widget _buildIconTextButton({
-    required IconData icon,
+    required AppIconData icon,
     required String label,
     required VoidCallback onPressed,
     bool isActive = false,
@@ -210,7 +233,7 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, color: color),
+          AppIcon(icon, color: color),
           const SizedBox(height: 5),
           Text(label, style: TextStyle(fontSize: 10, color: labelColor)),
         ],

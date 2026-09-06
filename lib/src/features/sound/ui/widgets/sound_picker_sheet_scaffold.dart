@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class SoundPickerSheetScaffold extends StatelessWidget {
@@ -62,7 +63,7 @@ class SoundPickerSheetScaffold extends StatelessWidget {
     final onClose = this.onClose;
     if (onClose == null) return null;
     return IconButton(
-      icon: Icon(Icons.close, color: colorScheme.onSurface),
+      icon: AppIcon(AppIconData.cancel, color: colorScheme.onSurface),
       onPressed: onClose,
     );
   }

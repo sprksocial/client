@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/layer_reorder_controller.dart';
@@ -81,25 +82,17 @@ class LayerTimingTrack extends StatelessWidget {
     );
   }
 
-  (IconData, String, Color) _visualsFor(BuildContext context) {
+  (AppIconData, String, Color) _visualsFor(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (layer.isTextLayer) {
-      return (Icons.text_fields_rounded, l10n.labelText, AppColors.indigo600);
+      return (AppIconData.typo, l10n.labelText, AppColors.indigo600);
     }
     if (layer.isPaintLayer) {
-      return (Icons.brush_rounded, l10n.labelPaint, AppColors.blue600);
+      return (AppIconData.edit, l10n.labelPaint, AppColors.blue600);
     }
     if (layer.isEmojiLayer) {
-      return (
-        Icons.emoji_emotions_rounded,
-        l10n.labelEmoji,
-        AppColors.rajah900,
-      );
+      return (AppIconData.smiley, l10n.labelEmoji, AppColors.rajah900);
     }
-    return (
-      Icons.sticky_note_2_rounded,
-      l10n.labelStickers,
-      AppColors.turquoise900,
-    );
+    return (AppIconData.sticker, l10n.labelStickers, AppColors.turquoise900);
   }
 }

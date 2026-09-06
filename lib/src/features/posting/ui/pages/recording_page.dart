@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/templates/recording_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/media_processing/video/video_processing_service.dart';
@@ -886,8 +887,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
+                  const AppIcon(
+                    AppIconData.warning,
                     color: Colors.white,
                     size: 64,
                   ),
@@ -941,8 +942,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.videocam_off_outlined,
+                    AppIcon(
+                      AppIconData.mediaUnavailable,
                       color: Colors.white54,
                       size: 64,
                     ),
@@ -1047,7 +1048,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 64),
+              const AppIcon(AppIconData.warning, color: Colors.white, size: 64),
               const SizedBox(height: 16),
               Text(
                 'Camera Error',

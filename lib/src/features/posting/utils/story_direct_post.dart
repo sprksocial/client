@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/models.dart';
@@ -169,10 +170,8 @@ class _PostingOverlay extends StatelessWidget {
                         color: const Color(0x26FF2696),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(
-                        isVideo
-                            ? Icons.movie_creation_outlined
-                            : Icons.image_outlined,
+                      child: AppIcon(
+                        isVideo ? AppIconData.video : AppIconData.gallery,
                         color: AppColors.primary200,
                         size: 28,
                       ),

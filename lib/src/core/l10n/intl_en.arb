@@ -1874,5 +1874,45 @@
   "refreshIndicatorRefreshing": "Refreshing",
   "@refreshIndicatorRefreshing": {
     "description": "Accessibility announcement while refreshing content"
+  },
+  "tooltipRotateScale": "Rotate and scale",
+  "@tooltipRotateScale": {
+    "description": "Tooltip for the media editor layer rotation and scaling handle"
+  },
+  "emojiCategoryRecent": "Recent",
+  "@emojiCategoryRecent": {
+    "description": "Tooltip for the recent emoji category"
+  },
+  "emojiCategorySmileys": "Smileys and people",
+  "@emojiCategorySmileys": {
+    "description": "Tooltip for the smileys emoji category"
+  },
+  "emojiCategoryAnimals": "Animals and nature",
+  "@emojiCategoryAnimals": {
+    "description": "Tooltip for the animals emoji category"
+  },
+  "emojiCategoryFoods": "Food and drink",
+  "@emojiCategoryFoods": {
+    "description": "Tooltip for the foods emoji category"
+  },
+  "emojiCategoryTravel": "Travel and places",
+  "@emojiCategoryTravel": {
+    "description": "Tooltip for the travel emoji category"
+  },
+  "emojiCategoryActivities": "Activities",
+  "@emojiCategoryActivities": {
+    "description": "Tooltip for the activities emoji category"
+  },
+  "emojiCategoryObjects": "Objects",
+  "@emojiCategoryObjects": {
+    "description": "Tooltip for the objects emoji category"
+  },
+  "emojiCategorySymbols": "Symbols",
+  "@emojiCategorySymbols": {
+    "description": "Tooltip for the symbols emoji category"
+  },
+  "emojiCategoryFlags": "Flags",
+  "@emojiCategoryFlags": {
+    "description": "Tooltip for the flags emoji category"
   }
 }

@@ -368,8 +368,8 @@ class _CloseButton extends StatelessWidget {
               shape: BoxShape.circle,
               color: Colors.black.withAlpha(90),
             ),
-            child: const Icon(
-              Icons.close_rounded,
+            child: const AppIcon(
+              AppIconData.cancel,
               color: Colors.white,
               size: 22,
             ),
@@ -488,8 +488,8 @@ class _SoundButton extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.music_note_rounded,
+                          const AppIcon(
+                            AppIconData.music,
                             color: Colors.white,
                             size: 18,
                           ),
@@ -520,8 +520,8 @@ class _SoundButton extends StatelessWidget {
                     },
                     child: const Padding(
                       padding: EdgeInsets.fromLTRB(4, 8, 12, 8),
-                      child: Icon(
-                        Icons.close_rounded,
+                      child: AppIcon(
+                        AppIconData.cancel,
                         color: Colors.white,
                         size: 18,
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class TimelineSubtrackContent extends StatelessWidget {
@@ -9,7 +10,7 @@ class TimelineSubtrackContent extends StatelessWidget {
     super.key,
   });
 
-  final IconData icon;
+  final AppIconData icon;
   final String label;
   final Widget? leading;
 
@@ -19,7 +20,7 @@ class TimelineSubtrackContent extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         children: [
-          leading ?? Icon(icon, size: 15, color: AppColors.greyWhite),
+          leading ?? AppIcon(icon, size: 15, color: AppColors.greyWhite),
           const SizedBox(width: 7),
           Flexible(
             child: Text(

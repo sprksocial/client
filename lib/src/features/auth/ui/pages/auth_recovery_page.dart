@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -161,8 +161,8 @@ class _AuthRecoveryPageState extends ConsumerState<AuthRecoveryPage> {
                       textAlign: TextAlign.center,
                     ),
                   ] else ...[
-                    Icon(
-                      FluentIcons.key_24_regular,
+                    AppIcon(
+                      AppIconData.key,
                       size: 48,
                       color: colorScheme.primary,
                     ),
@@ -188,8 +188,8 @@ class _AuthRecoveryPageState extends ConsumerState<AuthRecoveryPage> {
                       controller: _handleController,
                       enabled: !isLoading,
                       decoration: InputDecoration(
-                        prefixIcon: Icon(
-                          FluentIcons.person_24_regular,
+                        prefixIcon: AppIcon(
+                          AppIconData.person,
                           color: colorScheme.primary,
                         ),
                         filled: true,

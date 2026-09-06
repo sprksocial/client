@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
@@ -133,7 +133,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: const Icon(FluentIcons.list_24_regular),
+                trailing: const AppIcon(AppIconData.alignLeft),
                 onTap: () => context.router.push(const FeedListRoute()),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -160,7 +160,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: const Icon(FluentIcons.people_24_regular),
+                trailing: const AppIcon(AppIconData.people),
                 onTap: _handleFollowImport,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -186,7 +186,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: const Icon(FluentIcons.shield_24_regular),
+                trailing: const AppIcon(AppIconData.shield),
                 onTap: () => context.router.push(const ModerationRoute()),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -212,7 +212,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: const Icon(FluentIcons.prohibited_24_regular),
+                trailing: const AppIcon(AppIconData.block),
                 onTap: () => context.router.push(const BlocksRoute()),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -235,7 +235,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   'Manage Account',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                trailing: const Icon(FluentIcons.open_24_regular),
+                trailing: const AppIcon(AppIconData.externalLink),
                 onTap: _handleManageAccount,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -258,7 +258,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   'Legal',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                trailing: const Icon(FluentIcons.document_24_regular),
+                trailing: const AppIcon(AppIconData.document),
                 onTap: () => context.router.push(const LegalRoute()),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -283,10 +283,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                trailing: const Icon(
-                  FluentIcons.sign_out_24_regular,
-                  color: Colors.red,
-                ),
+                trailing: const AppIcon(AppIconData.signOut, color: Colors.red),
                 onTap: _handleLogout,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,

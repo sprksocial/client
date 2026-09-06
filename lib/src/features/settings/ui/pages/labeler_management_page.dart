@@ -253,7 +253,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                 ),
                 child: ElevatedButton.icon(
                   onPressed: _addLabeler,
-                  icon: const Icon(Icons.add, size: 18),
+                  icon: const AppIcon(AppIconData.add, size: 18),
                   label: Text(l10n.labelAddLabeler),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
@@ -270,8 +270,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.label_outline,
+                      AppIcon(
+                        AppIconData.tag,
                         size: 64,
                         color: colorScheme.onSurface.withAlpha(128),
                       ),
@@ -352,7 +352,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                                 IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
-                                  icon: const Icon(Icons.delete_outline),
+                                  icon: const AppIcon(AppIconData.delete),
                                   color: colorScheme.error,
                                   onPressed: () => _removeLabeler(did),
                                   tooltip: l10n.tooltipRemoveLabeler,
@@ -416,8 +416,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                                   message:
                                       'Default mod service labeler '
                                       '(cannot be removed)',
-                                  child: Icon(
-                                    Icons.verified,
+                                  child: AppIcon(
+                                    AppIconData.verified,
                                     size: 16,
                                     color: colorScheme.primary,
                                   ),
@@ -489,8 +489,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
                         child: Tooltip(
                           message:
                               'Default mod service labeler (cannot be removed)',
-                          child: Icon(
-                            Icons.verified,
+                          child: AppIcon(
+                            AppIconData.verified,
                             size: 16,
                             color: colorScheme.primary,
                           ),

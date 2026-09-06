@@ -1,5 +1,5 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 
 class ExplorePageTemplate extends StatelessWidget {
@@ -61,12 +61,12 @@ class ExplorePageTemplate extends StatelessWidget {
       hintText: searchHintText,
       onSubmitted: onSearchSubmitted,
       textInputAction: TextInputAction.search,
-      leadingWidgets: const [Icon(FluentIcons.search_24_regular, size: 20)],
+      leadingWidgets: const [AppIcon(AppIconData.search, size: 20)],
       actionWidgets: showClearSearch
           ? [
               GestureDetector(
                 onTap: onClearSearch,
-                child: const Icon(FluentIcons.dismiss_24_regular, size: 20),
+                child: const AppIcon(AppIconData.cancel, size: 20),
               ),
             ]
           : null,

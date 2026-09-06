@@ -3,6 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
@@ -58,7 +59,10 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
                 _isEditMode = !_isEditMode;
               });
             },
-            icon: Icon(_isEditMode ? Icons.check : Icons.edit, size: 18),
+            icon: AppIcon(
+              _isEditMode ? AppIconData.check : AppIconData.edit,
+              size: 18,
+            ),
             label: Text(
               _isEditMode ? l10n.buttonDone : l10n.buttonEdit,
               style: const TextStyle(fontSize: 14),

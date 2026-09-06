@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/circle_icon_button.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -43,7 +44,7 @@ class StoryEditorTopSection extends StatelessWidget {
               onPressed: onClose,
               size: 40,
               backgroundColor: AppColors.grey900.withAlpha(150),
-              icon: const Icon(Icons.close_rounded, size: 24),
+              icon: const AppIcon(AppIconData.cancel, size: 24),
               iconColor: AppColors.greyWhite,
               semanticLabel: l10n.buttonClose,
             ),

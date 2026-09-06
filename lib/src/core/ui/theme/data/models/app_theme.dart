@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:spark/src/core/design_system/theme/action_icon_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// Application theme management class that provides theme data
@@ -24,6 +25,7 @@ class AppTheme {
 
   /// Light theme configuration
   static final ThemeData lightTheme = ThemeData(
+    actionIconTheme: appActionIconTheme,
     colorScheme: const ColorScheme.light(
       primary: AppColors.primary,
       secondary: AppColors.secondary,
@@ -208,6 +210,7 @@ class AppTheme {
 
   /// Dark theme configuration
   static final ThemeData darkTheme = ThemeData(
+    actionIconTheme: appActionIconTheme,
     colorScheme: const ColorScheme.dark(
       primary: AppColors.primary,
       secondary: AppColors.secondary,

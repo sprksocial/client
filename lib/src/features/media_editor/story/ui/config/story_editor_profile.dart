@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_remove_area.dart';
 import 'package:spark/src/features/media_editor/story/ui/story_sticker_editor.dart';
 import 'package:spark/src/features/media_editor/story/ui/widgets/story_editor_bottom_section.dart';
 import 'package:spark/src/features/media_editor/story/ui/widgets/story_editor_top_section.dart';
@@ -33,7 +34,7 @@ class StoryEditorProfile {
     return MainEditorWidgets(
       removeLayerArea:
           (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
-              VideoEditorRemoveArea(
+              EditorRemoveArea(
                 removeAreaKey: removeAreaKey,
                 editor: editor,
                 rebuildStream: rebuildStream,

@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
 
@@ -31,8 +31,8 @@ class ImageContent extends StatelessWidget {
                 top: MediaQuery.of(context).padding.top + 10,
                 right: 10,
                 child: IconButton(
-                  icon: const Icon(
-                    FluentIcons.dismiss_24_filled,
+                  icon: const AppIcon(
+                    AppIconData.cancel,
                     color: Colors.white,
                     size: 30,
                   ),
@@ -83,8 +83,8 @@ class ImageContent extends StatelessWidget {
                 errorWidget: (context, url, error) => ColoredBox(
                   color: AppColors.darkPurple.withValues(alpha: 26),
                   child: const Center(
-                    child: Icon(
-                      FluentIcons.image_off_24_regular,
+                    child: AppIcon(
+                      AppIconData.mediaUnavailable,
                       size: 24,
                       color: Colors.white70,
                     ),

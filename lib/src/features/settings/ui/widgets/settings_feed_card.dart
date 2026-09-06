@@ -1,4 +1,3 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
@@ -256,10 +255,8 @@ class _SettingsFeedCardView extends StatelessWidget {
   Widget _buildFallbackAvatar() {
     return ColoredBox(
       color: AppColors.primary600,
-      child: Icon(
-        isTimeline
-            ? FluentIcons.people_24_regular
-            : FluentIcons.feed_24_regular,
+      child: AppIcon(
+        isTimeline ? AppIconData.people : AppIconData.alignLeft,
         size: 20,
         color: Colors.white,
       ),
@@ -293,8 +290,8 @@ class _SettingsFeedCardView extends StatelessWidget {
   Widget _buildDragHandle() {
     return ReorderableDragStartListener(
       index: index,
-      child: Icon(
-        Icons.drag_indicator,
+      child: AppIcon(
+        AppIconData.drag,
         size: 20,
         color: Colors.grey.withAlpha(178),
       ),
@@ -335,7 +332,7 @@ class _SettingsFeedCardView extends StatelessWidget {
           color: Colors.red.shade500,
           borderRadius: BorderRadius.circular(6),
         ),
-        child: const Icon(Icons.delete, size: 16, color: Colors.white),
+        child: const AppIcon(AppIconData.delete, size: 16, color: Colors.white),
       ),
     );
   }

@@ -1,4 +1,3 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_tab_bar.dart';
@@ -31,7 +30,7 @@ class _StickyTabBarDemoState extends State<_StickyTabBarDemo> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(FluentIcons.person_24_filled, size: 80),
+                  const AppIcon(AppIconData.person, size: 80),
                   const SizedBox(height: 16),
                   Text(
                     'Profile Header',
@@ -125,7 +124,7 @@ class _StickyCustomHeightDemoState extends State<_StickyCustomHeightDemo> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(FluentIcons.person_24_filled, size: 80),
+                  const AppIcon(AppIconData.person, size: 80),
                   const SizedBox(height: 16),
                   Text(
                     'Profile Header',

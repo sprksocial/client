@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 
 /// Shows a standardized bottom sheet for creating media:
 /// Record, Upload Video, Upload Images.
@@ -29,8 +30,8 @@ Future<dynamic> showCreateMediaSheet(
                 if (onRecord != null)
                   ListTile(
                     splashColor: Colors.transparent,
-                    leading: Icon(
-                      Icons.camera_alt,
+                    leading: AppIcon(
+                      AppIconData.camera,
                       color: colorScheme.onSurface,
                     ),
                     title: Text(
@@ -45,7 +46,10 @@ Future<dynamic> showCreateMediaSheet(
                 if (onUploadVideo != null)
                   ListTile(
                     splashColor: Colors.transparent,
-                    leading: Icon(Icons.videocam, color: colorScheme.onSurface),
+                    leading: AppIcon(
+                      AppIconData.video,
+                      color: colorScheme.onSurface,
+                    ),
                     title: Text(
                       'Upload Video',
                       style: TextStyle(color: colorScheme.onSurface),
@@ -58,8 +62,8 @@ Future<dynamic> showCreateMediaSheet(
                 if (onUploadImages != null)
                   ListTile(
                     splashColor: Colors.transparent,
-                    leading: Icon(
-                      Icons.photo_library,
+                    leading: AppIcon(
+                      AppIconData.gallery,
                       color: colorScheme.onSurface,
                     ),
                     title: Text(

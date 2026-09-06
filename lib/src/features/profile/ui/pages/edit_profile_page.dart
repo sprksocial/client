@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/ui/widgets/custom_text_field.dart';
 import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
@@ -192,8 +193,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                         shape: BoxShape.circle,
                                       ),
                                       padding: const EdgeInsets.all(4),
-                                      child: const Icon(
-                                        Icons.undo,
+                                      child: const AppIcon(
+                                        AppIconData.undo,
                                         size: 16,
                                         color: Colors.white,
                                       ),
@@ -296,7 +297,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                                     children: [
                                       Text(l10n.buttonSave),
                                       const SizedBox(width: 8),
-                                      const Icon(Icons.save),
+                                      const AppIcon(AppIconData.check),
                                     ],
                                   ),
                           ),

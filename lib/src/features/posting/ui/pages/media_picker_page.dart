@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/posting/ui/models/media_selection.dart';
@@ -346,7 +347,7 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.close),
+                    icon: const AppIcon(AppIconData.cancel),
                   ),
                   Expanded(
                     child: Text(
@@ -370,10 +371,10 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: _toggleMultiSelectionMode,
-                        icon: Icon(
+                        icon: AppIcon(
                           _isMultiPhotoSelection
-                              ? Icons.filter_1
-                              : Icons.collections_outlined,
+                              ? AppIconData.selectionSingle
+                              : AppIconData.gallery,
                         ),
                         label: Text(multiSelectLabel),
                       ),
@@ -431,7 +432,7 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.photo_library_outlined, size: 40),
+              const AppIcon(AppIconData.gallery, size: 40),
               const SizedBox(height: 12),
               Text(
                 AppLocalizations.of(context).messagePermissionPhotoLibrary,
@@ -545,7 +546,11 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
                 Container(
                   color: Colors.black.withAlpha(140),
                   alignment: Alignment.center,
-                  child: const Icon(Icons.block, color: Colors.white, size: 22),
+                  child: const AppIcon(
+                    AppIconData.block,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                 ),
             ],
           ),

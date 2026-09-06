@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -52,7 +53,7 @@ class _FollowImportPageState extends ConsumerState<FollowImportPage> {
           loading: () =>
               _LoadingState(message: l10n.followImportLoadingProfile),
           error: (_, _) => _MessageState(
-            icon: Icons.cloud_off_outlined,
+            icon: AppIconData.offline,
             title: l10n.followImportProfileCheckFailedTitle,
             description: l10n.followImportProfileCheckFailedDescription,
             actionLabel: l10n.buttonRetry,
@@ -61,7 +62,7 @@ class _FollowImportPageState extends ConsumerState<FollowImportPage> {
           data: (profile) {
             if (profile == null) {
               return _MessageState(
-                icon: Icons.person_off_outlined,
+                icon: AppIconData.person,
                 title: l10n.followImportNoProfileTitle,
                 description: l10n.followImportNoProfileDescription,
                 actionLabel: l10n.buttonDone,
@@ -76,7 +77,7 @@ class _FollowImportPageState extends ConsumerState<FollowImportPage> {
                     message: l10n.onboardingFollowImportLoading,
                   ),
                   error: (_, _) => _MessageState(
-                    icon: Icons.cloud_off_outlined,
+                    icon: AppIconData.offline,
                     title: l10n.followImportDiscoveryFailedTitle,
                     description: l10n.followImportDiscoveryFailedDescription,
                     actionLabel: l10n.buttonRetry,
@@ -98,7 +99,7 @@ class _FollowImportPageState extends ConsumerState<FollowImportPage> {
     final l10n = AppLocalizations.of(context);
     if (session.isComplete) {
       return _MessageState(
-        icon: Icons.check_circle_outline,
+        icon: AppIconData.check,
         title: l10n.followImportSuccessTitle(session.importedDids.length),
         description: l10n.followImportSuccessDescription,
         actionLabel: l10n.buttonDone,
@@ -111,7 +112,7 @@ class _FollowImportPageState extends ConsumerState<FollowImportPage> {
         .toList();
     if (remainingProfiles.isEmpty && session.importedDids.isEmpty) {
       return _MessageState(
-        icon: Icons.people_outline,
+        icon: AppIconData.people,
         title: l10n.followImportNoMatchesTitle,
         description: l10n.followImportNoMatchesDescription,
         actionLabel: l10n.buttonDone,
@@ -179,7 +180,7 @@ class _MessageState extends StatelessWidget {
     required this.onAction,
   });
 
-  final IconData icon;
+  final AppIconData icon;
   final String title;
   final String description;
   final String actionLabel;
@@ -196,7 +197,7 @@ class _MessageState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 52, color: theme.colorScheme.primary),
+              AppIcon(icon, size: 52, color: theme.colorScheme.primary),
               const SizedBox(height: 20),
               Text(
                 title,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
@@ -214,8 +215,8 @@ Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
                   return Container(
                     color: Colors.grey.shade900,
                     child: const Center(
-                      child: Icon(
-                        Icons.broken_image,
+                      child: AppIcon(
+                        AppIconData.mediaUnavailable,
                         color: Colors.white54,
                         size: 64,
                       ),

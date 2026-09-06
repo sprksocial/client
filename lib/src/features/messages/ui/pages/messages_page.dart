@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/templates/chat_list_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
@@ -111,8 +111,8 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                FluentIcons.error_circle_24_regular,
+              AppIcon(
+                AppIconData.warning,
                 size: 48,
                 color: theme.colorScheme.error,
               ),

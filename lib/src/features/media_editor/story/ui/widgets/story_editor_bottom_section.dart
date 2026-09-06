@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -35,7 +36,7 @@ class StoryEditorBottomSection extends StatelessWidget {
               fullWidth: true,
               minHeight: 54,
               borderRadius: BorderRadius.circular(999),
-              trailing: const Icon(Icons.arrow_forward_rounded, size: 22),
+              trailing: const AppIcon(AppIconData.arrowRight, size: 22),
             ),
           ),
         ],

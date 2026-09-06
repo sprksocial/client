@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
@@ -218,8 +218,8 @@ class _SendButton extends StatelessWidget {
     }
 
     return IconButton(
-      icon: Icon(
-        FluentIcons.send_24_filled,
+      icon: AppIcon(
+        AppIconData.send,
         size: 20,
         color: canSend
             ? Theme.of(context).colorScheme.primary
@@ -269,8 +269,8 @@ class _AttachmentButton extends StatelessWidget {
           : (state.isPosting
                 ? l10n.messagePostingStory
                 : l10n.messageMaximumImagesReached),
-      icon: Icon(
-        FluentIcons.image_24_regular,
+      icon: AppIcon(
+        AppIconData.gallery,
         size: 24,
         color: Theme.of(context).colorScheme.primary,
       ),
@@ -350,8 +350,8 @@ class _SelectedImagesPreview extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              FluentIcons.image_alt_text_20_regular,
+                            AppIcon(
+                              AppIconData.typo,
                               color: Colors.white,
                               size: 14,
                             ),
@@ -382,8 +382,8 @@ class _SelectedImagesPreview extends StatelessWidget {
                       customBorder: const CircleBorder(),
                       child: Container(
                         padding: const EdgeInsets.all(2),
-                        child: const Icon(
-                          FluentIcons.dismiss_16_filled,
+                        child: const AppIcon(
+                          AppIconData.cancel,
                           color: Colors.white,
                           size: 12,
                         ),

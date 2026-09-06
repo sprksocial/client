@@ -1,8 +1,8 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -118,10 +118,7 @@ class MessageInput extends ConsumerWidget {
                               ),
                             ),
                           )
-                        : const Icon(
-                            FluentIcons.send_24_filled,
-                            color: Colors.white,
-                          ),
+                        : const AppIcon(AppIconData.send, color: Colors.white),
                   ),
                 ),
               ],
@@ -169,8 +166,8 @@ class MessageInput extends ConsumerWidget {
 //       tooltip: enabled
 //           ? 'Add media (up to 4)'
 //           : (state.isPosting ? 'Posting...' : 'Maximum files reached'),
-//       icon: Icon(
-//         FluentIcons.image_24_regular,
+//       icon: AppIcon(
+//         AppIconData.gallery,
 //         size: 24,
 //         color: Theme.of(context).colorScheme.primary,
 //       ),
@@ -236,8 +233,8 @@ class MessageInput extends ConsumerWidget {
 //                       customBorder: const CircleBorder(),
 //                       child: Container(
 //                         padding: const EdgeInsets.all(2),
-//                         child: const Icon(
-//                           FluentIcons.dismiss_16_filled,
+//                         child: const AppIcon(
+//                           AppIconData.cancel,
 //                           color: Colors.white,
 //                           size: 12,
 //                         ),

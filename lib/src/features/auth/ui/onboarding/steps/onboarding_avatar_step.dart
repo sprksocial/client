@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
@@ -89,7 +90,7 @@ class _OnboardingAvatarStepState extends State<OnboardingAvatarStep> {
                   onPressed: widget.onPickAvatar,
                   variant: AppButtonVariant.secondary,
                   size: AppButtonSize.compact,
-                  leading: const Icon(Icons.add_a_photo_outlined, size: 18),
+                  leading: const AppIcon(AppIconData.camera, size: 18),
                 ),
                 if (widget.hasLocalAvatar)
                   AppButton(
@@ -97,7 +98,7 @@ class _OnboardingAvatarStepState extends State<OnboardingAvatarStep> {
                     onPressed: widget.onRevertAvatar,
                     variant: AppButtonVariant.neutral,
                     size: AppButtonSize.compact,
-                    leading: const Icon(Icons.undo, size: 18),
+                    leading: const AppIcon(AppIconData.undo, size: 18),
                   ),
                 if (widget.isAvatarActive)
                   AppButton(
@@ -105,7 +106,7 @@ class _OnboardingAvatarStepState extends State<OnboardingAvatarStep> {
                     onPressed: widget.onClearAvatar,
                     variant: AppButtonVariant.destructive,
                     size: AppButtonSize.compact,
-                    leading: const Icon(Icons.close, size: 18),
+                    leading: const AppIcon(AppIconData.cancel, size: 18),
                   ),
                 if (!widget.isAvatarActive && widget.hasInitialAvatar)
                   AppButton(
@@ -113,7 +114,7 @@ class _OnboardingAvatarStepState extends State<OnboardingAvatarStep> {
                     onPressed: widget.onRevertAvatar,
                     variant: AppButtonVariant.neutral,
                     size: AppButtonSize.compact,
-                    leading: const Icon(Icons.undo, size: 18),
+                    leading: const AppIcon(AppIconData.undo, size: 18),
                   ),
               ],
             ),

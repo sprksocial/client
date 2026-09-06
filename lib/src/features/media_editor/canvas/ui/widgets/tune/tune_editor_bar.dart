@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_bottom_action_bar.dart';
 
@@ -135,8 +136,8 @@ class _TuneEditorBarState extends State<TuneEditorBar> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Icon(
-                              item.icon,
+                            AppIcon(
+                              AppIconData.filters,
                               size: 22,
                               color: isSelected
                                   ? AppColors.primary500

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/sound/ui/widgets/audio_waveform.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/timed_track_range.dart';
@@ -70,7 +71,7 @@ class AudioTimelineTrack extends StatelessWidget {
         if (updatedTrack != null) onTimingChanged(updatedTrack);
       },
       foreground: TimelineSubtrackContent(
-        icon: Icons.music_note_rounded,
+        icon: AppIconData.music,
         label: videoTimelineState.activeAudioName,
         leading: videoTimelineState.authorAvatarUrl == null
             ? null
@@ -111,7 +112,11 @@ class AudioTimelineTrack extends StatelessWidget {
         color: AppColors.grey500,
         borderRadius: BorderRadius.circular(9),
       ),
-      child: const Icon(Icons.person, color: AppColors.grey300, size: 12),
+      child: const AppIcon(
+        AppIconData.person,
+        color: AppColors.grey300,
+        size: 12,
+      ),
     );
   }
 }

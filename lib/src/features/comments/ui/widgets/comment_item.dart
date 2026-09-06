@@ -244,8 +244,8 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
                                 child: SizedBox(
                                   width: 28,
                                   height: 28,
-                                  child: Icon(
-                                    Icons.more_horiz,
+                                  child: AppIcon(
+                                    AppIconData.moreHoriz,
                                     color: iconColor,
                                     size: 16,
                                   ),

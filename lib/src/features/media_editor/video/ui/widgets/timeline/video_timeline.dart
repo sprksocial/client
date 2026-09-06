@@ -156,7 +156,11 @@ class _TransportControls extends StatelessWidget {
           IconButton(
             onPressed: onTogglePlay,
             icon: isPlaying
-                ? const Icon(Icons.pause, color: AppColors.greyWhite, size: 28)
+                ? const AppIcon(
+                    AppIconData.pause,
+                    color: AppColors.greyWhite,
+                    size: 28,
+                  )
                 : AppIcons.play(size: 28, color: AppColors.greyWhite),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -168,8 +172,8 @@ class _TransportControls extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: canUndo ? onUndo : null,
-                  icon: Icon(
-                    Icons.undo,
+                  icon: AppIcon(
+                    AppIconData.undo,
                     color: canUndo ? AppColors.greyWhite : AppColors.grey400,
                     size: 22,
                   ),
@@ -181,8 +185,8 @@ class _TransportControls extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: canRedo ? onRedo : null,
-                  icon: Icon(
-                    Icons.redo,
+                  icon: AppIcon(
+                    AppIconData.redo,
                     color: canRedo ? AppColors.greyWhite : AppColors.grey400,
                     size: 22,
                   ),

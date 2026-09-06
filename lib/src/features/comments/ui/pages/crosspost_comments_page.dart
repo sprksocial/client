@@ -1,9 +1,9 @@
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -56,10 +56,7 @@ class CrosspostCommentsPage extends ConsumerWidget {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () => context.router.maybePop(),
-                    icon: Icon(
-                      FluentIcons.chevron_left_24_regular,
-                      color: textColor,
-                    ),
+                    icon: AppIcon(AppIconData.chevronLeft, color: textColor),
                   ),
                   const SizedBox(width: 8),
                   Text(

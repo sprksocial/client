@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation_report_catalog.dart';
@@ -159,7 +160,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         children: [
           if (isStep2)
             IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: const AppIcon(AppIconData.arrowBack),
               onPressed: _goBack,
               iconSize: 20,
               padding: EdgeInsets.zero,
@@ -177,7 +178,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: const AppIcon(AppIconData.cancel),
             onPressed: _isSubmitting ? null : () => context.router.maybePop(),
             iconSize: 20,
             padding: EdgeInsets.zero,
@@ -238,6 +239,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                       return Text(l10n.moderationNoCompatibleService);
                     }
                     return DropdownButtonFormField<String>(
+                      icon: const AppIcon(AppIconData.chevronDown),
                       key: ValueKey(
                         '${_selectedReason!.value}:${_selectedServiceDid ?? ''}',
                       ),
@@ -373,8 +375,8 @@ class _CategoryTile extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(
-              Icons.chevron_right,
+            AppIcon(
+              AppIconData.chevronRight,
               color: textColor.withAlpha(179),
               size: 20,
             ),

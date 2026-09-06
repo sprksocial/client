@@ -1,7 +1,7 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/toggles/toggle_button.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
@@ -90,7 +90,9 @@ void main() {
       ),
     );
 
-    final addAction = find.byIcon(FluentIcons.add_24_filled);
+    final addAction = find.byWidgetPredicate(
+      (widget) => widget is AppIcon && widget.icon == AppIconData.add,
+    );
     expect(find.byType(ModeratedProfileAvatar), findsOneWidget);
     expect(
       find.ancestor(

@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
@@ -301,7 +300,7 @@ class _FallbackAvatar extends StatelessWidget {
                 ),
               ),
             )
-          : const Icon(FluentIcons.feed_24_regular, color: iconColor, size: 18),
+          : const AppIcon(AppIconData.alignLeft, color: iconColor, size: 18),
     );
   }
 }

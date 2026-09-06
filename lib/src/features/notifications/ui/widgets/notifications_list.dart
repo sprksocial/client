@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/notifications/providers/notification_provider.dart';
@@ -181,8 +182,8 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
+                  AppIcon(
+                    AppIconData.warning,
                     size: 64,
                     color: colorScheme.onSurface.withAlpha(128),
                   ),
@@ -252,8 +253,8 @@ class _NotificationsListState extends ConsumerState<NotificationsList> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.notifications_none,
+                  AppIcon(
+                    AppIconData.notifications,
                     size: 64,
                     color: colorScheme.onSurface.withAlpha(102),
                   ),

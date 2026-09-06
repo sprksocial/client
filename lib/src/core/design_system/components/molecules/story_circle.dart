@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -223,11 +223,7 @@ class _CreateButton extends StatelessWidget {
           ),
         ),
         child: const Center(
-          child: Icon(
-            FluentIcons.add_24_filled,
-            size: 14,
-            color: AppColors.white,
-          ),
+          child: AppIcon(AppIconData.add, size: 14, color: AppColors.white),
         ),
       ),
     );

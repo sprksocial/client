@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/search/providers/actor_typeahead_provider.dart';
@@ -89,7 +90,10 @@ class _StoryMentionPickerSheetState
             decoration: InputDecoration(
               hintText: l10n.hintSearchByHandle,
               hintStyle: const TextStyle(color: Color(0xFF64748B)),
-              prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8)),
+              prefixIcon: const AppIcon(
+                AppIconData.search,
+                color: Color(0xFF94A3B8),
+              ),
               filled: true,
               fillColor: const Color(0xFF111827),
               enabledBorder: OutlineInputBorder(

@@ -270,8 +270,8 @@ class _ImagePager extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  Icons.edit,
+                                const AppIcon(
+                                  AppIconData.edit,
                                   color: AppColors.greyWhite,
                                   size: 16,
                                 ),
@@ -416,7 +416,7 @@ class _SoundSection extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        leading: const Icon(Icons.music_note_rounded),
+        leading: const AppIcon(AppIconData.music),
         title: Text(
           title!,
           style: AppTypography.textMediumBold.copyWith(
@@ -430,7 +430,7 @@ class _SoundSection extends StatelessWidget {
             : Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: IconButton(
           tooltip: l10n.buttonRemove,
-          icon: const Icon(Icons.close_rounded),
+          icon: const AppIcon(AppIconData.cancel),
           onPressed: onRemoveSound,
         ),
         onTap: onAddSound,
@@ -554,8 +554,8 @@ class _CrossPostSection extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.info_outline,
+                const AppIcon(
+                  AppIconData.warning,
                   color: AppColors.rajah500,
                   size: 20,
                 ),

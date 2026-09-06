@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/layer_timing_track.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/video_timeline_state.dart';
@@ -61,8 +62,10 @@ class StoryVideoTimelineControls extends StatelessWidget {
               IconButton(
                 onPressed: onTogglePlay,
                 color: AppColors.greyWhite,
-                icon: Icon(
-                  timelineState.isPlaying ? Icons.pause : Icons.play_arrow,
+                icon: AppIcon(
+                  timelineState.isPlaying
+                      ? AppIconData.pause
+                      : AppIconData.play,
                 ),
               ),
               Expanded(

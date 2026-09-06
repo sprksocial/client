@@ -2,10 +2,10 @@ import 'dart:math' as math;
 
 import 'package:any_link_preview/any_link_preview.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/messages/data/models/message_models.dart';
@@ -46,8 +46,8 @@ class MessagesList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              FluentIcons.chat_24_regular,
+            AppIcon(
+              AppIconData.comment,
               size: 64,
               color: Theme.of(context).colorScheme.onSurface,
             ),
@@ -502,7 +502,7 @@ class _LinkPreviewError extends StatelessWidget {
                 bottomLeft: Radius.circular(12),
               ),
             ),
-            child: const FittedBox(child: Icon(FluentIcons.link_24_regular)),
+            child: const FittedBox(child: AppIcon(AppIconData.link)),
           ),
           Expanded(
             child: Padding(
@@ -623,8 +623,8 @@ class _SprkPostThumbnail extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      FluentIcons.play_circle_24_filled,
+                    AppIcon(
+                      AppIconData.play,
                       size: 32,
                       color: theme.colorScheme.primary,
                     ),

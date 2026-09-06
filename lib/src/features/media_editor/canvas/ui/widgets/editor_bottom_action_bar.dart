@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// Shared completion controls for canvas sub-editors.
@@ -49,10 +50,7 @@ class EditorBottomActionBar extends StatelessWidget {
           IconButton(
             tooltip: configs.i18n.cancel,
             onPressed: close,
-            icon: Icon(
-              configs.mainEditor.icons.closeEditor,
-              color: foreGroundColor,
-            ),
+            icon: AppIcon(AppIconData.cancel, color: foreGroundColor),
           ),
           if (redo != null)
             Row(
@@ -60,8 +58,8 @@ class EditorBottomActionBar extends StatelessWidget {
                 IconButton(
                   tooltip: configs.i18n.undo,
                   onPressed: enableUndo ? undo : null,
-                  icon: Icon(
-                    configs.mainEditor.icons.undoAction,
+                  icon: AppIcon(
+                    AppIconData.undo,
                     color: enableUndo
                         ? foreGroundColor
                         : foreGroundColor.withValues(alpha: 80),
@@ -71,8 +69,8 @@ class EditorBottomActionBar extends StatelessWidget {
                 IconButton(
                   tooltip: configs.i18n.redo,
                   onPressed: enableRedo ? redo : null,
-                  icon: Icon(
-                    configs.mainEditor.icons.redoAction,
+                  icon: AppIcon(
+                    AppIconData.redo,
                     color: enableRedo
                         ? foreGroundColor
                         : foreGroundColor.withValues(alpha: 80),
@@ -83,10 +81,7 @@ class EditorBottomActionBar extends StatelessWidget {
           IconButton(
             tooltip: configs.i18n.done,
             onPressed: done,
-            icon: Icon(
-              configs.mainEditor.icons.doneIcon,
-              color: foreGroundColor,
-            ),
+            icon: AppIcon(AppIconData.check, color: foreGroundColor),
           ),
         ],
       ),

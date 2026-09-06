@@ -2221,6 +2221,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refreshing'**
   String get refreshIndicatorRefreshing;
+
+  /// Tooltip for the media editor layer rotation and scaling handle
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate and scale'**
+  String get tooltipRotateScale;
+
+  /// Tooltip for the recent emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get emojiCategoryRecent;
+
+  /// Tooltip for the smileys emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Smileys and people'**
+  String get emojiCategorySmileys;
+
+  /// Tooltip for the animals emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Animals and nature'**
+  String get emojiCategoryAnimals;
+
+  /// Tooltip for the foods emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Food and drink'**
+  String get emojiCategoryFoods;
+
+  /// Tooltip for the travel emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Travel and places'**
+  String get emojiCategoryTravel;
+
+  /// Tooltip for the activities emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get emojiCategoryActivities;
+
+  /// Tooltip for the objects emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Objects'**
+  String get emojiCategoryObjects;
+
+  /// Tooltip for the symbols emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Symbols'**
+  String get emojiCategorySymbols;
+
+  /// Tooltip for the flags emoji category
+  ///
+  /// In en, this message translates to:
+  /// **'Flags'**
+  String get emojiCategoryFlags;
 }
 
 class _AppLocalizationsDelegate

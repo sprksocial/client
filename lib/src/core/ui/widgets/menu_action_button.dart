@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/ui/widgets/options_panel.dart';
@@ -61,8 +62,8 @@ class MenuActionButton extends StatelessWidget {
       child: SizedBox(
         width: isCompact ? 28 : 36,
         height: isCompact ? 28 : 36,
-        child: Icon(
-          Icons.more_horiz,
+        child: AppIcon(
+          AppIconData.moreHoriz,
           color: iconColor,
           size: isCompact ? 16 : 25,
         ),

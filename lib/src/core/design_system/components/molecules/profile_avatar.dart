@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/default_profile_avatar.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
@@ -95,8 +95,8 @@ class ProfileAvatar extends StatelessWidget {
                   ),
                 ),
                 child: const Center(
-                  child: Icon(
-                    FluentIcons.add_24_filled,
+                  child: AppIcon(
+                    AppIconData.add,
                     size: 18,
                     color: AppColors.white,
                   ),

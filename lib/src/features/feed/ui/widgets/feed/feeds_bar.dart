@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/moderation/moderation_provider.dart';
@@ -77,8 +78,8 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                 // Like/Unlike option
                 if (canLike)
                   ListTile(
-                    leading: Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border,
+                    leading: AppIcon(
+                      isLiked ? AppIconData.likeFilled : AppIconData.like,
                       color: isLiked ? Colors.red : null,
                     ),
                     title: Text(
@@ -94,8 +95,8 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                 // Delete option
                 if (canDelete)
                   ListTile(
-                    leading: const Icon(
-                      Icons.delete_outline,
+                    leading: const AppIcon(
+                      AppIconData.delete,
                       color: Colors.red,
                     ),
                     title: Text(
@@ -138,7 +139,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                   ),
                 // Cancel option
                 ListTile(
-                  leading: const Icon(Icons.close),
+                  leading: const AppIcon(AppIconData.cancel),
                   title: Text(l10n.buttonCancel),
                   onTap: () => Navigator.pop(context),
                 ),

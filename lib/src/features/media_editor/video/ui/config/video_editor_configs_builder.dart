@@ -4,6 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_emoji_categories.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_slider_controls.dart';
+import 'package:spark/src/core/design_system/theme/action_icon_theme.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_layer_interactions.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_remove_area.dart';
 import 'package:spark/src/core/media_processing/video/video_processing_service.dart';
 import 'package:spark/src/core/design_system/theme/color_scheme.dart';
 import 'package:spark/src/core/design_system/theme/text_theme.dart';
@@ -107,7 +112,7 @@ class VideoEditorConfigsBuilder {
         removeLayerArea:
             (removeAreaKey, editor, rebuildStream, isLayerBeingTransformed) =>
                 chrome.buildRemoveArea(
-                  VideoEditorRemoveArea(
+                  EditorRemoveArea(
                     removeAreaKey: removeAreaKey,
                     editor: editor,
                     rebuildStream: rebuildStream,
@@ -154,10 +159,12 @@ class VideoEditorConfigsBuilder {
       ),
       theme: ThemeData(
         useMaterial3: true,
+        actionIconTheme: appActionIconTheme,
         colorScheme: AppColorScheme.dark,
         textTheme: AppTextTheme.dark,
       ),
-      layerInteraction: const LayerInteractionConfigs(
+      layerInteraction: LayerInteractionConfigs(
+        widgets: buildEditorLayerInteractions(),
         selectable: LayerInteractionSelectable.enabled,
         initialSelected: true,
       ),
@@ -183,6 +190,8 @@ class VideoEditorConfigsBuilder {
           initialStrokeWidth: 5,
         ),
         widgets: PaintEditorWidgets(
+          lineWidthCloseButton: buildEditorSliderCloseButton,
+          changeOpacityCloseButton: buildEditorSliderCloseButton,
           appBar: (paintEditor, rebuildStream) => null,
           colorPicker: (paintEditor, rebuildStream, currentColor, setColor) =>
               null,
@@ -224,6 +233,8 @@ class VideoEditorConfigsBuilder {
               : MainAxisAlignment.start,
         ),
         widgets: TextEditorWidgets(
+          fontSizeCloseButton: buildEditorSliderCloseButton,
+          sliderFontSize: buildEditorFontScaleSlider,
           appBar: (textEditor, rebuildStream) => null,
           colorPicker: (textEditor, rebuildStream, currentColor, setColor) {
             return ReactiveWidget(
@@ -367,6 +378,11 @@ class VideoEditorConfigsBuilder {
         checkPlatformCompatibility: !kIsWeb,
         style: EmojiEditorStyle(
           backgroundColor: Colors.transparent,
+          categoryViewConfig: CategoryViewConfig(
+            backgroundColor: Colors.transparent,
+            customCategoryView: (config, state, tabs, pages) =>
+                EditorEmojiCategories(config, state, tabs, pages),
+          ),
           textStyle: DefaultEmojiTextStyle.copyWith(
             fontFamily: !kIsWeb
                 ? null

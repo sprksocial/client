@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart' as flutter_widgets show Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.dart';
@@ -215,7 +216,11 @@ class _StoryPageState extends ConsumerState<StoryPage>
         } else {
           sourceSize = const Size(1440, 2560);
           mediaContent = const Center(
-            child: Icon(Icons.videocam_off, size: 48, color: Colors.white),
+            child: AppIcon(
+              AppIconData.mediaUnavailable,
+              size: 48,
+              color: Colors.white,
+            ),
           );
         }
       } else {
@@ -244,7 +249,11 @@ class _StoryPageState extends ConsumerState<StoryPage>
             }
           });
           return const Center(
-            child: Icon(Icons.broken_image, size: 48, color: Colors.white),
+            child: AppIcon(
+              AppIconData.mediaUnavailable,
+              size: 48,
+              color: Colors.white,
+            ),
           );
         },
         imageBuilder: (context, imageProvider) {

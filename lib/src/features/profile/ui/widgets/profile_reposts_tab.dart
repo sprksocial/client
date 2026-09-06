@@ -165,7 +165,7 @@ class ProfileRepostsTab extends ProfileTabBase {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, size: 48),
+                const AppIcon(AppIconData.warning, size: 48),
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(

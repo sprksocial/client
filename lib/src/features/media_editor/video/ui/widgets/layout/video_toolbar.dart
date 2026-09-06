@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class VideoToolbarAction {
@@ -11,7 +12,7 @@ class VideoToolbarAction {
   });
 
   final String id;
-  final IconData icon;
+  final AppIconData icon;
   final String label;
   final VoidCallback onPressed;
   final bool isDestructive;
@@ -72,7 +73,7 @@ class _ToolButton extends StatelessWidget {
     super.key,
   });
 
-  final IconData icon;
+  final AppIconData icon;
   final String label;
   final VoidCallback onPressed;
   final bool isDestructive;
@@ -96,7 +97,7 @@ class _ToolButton extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: foregroundColor, size: 24),
+                AppIcon(icon, color: foregroundColor, size: 24),
                 const SizedBox(height: 4),
                 Text(
                   label,

@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/ui/widgets/elastic_pinch_zoom.dart';
 import 'package:spark/src/features/feed/ui/widgets/images/moderate_page_scroll_physics.dart';
@@ -128,7 +128,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
             return const _ImageLoadingIndicator();
           },
           errorBuilder: (context, error, stackTrace) =>
-              const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+              const Center(child: AppIcon(AppIconData.warning)),
         ),
       ),
     );

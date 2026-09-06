@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -85,7 +86,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.visibility_off_outlined));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is AppIcon && widget.icon == AppIconData.hidden,
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('compact-child')));
     await tester.pump();
@@ -124,7 +129,11 @@ void main() {
     expect(find.byKey(const Key('clear-child')), findsNothing);
     expect(find.byType(ImageFiltered), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.visibility_off_outlined));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is AppIcon && widget.icon == AppIconData.hidden,
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('internally-blurred-child')), findsNothing);
@@ -163,7 +172,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.visibility_off_outlined));
+    await tester.tap(
+      find.byWidgetPredicate(
+        (widget) => widget is AppIcon && widget.icon == AppIconData.hidden,
+      ),
+    );
     await tester.pump();
 
     expect(forwardedTaps, 1);
@@ -323,7 +336,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ImageFiltered), findsOneWidget);
-    expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is AppIcon && widget.icon == AppIconData.hidden,
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('built-in label details use app-localized guidance', (

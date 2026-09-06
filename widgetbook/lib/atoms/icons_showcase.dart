@@ -13,26 +13,29 @@ Widget buildAppIconsGridUseCase(BuildContext context) {
     divisions: 52,
   );
   final color = context.knobs.colorOrNull(label: 'tint_color');
-  final icons = <Widget>[
-    AppIcons.add(size: size, color: color),
-    AppIcons.plus(size: size, color: color),
-    AppIcons.search(size: size, color: color),
-    AppIcons.comment(size: size, color: color),
-    AppIcons.like(size: size, color: color),
-    AppIcons.messagesFilled(size: size, color: color),
-    AppIcons.bookmarkOutline(size: size, color: color),
-    AppIcons.bookmarkFilled(size: size, color: color),
-    AppIcons.camera(size: size, color: color),
-    AppIcons.arrowRight(size: size, color: color),
-    AppIcons.arrowFlip(size: size, color: color),
-    AppIcons.pin(size: size, color: color),
-    AppIcons.music(size: size, color: color),
-    AppIcons.folderMini(size: size, color: color),
-    AppIcons.play(size: size, color: color),
-    AppIcons.micro(size: size, color: color),
-    AppIcons.tag(size: size, color: color),
-    AppIcons.hashtag(size: size, color: color),
-    AppIcons.cancel(size: size, color: color),
-  ];
-  return Center(child: Wrap(spacing: 20, runSpacing: 20, children: icons));
+  return SingleChildScrollView(
+    padding: const EdgeInsets.all(24),
+    child: Wrap(
+      spacing: 20,
+      runSpacing: 24,
+      children: [
+        for (final icon in AppIconData.values)
+          SizedBox(
+            width: 120,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppIcon(icon, size: size, color: color),
+                const SizedBox(height: 8),
+                Text(
+                  icon.name,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ],
+            ),
+          ),
+      ],
+    ),
+  );
 }
