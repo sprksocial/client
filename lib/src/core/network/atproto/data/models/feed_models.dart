@@ -65,8 +65,6 @@ abstract class Feed with _$Feed {
 
 @freezed
 sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
-  const HardcodedFeedExtraInfo._();
-
   const factory HardcodedFeedExtraInfo.shared({
     required ProfileViewBasic from,
     String? message,

@@ -10,3 +10,5 @@ analyzer:
     - "**/*.g.dart"
     - "build/**"
     - "widgetbook/build/**"
+    - android/**
+    - ios/**

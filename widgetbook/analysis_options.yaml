@@ -3,3 +3,9 @@ analyzer:
   errors:
     implementation_imports: ignore
     avoid_print: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - macos/**
