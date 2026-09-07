@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/app_toggle.dart';
 import 'package:spark/src/core/design_system/components/molecules/app_choice_group.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -42,10 +43,73 @@ void main() {
 
     expect(find.text('An error occurred'), findsOneWidget);
     expect(
-      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
+      tester.widget<AppToggle>(find.byType(AppToggle)).onChanged,
       isNotNull,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('adult content row and toggle save once with merged semantics', (
+    tester,
+  ) async {
+    final preferences = _PendingAdultPreferences();
+    await _pumpPage(tester, () => preferences);
+
+    final adultContent = find.bySemanticsLabel(RegExp('Show adult content'));
+    expect(adultContent, findsOneWidget);
+    expect(
+      tester
+          .getSemantics(adultContent)
+          .getSemanticsData()
+          .flagsCollection
+          .isToggled
+          .toBoolOrNull(),
+      isTrue,
+    );
+
+    await tester.tap(find.text('Show adult content'));
+    await tester.pump();
+    expect(preferences.adultUpdates, [false]);
+    expect(
+      tester
+          .getSemantics(adultContent)
+          .getSemanticsData()
+          .flagsCollection
+          .isEnabled
+          .toBoolOrNull(),
+      isFalse,
+    );
+
+    await tester.tap(find.text('Show adult content'));
+    await tester.tap(find.byType(AppToggle));
+    await tester.pump();
+    expect(preferences.adultUpdates, [false]);
+
+    preferences.save.complete();
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSemantics(adultContent)
+          .getSemanticsData()
+          .flagsCollection
+          .isToggled
+          .toBoolOrNull(),
+      isFalse,
+    );
+
+    await tester.tap(find.byType(AppToggle));
+    await tester.pumpAndSettle();
+    expect(preferences.adultUpdates, [false, true]);
+    expect(adultContent, findsOneWidget);
+    expect(
+      tester
+          .getSemantics(adultContent)
+          .getSemanticsData()
+          .flagsCollection
+          .isToggled
+          .toBoolOrNull(),
+      isTrue,
+    );
   });
 
   testWidgets('shows built-in global adult filters without loading labelers', (
@@ -60,10 +124,7 @@ void main() {
       const Key('adult-content-settings-group'),
     );
     expect(
-      find.descendant(
-        of: adultSettingsGroup,
-        matching: find.byType(SwitchListTile),
-      ),
+      find.descendant(of: adultSettingsGroup, matching: find.byType(AppToggle)),
       findsOneWidget,
     );
     expect(
@@ -152,10 +213,7 @@ void main() {
           .every((group) => !group.enabled),
       isTrue,
     );
-    expect(
-      tester.widget<SwitchListTile>(find.byType(SwitchListTile)).onChanged,
-      isNull,
-    );
+    expect(tester.widget<AppToggle>(find.byType(AppToggle)).onChanged, isNull);
 
     await tester.tap(
       find
@@ -238,11 +296,21 @@ class _AdultPreferences extends UserPreferences {
 
 class _PendingAdultPreferences extends UserPreferences {
   final save = Completer<void>();
+  final adultUpdates = <bool>[];
   int updateCount = 0;
 
   @override
   Future<Preferences> build() async =>
       Preferences(preferences: [adultContentPreference(enabled: true)]);
+
+  @override
+  Future<void> setAdultContentEnabled(bool enabled) async {
+    adultUpdates.add(enabled);
+    await save.future;
+    state = AsyncData(
+      Preferences(preferences: [adultContentPreference(enabled: enabled)]),
+    );
+  }
 
   @override
   Future<void> setGlobalLabelPreference(

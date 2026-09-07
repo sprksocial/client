@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/app_toggle.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
@@ -384,16 +385,21 @@ class _CrossPostSection extends StatelessWidget {
         side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.6)),
       ),
       clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        title: Text(
-          'Post to Bluesky',
-          style: AppTypography.textMediumBold.copyWith(
-            color: colorScheme.onSurface,
+      child: MergeSemantics(
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 2,
           ),
+          title: Text(
+            'Post to Bluesky',
+            style: AppTypography.textMediumBold.copyWith(
+              color: colorScheme.onSurface,
+            ),
+          ),
+          trailing: AppToggle(value: value, onChanged: onChanged),
+          onTap: () => onChanged(!value),
         ),
-        trailing: Switch(value: value, onChanged: onChanged),
-        onTap: () => onChanged(!value),
       ),
     );
   }

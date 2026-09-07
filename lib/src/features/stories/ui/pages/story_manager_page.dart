@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/refresh_indicator.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/app_toggle.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
@@ -220,8 +221,9 @@ class _AutoDeleteHeader extends StatelessWidget {
                 ),
               ),
               autoDeletePref.when(
-                data: (enabled) => Switch(
+                data: (enabled) => AppToggle(
                   value: enabled,
+                  semanticLabel: l10n.messageAutoDeleteStories,
                   onChanged: (v) async {
                     await ref
                         .read(storyAutoDeletePrefProvider.notifier)

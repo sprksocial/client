@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/app_toggle.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
@@ -41,9 +42,8 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
         stackTrace: stackTrace,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.errorGeneric)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.errorGeneric)));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -69,9 +69,8 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
         stackTrace: stackTrace,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.errorGeneric)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.errorGeneric)));
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -83,6 +82,8 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
     final preferences = ref.watch(userPreferencesProvider).asData?.value;
     final colorScheme = Theme.of(context).colorScheme;
     final adultContentEnabled = preferences?.adultContentEnabled ?? false;
+    final ValueChanged<bool>? onAdultContentChanged =
+        preferences == null || _isSaving ? null : _setAdultContentEnabled;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -106,19 +107,25 @@ class _ModerationPageState extends ConsumerState<ModerationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SwitchListTile.adaptive(
-                    title: Text(
-                      l10n.settingAdultContent,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                  MergeSemantics(
+                    child: ListTile(
+                      title: Text(
+                        l10n.settingAdultContent,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                      subtitle: Text(l10n.settingAdultContentDescription),
+                      enabled: onAdultContentChanged != null,
+                      trailing: AppToggle(
+                        value: adultContentEnabled,
+                        onChanged: onAdultContentChanged,
+                      ),
+                      onTap: onAdultContentChanged == null
+                          ? null
+                          : () => onAdultContentChanged(!adultContentEnabled),
                     ),
-                    subtitle: Text(l10n.settingAdultContentDescription),
-                    value: adultContentEnabled,
-                    onChanged: preferences == null || _isSaving
-                        ? null
-                        : _setAdultContentEnabled,
                   ),
                   if (adultContentEnabled) ...[
                     const Divider(height: 1),
