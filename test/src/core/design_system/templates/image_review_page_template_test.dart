@@ -27,14 +27,17 @@ void main() {
     Widget child, {
     MediaQueryData? mediaQuery,
   }) async {
-    await tester.pumpWidget(_TestApp(mediaQuery: mediaQuery, child: child));
+    await tester.pumpWidget(
+      _TestApp(mediaQuery: mediaQuery, child: const SizedBox()),
+    );
+    // Start image loading outside fake async before the review requests it.
     await tester.runAsync(() async {
       await precacheImage(
         FileImage(File(imagePath)),
-        tester.element(find.byType(ImageReviewPageTemplate)),
+        tester.element(find.byType(SizedBox)),
       );
     });
-    await tester.pump();
+    await tester.pumpWidget(_TestApp(mediaQuery: mediaQuery, child: child));
   }
 
   testWidgets('sound row opens picker and selected sound can be removed', (
