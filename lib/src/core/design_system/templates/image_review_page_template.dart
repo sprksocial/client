@@ -1,36 +1,21 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
-import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
-import 'package:spark/src/core/design_system/components/atoms/toggles/app_toggle.dart';
-import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
-import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/templates/post_review_page_template.dart';
 import 'package:spark/src/core/design_system/tokens/shapes.dart';
-import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
-import 'package:spark/src/features/posting/ui/widgets/mention_input_field.dart';
 
-/// Design-only template for the Image Review flow.
-///
-/// The template composes page chrome & common sections with the design system.
-/// Content-heavy areas (image pager and description) are provided as slots.
 class ImageReviewPageTemplate extends StatelessWidget {
   const ImageReviewPageTemplate({
     required this.title,
     required this.onBack,
     required this.imagePaths,
-    required this.currentPage,
-    required this.onPageChanged,
     required this.onTapEditImage,
-    required this.onAltEdit,
     required this.onRemoveImage,
     required this.showAddMore,
     required this.canAddMore,
-    required this.imagesCount,
-    required this.maxImages,
     required this.onAddMore,
     required this.descriptionMaxChars,
     required this.postLabel,
@@ -45,7 +30,8 @@ class ImageReviewPageTemplate extends StatelessWidget {
     this.onRemoveSound,
     this.descriptionController,
     this.mentionController,
-    this.onMentionsChanged,
+    this.showCaption = true,
+    this.showCrossPost = true,
     this.showCrossPostWarning = false,
     this.backgroundColor,
     this.isOverLimit = false,
@@ -54,20 +40,16 @@ class ImageReviewPageTemplate extends StatelessWidget {
   final String title;
   final VoidCallback onBack;
   final List<String> imagePaths;
-  final int currentPage;
-  final ValueChanged<int> onPageChanged;
   final ValueChanged<int> onTapEditImage;
-  final ValueChanged<int> onAltEdit;
   final ValueChanged<int> onRemoveImage;
   final bool showAddMore;
   final bool canAddMore;
-  final int imagesCount;
-  final int maxImages;
   final VoidCallback onAddMore;
   final TextEditingController? descriptionController;
   final MentionController? mentionController;
-  final ValueChanged<List<dynamic>>? onMentionsChanged;
   final int descriptionMaxChars;
+  final bool showCaption;
+  final bool showCrossPost;
   final bool crossPostValue;
   final ValueChanged<bool> onCrossPostChanged;
   final bool showCrossPostWarning;
@@ -83,295 +65,173 @@ class ImageReviewPageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Scaffold(
-      backgroundColor: backgroundColor ?? colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: backgroundColor ?? colorScheme.surface,
-        elevation: 0,
-        leading: AppLeadingButton(
-          color: theme.textTheme.titleLarge?.color,
-          tooltip: l10n.buttonBack,
-        ),
-        title: Text(title),
-        centerTitle: false,
+    return PostReviewPageTemplate(
+      title: title,
+      onBack: onBack,
+      backgroundColor: backgroundColor,
+      media: _PhotoStrip(
+        imagePaths: imagePaths,
+        onTapEditImage: onTapEditImage,
+        onRemoveImage: onRemoveImage,
+        showAddMore: showAddMore,
+        canAddMore: canAddMore,
+        onAddMore: onAddMore,
+        enabled: !isPosting,
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _ImagePager(
-                        imagePaths: imagePaths,
-                        onTapEditImage: onTapEditImage,
-                        onAltEdit: onAltEdit,
-                        onRemoveImage: onRemoveImage,
-                        currentPage: currentPage,
-                        onPageChanged: onPageChanged,
-                      ),
-                      if (showAddMore) ...[
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          child: AppButton(
-                            label: canAddMore
-                                ? 'Add More Images ($imagesCount/$maxImages)'
-                                : 'Image Limit Reached',
-                            onPressed: canAddMore ? onAddMore : null,
-                            size: AppButtonSize.compact,
-                            fullWidth: true,
-                          ),
-                        ),
-                      ],
-                      if (onAddSound != null) ...[
-                        const SizedBox(height: 20),
-                        _SoundSection(
-                          title: selectedSoundTitle,
-                          subtitle: selectedSoundSubtitle,
-                          onAddSound: onAddSound!,
-                          onRemoveSound: onRemoveSound,
-                        ),
-                      ],
-                      const SizedBox(height: 20),
-                      _DescriptionSection(
-                        controller: descriptionController,
-                        mentionController: mentionController,
-                        onMentionsChanged: onMentionsChanged,
-                        maxChars: descriptionMaxChars,
-                      ),
-                      const SizedBox(height: 20),
-                      _CrossPostSection(
-                        value: crossPostValue,
-                        onChanged: onCrossPostChanged,
-                        showWarning: showCrossPostWarning,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                child: isPosting
-                    ? Container(
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary500.withAlpha(128),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.greyWhite,
-                          ),
-                        ),
-                      )
-                    : AppButton(
-                        label: postLabel,
-                        onPressed: isOverLimit ? null : onPost,
-                        size: AppButtonSize.compact,
-                        fullWidth: true,
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      caption: showCaption
+          ? PostReviewCaption(
+              controller: descriptionController,
+              mentionController: mentionController,
+              maxChars: descriptionMaxChars,
+              enabled: !isPosting,
+            )
+          : const SizedBox.shrink(),
+      options: [
+        if (onAddSound != null)
+          _SoundSection(
+            title: selectedSoundTitle,
+            subtitle: selectedSoundSubtitle,
+            onAddSound: isPosting ? null : onAddSound,
+            onRemoveSound: isPosting ? null : onRemoveSound,
+          ),
+        if (onAddSound != null && showCrossPost) const Divider(height: 24),
+        if (showCrossPost)
+          PostReviewCrossPost(
+            value: crossPostValue,
+            onChanged: onCrossPostChanged,
+            showWarning: showCrossPostWarning,
+          ),
+      ],
+      postLabel: postLabel,
+      onPost: isPosting || isOverLimit || imagePaths.isEmpty ? null : onPost,
+      isPosting: isPosting,
     );
   }
 }
 
-class _ImagePager extends StatelessWidget {
-  const _ImagePager({
+class _PhotoStrip extends StatelessWidget {
+  const _PhotoStrip({
     required this.imagePaths,
-    required this.currentPage,
-    required this.onPageChanged,
     required this.onTapEditImage,
-    required this.onAltEdit,
     required this.onRemoveImage,
+    required this.showAddMore,
+    required this.canAddMore,
+    required this.onAddMore,
+    required this.enabled,
   });
 
   final List<String> imagePaths;
-  final int currentPage;
-  final ValueChanged<int> onPageChanged;
   final ValueChanged<int> onTapEditImage;
-  final ValueChanged<int> onAltEdit;
   final ValueChanged<int> onRemoveImage;
+  final bool showAddMore;
+  final bool canAddMore;
+  final VoidCallback onAddMore;
+  final bool enabled;
+
+  void _showPhotoActions(BuildContext context, int index) {
+    final l10n = AppLocalizations.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: ListTile(
+            leading: AppIcon(
+              AppIconData.delete,
+              color: Theme.of(sheetContext).colorScheme.error,
+            ),
+            title: Text(l10n.buttonRemove),
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              onRemoveImage(index);
+            },
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (imagePaths.isEmpty) return const SizedBox.shrink();
-    final radius = BorderRadiusGeometry.circular(AppShapes.squircleRadius);
-    final side = BorderSide(
-      width: AppShapes.squircleBorderWidth,
-      color: Colors.white.withAlpha(AppShapes.squircleBorderAlpha),
-    );
-    final ShapeBorder shape = RoundedSuperellipseBorder(
-      side: side,
-      borderRadius: radius,
-    );
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(AppShapes.squircleRadius);
 
-    return AspectRatio(
-      aspectRatio: 1,
-      child: DecoratedBox(
-        decoration: ShapeDecoration(shape: shape),
-        child: Material(
-          color: Colors.transparent,
-          shape: RoundedSuperellipseBorder(borderRadius: radius),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              PageView.builder(
-                itemCount: imagePaths.length,
-                onPageChanged: onPageChanged,
-                itemBuilder: (context, index) {
-                  final path = imagePaths[index];
-                  return GestureDetector(
-                    onTap: () => onTapEditImage(index),
-                    child: Stack(
-                      children: [
-                        // Image content fills the clipped shape
-                        Positioned.fill(
-                          child: Image(
-                            image: FileImage(File(path)),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 8,
-                          left: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(150),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: Colors.white.withAlpha(38),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const AppIcon(
-                                  AppIconData.edit,
-                                  color: AppColors.greyWhite,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Tap to edit',
-                                  style: AppTypography.textSmallBold.copyWith(
-                                    color: AppColors.greyWhite,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 8,
-                          right: 8,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // ALT text editor chip
-                              GestureDetector(
-                                onTap: () => onAltEdit(index),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withAlpha(100),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: Colors.white.withAlpha(38),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'ALT',
-                                        style: AppTypography.textSmallBold
-                                            .copyWith(
-                                              color: AppColors.greyWhite,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Remove image
-                              GestureDetector(
-                                onTap: () => onRemoveImage(index),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.black.withAlpha(100),
-                                    border: Border.all(
-                                      color: Colors.white.withAlpha(38),
-                                    ),
-                                  ),
-                                  child: AppIcons.cancel(
-                                    size: 14,
-                                    color: AppColors.greyWhite,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+    return SizedBox(
+      height: 168,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: imagePaths.length + (showAddMore ? 1 : 0),
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          if (index == imagePaths.length) {
+            return Semantics(
+              label: canAddMore
+                  ? l10n.reviewAddPhotos
+                  : l10n.reviewImageLimitReached,
+              button: true,
+              enabled: enabled && canAddMore,
+              child: Tooltip(
+                message: canAddMore
+                    ? l10n.reviewAddPhotos
+                    : l10n.reviewImageLimitReached,
+                child: SizedBox(
+                  width: 112,
+                  child: Material(
+                    color: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: radius,
+                      side: BorderSide(color: colorScheme.outlineVariant),
                     ),
-                  );
-                },
-              ),
-              if (imagePaths.length > 1)
-                Positioned(
-                  bottom: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha(100),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white.withAlpha(38)),
-                    ),
-                    child: Text(
-                      '${currentPage + 1} / ${imagePaths.length}',
-                      style: AppTypography.textExtraSmallMedium.copyWith(
-                        color: AppColors.greyWhite,
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: enabled && canAddMore ? onAddMore : null,
+                      child: Center(
+                        child: AppIcon(
+                          AppIconData.add,
+                          size: 28,
+                          color: enabled && canAddMore
+                              ? colorScheme.primary
+                              : colorScheme.onSurface.withValues(alpha: 0.38),
+                        ),
                       ),
                     ),
                   ),
                 ),
-            ],
-          ),
-        ),
+              ),
+            );
+          }
+
+          return Semantics(
+            label: l10n.reviewEditPhoto(index + 1),
+            button: true,
+            enabled: enabled,
+            onLongPressHint: showAddMore || imagePaths.length > 1
+                ? l10n.reviewRemovePhoto(index + 1)
+                : null,
+            child: SizedBox(
+              width: 112,
+              child: Material(
+                color: colorScheme.surfaceContainerHighest,
+                borderRadius: radius,
+                clipBehavior: Clip.antiAlias,
+                child: Ink.image(
+                  image: FileImage(File(imagePaths[index])),
+                  fit: BoxFit.cover,
+                  child: InkWell(
+                    onTap: enabled ? () => onTapEditImage(index) : null,
+                    onLongPress:
+                        enabled && (showAddMore || imagePaths.length > 1)
+                        ? () => _showPhotoActions(context, index)
+                        : null,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -387,197 +247,34 @@ class _SoundSection extends StatelessWidget {
 
   final String? title;
   final String? subtitle;
-  final VoidCallback onAddSound;
+  final VoidCallback? onAddSound;
   final VoidCallback? onRemoveSound;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
     final hasSound = title != null && title!.trim().isNotEmpty;
 
-    if (!hasSound) {
-      return SizedBox(
-        width: double.infinity,
-        child: AppButton(
-          label: l10n.buttonAddSound,
-          onPressed: onAddSound,
-          size: AppButtonSize.compact,
-          fullWidth: true,
-        ),
-      );
-    }
-
-    return Material(
-      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.6)),
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const AppIcon(AppIconData.music),
+      title: Text(
+        hasSound ? title! : l10n.buttonAddSound,
+        maxLines: hasSound ? 1 : null,
+        overflow: hasSound ? TextOverflow.ellipsis : null,
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        leading: const AppIcon(AppIconData.music),
-        title: Text(
-          title!,
-          style: AppTypography.textMediumBold.copyWith(
-            color: colorScheme.onSurface,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: subtitle == null || subtitle!.isEmpty
-            ? null
-            : Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: IconButton(
-          tooltip: l10n.buttonRemove,
-          icon: const AppIcon(AppIconData.cancel),
-          onPressed: onRemoveSound,
-        ),
-        onTap: onAddSound,
-      ),
-    );
-  }
-}
-
-class _DescriptionSection extends StatelessWidget {
-  const _DescriptionSection({
-    this.controller,
-    this.mentionController,
-    this.onMentionsChanged,
-    required this.maxChars,
-  });
-
-  final TextEditingController? controller;
-  final MentionController? mentionController;
-  final ValueChanged<List<dynamic>>? onMentionsChanged;
-  final int maxChars;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final textController = mentionController?.textController ?? controller;
-    final count = textController?.text.runes.length ?? 0;
-    final showCounter = count >= (maxChars * 0.8);
-    final isNearLimit = count >= maxChars * 0.9;
-    final isOverLimit = count > maxChars;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (mentionController != null)
-          MentionInputField(
-            controller: mentionController!,
-            onMentionsChanged: onMentionsChanged ?? (_) {},
-            hintText: l10n.hintAddDescription,
-          )
-        else if (controller != null)
-          InputField.search(
-            controller: controller!,
-            hintText: l10n.hintAddDescription,
-            maxLines: 5,
-            minLines: 1,
-          ),
-        if (showCounter) ...[
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '$count/$maxChars',
-              style: AppTypography.textSmallMedium.copyWith(
-                color: isOverLimit
-                    ? AppColors.red300
-                    : isNearLimit
-                    ? AppColors.rajah500
-                    : Colors.white.withAlpha(160),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _CrossPostSection extends StatelessWidget {
-  const _CrossPostSection({
-    required this.value,
-    required this.onChanged,
-    required this.showWarning,
-  });
-
-  final bool value;
-  final ValueChanged<bool> onChanged;
-  final bool showWarning;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    final tileColor = colorScheme.surfaceContainerHighest.withValues(
-      alpha: 0.5,
-    );
-    final borderColor = colorScheme.outline.withValues(alpha: 0.6);
-    final titleColor = colorScheme.onSurface;
-
-    return Column(
-      children: [
-        Material(
-          color: tileColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: borderColor),
-          ),
-          child: MergeSemantics(
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 2,
-              ),
-              title: Text(
-                'Post to Bluesky',
-                style: AppTypography.textMediumBold.copyWith(color: titleColor),
-              ),
-              trailing: AppToggle(value: value, onChanged: onChanged),
-              onTap: () => onChanged(!value),
-            ),
-          ),
-        ),
-        if (showWarning) ...[
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.rajah500.withAlpha(25),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.rajah500.withAlpha(64)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const AppIcon(
-                  AppIconData.warning,
-                  color: AppColors.rajah500,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Bluesky supports a maximum of 4 images. '
-                    'Your crosspost will include the first 4 and link to the '
-                    'full Spark post.',
-                    style: AppTypography.textSmallMedium.copyWith(
-                      color: AppColors.rajah500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
+      subtitle: hasSound && subtitle != null && subtitle!.isNotEmpty
+          ? Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis)
+          : null,
+      trailing: hasSound
+          ? IconButton(
+              tooltip: l10n.buttonRemove,
+              icon: const AppIcon(AppIconData.cancel),
+              onPressed: onRemoveSound,
+            )
+          : const AppIcon(AppIconData.chevronRight, size: 20),
+      enabled: onAddSound != null,
+      onTap: onAddSound,
     );
   }
 }

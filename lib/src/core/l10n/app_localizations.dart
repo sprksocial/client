@@ -94,6 +94,54 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[Locale('en')];
 
+  /// No description provided for @pageTitleReviewPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Review post'**
+  String get pageTitleReviewPost;
+
+  /// No description provided for @reviewCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Caption'**
+  String get reviewCaption;
+
+  /// Accessible action label for editing a photo in review
+  ///
+  /// In en, this message translates to:
+  /// **'Edit photo {index}'**
+  String reviewEditPhoto(int index);
+
+  /// Accessible action label for removing a photo in review
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo {index}'**
+  String reviewRemovePhoto(int index);
+
+  /// No description provided for @reviewAddPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photos'**
+  String get reviewAddPhotos;
+
+  /// No description provided for @reviewImageLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo limit reached'**
+  String get reviewImageLimitReached;
+
+  /// No description provided for @reviewAlsoPostToBluesky.
+  ///
+  /// In en, this message translates to:
+  /// **'Also post to Bluesky'**
+  String get reviewAlsoPostToBluesky;
+
+  /// No description provided for @reviewCrosspostImageWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Bluesky supports up to 4 images. Your crosspost will include the first 4 and link to the full Spark post.'**
+  String get reviewCrosspostImageWarning;
+
   /// Cancel button text
   ///
   /// In en, this message translates to:

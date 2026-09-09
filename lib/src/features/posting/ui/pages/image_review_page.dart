@@ -11,7 +11,7 @@ import 'package:spark/src/core/design_system/templates/image_review_page_templat
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/pages/post_image_editor_page.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
@@ -37,28 +37,33 @@ class ImageReviewPage extends ConsumerStatefulWidget {
 class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   final MentionController _descriptionController = MentionController();
   bool _isPosting = false;
-  int _currentPage = 0;
   List<XFile> _imageFiles = [];
   static const int _maxImages = 12;
   final ImagePicker _picker = ImagePicker();
-  final Map<String, String> _altTexts = {};
   bool _crosspostToBsky = false;
   AudioTrack? _selectedSoundTrack;
   late final FeedRepository _feedRepository;
 
-  Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
-    final newImage = await PostImageEditorPage.open(context, imageFile);
-    // If the user edited the image, replace the original file in the list
-    if (newImage != null) {
+  Future<void> _editImage(int index) async {
+    final imageFile = _imageFiles[index];
+    try {
+      final newImage = await PostImageEditorPage.open(context, imageFile);
+      if (!mounted || newImage == null) return;
+      final currentIndex = _imageFiles.indexOf(imageFile);
+      if (currentIndex < 0) return;
+      setState(() => _imageFiles[currentIndex] = newImage);
+    } catch (error, stackTrace) {
+      GetIt.I<LogService>()
+          .getLogger('ImageReviewPage')
+          .e(
+            'Failed to edit review photo',
+            error: error,
+            stackTrace: stackTrace,
+          );
       if (!mounted) return;
-      setState(() {
-        final oldPath = _imageFiles[_currentPage].path;
-        final existingAlt = _altTexts.remove(oldPath);
-        _imageFiles[_currentPage] = newImage;
-        if (existingAlt != null) {
-          _altTexts[newImage.path] = existingAlt;
-        }
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).errorGeneric)),
+      );
     }
   }
 
@@ -78,36 +83,35 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     super.dispose();
   }
 
-  Future<void> _editAltText(XFile imageFile) async {
-    final path = imageFile.path;
-    final initialText = _altTexts[path] ?? '';
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AltTextEditorDialog(
-        imageFile: imageFile.path,
-        initialAltText: initialText,
-      ),
-    );
-    if (result == null) return;
-    setState(() {
-      _altTexts[path] = result.trim();
-    });
-  }
-
   Future<void> _pickMoreImages() async {
     final remaining = _maxImages - _imageFiles.length;
     if (remaining <= 0) return;
     try {
-      final pickedFiles = await _picker.pickMultiImage(limit: remaining);
-      if (pickedFiles.isEmpty) return;
+      final List<XFile> pickedFiles;
+      if (remaining == 1) {
+        final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+        pickedFiles = [?pickedFile];
+      } else {
+        pickedFiles = await _picker.pickMultiImage(limit: remaining);
+      }
+      if (!mounted || pickedFiles.isEmpty) return;
       setState(() {
-        _imageFiles.addAll(pickedFiles);
-        for (final file in pickedFiles) {
-          _altTexts[file.path] = '';
-        }
+        _imageFiles.addAll(pickedFiles.take(_maxImages - _imageFiles.length));
       });
-    } catch (_) {
+    } catch (error, stackTrace) {
+      GetIt.I<LogService>()
+          .getLogger('ImageReviewPage')
+          .e(
+            'Failed to pick review photos',
+            error: error,
+            stackTrace: stackTrace,
+          );
       if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).errorUnableToAccessPhotos),
+        ),
+      );
     }
   }
 
@@ -127,7 +131,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   }
 
   Future<RepoStrongRef?> _uploadImagesAndPost() async {
-    if (_isPosting) return null;
+    if (_isPosting || _imageFiles.isEmpty) return null;
     setState(() {
       _isPosting = true;
     });
@@ -139,7 +143,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       if (widget.storyMode) {
         final uploadedImage = await _feedRepository.uploadImages(
           imageFiles: _imageFiles,
-          altTexts: _altTexts,
+          altTexts: const {},
         );
         if (uploadedImage.isEmpty) {
           throw Exception('No images uploaded');
@@ -158,7 +162,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         result = await _feedRepository.postImages(
           description,
           _imageFiles,
-          _altTexts,
+          const {},
           crosspostToBsky: crosspostEnabled,
           facets: facets,
           soundRef: decodeSoundTrackStrongRef(_selectedSoundTrack?.id),
@@ -183,36 +187,22 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     final isOverLimit = textLength > AppConstants.postDescriptionMaxChars;
 
     return ImageReviewPageTemplate(
-      title: l10n.pageTitleReviewImagePost,
+      title: l10n.pageTitleReviewPost,
       onBack: () => context.router.maybePop(),
       imagePaths: _imageFiles.map((e) => e.path).toList(),
-      currentPage: _currentPage,
-      onPageChanged: (i) => setState(() => _currentPage = i),
-      onTapEditImage: (i) => showImageEditor(context, _imageFiles[i]),
-      onAltEdit: (i) => _editAltText(_imageFiles[i]),
-      onRemoveImage: (i) {
-        setState(() {
-          final removed = _imageFiles.removeAt(i);
-          _altTexts.remove(removed.path);
-          if (_currentPage >= _imageFiles.length && _currentPage > 0) {
-            _currentPage = _imageFiles.length - 1;
-          }
-        });
-      },
+      onTapEditImage: _editImage,
+      onRemoveImage: (index) => setState(() => _imageFiles.removeAt(index)),
       showAddMore: !widget.storyMode,
       canAddMore: canPickMore,
-      imagesCount: _imageFiles.length,
-      maxImages: _maxImages,
       onAddMore: _pickMoreImages,
       selectedSoundTitle: _selectedSoundTrack?.title,
       selectedSoundSubtitle: _selectedSoundTrack?.subtitle,
       onAddSound: widget.storyMode ? null : _selectSound,
       onRemoveSound: () => setState(() => _selectedSoundTrack = null),
       mentionController: _descriptionController,
-      onMentionsChanged: (mentions) {
-        // Mentions are automatically tracked in the controller
-      },
       descriptionMaxChars: AppConstants.postDescriptionMaxChars,
+      showCaption: !widget.storyMode,
+      showCrossPost: !widget.storyMode,
       crossPostValue: _crosspostToBsky,
       onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
       showCrossPostWarning: showCrossPostWarning,

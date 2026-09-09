@@ -13,7 +13,6 @@ import 'package:spark/src/core/design_system/templates/video_review_page_templat
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:spark/src/core/utils/error_messages.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -51,7 +50,6 @@ class VideoReviewPage extends ConsumerStatefulWidget {
 class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   final MentionController _descriptionController = MentionController();
   bool _isPosting = false;
-  String _videoAltText = '';
   bool _crosspostToBsky = false;
   late XFile _video;
   late final FeedRepository _feedRepository;
@@ -158,18 +156,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     return mounted;
   }
 
-  Future<void> _editAltText() async {
-    final initialText = _videoAltText;
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AltTextEditorDialog(initialAltText: initialText),
-    );
-    if (result == null) return;
-    setState(() {
-      _videoAltText = result.trim();
-    });
-  }
-
   void _startVideoUpload({bool notify = true}) {
     if (_isUploadingVideo) return;
 
@@ -246,22 +232,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     };
   }
 
-  String _postLabel(AppLocalizations l10n) {
-    if (_uploadErrorMessage != null) return l10n.messageUploadFailed;
-    if (_uploadResult != null) return l10n.buttonPost;
-    final percent = (_uploadProgress * 100).round();
-    switch (_uploadPhase) {
-      case _VideoUploadPhase.uploading:
-        return l10n.messageUploadingPercent(percent);
-      case _VideoUploadPhase.processing:
-        return l10n.messageProcessingVideo;
-      case _VideoUploadPhase.ready:
-        return l10n.buttonPost;
-      case null:
-        return l10n.messageUploadingVideo;
-    }
-  }
-
   Future<void> _postVideo() async {
     if (_isPosting || _isLeaving) return;
     final uploadResult = _uploadResult;
@@ -285,7 +255,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       final postRef = await postProcessedVideo(
         uploadResult: uploadResult,
         description: description,
-        altText: _videoAltText,
+        altText: '',
         aspectRatio: _videoAspectRatio,
         storyMode: widget.storyMode,
         soundRef: widget.soundRef,
@@ -377,13 +347,12 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         }
       },
       child: VideoReviewPageTemplate(
-        title: l10n.pageTitleReviewVideo,
+        title: l10n.pageTitleReviewPost,
         onBack: () => unawaited(_close()),
         aspectRatio: ar,
         videoPreview: _playbackSession == null
             ? const Center(child: CircularProgressIndicator())
             : VideoPlayer(_playbackSession!.videoController),
-        onAltEdit: _editAltText,
         uploadProgress: _uploadProgress,
         uploadStatusLabel: uploadStatusLabel,
         uploadIndeterminate: _uploadPhase == _VideoUploadPhase.processing,
@@ -392,14 +361,12 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
             ? null
             : () => _startVideoUpload(),
         mentionController: _descriptionController,
-        onMentionsChanged: (mentions) {
-          // Mentions are automatically tracked in the controller
-        },
         descriptionMaxChars: AppConstants.postDescriptionMaxChars,
+        showCaption: !widget.storyMode,
         showCrossPost: !widget.storyMode,
         crossPostValue: _crosspostToBsky,
         onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
-        postLabel: _postLabel(l10n),
+        postLabel: l10n.buttonPost,
         isPosting: _isPosting,
         isOverLimit: isOverLimit,
         onPost: canPost

@@ -10,6 +10,35 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get pageTitleReviewPost => 'Review post';
+
+  @override
+  String get reviewCaption => 'Caption';
+
+  @override
+  String reviewEditPhoto(int index) {
+    return 'Edit photo $index';
+  }
+
+  @override
+  String reviewRemovePhoto(int index) {
+    return 'Remove photo $index';
+  }
+
+  @override
+  String get reviewAddPhotos => 'Add photos';
+
+  @override
+  String get reviewImageLimitReached => 'Photo limit reached';
+
+  @override
+  String get reviewAlsoPostToBluesky => 'Also post to Bluesky';
+
+  @override
+  String get reviewCrosspostImageWarning =>
+      'Bluesky supports up to 4 images. Your crosspost will include the first 4 and link to the full Spark post.';
+
+  @override
   String get buttonCancel => 'Cancel';
 
   @override

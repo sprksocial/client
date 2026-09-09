@@ -2,6 +2,23 @@
   "@@locale": "en",
   "@@context": "General localization strings",
 
+  "pageTitleReviewPost": "Review post",
+  "reviewCaption": "Caption",
+  "reviewEditPhoto": "Edit photo {index}",
+  "@reviewEditPhoto": {
+    "description": "Accessible action label for editing a photo in review",
+    "placeholders": {"index": {"type": "int"}}
+  },
+  "reviewRemovePhoto": "Remove photo {index}",
+  "@reviewRemovePhoto": {
+    "description": "Accessible action label for removing a photo in review",
+    "placeholders": {"index": {"type": "int"}}
+  },
+  "reviewAddPhotos": "Add photos",
+  "reviewImageLimitReached": "Photo limit reached",
+  "reviewAlsoPostToBluesky": "Also post to Bluesky",
+  "reviewCrosspostImageWarning": "Bluesky supports up to 4 images. Your crosspost will include the first 4 and link to the full Spark post.",
+
   "buttonCancel": "Cancel",
   "@buttonCancel": {
     "description": "Cancel button text"
