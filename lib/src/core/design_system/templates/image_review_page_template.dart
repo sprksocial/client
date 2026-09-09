@@ -163,6 +163,7 @@ class _PhotoStrip extends StatelessWidget {
       height: 168,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: imagePaths.length + (showAddMore ? 1 : 0),
         separatorBuilder: (context, index) => const SizedBox(width: 12),
         itemBuilder: (context, index) {

@@ -53,24 +53,27 @@ class VideoReviewPageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final previewHeight = (MediaQuery.sizeOf(context).height * 0.38).clamp(
-      220.0,
-      340.0,
+    final previewHeight = (MediaQuery.sizeOf(context).height * 0.34).clamp(
+      196.0,
+      300.0,
     );
     return PostReviewPageTemplate(
       title: title,
       onBack: onBack,
       backgroundColor: backgroundColor,
-      media: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: previewHeight),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: AspectRatio(
-              aspectRatio: aspectRatio.isFinite && aspectRatio > 0
-                  ? aspectRatio
-                  : 1,
-              child: ColoredBox(color: Colors.black, child: videoPreview),
+      media: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 36),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: previewHeight),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: AspectRatio(
+                aspectRatio: aspectRatio.isFinite && aspectRatio > 0
+                    ? aspectRatio
+                    : 1,
+                child: ColoredBox(color: Colors.black, child: videoPreview),
+              ),
             ),
           ),
         ),

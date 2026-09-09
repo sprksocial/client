@@ -63,7 +63,7 @@ class PostReviewPageTemplate extends StatelessWidget {
                     child: SingleChildScrollView(
                       keyboardDismissBehavior:
                           ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                      padding: const EdgeInsets.symmetric(vertical: 24),
                       child: AbsorbPointer(
                         absorbing: isPosting,
                         child: Column(
@@ -71,9 +71,19 @@ class PostReviewPageTemplate extends StatelessWidget {
                           children: [
                             media,
                             const SizedBox(height: 28),
-                            caption,
-                            const SizedBox(height: 20),
-                            ...options,
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  caption,
+                                  const SizedBox(height: 20),
+                                  ...options,
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),

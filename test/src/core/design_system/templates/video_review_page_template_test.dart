@@ -21,12 +21,12 @@ void main() {
         find.byKey(const ValueKey('video-preview')),
       );
       expect(preview.width / preview.height, closeTo(aspectRatio, 0.01));
-      expect(preview.height, lessThanOrEqualTo(340));
+      expect(preview.height, lessThanOrEqualTo(300));
       expect(preview.center.dx, closeTo(160, 0.01));
       if (aspectRatio < 1) {
-        expect(preview.height, greaterThanOrEqualTo(220));
+        expect(preview.height, greaterThanOrEqualTo(196));
       } else {
-        expect(preview.width, closeTo(280, 0.01));
+        expect(preview.width, closeTo(248, 0.01));
       }
       expect(
         tester.getTopLeft(find.text('Caption')).dy - preview.bottom,
