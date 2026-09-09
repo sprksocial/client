@@ -4,9 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/video_timeline_state.dart';
 
 const _kRevealDuration = Duration(milliseconds: 240);
@@ -130,7 +132,7 @@ class VideoEditorRevealCoordinator extends ChangeNotifier {
   Future<void> endDrag({
     required double primaryVelocity,
     required bool reduceMotion,
-  }) async {
+  }) {
     final hasFling = primaryVelocity.abs() >= _kFlingVelocity;
     final shouldReveal = hasFling
         ? primaryVelocity < 0
@@ -139,7 +141,13 @@ class VideoEditorRevealCoordinator extends ChangeNotifier {
         : _dragStartValue <= 0
         ? value >= _kRevealThreshold
         : value >= 0.5;
-    final target = shouldReveal ? 1.0 : 0.0;
+    return _settleTo(shouldReveal ? 1.0 : 0.0, reduceMotion: reduceMotion);
+  }
+
+  Future<void> reveal({required bool reduceMotion}) =>
+      _settleTo(1, reduceMotion: reduceMotion);
+
+  Future<void> _settleTo(double target, {required bool reduceMotion}) async {
     if (reduceMotion) {
       _animation.value = target;
       return;
@@ -603,7 +611,11 @@ class _VideoEditorRevealBottomBarState
                   return Center(
                     child: Opacity(
                       opacity: cueOpacity,
-                      child: const _RevealCue(),
+                      child: _RevealCue(
+                        onTap: () => widget.coordinator.reveal(
+                          reduceMotion: MediaQuery.disableAnimationsOf(context),
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -672,23 +684,38 @@ bool isVideoEditorLayerVisibleAt(Layer layer, Duration videoPosition) {
 }
 
 class _RevealCue extends StatelessWidget {
-  const _RevealCue();
+  const _RevealCue({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return InteractivePressable(
       key: const ValueKey('video-editor-reveal-cue'),
-      decoration: BoxDecoration(
-        color: AppColors.grey700.withAlpha(220),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const SizedBox(
-        width: 38,
-        height: 24,
-        child: AppIcon(
-          AppIconData.chevronUp,
-          size: 21,
-          color: AppColors.greyWhite,
+      onTap: onTap,
+      semanticLabel: AppLocalizations.of(context).buttonEdit,
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 120),
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox.square(
+        dimension: 48,
+        child: Center(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.grey700.withAlpha(220),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const SizedBox(
+              width: 38,
+              height: 24,
+              child: AppIcon(
+                AppIconData.chevronUp,
+                size: 21,
+                color: AppColors.greyWhite,
+              ),
+            ),
+          ),
         ),
       ),
     );

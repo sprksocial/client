@@ -2,11 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/recording_layout.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/layout/video_editor_regular_chrome.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/layout/video_editor_reveal_layout.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/video_timeline_state.dart';
 
 void main() {
+  for (final reduceMotion in [false, true]) {
+    testWidgets('arrow tap reveals controls (reduceMotion: $reduceMotion)', (
+      tester,
+    ) async {
+      final harnessKey = GlobalKey<_RevealHarnessState>();
+      await tester.pumpWidget(
+        _RevealHarness(key: harnessKey, reduceMotion: reduceMotion),
+      );
+      await tester.pumpAndSettle();
+
+      final cue = find.byKey(const ValueKey('video-editor-reveal-cue'));
+      expect(harnessKey.currentState!.coordinator.isFullscreen, isTrue);
+      expect(tester.getSize(cue), const Size(48, 48));
+
+      await tester.tap(cue);
+      if (reduceMotion) {
+        expect(harnessKey.currentState!.coordinator.value, 1);
+      }
+      await tester.pumpAndSettle();
+
+      expect(harnessKey.currentState!.coordinator.value, 1);
+      expect(cue, findsNothing);
+      expect(harnessKey.currentState!.previewTapCount, 0);
+      expect(
+        tester
+            .getBottomLeft(find.byKey(const ValueKey('reveal-bottom-content')))
+            .dy,
+        tester.view.physicalSize.height / tester.view.devicePixelRatio,
+      );
+    });
+  }
+
   test(
     'regular chrome restores its reveal state after a fullscreen overlay',
     () {
@@ -412,11 +445,13 @@ class _RevealHarness extends StatefulWidget {
   const _RevealHarness({
     this.previewAspectRatio = 400 / 732,
     this.isPositionOnLayer,
+    this.reduceMotion = false,
     super.key,
   });
 
   final double previewAspectRatio;
   final bool Function(Offset globalPosition)? isPositionOnLayer;
+  final bool reduceMotion;
 
   @override
   State<_RevealHarness> createState() => _RevealHarnessState();
@@ -460,6 +495,13 @@ class _RevealHarnessState extends State<_RevealHarness>
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context)
+            .copyWith(disableAnimations: widget.reduceMotion),
+        child: child!,
+      ),
       home: Scaffold(
         body: GestureDetector(
           onScaleStart: (_) {},
