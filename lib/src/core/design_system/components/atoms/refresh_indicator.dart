@@ -92,14 +92,19 @@ class DSRefreshIndicatorState extends State<DSRefreshIndicator>
       return false;
     }
     final delta = switch (notification) {
-      ScrollUpdateNotification(:final scrollDelta) => scrollDelta ?? 0,
-      OverscrollNotification(:final overscroll) => overscroll,
+      ScrollUpdateNotification(:final scrollDelta, :final dragDetails)
+          when dragDetails != null =>
+        scrollDelta ?? 0,
+      OverscrollNotification(:final overscroll, :final dragDetails)
+          when dragDetails != null =>
+        overscroll,
       _ => 0.0,
     };
     final direction = notification.metrics.axisDirection == AxisDirection.down
         ? -1
         : 1;
-    _pullExtent = math.max(0, _pullExtent + delta * direction);
+    // Keep travel away from the edge so returning to it is not a new pull.
+    _pullExtent += delta * direction;
     final pullProgress = (_pullExtent / 120).clamp(0.0, 1.0);
     if (_status == RefreshIndicatorStatus.drag) {
       _reveal.value = pullProgress.clamp(0, 0.95);

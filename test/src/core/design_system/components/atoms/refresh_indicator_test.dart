@@ -70,6 +70,55 @@ void main() {
     const ClampingScrollPhysics(),
     const BouncingScrollPhysics(),
   ]) {
+    for (final releaseBeforeReturning in [false, true]) {
+      testWidgets('returning to the first page keeps the indicator hidden '
+          '(released: $releaseBeforeReturning, $physics)', (tester) async {
+        final controller = PageController();
+        addTearDown(controller.dispose);
+        var refreshCount = 0;
+        await tester.pumpWidget(
+          _TestApp(
+            onRefresh: () async => refreshCount += 1,
+            child: PageView(
+              controller: controller,
+              scrollDirection: Axis.vertical,
+              physics: physics,
+              children: const [SizedBox.expand(), SizedBox.expand()],
+            ),
+          ),
+        );
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(DSRefreshIndicator)),
+        );
+        final gesture = await tester.startGesture(const Offset(200, 400));
+        await gesture.moveBy(const Offset(0, -30));
+        await tester.pump();
+        await gesture.moveBy(const Offset(0, -100));
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(controller.page, greaterThan(0));
+        expect(controller.page, lessThan(0.5));
+        expect(find.bySemanticsLabel(l10n.refreshIndicatorPull), findsNothing);
+
+        if (releaseBeforeReturning) {
+          await gesture.up();
+        } else {
+          await gesture.moveBy(const Offset(0, 50));
+        }
+        await tester.pump();
+        for (var frame = 0; frame < 40; frame++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          expect(
+            find.bySemanticsLabel(l10n.refreshIndicatorPull),
+            findsNothing,
+          );
+        }
+        if (!releaseBeforeReturning) await gesture.up();
+        await tester.pumpAndSettle();
+        expect(controller.page, 0);
+        expect(refreshCount, 0);
+      });
+    }
+
     testWidgets(
       'pull holds its endpoint then continues loading with $physics',
       (tester) async {
@@ -298,12 +347,14 @@ class _TestApp extends StatelessWidget {
     this.indicatorKey,
     this.physics = const ClampingScrollPhysics(),
     this.disableAnimations = false,
+    this.child,
   });
 
   final Future<void> Function() onRefresh;
   final GlobalKey<DSRefreshIndicatorState>? indicatorKey;
   final ScrollPhysics physics;
   final bool disableAnimations;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -311,19 +362,20 @@ class _TestApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(
-          context,
-        ).copyWith(disableAnimations: disableAnimations),
+        data: MediaQuery.of(context)
+            .copyWith(disableAnimations: disableAnimations),
         child: child!,
       ),
       home: Scaffold(
         body: DSRefreshIndicator(
           key: indicatorKey,
           onRefresh: onRefresh,
-          child: ListView(
-            physics: AlwaysScrollableScrollPhysics(parent: physics),
-            children: const [SizedBox(height: 1200, child: Text('Feed'))],
-          ),
+          child:
+              child ??
+              ListView(
+                physics: AlwaysScrollableScrollPhysics(parent: physics),
+                children: const [SizedBox(height: 1200, child: Text('Feed'))],
+              ),
         ),
       ),
     );
