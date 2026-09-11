@@ -22,6 +22,7 @@ import 'package:spark/src/features/media_editor/story/models/story_image_editor_
 import 'package:spark/src/features/media_editor/story/ui/pages/story_image_editor_page.dart';
 import 'package:spark/src/features/media_editor/video/models/video_editor_result.dart';
 import 'package:spark/src/features/media_editor/video/ui/pages/video_editor_page.dart';
+import 'package:spark/src/features/posting/navigation/recording_review_navigation.dart';
 import 'package:spark/src/features/posting/providers/camera_provider.dart';
 import 'package:spark/src/features/posting/providers/recording_provider.dart';
 import 'package:spark/src/features/posting/ui/models/media_selection.dart';
@@ -632,19 +633,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           });
         }
       } else {
-        // For posts, go to review page
-        await context.router.push(
-          VideoReviewRoute(
-            videoPath: result.video.path,
-            storyMode: widget.storyMode,
-            soundRef: result.soundRef,
-          ),
+        await reviewRecordedVideo(
+          context,
+          videoPath: result.video.path,
+          soundRef: result.soundRef,
         );
-
-        if (!mounted) return;
-        // Exit the recording flow by dropping this page only; posting already
-        // unwinds the stack, so popping here would remove the page below.
-        context.router.removeRoute(context.routeData);
       }
     } catch (e, stackTrace) {
       _logger.e('Error processing video', error: e, stackTrace: stackTrace);
