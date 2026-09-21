@@ -13,5 +13,6 @@ resolution: workspace
 flutter:
   assets:
     - icons/
+    - icons/temp/
     - images/
     - branding/
