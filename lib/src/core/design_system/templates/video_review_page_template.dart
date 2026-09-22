@@ -26,6 +26,8 @@ class VideoReviewPageTemplate extends StatelessWidget {
     this.uploadIndeterminate = false,
     this.hasUploadError = false,
     this.onUploadRetry,
+    this.onSave,
+    this.isSaving = false,
     super.key,
   });
 
@@ -50,6 +52,8 @@ class VideoReviewPageTemplate extends StatelessWidget {
   final bool uploadIndeterminate;
   final bool hasUploadError;
   final VoidCallback? onUploadRetry;
+  final VoidCallback? onSave;
+  final bool isSaving;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +65,8 @@ class VideoReviewPageTemplate extends StatelessWidget {
       title: title,
       onBack: onBack,
       backgroundColor: backgroundColor,
+      onSave: onSave,
+      isSaving: isSaving,
       media: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 36),
         child: Center(

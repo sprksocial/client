@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/toggles/app_toggle.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
@@ -19,6 +20,8 @@ class PostReviewPageTemplate extends StatelessWidget {
     required this.onPost,
     required this.isPosting,
     this.backgroundColor,
+    this.onSave,
+    this.isSaving = false,
     this.status,
     super.key,
   });
@@ -32,6 +35,8 @@ class PostReviewPageTemplate extends StatelessWidget {
   final VoidCallback? onPost;
   final bool isPosting;
   final Color? backgroundColor;
+  final VoidCallback? onSave;
+  final bool isSaving;
   final Widget? status;
 
   @override
@@ -49,6 +54,20 @@ class PostReviewPageTemplate extends StatelessWidget {
         ),
         title: Text(title),
         centerTitle: false,
+        actions: [
+          if (onSave != null)
+            IconButton(
+              key: const ValueKey('save-media-button'),
+              tooltip: AppLocalizations.of(context).buttonSaveToPhotos,
+              onPressed: isPosting || isSaving ? null : onSave,
+              icon: isSaving
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const AppIcon(AppIconData.download, size: 24),
+            ),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -65,7 +84,7 @@ class PostReviewPageTemplate extends StatelessWidget {
                           ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: AbsorbPointer(
-                        absorbing: isPosting,
+                        absorbing: isPosting || isSaving,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -105,7 +124,7 @@ class PostReviewPageTemplate extends StatelessWidget {
                         ],
                         AppButton(
                           label: postLabel,
-                          onPressed: isPosting ? null : onPost,
+                          onPressed: isPosting || isSaving ? null : onPost,
                           fullWidth: true,
                           leading: isPosting
                               ? const SizedBox.square(

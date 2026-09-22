@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/video_review_page_template.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/error_messages.dart';
@@ -20,6 +20,7 @@ import 'package:spark/src/features/auth/providers/auth_providers.dart';
 import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/video_upload_provider.dart';
 import 'package:spark/src/features/posting/ui/controllers/video_review_playback_session.dart';
+import 'package:spark/src/features/posting/ui/widgets/review_media_save_action.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -133,7 +134,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         stackTrace: stackTrace,
       );
       if (!mounted || _isLeaving) return;
-      _showPostError('Unable to preview this video. Please try again.');
+      _showMessage('Unable to preview this video. Please try again.');
     }
   }
 
@@ -240,7 +241,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         _startVideoUpload();
         return;
       }
-      _showPostError('Video is still uploading. Please wait for it to finish.');
+      _showMessage('Video is still uploading. Please wait for it to finish.');
       return;
     }
 
@@ -268,7 +269,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         setState(() {
           _isPosting = false;
         });
-        _showPostError('Unable to create post. Please try again');
+        _showMessage('Unable to create post. Please try again');
         return;
       }
 
@@ -295,12 +296,12 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       setState(() {
         _isPosting = false;
       });
-      _showPostError(ErrorMessages.getOperationErrorMessage('post', e));
+      _showMessage(ErrorMessages.getOperationErrorMessage('post', e));
     }
     return;
   }
 
-  void _showPostError(String message) {
+  void _showMessage(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
@@ -346,34 +347,40 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           unawaited(_close());
         }
       },
-      child: VideoReviewPageTemplate(
-        title: l10n.pageTitleReviewPost,
-        onBack: () => unawaited(_close()),
-        aspectRatio: ar,
-        videoPreview: _playbackSession == null
-            ? const Center(child: CircularProgressIndicator())
-            : VideoPlayer(_playbackSession!.videoController),
-        uploadProgress: _uploadProgress,
-        uploadStatusLabel: uploadStatusLabel,
-        uploadIndeterminate: _uploadPhase == _VideoUploadPhase.processing,
-        hasUploadError: _uploadErrorMessage != null,
-        onUploadRetry: _uploadErrorMessage == null
-            ? null
-            : () => _startVideoUpload(),
-        mentionController: _descriptionController,
-        descriptionMaxChars: AppConstants.postDescriptionMaxChars,
-        showCaption: !widget.storyMode,
-        showCrossPost: !widget.storyMode,
-        crossPostValue: _crosspostToBsky,
-        onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
-        postLabel: l10n.buttonPost,
-        isPosting: _isPosting,
-        isOverLimit: isOverLimit,
-        onPost: canPost
-            ? () async {
-                await _postVideo();
-              }
-            : null,
+      child: ReviewMediaSaveAction(
+        canSave: !_isPosting && !_isLeaving,
+        save: (gallery) => gallery.saveVideo(_video.path),
+        builder: (context, onSave, isSaving) => VideoReviewPageTemplate(
+          title: l10n.pageTitleReviewPost,
+          onBack: () => unawaited(_close()),
+          onSave: onSave,
+          isSaving: isSaving,
+          aspectRatio: ar,
+          videoPreview: _playbackSession == null
+              ? const Center(child: CircularProgressIndicator())
+              : VideoPlayer(_playbackSession!.videoController),
+          uploadProgress: _uploadProgress,
+          uploadStatusLabel: uploadStatusLabel,
+          uploadIndeterminate: _uploadPhase == _VideoUploadPhase.processing,
+          hasUploadError: _uploadErrorMessage != null,
+          onUploadRetry: _uploadErrorMessage == null
+              ? null
+              : () => _startVideoUpload(),
+          mentionController: _descriptionController,
+          descriptionMaxChars: AppConstants.postDescriptionMaxChars,
+          showCaption: !widget.storyMode,
+          showCrossPost: !widget.storyMode,
+          crossPostValue: _crosspostToBsky,
+          onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
+          postLabel: l10n.buttonPost,
+          isPosting: _isPosting,
+          isOverLimit: isOverLimit,
+          onPost: canPost
+              ? () async {
+                  await _postVideo();
+                }
+              : null,
+        ),
       ),
     );
   }

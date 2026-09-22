@@ -34,6 +34,26 @@
     "description": "Save button text"
   },
 
+  "buttonSaveToPhotos": "Save to Photos",
+  "@buttonSaveToPhotos": {
+    "description": "Accessible label for saving reviewed media to the device photo library"
+  },
+
+  "messageSavedToPhotos": "Saved to Photos",
+  "@messageSavedToPhotos": {
+    "description": "Confirmation shown after reviewed media is saved to the device photo library"
+  },
+
+  "errorPhotoLibrarySavePermission": "Allow Spark to access Photos in your device settings, then try again.",
+  "@errorPhotoLibrarySavePermission": {
+    "description": "Error shown when permission to save reviewed media is denied"
+  },
+
+  "errorUnableToSaveToPhotos": "Could not save to Photos. Please try again.",
+  "@errorUnableToSaveToPhotos": {
+    "description": "Error shown when reviewed media cannot be saved to the device photo library"
+  },
+
   "buttonDelete": "Delete",
   "@buttonDelete": {
     "description": "Delete option in options panel"

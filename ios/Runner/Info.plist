@@ -56,6 +56,8 @@
 	<string>This app needs microphone access to record videos with audio for content sharing</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to select images and videos for sharing</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow Spark to save photos and videos you create to your photo library</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

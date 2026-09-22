@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/templates/image_review_page_template.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 
@@ -134,6 +135,24 @@ void main() {
     expect(adds, 0);
   });
 
+  testWidgets('save icon invokes the review save action', (tester) async {
+    var saves = 0;
+    await pumpReview(
+      tester,
+      _template(imagePaths: [imagePath], onSave: () => saves++),
+    );
+
+    final downloadIcon = find.descendant(
+      of: find.byKey(const ValueKey('save-media-button')),
+      matching: find.byType(AppIcon),
+    );
+    expect(tester.widget<AppIcon>(downloadIcon).icon, AppIconData.download);
+    expect(tester.getSize(downloadIcon), const Size.square(24));
+    await tester.tap(find.byKey(const ValueKey('save-media-button')));
+
+    expect(saves, 1);
+  });
+
   testWidgets('posting locks media, caption, sound and cross-post controls', (
     tester,
   ) async {
@@ -230,6 +249,7 @@ ImageReviewPageTemplate _template({
   VoidCallback? onAddSound,
   VoidCallback? onRemoveSound,
   ValueChanged<bool>? onCrossPostChanged,
+  VoidCallback? onSave,
 }) => ImageReviewPageTemplate(
   title: 'Review',
   onBack: () {},
@@ -250,6 +270,7 @@ ImageReviewPageTemplate _template({
   selectedSoundSubtitle: selectedSoundSubtitle,
   onAddSound: onAddSound,
   onRemoveSound: onRemoveSound,
+  onSave: onSave,
 );
 
 class _TestApp extends StatelessWidget {

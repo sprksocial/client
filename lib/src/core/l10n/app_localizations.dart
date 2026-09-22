@@ -160,6 +160,30 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get buttonSave;
 
+  /// Accessible label for saving reviewed media to the device photo library
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Photos'**
+  String get buttonSaveToPhotos;
+
+  /// Confirmation shown after reviewed media is saved to the device photo library
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to Photos'**
+  String get messageSavedToPhotos;
+
+  /// Error shown when permission to save reviewed media is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Spark to access Photos in your device settings, then try again.'**
+  String get errorPhotoLibrarySavePermission;
+
+  /// Error shown when reviewed media cannot be saved to the device photo library
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save to Photos. Please try again.'**
+  String get errorUnableToSaveToPhotos;
+
   /// Delete option in options panel
   ///
   /// In en, this message translates to:

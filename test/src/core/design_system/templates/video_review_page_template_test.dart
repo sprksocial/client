@@ -59,6 +59,17 @@ void main() {
     expect(retries, 1);
   });
 
+  testWidgets('save icon invokes the review save action', (tester) async {
+    var saves = 0;
+    await tester.pumpWidget(
+      _TestApp(child: _template(onSave: () => saves++)),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('save-media-button')));
+
+    expect(saves, 1);
+  });
+
   testWidgets(
     'processing has indeterminate progress without a fake percentage',
     (tester) async {
@@ -124,6 +135,7 @@ VideoReviewPageTemplate _template({
   bool uploadIndeterminate = false,
   bool hasUploadError = false,
   VoidCallback? onUploadRetry,
+  VoidCallback? onSave,
 }) => VideoReviewPageTemplate(
   title: 'Review',
   onBack: () {},
@@ -140,6 +152,7 @@ VideoReviewPageTemplate _template({
   uploadIndeterminate: uploadIndeterminate,
   hasUploadError: hasUploadError,
   onUploadRetry: onUploadRetry,
+  onSave: onSave,
 );
 
 void _noop() {}

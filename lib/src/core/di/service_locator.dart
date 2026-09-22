@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository_impl.dart';
+import 'package:spark/src/core/media/media_gallery_service.dart';
+import 'package:spark/src/core/media/photo_manager_media_gallery_service.dart';
 import 'package:spark/src/core/media_processing/video/pro_video_processing_service.dart';
 import 'package:spark/src/core/media_processing/video/video_processing_service.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -103,6 +105,9 @@ Future<void> initServiceLocator({
     )
     ..registerSingleton<VideoProcessingService>(
       const ProVideoProcessingService(),
+    )
+    ..registerSingleton<MediaGalleryService>(
+      const PhotoManagerMediaGalleryService(),
     )
     ..registerSingleton<NotificationRepository>(
       NotificationRepositoryImpl(sl<SprkRepository>()),

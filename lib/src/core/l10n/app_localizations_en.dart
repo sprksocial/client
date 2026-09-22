@@ -48,6 +48,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get buttonSave => 'Save';
 
   @override
+  String get buttonSaveToPhotos => 'Save to Photos';
+
+  @override
+  String get messageSavedToPhotos => 'Saved to Photos';
+
+  @override
+  String get errorPhotoLibrarySavePermission =>
+      'Allow Spark to access Photos in your device settings, then try again.';
+
+  @override
+  String get errorUnableToSaveToPhotos =>
+      'Could not save to Photos. Please try again.';
+
+  @override
   String get buttonDelete => 'Delete';
 
   @override

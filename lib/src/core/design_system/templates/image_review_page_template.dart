@@ -35,6 +35,8 @@ class ImageReviewPageTemplate extends StatelessWidget {
     this.showCrossPostWarning = false,
     this.backgroundColor,
     this.isOverLimit = false,
+    this.onSave,
+    this.isSaving = false,
   });
 
   final String title;
@@ -62,6 +64,8 @@ class ImageReviewPageTemplate extends StatelessWidget {
   final bool isPosting;
   final Color? backgroundColor;
   final bool isOverLimit;
+  final VoidCallback? onSave;
+  final bool isSaving;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +73,8 @@ class ImageReviewPageTemplate extends StatelessWidget {
       title: title,
       onBack: onBack,
       backgroundColor: backgroundColor,
+      onSave: onSave,
+      isSaving: isSaving,
       media: _PhotoStrip(
         imagePaths: imagePaths,
         onTapEditImage: onTapEditImage,

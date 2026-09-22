@@ -6,9 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/design_system/templates/image_review_page_template.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -17,6 +17,7 @@ import 'package:spark/src/features/media_editor/canvas/ui/pages/post_image_edito
 import 'package:spark/src/features/posting/models/mention_controller.dart';
 import 'package:spark/src/features/posting/providers/post_story.dart';
 import 'package:spark/src/features/posting/ui/widgets/image_sound_selection_sheet.dart';
+import 'package:spark/src/features/posting/ui/widgets/review_media_save_action.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:spark/src/features/sound/models/sound_audio_track.dart';
 
@@ -186,60 +187,68 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     final textLength = _descriptionController.text.runes.length;
     final isOverLimit = textLength > AppConstants.postDescriptionMaxChars;
 
-    return ImageReviewPageTemplate(
-      title: l10n.pageTitleReviewPost,
-      onBack: () => context.router.maybePop(),
-      imagePaths: _imageFiles.map((e) => e.path).toList(),
-      onTapEditImage: _editImage,
-      onRemoveImage: (index) => setState(() => _imageFiles.removeAt(index)),
-      showAddMore: !widget.storyMode,
-      canAddMore: canPickMore,
-      onAddMore: _pickMoreImages,
-      selectedSoundTitle: _selectedSoundTrack?.title,
-      selectedSoundSubtitle: _selectedSoundTrack?.subtitle,
-      onAddSound: widget.storyMode ? null : _selectSound,
-      onRemoveSound: () => setState(() => _selectedSoundTrack = null),
-      mentionController: _descriptionController,
-      descriptionMaxChars: AppConstants.postDescriptionMaxChars,
-      showCaption: !widget.storyMode,
-      showCrossPost: !widget.storyMode,
-      crossPostValue: _crosspostToBsky,
-      onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
-      showCrossPostWarning: showCrossPostWarning,
-      postLabel: l10n.buttonPost,
-      isPosting: _isPosting,
-      isOverLimit: isOverLimit,
-      onPost: _isPosting
-          ? null
-          : () async {
-              final postRef = await _uploadImagesAndPost();
-              if (context.mounted && postRef != null) {
-                context.router.popUntilRoot();
-                final did = ref.read(currentDidProvider);
-                if (did != null) {
-                  ref
-                    ..invalidate(
-                      profileFeedProvider(
-                        AtUri.parse('at://$did'),
-                        false,
-                        false,
-                      ),
-                    )
-                    ..invalidate(
-                      profileFeedProvider(
-                        AtUri.parse('at://$did'),
-                        true,
-                        false,
-                      ),
+    return ReviewMediaSaveAction(
+      canSave: !_isPosting && _imageFiles.isNotEmpty,
+      save: (gallery) => gallery.saveImages(
+        _imageFiles.map((image) => image.path).toList(growable: false),
+      ),
+      builder: (context, onSave, isSaving) => ImageReviewPageTemplate(
+        title: l10n.pageTitleReviewPost,
+        onBack: () => context.router.maybePop(),
+        onSave: onSave,
+        isSaving: isSaving,
+        imagePaths: _imageFiles.map((e) => e.path).toList(),
+        onTapEditImage: _editImage,
+        onRemoveImage: (index) => setState(() => _imageFiles.removeAt(index)),
+        showAddMore: !widget.storyMode,
+        canAddMore: canPickMore,
+        onAddMore: _pickMoreImages,
+        selectedSoundTitle: _selectedSoundTrack?.title,
+        selectedSoundSubtitle: _selectedSoundTrack?.subtitle,
+        onAddSound: widget.storyMode ? null : _selectSound,
+        onRemoveSound: () => setState(() => _selectedSoundTrack = null),
+        mentionController: _descriptionController,
+        descriptionMaxChars: AppConstants.postDescriptionMaxChars,
+        showCaption: !widget.storyMode,
+        showCrossPost: !widget.storyMode,
+        crossPostValue: _crosspostToBsky,
+        onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
+        showCrossPostWarning: showCrossPostWarning,
+        postLabel: l10n.buttonPost,
+        isPosting: _isPosting,
+        isOverLimit: isOverLimit,
+        onPost: _isPosting
+            ? null
+            : () async {
+                final postRef = await _uploadImagesAndPost();
+                if (context.mounted && postRef != null) {
+                  context.router.popUntilRoot();
+                  final did = ref.read(currentDidProvider);
+                  if (did != null) {
+                    ref
+                      ..invalidate(
+                        profileFeedProvider(
+                          AtUri.parse('at://$did'),
+                          false,
+                          false,
+                        ),
+                      )
+                      ..invalidate(
+                        profileFeedProvider(
+                          AtUri.parse('at://$did'),
+                          true,
+                          false,
+                        ),
+                      );
+                  }
+                  if (!widget.storyMode) {
+                    context.router.push(
+                      StandalonePostRoute(postUri: postRef.uri.toString()),
                     );
+                  }
                 }
-                if (!widget.storyMode) {
-                  context.router.push(
-                    StandalonePostRoute(postUri: postRef.uri.toString()),
-                  );
-                }
-              }
-            },
+              },
+      ),
     );
   }
 }
