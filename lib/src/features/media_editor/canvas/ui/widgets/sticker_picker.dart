@@ -6,6 +6,7 @@ import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/theme/editor_theme.dart';
 
 class DemoBuildStickers extends StatefulWidget {
   const DemoBuildStickers({
@@ -99,7 +100,7 @@ class _DemoBuildStickersState extends State<DemoBuildStickers> {
     LoadingDialog.instance.show(
       context,
       configs: const ProImageEditorConfigs(),
-      theme: Theme.of(context),
+      theme: editorTheme,
     );
 
     try {

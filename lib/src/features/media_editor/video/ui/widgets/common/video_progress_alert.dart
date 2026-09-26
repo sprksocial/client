@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 

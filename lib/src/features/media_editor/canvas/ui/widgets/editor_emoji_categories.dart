@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/features/emoji_editor/services/emoji_state_manager.dart';
 import 'package:pro_image_editor/plugins/emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
@@ -38,9 +38,8 @@ class _EditorEmojiCategoriesState
         ),
         onTap: (index) {
           closeSkinToneOverlay();
-          EmojiStateManager.of(
-            context,
-          )?.setActiveCategory(categories[index].category);
+          EmojiStateManager.of(context)
+              ?.setActiveCategory(categories[index].category);
         },
         tabs: categories.map((item) {
           final (emoji, label) = switch (item.category) {

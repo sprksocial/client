@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart' as editor_material;
 import 'package:pro_image_editor/features/emoji_editor/services/emoji_state_manager.dart';
 import 'package:pro_image_editor/plugins/emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_emoji_categories.dart';
 
 void main() {
   testWidgets('category tabs select the editor scroll category', (
     tester,
   ) async {
-    final tabs = TabController(length: 2, vsync: tester);
+    final tabs = editor_material.TabController(length: 2, vsync: tester);
     final pages = PageController();
     addTearDown(tabs.dispose);
     addTearDown(pages.dispose);
@@ -27,13 +29,15 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: EmojiStateManager(
             activeCategory: Category.RECENT,
             setActiveCategory: (category) => selected = category,
-            child: EditorEmojiCategories(const Config(), state, tabs, pages),
+            child: editor_material.Material(
+              child: EditorEmojiCategories(const Config(), state, tabs, pages),
+            ),
           ),
         ),
       ),
@@ -43,6 +47,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(selected, Category.ANIMALS);
     expect(tabs.index, 1);
-    expect(find.byType(Icon), findsNothing);
+    expect(find.byType(editor_material.Icon), findsNothing);
   });
 }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/theme/editor_theme.dart';
 import 'package:spark/src/features/media_editor/story/ui/story_sticker_editor.dart';
 
 void main() {
@@ -21,6 +24,7 @@ void main() {
       ),
     );
     final configs = ProImageEditorConfigs(
+      theme: editorTheme,
       stickerEditor: StickerEditorConfigs(
         style: StickerEditorStyle(
           showDragHandle: false,
@@ -50,6 +54,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: appLocalizationDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: ProImageEditor.blank(
           const Size(390, 844),
           key: editorKey,

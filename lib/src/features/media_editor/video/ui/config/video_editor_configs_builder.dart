@@ -1,17 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:spark/src/features/media_editor/canvas/ui/theme/editor_theme.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_emoji_categories.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_slider_controls.dart';
-import 'package:spark/src/core/design_system/theme/action_icon_theme.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_layer_interactions.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_remove_area.dart';
 import 'package:spark/src/core/media_processing/video/video_processing_service.dart';
-import 'package:spark/src/core/design_system/theme/color_scheme.dart';
-import 'package:spark/src/core/design_system/theme/text_theme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/story/ui/config/story_editor_profile.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/blur/blur_editor_bar.dart';
@@ -157,12 +155,7 @@ class VideoEditorConfigsBuilder {
           ),
         ),
       ),
-      theme: ThemeData(
-        useMaterial3: true,
-        actionIconTheme: appActionIconTheme,
-        colorScheme: AppColorScheme.dark,
-        textTheme: AppTextTheme.dark,
-      ),
+      theme: editorTheme,
       layerInteraction: LayerInteractionConfigs(
         widgets: buildEditorLayerInteractions(),
         selectable: LayerInteractionSelectable.enabled,

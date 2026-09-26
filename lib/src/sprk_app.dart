@@ -3,10 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:posthog_flutter/posthog_flutter.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/theme/app_theme.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/routing/app_router.dart';
-import 'package:spark/src/core/ui/theme/providers/theme_provider.dart';
+import 'package:spark/src/core/ui/theme/providers/theme_provider.dart'
+    show themeModeProvider, themeProvider;
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
@@ -96,12 +99,16 @@ class _SprkAppState extends ConsumerState<SprkApp> {
 
     return MaterialApp.router(
       title: 'Spark',
+      builder: (context, child) => SkeletonizerConfig(
+        data: SkeletonizerConfigData(brightness: Theme.of(context).brightness),
+        child: child!,
+      ),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationDelegates,
       localeResolutionCallback: (locale, supportedLocales) {
         for (final supportedLocale in supportedLocales) {
           if (supportedLocale.languageCode == locale?.languageCode) {
