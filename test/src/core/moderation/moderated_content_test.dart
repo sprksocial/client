@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -554,7 +555,7 @@ Widget _app(ModerationEngine engine, Widget child) {
 
 Widget _materialApp(Widget child) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: child),
   );

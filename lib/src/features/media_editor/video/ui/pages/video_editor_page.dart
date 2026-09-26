@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart' hide ColorFilter;
+import 'package:material_ui/material_ui.dart' hide ColorFilter;
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';

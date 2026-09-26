@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:better_player_plus/better_player_plus.dart';
 // ignore: implementation_imports
 import 'package:better_player_plus/src/enum/aspect_enum.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 BetterPlayerConfiguration feedVideoBetterPlayerConfiguration({
   required double? aspectRatio,

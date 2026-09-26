@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -889,16 +889,14 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
                   const SizedBox(height: 16),
                   Text(
                     'Camera Error',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.titleLarge?.copyWith(color: Colors.white),
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     cameraState.error ?? 'Unknown error',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
@@ -965,9 +963,8 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
             canFlipCamera: false,
             captureMode: widget.captureMode,
             isProcessing: _isFinalizingRecordingSession,
-            processingLabel: AppLocalizations.of(
-              context,
-            ).messageProcessingVideo,
+            processingLabel: AppLocalizations.of(context)
+                .messageProcessingVideo,
             onDone: null,
             onTap: null,
             onRecordStart: null,
@@ -1050,16 +1047,14 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
               const SizedBox(height: 16),
               Text(
                 'Camera Error',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(color: Colors.white),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 8),
               Text(
                 error.toString(),
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: Colors.white70),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),

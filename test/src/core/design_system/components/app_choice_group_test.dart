@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/molecules/app_choice_group.dart';

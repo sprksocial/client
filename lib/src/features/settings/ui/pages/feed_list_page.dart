@@ -1,7 +1,7 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
@@ -30,9 +30,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage>
   void _showFeedReorderError() {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.errorUpdatingFeeds)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.errorUpdatingFeeds)));
   }
 
   @override

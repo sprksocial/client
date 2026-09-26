@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/core/ui/theme/data/repositories/theme_repository.dart';
 import 'package:spark/src/core/ui/theme/providers/theme_provider.dart';

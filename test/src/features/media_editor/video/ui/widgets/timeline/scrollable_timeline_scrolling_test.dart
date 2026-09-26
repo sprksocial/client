@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/scrollable_timeline.dart';

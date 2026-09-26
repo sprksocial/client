@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/surfaces/app_surface.dart';
 import 'package:spark/src/core/design_system/components/molecules/app_choice_group.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/features/settings/ui/widgets/label_setting_tile.dart';
@@ -15,7 +16,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: LabelSettingTile(
@@ -67,7 +68,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: LabelSettingTile(
@@ -90,7 +91,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: LabelSettingTile(

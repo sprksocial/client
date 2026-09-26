@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';

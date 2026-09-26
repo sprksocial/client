@@ -2,9 +2,9 @@ import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart' as flutter_widgets show Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';

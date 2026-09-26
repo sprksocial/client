@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class StickyProfileTabBar extends SliverPersistentHeaderDelegate {
   StickyProfileTabBar({required this.child, this.height = 50.0});

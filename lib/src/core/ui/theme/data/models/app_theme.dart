@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/theme/action_icon_theme.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// Application theme management class that provides theme data

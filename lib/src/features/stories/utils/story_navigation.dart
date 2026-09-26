@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';

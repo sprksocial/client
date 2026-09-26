@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/features/media_editor/canvas/ui/widgets/editor_remove_area.dart';
 import 'package:spark/src/features/media_editor/story/ui/story_sticker_editor.dart';

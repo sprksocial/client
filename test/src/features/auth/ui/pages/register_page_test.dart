@@ -1,14 +1,15 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -162,7 +163,7 @@ Future<void> _pumpRegisterPage(
       ],
       child: MaterialApp.router(
         routerConfig: router.config(),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),

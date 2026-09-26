@@ -1,6 +1,6 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -114,9 +114,8 @@ class PostOverlay extends ConsumerWidget {
                         Builder(
                           builder: (context) {
                             final l10n = AppLocalizations.of(context);
-                            final locale = Localizations.localeOf(
-                              context,
-                            ).toLanguageTag();
+                            final locale = Localizations.localeOf(context)
+                                .toLanguageTag();
                             final informLabels =
                                 engine
                                     ?.evaluate(

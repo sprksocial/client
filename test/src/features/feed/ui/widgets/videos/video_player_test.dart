@@ -1,5 +1,5 @@
 import 'package:better_player_plus/better_player_plus.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
 

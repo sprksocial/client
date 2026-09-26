@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -23,9 +23,8 @@ class PostImageEditorPage extends StatelessWidget {
     final file = File('${directory.path}/$filename');
     await file.writeAsBytes(bytes, flush: true);
     if (!context.mounted) return;
-    Navigator.of(
-      context,
-    ).pop(XFile(file.path, mimeType: 'image/jpeg', name: filename));
+    Navigator.of(context)
+        .pop(XFile(file.path, mimeType: 'image/jpeg', name: filename));
   }
 
   @override

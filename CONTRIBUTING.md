@@ -53,6 +53,7 @@ flutter run
 
 ## Code Conventions
 
+- Use `package:material_ui/material_ui.dart` for Material UI and `appLocalizationDelegates` for localization in app and test roots.
 - Prefer `package:spark/...` imports; avoid deep relative imports
 - Import order: Dart SDK, third-party, project; keep `part` after imports
 - Use strong explicit types; avoid `dynamic`

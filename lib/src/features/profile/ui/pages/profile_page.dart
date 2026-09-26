@@ -2,7 +2,7 @@ import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/admin/defs.dart';
 import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/identity_repository.dart';
@@ -456,8 +456,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 _activeTabIndex = index;
               });
             },
-            contentWidget:
-                const SizedBox.shrink(), // Not used when contentSlivers provided
+            contentWidget: const SizedBox.shrink(), // Not used when contentSlivers provided
             contentSlivers: contentSlivers,
             scrollController: _scrollController,
             onRefresh: () async {

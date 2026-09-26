@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
@@ -6,6 +6,7 @@ import 'package:spark/src/core/design_system/components/atoms/toggles/toggle_but
 import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:spark/src/core/design_system/templates/info_bar_template.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 
@@ -135,7 +136,7 @@ class _TestApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: appLocalizationDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: child),
     );

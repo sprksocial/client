@@ -1,5 +1,5 @@
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 

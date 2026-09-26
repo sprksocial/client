@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 /// Creates text themes using our typography tokens

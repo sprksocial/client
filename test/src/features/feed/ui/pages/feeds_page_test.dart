@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/moderation/moderation_provider.dart';
@@ -38,8 +39,9 @@ void main() {
     expect(settings.selectedFeeds, isEmpty);
     expect(container.read(settingsProvider).activeFeed, labeled);
     expect(
-      (container.read(feedProvider(timeline).notifier) as _FakeFeedNotifier)
-          .loadCalls,
+      (container.read(
+        feedProvider(timeline).notifier,
+      ) as _FakeFeedNotifier).loadCalls,
       1,
     );
 
@@ -132,7 +134,7 @@ Future<void> _pumpFeedsPage(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const FeedsPage(),
       ),

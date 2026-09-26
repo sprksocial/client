@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/templates/post_review_page_template.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/media/media_gallery_service.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
@@ -131,7 +132,7 @@ void main() {
       addTearDown(showReview.dispose);
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: ValueListenableBuilder<bool>(
             valueListenable: showReview,
@@ -166,7 +167,7 @@ Widget _app({
   VoidCallback? onEdit,
   VoidCallback? onPost,
 }) => MaterialApp(
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  localizationsDelegates: appLocalizationDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: _review(save: save, canSave: canSave, onEdit: onEdit, onPost: onPost),
 );

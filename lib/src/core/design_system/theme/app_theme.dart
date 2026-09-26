@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/theme/action_icon_theme.dart';
 import 'package:spark/src/core/design_system/theme/color_scheme.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';

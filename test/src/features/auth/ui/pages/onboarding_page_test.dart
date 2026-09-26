@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/auth/data/models/onboarding_screen_state.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
@@ -265,9 +266,8 @@ void main() {
       findsOneWidget,
     );
 
-    ScaffoldMessenger.of(
-      tester.element(find.byType(OnboardingPage)),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(OnboardingPage)))
+        .hideCurrentSnackBar();
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(AppButton, 'Confirm'));
     await tester.pump();
@@ -350,9 +350,8 @@ void main() {
 
       expect(settingsNotifier.prepareCalls, 1);
 
-      ScaffoldMessenger.of(
-        tester.element(find.byType(OnboardingPage)),
-      ).hideCurrentSnackBar();
+      ScaffoldMessenger.of(tester.element(find.byType(OnboardingPage)))
+          .hideCurrentSnackBar();
       await tester.pumpAndSettle();
       await _tapButton(tester, 'Back');
       expect(find.text('Alex One'), findsNothing);
@@ -460,9 +459,8 @@ void main() {
     await _advanceToReview(tester);
     await _tapButton(tester, 'Confirm');
 
-    ScaffoldMessenger.of(
-      tester.element(find.byType(OnboardingPage)),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(OnboardingPage)))
+        .hideCurrentSnackBar();
     await tester.pumpAndSettle();
     await _tapButton(tester, 'Back');
     await _tapButton(tester, 'Back');
@@ -492,9 +490,8 @@ void main() {
     await _advanceToReview(tester);
     await _tapButton(tester, 'Confirm');
 
-    ScaffoldMessenger.of(
-      tester.element(find.byType(OnboardingPage)),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(OnboardingPage)))
+        .hideCurrentSnackBar();
     await tester.pumpAndSettle();
     await _tapButton(tester, 'Back');
     await tester.enterText(find.byType(TextFormField), 'Updated biography');
@@ -527,9 +524,8 @@ void main() {
     await _tapButton(tester, 'Continue');
     await _tapButton(tester, 'Confirm');
 
-    ScaffoldMessenger.of(
-      tester.element(find.byType(OnboardingPage)),
-    ).hideCurrentSnackBar();
+    ScaffoldMessenger.of(tester.element(find.byType(OnboardingPage)))
+        .hideCurrentSnackBar();
     await tester.pumpAndSettle();
     await _tapButton(tester, 'Back');
     await tester.tap(find.byTooltip('Revert'));
@@ -580,7 +576,7 @@ Future<void> _pumpPage(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const OnboardingPage(),
       ),

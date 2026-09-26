@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/network/atproto/atproto.dart';
@@ -116,11 +116,10 @@ class CommentNotifier extends _$CommentNotifier {
 
   ThreadViewPost _withUpdatedPost(ThreadViewPost thread, ThreadPost post) {
     return Thread.threadViewPost(
-          post: post,
-          parent: thread.parent,
-          replies: thread.replies,
-          context: thread.context,
-        )
-        as ThreadViewPost;
+      post: post,
+      parent: thread.parent,
+      replies: thread.replies,
+      context: thread.context,
+    ) as ThreadViewPost;
   }
 }

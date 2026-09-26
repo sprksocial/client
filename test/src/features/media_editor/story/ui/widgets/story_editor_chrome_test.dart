@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/media_editor/story/ui/widgets/story_editor_bottom_section.dart';
 import 'package:spark/src/features/media_editor/story/ui/widgets/story_editor_top_section.dart';
@@ -156,7 +157,7 @@ void main() {
 
 Widget _testApp(Widget child) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     theme: ThemeData.dark(),
     home: Scaffold(backgroundColor: Colors.black, body: child),

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:better_player_plus/better_player_plus.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/feed_video_better_player_layout.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_frame.dart';

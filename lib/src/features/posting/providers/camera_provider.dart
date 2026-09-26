@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:camera/camera.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get_it/get_it.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/features/posting/providers/camera_state.dart';

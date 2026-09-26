@@ -1,8 +1,8 @@
 import 'dart:ui' show lerpDouble;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/components/atoms/tags/feed_tag.dart';
+import 'package:material_ui/material_ui.dart';
 
 typedef FeedTagReorderCallback = void Function(int oldIndex, int newIndex);
 

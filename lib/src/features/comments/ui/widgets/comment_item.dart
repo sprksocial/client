@@ -2,7 +2,7 @@ import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
@@ -134,9 +134,8 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
               try {
                 await ref
                     .read(
-                      commentsPageProvider(
-                        postUri: widget.mainPostUri,
-                      ).notifier,
+                      commentsPageProvider(postUri: widget.mainPostUri)
+                          .notifier,
                     )
                     .deleteComment(commentState.thread.post.uri.toString());
                 if (context.mounted) {
@@ -195,9 +194,10 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
                                     commentState.thread.post.author.handle,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(
-                                        context,
-                                      ).textTheme.bodyLarge?.color,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -209,9 +209,10 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
                                     ),
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Theme.of(
-                                        context,
-                                      ).textTheme.bodyMedium?.color,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color,
                                     ),
                                   ),
                                 ],
@@ -277,9 +278,10 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
                         ref: ref,
                         commentState: commentState,
                         thread: widget.thread,
-                        secondaryTextColor: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium!.color!,
+                        secondaryTextColor: Theme.of(context)
+                            .textTheme
+                            .bodyMedium!
+                            .color!,
                       ),
                     ],
                   ),

@@ -3,11 +3,12 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
@@ -35,7 +36,7 @@ void main() {
           moderationEngineProvider.overrideWith((ref) async => _engine()),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Stack(
             children: [
@@ -77,7 +78,7 @@ void main() {
           moderationEngineProvider.overrideWith((ref) async => _engine()),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: StoryPage(
             story: _story('service-labeled', storyLabeled: true),
@@ -111,7 +112,7 @@ void main() {
           moderationEngineProvider.overrideWith((ref) async => _engine()),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: AuthorStoriesPage(
             author: story.author,

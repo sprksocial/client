@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/layout/video_editor_bottom_section.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/layout/video_editor_header.dart';

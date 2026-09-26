@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
@@ -8,6 +8,7 @@ import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/moderation/moderation_provider.dart';
@@ -31,7 +32,7 @@ void main() {
           moderationEngineProvider.overrideWith((ref) async => _engine()),
         ],
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: AudioTrackListSection(onTrackSelected: (_) {})),
         ),
@@ -252,7 +253,7 @@ Future<void> _pumpFlowHost(
         ),
       ],
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
           builder: (context) => Scaffold(

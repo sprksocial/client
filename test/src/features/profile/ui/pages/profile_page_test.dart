@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:poptart/poptart.dart';
 import 'package:poptart_lex/com/atproto/label/defs.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/moderation/moderation_provider.dart';
@@ -79,7 +80,7 @@ void main() {
         ],
         child: MaterialApp.router(
           routerConfig: router.config(),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
         ),
       ),

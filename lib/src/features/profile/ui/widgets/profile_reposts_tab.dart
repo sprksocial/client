@@ -1,6 +1,6 @@
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
@@ -147,9 +147,9 @@ class ProfileRepostsTab extends ProfileTabBase {
               (context, index) => Skeletonizer(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
@@ -168,9 +168,8 @@ class ProfileRepostsTab extends ProfileTabBase {
                 const AppIcon(AppIconData.warning, size: 48),
                 const SizedBox(height: 16),
                 Text(
-                  AppLocalizations.of(
-                    context,
-                  ).errorWithDetail(error.toString()),
+                  AppLocalizations.of(context)
+                      .errorWithDetail(error.toString()),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(

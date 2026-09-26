@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_overlay_back_button.dart';
@@ -109,9 +109,8 @@ class _StandaloneProfileFeedPageState
                   });
                   ref
                       .read(
-                        profileFeedIndexProvider(
-                          profileAtUri.toString(),
-                        ).notifier,
+                        profileFeedIndexProvider(profileAtUri.toString())
+                            .notifier,
                       )
                       .setIndex(index);
                   // Load more posts when approaching the end
@@ -157,9 +156,8 @@ class _StandaloneProfileFeedPageState
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    AppLocalizations.of(
-                      context,
-                    ).errorWithDetail(error.toString()),
+                    AppLocalizations.of(context)
+                        .errorWithDetail(error.toString()),
                     style: const TextStyle(color: AppColors.white),
                     textAlign: TextAlign.center,
                   ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderation_appeal_service.dart';
@@ -90,15 +90,13 @@ class _ModerationDetailsSheetState
           .read(moderationAppealServiceProvider)
           .appeal(cause.label, reason: l10n.moderationAppealReason);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.moderationAppealSent)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.moderationAppealSent)));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.moderationAppealFailed)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.moderationAppealFailed)));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

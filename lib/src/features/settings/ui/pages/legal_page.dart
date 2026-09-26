@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
@@ -40,9 +40,8 @@ class LegalPage extends StatelessWidget {
       );
 
       if (!didLaunch && context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     } catch (error, stackTrace) {
       logger.e(
@@ -52,9 +51,8 @@ class LegalPage extends StatelessWidget {
       );
 
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     }
   }

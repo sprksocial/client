@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 
 /// A dialog that displays the alt text (image description) for an image.

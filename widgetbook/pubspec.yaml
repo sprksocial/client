@@ -10,6 +10,8 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
+  material_ui: ^1.4.0
+  skeletonizer: ^3.0.0
   widgetbook: ^3.25.0
   widgetbook_annotation: ^3.11.0
   spark:

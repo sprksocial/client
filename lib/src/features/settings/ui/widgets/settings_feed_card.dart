@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
@@ -83,9 +83,8 @@ class SettingsFeedCard extends ConsumerWidget {
 
   void _showFeedUpdateError(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.errorUpdatingFeeds)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.errorUpdatingFeeds)));
   }
 
   @override

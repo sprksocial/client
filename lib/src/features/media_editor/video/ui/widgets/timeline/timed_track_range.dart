@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/layer_reorder_controller.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/timed_track_range_parts.dart';

@@ -1,7 +1,7 @@
 import 'package:poptart_lex/com/atproto/label/defs.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/moderation/moderated_content.dart';
 import 'package:spark/src/core/moderation/moderation.dart';

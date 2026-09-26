@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/tab_item.dart';
 
 const double _profileTabIndicatorWidth = 24;

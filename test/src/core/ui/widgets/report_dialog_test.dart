@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -7,6 +7,7 @@ import 'package:poptart_lex/com/atproto/admin/defs.dart';
 import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
 import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
@@ -56,7 +57,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
@@ -91,7 +92,7 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
@@ -129,7 +130,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
@@ -161,7 +162,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(

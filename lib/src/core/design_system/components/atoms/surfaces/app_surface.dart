@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/tokens/shadows.dart';
 
 enum AppSurfaceVariant { outlined, raised }

@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart' as editor_material;
 import 'package:pro_image_editor/features/emoji_editor/services/emoji_state_manager.dart';
 import 'package:pro_image_editor/plugins/emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
@@ -11,7 +10,7 @@ void main() {
   testWidgets('category tabs select the editor scroll category', (
     tester,
   ) async {
-    final tabs = editor_material.TabController(length: 2, vsync: tester);
+    final tabs = TabController(length: 2, vsync: tester);
     final pages = PageController();
     addTearDown(tabs.dispose);
     addTearDown(pages.dispose);
@@ -35,7 +34,7 @@ void main() {
           body: EmojiStateManager(
             activeCategory: Category.RECENT,
             setActiveCategory: (category) => selected = category,
-            child: editor_material.Material(
+            child: Material(
               child: EditorEmojiCategories(const Config(), state, tabs, pages),
             ),
           ),
@@ -47,6 +46,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(selected, Category.ANIMALS);
     expect(tabs.index, 1);
-    expect(find.byType(editor_material.Icon), findsNothing);
+    expect(find.byType(Icon), findsNothing);
   });
 }

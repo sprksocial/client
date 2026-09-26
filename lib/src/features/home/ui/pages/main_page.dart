@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/organisms/bottom_nav_bar.dart';
 import 'package:spark/src/core/notifications/push_notification_service.dart';

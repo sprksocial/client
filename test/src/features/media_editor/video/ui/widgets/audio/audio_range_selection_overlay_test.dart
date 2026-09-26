@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/sound/models/audio_audition_timing.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/audio/audio_range_selection_overlay.dart';
@@ -195,7 +196,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: AudioRangeSelectionOverlay(
@@ -294,7 +295,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: _CancelHost(playbackProgress: playbackProgress),
       ),
@@ -391,7 +392,7 @@ Widget _overlayHarness({
   ValueChanged<Duration>? onPreviewRequested,
 }) {
   return MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: Stack(

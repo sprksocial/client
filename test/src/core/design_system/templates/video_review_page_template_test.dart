@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
 import 'package:spark/src/core/design_system/templates/video_review_page_template.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 
 void main() {
@@ -61,9 +62,7 @@ void main() {
 
   testWidgets('save icon invokes the review save action', (tester) async {
     var saves = 0;
-    await tester.pumpWidget(
-      _TestApp(child: _template(onSave: () => saves++)),
-    );
+    await tester.pumpWidget(_TestApp(child: _template(onSave: () => saves++)));
 
     await tester.tap(find.byKey(const ValueKey('save-media-button')));
 
@@ -165,7 +164,7 @@ class _TestApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     builder: mediaQuery == null
         ? null

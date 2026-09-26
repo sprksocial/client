@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
 import 'package:spark/src/core/design_system/theme/app_theme.dart';
@@ -12,7 +13,7 @@ Widget _appBuilder(BuildContext context, Widget child) {
     debugShowCheckedModeBanner: false,
     localizationsDelegates: appLocalizationDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: Material(child: child),
+    home: child,
   );
 }
 
@@ -27,11 +28,22 @@ class WidgetbookApp extends StatelessWidget {
       directories: directories,
       appBuilder: _appBuilder,
       addons: [
-        MaterialThemeAddon(
+        ThemeAddon<ThemeData>(
           themes: [
             WidgetbookTheme(name: 'Light', data: AppTheme.light),
             WidgetbookTheme(name: 'Dark', data: AppTheme.dark),
           ],
+          themeBuilder: (context, theme, child) => Theme(
+            data: theme,
+            child: SkeletonizerConfig(
+              data: SkeletonizerConfigData(brightness: theme.brightness),
+              child: Material(
+                color: theme.scaffoldBackgroundColor,
+                textStyle: theme.textTheme.bodyMedium,
+                child: child,
+              ),
+            ),
+          ),
         ),
       ],
     );

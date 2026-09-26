@@ -1,6 +1,6 @@
 import 'package:poptart/poptart.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/routing/app_router.dart';
 import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';

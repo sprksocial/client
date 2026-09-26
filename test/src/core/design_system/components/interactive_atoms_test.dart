@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:spark/src/core/design_system/components/atoms/tab_item.dart';
 import 'package:spark/src/core/design_system/components/atoms/toggles/toggle_button.dart';

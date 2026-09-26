@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/network/atproto/data/models/story_embed_models.dart';
 import 'package:spark/src/features/media_editor/story/logic/story_mention_layer.dart';

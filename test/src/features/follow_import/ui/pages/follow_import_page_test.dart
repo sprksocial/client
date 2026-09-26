@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:bluesky_poptart/app/bsky/actor/profile.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_button.dart';
+import 'package:spark/src/core/l10n/app_localization_delegates.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';
 import 'package:spark/src/features/follow_import/providers/follow_import_provider.dart';
 import 'package:spark/src/features/follow_import/ui/pages/follow_import_page.dart';
@@ -123,7 +124,7 @@ Future<void> _pumpPage(WidgetTester tester, ProviderContainer container) async {
     UncontrolledProviderScope(
       container: container,
       child: const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: FollowImportPage(),
       ),
@@ -143,7 +144,7 @@ Future<void> _pumpRoutedPage(
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
           builder: (context) => TextButton(

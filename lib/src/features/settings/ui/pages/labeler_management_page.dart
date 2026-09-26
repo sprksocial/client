@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
@@ -153,9 +153,8 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage>
     } catch (e) {
       _logger.e('Error adding labeler: $e');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorAddingLabeler)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.errorAddingLabeler)));
       }
     } finally {
       didController.dispose();

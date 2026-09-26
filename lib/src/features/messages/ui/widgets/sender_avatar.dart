@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';
 import 'package:spark/src/features/messages/ui/pages/chat_page.dart';

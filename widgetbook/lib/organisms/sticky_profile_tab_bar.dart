@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
 import 'package:spark/src/core/design_system/components/molecules/profile_tab_bar.dart';
 import 'package:spark/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';

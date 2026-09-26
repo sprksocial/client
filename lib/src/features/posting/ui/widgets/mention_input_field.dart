@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/molecules/input_field.dart';
 import 'package:spark/src/core/design_system/tokens/constants.dart';
 import 'package:spark/src/core/design_system/components/atoms/user_avatar.dart';

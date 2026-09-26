@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Generic tab bar container with optional bottom divider.
 class AppTabBar extends StatelessWidget {

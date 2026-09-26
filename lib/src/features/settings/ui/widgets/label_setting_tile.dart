@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/surfaces/app_surface.dart';
 import 'package:spark/src/core/design_system/components/molecules/app_choice_group.dart';
 import 'package:spark/src/core/l10n/app_localizations.dart';

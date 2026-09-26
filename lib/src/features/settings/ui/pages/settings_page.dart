@@ -1,5 +1,5 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
@@ -53,9 +53,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final authRepository = GetIt.instance<AuthRepository>();
     final pdsUrl = authRepository.pdsEndpoint;
     if (pdsUrl == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       return;
     }
     final manageAccountUri = Uri.parse(pdsUrl).resolve('/account/manage');
@@ -73,9 +72,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       );
 
       if (!didLaunch && mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     } catch (error, stackTrace) {
       logger.e(
@@ -85,9 +83,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
     }
   }
@@ -119,9 +116,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Material(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               child: ListTile(
@@ -145,9 +141,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Material(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               child: ListTile(
@@ -172,9 +167,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Material(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               child: ListTile(
@@ -198,9 +192,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Material(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               child: ListTile(
@@ -224,9 +217,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Material(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               child: ListTile(
@@ -247,9 +239,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Material(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
               clipBehavior: Clip.antiAlias,
               child: ListTile(

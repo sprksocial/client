@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/audio_timeline_track.dart';
@@ -19,13 +19,12 @@ const _kTimelineHeightAnimationDuration = Duration(milliseconds: 220);
 const _kScrollEdgeTolerance = 0.5;
 const _kMaxVisibleSubtracks = 4;
 
-typedef LayerReorderedCallback =
-    void Function(
-      Layer layer,
-      int hierarchyIndex,
-      Duration? start,
-      Duration? end,
-    );
+typedef LayerReorderedCallback = void Function(
+  Layer layer,
+  int hierarchyIndex,
+  Duration? start,
+  Duration? end,
+);
 
 class ScrollableTimeline extends StatefulWidget {
   const ScrollableTimeline({

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -226,9 +226,8 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
 
     if (_selectedPhotoAssets.length >= widget.maxMultiPhotoSelection) {
       _showSnackBar(
-        AppLocalizations.of(
-          context,
-        ).errorPhotoSelectMax(widget.maxMultiPhotoSelection),
+        AppLocalizations.of(context)
+            .errorPhotoSelectMax(widget.maxMultiPhotoSelection),
       );
       return;
     }
@@ -241,9 +240,8 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
   Future<void> _submitMultiPhotoSelection() async {
     if (_selectedPhotoAssets.isEmpty) return;
 
-    final errorUnableToAccessPhotos = AppLocalizations.of(
-      context,
-    ).errorUnableToAccessPhotos;
+    final errorUnableToAccessPhotos = AppLocalizations.of(context)
+        .errorUnableToAccessPhotos;
     final files = <XFile>[];
     for (final asset in _selectedPhotoAssets) {
       final file = await _assetToXFile(asset, showErrorMessage: false);
@@ -303,9 +301,8 @@ class _MediaLibraryPickerPageState extends State<MediaLibraryPickerPage> {
 
   void _showSnackBar(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   List<AssetEntity> get _mediaAssets {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/timeline_selection_handle.dart';
 import 'package:spark/src/features/media_editor/video/ui/widgets/timeline/video_timeline_state.dart';

@@ -29,6 +29,7 @@
 - Run app: `flutter run` only when no suitable Flutter process is already running
 
 ## Code conventions
+- Use `package:material_ui/material_ui.dart` for Material UI; SDK Material types are not interchangeable. Use `appLocalizationDelegates` for app and test localization setup.
 - Prefer `package:spark/...` imports; avoid deep cross-feature relative imports
 - Import order: Dart SDK, third-party, project; keep `part` after imports
 - Use strong explicit types; avoid `dynamic` unless required at boundaries

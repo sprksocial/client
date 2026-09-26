@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spark/src/core/design_system/components/molecules/feed_card.dart';
 import 'package:spark/src/core/design_system/templates/explore_loading_skeletons.dart';
