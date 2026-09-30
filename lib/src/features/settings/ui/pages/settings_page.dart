@@ -21,6 +21,8 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
+  bool _openingAccountManagement = false;
+
   Future<void> _handleLogout() async {
     try {
       // Show loading indicator
@@ -49,23 +51,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _handleManageAccount() async {
+    if (_openingAccountManagement) return;
     final l10n = AppLocalizations.of(context);
     final authRepository = GetIt.instance<AuthRepository>();
-    final pdsUrl = authRepository.pdsEndpoint;
-    if (pdsUrl == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
-      return;
-    }
-    final manageAccountUri = Uri.parse(pdsUrl).resolve('/account/manage');
-
-    if (!mounted) {
-      return;
-    }
-
     final logger = GetIt.instance<LogService>().getLogger('Settings');
+    setState(() => _openingAccountManagement = true);
 
     try {
+      final manageAccountUri = await authRepository.getAccountManagementUri();
+      if (!mounted) return;
       final didLaunch = await launchUrl(
         manageAccountUri,
         mode: LaunchMode.inAppBrowserView,
@@ -77,7 +71,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
     } catch (error, stackTrace) {
       logger.e(
-        'Failed to launch manage account URL: $manageAccountUri',
+        'Failed to open account management',
         error: error,
         stackTrace: stackTrace,
       );
@@ -86,6 +80,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.errorUnableToOpenLink)));
       }
+    } finally {
+      if (mounted) setState(() => _openingAccountManagement = false);
     }
   }
 
@@ -223,12 +219,21 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               clipBehavior: Clip.antiAlias,
               child: ListTile(
                 splashColor: Colors.transparent,
-                title: const Text(
-                  'Manage Account',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                title: Text(
+                  l10n.settingsManageAccountTitle,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                trailing: const AppIcon(AppIconData.externalLink),
-                onTap: _handleManageAccount,
+                subtitle: Text(l10n.settingsManageAccountDescription),
+                trailing: _openingAccountManagement
+                    ? const SizedBox.square(
+                        dimension: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const AppIcon(AppIconData.externalLink),
+                onTap: _openingAccountManagement ? null : _handleManageAccount,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 4,

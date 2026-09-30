@@ -154,6 +154,10 @@ class _FakeAuthRepository implements AuthRepository {
   String? get pdsEndpoint => null;
 
   @override
+  Future<Uri> getAccountManagementUri() =>
+      throw UnsupportedError('getAccountManagementUri is not used');
+
+  @override
   Future<LoginResult> completeOAuth(String callbackUrl) =>
       throw UnsupportedError('completeOAuth is not used');
 

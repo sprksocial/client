@@ -313,7 +313,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
-        subject: UModerationCreateReportSubject.repoStrongRef(
+        subject: UModerationCreateReportInputSubject.repoStrongRef(
           data: RepoStrongRef(uri: currentPost.uri, cid: currentPost.cid),
         ),
       ),

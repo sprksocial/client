@@ -40,7 +40,7 @@ final class ModerationAppealService {
   }
 }
 
-UModerationCreateReportSubject? _reportSubject(Label label) {
+UModerationCreateReportInputSubject? _reportSubject(Label label) {
   AtUri? uri;
   try {
     uri = AtUri.parse(label.uri);
@@ -48,12 +48,12 @@ UModerationCreateReportSubject? _reportSubject(Label label) {
     return null;
   }
   if (uri.pathname.isEmpty) {
-    return UModerationCreateReportSubject.repoRef(
+    return UModerationCreateReportInputSubject.repoRef(
       data: RepoRef(did: uri.hostname),
     );
   }
   if (label.cid?.isNotEmpty ?? false) {
-    return UModerationCreateReportSubject.repoStrongRef(
+    return UModerationCreateReportInputSubject.repoStrongRef(
       data: RepoStrongRef(uri: uri, cid: label.cid!),
     );
   }

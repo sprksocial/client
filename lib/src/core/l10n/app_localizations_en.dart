@@ -1236,6 +1236,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsFollowImportTitle => 'Connections';
 
   @override
+  String get settingsManageAccountTitle => 'Manage Account';
+
+  @override
+  String get settingsManageAccountDescription =>
+      'Manage or delete your account';
+
+  @override
   String get buttonImportFromBluesky => 'Import from Bluesky';
 
   @override

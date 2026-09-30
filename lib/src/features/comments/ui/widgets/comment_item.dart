@@ -107,7 +107,7 @@ class _CommentBodyState extends ConsumerState<CommentBody> {
     showDialog<void>(
       context: context,
       builder: (context) => ReportDialog(
-        subject: UModerationCreateReportSubject.repoStrongRef(
+        subject: UModerationCreateReportInputSubject.repoStrongRef(
           data: RepoStrongRef(
             uri: commentState.thread.post.uri,
             cid: commentState.thread.post.cid,

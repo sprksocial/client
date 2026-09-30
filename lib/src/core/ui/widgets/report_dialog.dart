@@ -20,7 +20,7 @@ class ReportDialog extends ConsumerStatefulWidget {
     super.key,
     this.onSubmit,
   });
-  final UModerationCreateReportSubject subject;
+  final UModerationCreateReportInputSubject subject;
   final String? fallbackServiceDid;
 
   final ModerationReportSubmitter? onSubmit;

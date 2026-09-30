@@ -6,8 +6,10 @@ import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
 
-typedef ModerationReportSubmitter =
-    Future<void> Function(ModerationCreateReportInput input, String serviceDid);
+typedef ModerationReportSubmitter = Future<void> Function(
+  ModerationCreateReportInput input,
+  String serviceDid,
+);
 
 final moderationReportServiceProvider = Provider<ModerationReportService>(
   (ref) => ModerationReportService(GetIt.I<SprkRepository>()),
@@ -27,7 +29,7 @@ final class ModerationReportService {
   final SprkRepository _repository;
 
   Future<ModerationReportOptions> loadOptions({
-    required UModerationCreateReportSubject subject,
+    required UModerationCreateReportInputSubject subject,
     required ReasonType reasonType,
     String? fallbackServiceDid,
   }) async {
@@ -51,7 +53,7 @@ final class ModerationReportService {
   }
 
   Future<void> submit({
-    required UModerationCreateReportSubject subject,
+    required UModerationCreateReportInputSubject subject,
     required ReasonType reasonType,
     required String serviceDid,
     String? reason,

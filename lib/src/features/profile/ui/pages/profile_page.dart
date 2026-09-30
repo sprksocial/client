@@ -359,7 +359,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       context: context,
                       useRootNavigator: false,
                       builder: (dContext) => ReportDialog(
-                        subject: UModerationCreateReportSubject.repoRef(
+                        subject: UModerationCreateReportInputSubject.repoRef(
                           data: RepoRef(did: profile.did),
                         ),
                         fallbackServiceDid: widget.bsky

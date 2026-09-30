@@ -21,6 +21,9 @@ abstract class AuthRepository {
   /// Gets the current user's PDS endpoint
   String? get pdsEndpoint;
 
+  /// Resolves account management on the current account's authorization server.
+  Future<Uri> getAccountManagementUri();
+
   /// Gets the AT Protocol client
   PoptartClient? get atproto;
 

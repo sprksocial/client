@@ -11,6 +11,7 @@ import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:spark/src/core/auth/data/models/aip_session_response.dart';
 import 'package:spark/src/core/auth/data/models/auth_snapshot.dart';
 import 'package:spark/src/core/auth/data/models/login_result.dart';
+import 'package:spark/src/core/auth/data/repositories/account_management.dart';
 import 'package:spark/src/core/auth/data/repositories/aip_scope_policy.dart';
 import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:spark/src/core/config/app_config.dart';
@@ -18,8 +19,9 @@ import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
 
-typedef AtprotoSessionFetcher =
-    Future<({String did, String handle})> Function(PoptartClient atproto);
+typedef AtprotoSessionFetcher = Future<({String did, String handle})> Function(
+  PoptartClient atproto,
+);
 
 const String _redirectUriValue = 'sprk://oauth-callback';
 const String _clientName = 'Spark Mobile App';
@@ -83,6 +85,26 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   String? get pdsEndpoint => _pdsEndpoint;
+
+  @override
+  Future<Uri> getAccountManagementUri() async {
+    await initializationComplete;
+    final pdsEndpoint = _pdsEndpoint;
+    final did = _did;
+    final generation = _authGeneration;
+    if (pdsEndpoint == null || did == null) {
+      throw StateError('No signed-in account');
+    }
+    final uri = await resolveAccountManagementUri(
+      _httpClient,
+      pdsEndpoint: pdsEndpoint,
+      did: did,
+    );
+    if (generation != _authGeneration) {
+      throw StateError('Account changed while resolving account management');
+    }
+    return uri;
+  }
 
   @override
   PoptartClient? get atproto => _atProto;

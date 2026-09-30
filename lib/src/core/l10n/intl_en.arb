@@ -1839,6 +1839,14 @@
   "@settingsFollowImportTitle": {
     "description": "Settings entry that opens Bluesky follow import"
   },
+  "settingsManageAccountTitle": "Manage Account",
+  "@settingsManageAccountTitle": {
+    "description": "Settings entry that opens account management on the user's account provider"
+  },
+  "settingsManageAccountDescription": "Manage or delete your account",
+  "@settingsManageAccountDescription": {
+    "description": "Makes account deletion discoverable from the account management settings entry"
+  },
   "buttonImportFromBluesky": "Import from Bluesky",
   "@buttonImportFromBluesky": {
     "description": "Button that opens Bluesky follow import"

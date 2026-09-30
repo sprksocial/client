@@ -30,8 +30,11 @@ class RepositoryHarness {
               sub: 'did:plc:viewer',
               clientId: 'https://spark.test/client-metadata.json',
               pdsEndpoint: 'pds.test',
-              publicKey: 'unused-public-key',
-              privateKey: 'unused-private-key',
+              // Test-only P-256 key pair: private scalar 1 and the base point.
+              publicKey:
+                  'axfR8uEsQkf4vOblY6RA8ncDfYEt6zOg9KE5RdiYwpZ'
+                  'P40Li_hp_m47n60p8D54WK84zV2sxXs7LtkBoN79R9Q==',
+              privateKey: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE=',
             ),
             service: 'pds.test',
             getClient: transport.get,

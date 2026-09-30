@@ -29,7 +29,7 @@ final class ModerationServiceQuery {
 
   factory ModerationServiceQuery.forReport({
     required String fallbackDid,
-    required UModerationCreateReportSubject subject,
+    required UModerationCreateReportInputSubject subject,
     required String reasonType,
   }) {
     final data = subject.data;

@@ -61,7 +61,7 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              subject: UModerationCreateReportSubject.repoStrongRef(
+              subject: UModerationCreateReportInputSubject.repoStrongRef(
                 data: RepoStrongRef(
                   uri: AtUri('at://did:plc:author/so.sprk.feed.post/example'),
                   cid: 'example-cid',
@@ -96,7 +96,7 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              subject: UModerationCreateReportSubject.repoRef(
+              subject: UModerationCreateReportInputSubject.repoRef(
                 data: RepoRef(did: 'did:plc:account'),
               ),
               fallbackServiceDid: 'did:plc:bsky#atproto_labeler',
@@ -134,7 +134,7 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              subject: UModerationCreateReportSubject.repoStrongRef(
+              subject: UModerationCreateReportInputSubject.repoStrongRef(
                 data: RepoStrongRef(
                   uri: AtUri('at://did:plc:author/so.sprk.feed.post/example'),
                   cid: 'example-cid',
@@ -166,7 +166,7 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReportDialog(
-              subject: UModerationCreateReportSubject.repoRef(
+              subject: UModerationCreateReportInputSubject.repoRef(
                 data: RepoRef(did: 'did:plc:account'),
               ),
               fallbackServiceDid: 'did:plc:bsky#atproto_labeler',

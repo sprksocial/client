@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poptart/poptart.dart';
+import 'package:poptart_lex/com/atproto/admin/defs.dart';
+import 'package:poptart_lex/com/atproto/moderation/create_report.dart';
+import 'package:poptart_lex/com/atproto/moderation/defs.dart';
+import 'package:poptart_lex/com/atproto/repo/strong_ref.dart';
 import 'package:spark/src/core/network/atproto/data/models/record_models.dart';
 import 'package:spark/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
@@ -8,6 +12,72 @@ import 'repository_test_support.dart';
 
 void main() {
   group('RepoRepositoryImpl', () {
+    for (final isAccount in [true, false]) {
+      test(
+        'createReport submits ${isAccount ? 'an account' : 'a record'} subject',
+        () async {
+          final harness = RepositoryHarness(oauth: true);
+          final subjectJson = <String, dynamic>{
+            if (isAccount) ...{
+              r'$type': 'com.atproto.admin.defs#repoRef',
+              'did': 'did:plc:alice',
+            } else ...{
+              r'$type': 'com.atproto.repo.strongRef',
+              'uri': 'at://did:plc:alice/so.sprk.feed.post/post-1',
+              'cid': 'post-cid',
+            },
+          };
+          harness.transport.enqueuePost({
+            'id': 1,
+            'reasonType': 'com.atproto.moderation.defs#reasonSpam',
+            'reason': 'Repeated spam',
+            'subject': subjectJson,
+            'reportedBy': 'did:plc:viewer',
+            'createdAt': '2026-09-26T00:00:00.000Z',
+          });
+          final repository = RepoRepositoryImpl(
+            harness.sprk,
+            logger: SparkLogger(),
+          );
+
+          await repository.createReport(
+            input: ModerationCreateReportInput(
+              subject: isAccount
+                  ? const UModerationCreateReportInputSubject.repoRef(
+                      data: RepoRef(did: 'did:plc:alice'),
+                    )
+                  : UModerationCreateReportInputSubject.repoStrongRef(
+                      data: RepoStrongRef(
+                        uri: AtUri(
+                          'at://did:plc:alice/so.sprk.feed.post/post-1',
+                        ),
+                        cid: 'post-cid',
+                      ),
+                    ),
+              reasonType: const ReasonType.knownValue(
+                data: KnownReasonType.comAtprotoModerationDefsReasonSpam,
+              ),
+              reason: 'Repeated spam',
+            ),
+            serviceDid: 'did:plc:moderator',
+          );
+
+          final request = harness.transport.singleRequest;
+          expect(request.uri.path, '/xrpc/com.atproto.moderation.createReport');
+          expect(
+            request.headers['atproto-proxy'],
+            'did:plc:moderator#atproto_labeler',
+          );
+          expect(request.jsonBody['subject'], subjectJson);
+          expect(
+            request.jsonBody['reasonType'],
+            'com.atproto.moderation.defs#reasonSpam',
+          );
+          expect(request.jsonBody['reason'], 'Repeated spam');
+        },
+      );
+    }
+
     test(
       'getRecord decomposes the URI and returns record plus strong ref',
       () async {

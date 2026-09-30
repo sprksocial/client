@@ -2192,6 +2192,18 @@ abstract class AppLocalizations {
   /// **'Connections'**
   String get settingsFollowImportTitle;
 
+  /// Settings entry that opens account management on the user's account provider
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Account'**
+  String get settingsManageAccountTitle;
+
+  /// Makes account deletion discoverable from the account management settings entry
+  ///
+  /// In en, this message translates to:
+  /// **'Manage or delete your account'**
+  String get settingsManageAccountDescription;
+
   /// Button that opens Bluesky follow import
   ///
   /// In en, this message translates to:

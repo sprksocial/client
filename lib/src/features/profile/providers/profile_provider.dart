@@ -305,7 +305,7 @@ class ProfileNotifier extends _$ProfileNotifier {
 
     try {
       logger.d('Creating report for DID: $did with reason: $reasonType');
-      final subject = UModerationCreateReportSubject.repoRef(
+      final subject = UModerationCreateReportInputSubject.repoRef(
         data: RepoRef(did: did),
       );
       await sprkRepository.repo.createReport(
