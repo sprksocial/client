@@ -69,7 +69,7 @@ android {
         release {
             signingConfig = signingConfigs.getByName("release")
             isShrinkResources = false
-            isMinifyEnabled = false
+            isMinifyEnabled = true
         }
     }
 }
