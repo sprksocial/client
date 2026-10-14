@@ -461,16 +461,16 @@ abstract class FacetFeature with _$FacetFeature {
 
   // Spark facet feature types
   /// Mention feature for referencing a user
-  @FreezedUnionValue('#mention')
+  @FreezedUnionValue('so.sprk.richtext.facet#mention')
   const factory FacetFeature.mention({required String did}) = MentionFeature;
 
   /// Link feature for URLs
-  @FreezedUnionValue('#link')
+  @FreezedUnionValue('so.sprk.richtext.facet#link')
   const factory FacetFeature.link({@AtUriConverter() required Uri uri}) =
       LinkFeature;
 
   /// Tag feature for hashtags
-  @FreezedUnionValue('#tag')
+  @FreezedUnionValue('so.sprk.richtext.facet#tag')
   const factory FacetFeature.tag({required String tag}) = TagFeature;
 
   // Bluesky facet feature types
