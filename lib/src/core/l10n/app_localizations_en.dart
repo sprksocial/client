@@ -134,6 +134,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inputErrorEmail => 'Please enter a valid email address';
 
   @override
+  String get videoPreparing => 'Preparing video…';
+
+  @override
+  String get videoPreparingDescription =>
+      'This video needs a moment. It will play when it’s ready.';
+
+  @override
+  String get videoPlaybackFailed => 'Video couldn’t load';
+
+  @override
+  String get videoPlaybackFailedDescription => 'Please try again in a moment.';
+
+  @override
   String get loading => 'Loading...';
 
   @override

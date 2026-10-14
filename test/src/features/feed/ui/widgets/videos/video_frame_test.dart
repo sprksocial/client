@@ -1,8 +1,35 @@
+import 'dart:io';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_frame.dart';
 
 void main() {
+  for (final aspectRatio in <double?>[null, 9 / 16]) {
+    testWidgets('hides a processing thumbnail error for ratio $aspectRatio', (
+      tester,
+    ) async {
+      debugNetworkImageHttpClientProvider = () => _ProcessingThumbnailClient();
+      addTearDown(() => debugNetworkImageHttpClientProvider = null);
+
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: FeedVideoThumbnailFrame(
+            thumbnail: 'https://video.example/thumbnail-$aspectRatio.jpg',
+            videoAspectRatio: aspectRatio,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ErrorWidget), findsNothing);
+      expect(find.byType(ColoredBox), findsOneWidget);
+      debugNetworkImageHttpClientProvider = null;
+    });
+  }
+
   group('feedVideoFitForAspectRatio', () {
     test('covers vertical full-screen video ratios', () {
       expect(feedVideoFitForAspectRatio(9 / 16), BoxFit.cover);
@@ -59,4 +86,24 @@ void main() {
       );
     });
   });
+}
+
+class _ProcessingThumbnailClient extends Fake implements HttpClient {
+  @override
+  Future<HttpClientRequest> getUrl(Uri url) async =>
+      _ProcessingThumbnailRequest();
+}
+
+class _ProcessingThumbnailRequest extends Fake implements HttpClientRequest {
+  @override
+  Future<HttpClientResponse> close() async => _ProcessingThumbnailResponse();
+}
+
+class _ProcessingThumbnailResponse extends Fake implements HttpClientResponse {
+  @override
+  int get statusCode => 202;
+
+  @override
+  Future<E> drain<E>([E? futureValue]) =>
+      const Stream<List<int>>.empty().drain<E>(futureValue);
 }

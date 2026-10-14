@@ -328,6 +328,30 @@ abstract class AppLocalizations {
   /// **'Please enter a valid email address'**
   String get inputErrorEmail;
 
+  /// Shown while a feed video is being made available for playback
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing video…'**
+  String get videoPreparing;
+
+  /// Explains the wait for an uncached feed video
+  ///
+  /// In en, this message translates to:
+  /// **'This video needs a moment. It will play when it’s ready.'**
+  String get videoPreparingDescription;
+
+  /// Shown when a feed video fails or takes too long to load
+  ///
+  /// In en, this message translates to:
+  /// **'Video couldn’t load'**
+  String get videoPlaybackFailed;
+
+  /// Recovery guidance after a feed video fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Please try again in a moment.'**
+  String get videoPlaybackFailedDescription;
+
   /// Loading state text
   ///
   /// In en, this message translates to:

@@ -115,6 +115,8 @@ class _FeedVideoThumbnailFrameState extends State<FeedVideoThumbnailFrame> {
             fit: feedVideoThumbnailFitForAspectRatio(aspectRatio),
             width: double.infinity,
             height: double.infinity,
+            errorBuilder: (context, error, stackTrace) =>
+                const ColoredBox(color: AppColors.black),
           )
         : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
 
