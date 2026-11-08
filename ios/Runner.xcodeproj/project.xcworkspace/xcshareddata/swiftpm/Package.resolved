@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/firebase-ios-sdk",
       "state" : {
-        "revision" : "1c35b9453868cea1ecdf9f112b5b23b8b6343854",
-        "version" : "13.0.0"
+        "revision" : "dc6dfd442b1f3ec215ed62b8beb2623ffab010d6",
+        "version" : "13.1.1"
       }
     },
     {
@@ -122,8 +122,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/PostHog/posthog-ios",
       "state" : {
-        "revision" : "4e9850f767988f394e8584b0bf61ce85674775eb",
-        "version" : "3.93.6"
+        "revision" : "911fd9d11b0fba1379277a008f940ee4c0d7a2fd",
+        "version" : "3.94.0"
       }
     },
     {

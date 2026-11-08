@@ -80,26 +80,51 @@ void main() {
     },
   );
 
-  test('timed layers only intercept swipes while visible', () {
-    final layer = WidgetLayer(
-      widget: const SizedBox(),
-      startTime: const Duration(seconds: 2),
-      endTime: const Duration(seconds: 5),
-    );
+  for (final (seconds, interceptsGestures) in [
+    (1, false),
+    (2, true),
+    (3, true),
+    (5, false),
+    (6, false),
+  ]) {
+    testWidgets('timed layer gesture interception at ${seconds}s', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    expect(
-      isVideoEditorLayerVisibleAt(layer, const Duration(seconds: 1)),
-      isFalse,
-    );
-    expect(
-      isVideoEditorLayerVisibleAt(layer, const Duration(seconds: 3)),
-      isTrue,
-    );
-    expect(
-      isVideoEditorLayerVisibleAt(layer, const Duration(seconds: 6)),
-      isFalse,
-    );
-  });
+      final harnessKey = GlobalKey<_RevealHarnessState>();
+      await tester.pumpWidget(
+        _RevealHarness(key: harnessKey, includeHitLayer: true),
+      );
+      await tester.pumpAndSettle();
+
+      final harness = harnessKey.currentState!;
+      harness.editor.hitLayer!
+        ..startTime = const Duration(seconds: 2)
+        ..endTime = const Duration(seconds: 5);
+      harness.timelineState.setProgressFromDuration(Duration(seconds: seconds));
+      await tester.pump();
+
+      final layerBounds = tester.getRect(
+        find.byKey(harness.editor.hitLayer!.repaintBoundaryKey),
+      );
+      await tester.tapAt(layerBounds.center);
+      expect(harness.previewTapCount, interceptsGestures ? 0 : 1);
+
+      final swipe = await tester.startGesture(layerBounds.center);
+      await swipe.moveBy(const Offset(0, -120));
+      await tester.pump();
+      expect(
+        harness.coordinator.value,
+        interceptsGestures ? isZero : greaterThan(0),
+      );
+      await swipe.up();
+      await tester.pumpAndSettle();
+    });
+  }
 
   testWidgets(
     'preview matches camera geometry and swipes between both editor modes',
@@ -238,10 +263,7 @@ void main() {
 
     final harnessKey = GlobalKey<_RevealHarnessState>();
     await tester.pumpWidget(
-      _RevealHarness(
-        key: harnessKey,
-        isPositionOnLayer: (position) => position.dx < 100,
-      ),
+      _RevealHarness(key: harnessKey, includeHitLayer: true),
     );
     await tester.pumpAndSettle();
 
@@ -337,10 +359,7 @@ void main() {
 
     final harnessKey = GlobalKey<_RevealHarnessState>();
     await tester.pumpWidget(
-      _RevealHarness(
-        key: harnessKey,
-        isPositionOnLayer: (position) => position.dx < 100,
-      ),
+      _RevealHarness(key: harnessKey, includeHitLayer: true),
     );
     await tester.pumpAndSettle();
 
@@ -445,13 +464,13 @@ void main() {
 class _RevealHarness extends StatefulWidget {
   const _RevealHarness({
     this.previewAspectRatio = 400 / 732,
-    this.isPositionOnLayer,
+    this.includeHitLayer = false,
     this.reduceMotion = false,
     super.key,
   });
 
   final double previewAspectRatio;
-  final bool Function(Offset globalPosition)? isPositionOnLayer;
+  final bool includeHitLayer;
   final bool reduceMotion;
 
   @override
@@ -480,9 +499,7 @@ class _RevealHarnessState extends State<_RevealHarness>
       videoDuration: const Duration(seconds: 10),
     );
     selectedLayerId = ValueNotifier(null);
-    editor = _RevealEditorMock(
-      includeHitLayer: widget.isPositionOnLayer != null,
-    );
+    editor = _RevealEditorMock(includeHitLayer: widget.includeHitLayer);
   }
 
   @override

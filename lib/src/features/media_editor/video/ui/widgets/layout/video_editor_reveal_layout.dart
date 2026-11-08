@@ -302,10 +302,7 @@ class _VideoEditorRevealBodyState extends State<VideoEditorRevealBody> {
         interactionStyle.buttonRadius +
         interactionStyle.strokeWidth;
     for (final layer in widget.editor.activeLayers.reversed) {
-      if (!isVideoEditorLayerVisibleAt(
-        layer,
-        widget.timelineState.sourcePosition,
-      )) {
+      if (!layer.isWithinTimeRange(widget.timelineState.sourcePosition)) {
         continue;
       }
       final renderObject = layer.repaintBoundaryKey.currentContext
@@ -673,14 +670,6 @@ class _VideoPlaybackIndicator extends StatelessWidget {
       ),
     );
   }
-}
-
-@visibleForTesting
-bool isVideoEditorLayerVisibleAt(Layer layer, Duration videoPosition) {
-  final startTime = layer.startTime;
-  final endTime = layer.endTime;
-  return (startTime == null || videoPosition >= startTime) &&
-      (endTime == null || videoPosition <= endTime);
 }
 
 class _RevealCue extends StatelessWidget {
