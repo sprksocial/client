@@ -24,10 +24,12 @@ class MainPage extends ConsumerStatefulWidget {
 
 class _MainPageState extends ConsumerState<MainPage> {
   int? _lastActiveIndex;
+  late final PushNotificationService _pushService;
 
   @override
   void initState() {
     super.initState();
+    _pushService = GetIt.instance<PushNotificationService>();
     // Handle post-login tasks after the widget tree is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handlePostLoginTasks();
@@ -36,17 +38,25 @@ class _MainPageState extends ConsumerState<MainPage> {
 
   /// Handles tasks that need to run after login/auth completes
   Future<void> _handlePostLoginTasks() async {
+    if (!mounted) return;
+    await _pushService.initialize();
+    if (!mounted) return;
+
     // Request push notification permission if pending (after login)
     final auth = ref.read(authProvider.notifier);
     if (auth.hasPendingPushRegistration) {
       await auth.requestPushPermissionAndRegister();
+      if (!mounted) return;
     }
 
     // Process any pending notification navigation (cold start)
-    final pushService = GetIt.instance<PushNotificationService>();
-    if (pushService.hasPendingNotification) {
-      pushService.processPendingNotification();
-    }
+    _pushService.setNavigationReady(true);
+  }
+
+  @override
+  void dispose() {
+    _pushService.setNavigationReady(false);
+    super.dispose();
   }
 
   void _updateSystemUIOverlayStyle(int activeIndex, BuildContext context) {

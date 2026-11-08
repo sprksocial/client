@@ -57,11 +57,12 @@ class PushNotificationService {
   final NotificationRoutePusher _pushRoute;
   final SparkLogger _logger;
 
-  late final PushMessagingClient _messaging;
+  PushMessagingClient? _messaging;
+  Future<void>? _initialization;
 
   String? _currentToken;
   bool _badgeSupported = false;
-  bool _initialized = false;
+  bool _navigationReady = false;
 
   /// Queued notification data for cold start navigation
   /// This is set when the app is opened from terminated state via notification
@@ -69,20 +70,31 @@ class PushNotificationService {
 
   /// Initializes Firebase without requesting permissions
   /// Permissions should be requested via [requestPermissionAndGetToken]
-  Future<void> initialize() async {
+  Future<void> initialize() => _initialization ??= _initialize();
+
+  Future<void> _initialize() async {
     try {
-      _messaging = await _initializeMessaging();
+      final messaging = await _initializeMessaging();
+      _messaging = messaging;
 
       // Listen for token refresh
-      _messaging.onTokenRefresh.listen(_onTokenRefresh);
+      messaging.onTokenRefresh.listen(
+        _onTokenRefresh,
+        onError: _onMessagingError,
+      );
 
-      // Check if badge is supported on this device
-      _badgeSupported = await _isBadgeSupported();
-
-      _initialized = true;
+      try {
+        _badgeSupported = await _isBadgeSupported();
+      } catch (e, stackTrace) {
+        _logger.e(
+          'Failed to check badge support',
+          error: e,
+          stackTrace: stackTrace,
+        );
+      }
 
       // Set up message handlers for deep linking
-      await _setupMessageHandlers();
+      await _setupMessageHandlers(messaging);
     } catch (e, stackTrace) {
       _logger.e(
         'Failed to initialize push notifications',
@@ -93,16 +105,22 @@ class PushNotificationService {
   }
 
   /// Sets up FCM message handlers for deep linking
-  Future<void> _setupMessageHandlers() async {
+  Future<void> _setupMessageHandlers(PushMessagingClient messaging) async {
     // Handle notification tap when app is in background
-    _messaging.onMessageOpenedApp.listen(_handleNotificationTap);
+    messaging.onMessageOpenedApp.listen(
+      _handleNotificationTap,
+      onError: _onMessagingError,
+    );
 
     // Handle foreground messages (for badge updates)
-    _messaging.onMessage.listen(_handleForegroundMessage);
+    messaging.onMessage.listen(
+      _handleForegroundMessage,
+      onError: _onMessagingError,
+    );
 
     // Handle notification tap when app was terminated
     try {
-      final initialMessage = await _messaging.getInitialMessage().timeout(
+      final initialMessage = await messaging.getInitialMessage().timeout(
         const Duration(seconds: 3),
         onTimeout: () {
           _logger.w('Timed out waiting for initial FCM message');
@@ -122,6 +140,14 @@ class PushNotificationService {
     }
   }
 
+  void _onMessagingError(Object error, StackTrace stackTrace) {
+    _logger.e(
+      'Push notification stream failed',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
+
   /// Handles notification tap when app is in background or foreground
   void _handleNotificationTap(RemoteMessage message) {
     final data = message.data;
@@ -137,7 +163,7 @@ class PushNotificationService {
       payload: data,
     );
 
-    if (!_isRouterAvailable()) {
+    if (!_navigationReady || !_isRouterAvailable()) {
       _pendingNotification = message;
       return;
     }
@@ -166,8 +192,11 @@ class PushNotificationService {
   /// Returns true if there's a pending notification navigation
   bool get hasPendingNotification => _pendingNotification != null;
 
-  /// Processes pending notification navigation (call after auth completes)
-  void processPendingNotification() {
+  /// Enables notification navigation only while the authenticated main page is ready.
+  void setNavigationReady(bool ready) {
+    _navigationReady = ready;
+    if (!ready) return;
+
     final pendingNotification = _pendingNotification;
     if (pendingNotification == null) return;
 
@@ -177,10 +206,12 @@ class PushNotificationService {
 
   /// Returns true if notification permissions are already granted
   Future<bool> hasPermission() async {
-    if (!_initialized) return false;
+    await initialize();
+    final messaging = _messaging;
+    if (messaging == null) return false;
 
     try {
-      final status = await _messaging.getPermissionStatus();
+      final status = await messaging.getPermissionStatus();
       return status == PushAuthorizationStatus.authorized ||
           status == PushAuthorizationStatus.provisional;
     } catch (e) {
@@ -192,10 +223,12 @@ class PushNotificationService {
   /// Requests notification permissions from the user
   /// Returns true if permission was granted
   Future<bool> requestPermission() async {
-    if (!_initialized) return false;
+    await initialize();
+    final messaging = _messaging;
+    if (messaging == null) return false;
 
     try {
-      final status = await _messaging.requestPermission();
+      final status = await messaging.requestPermission();
 
       return status == PushAuthorizationStatus.authorized ||
           status == PushAuthorizationStatus.provisional;
@@ -212,8 +245,6 @@ class PushNotificationService {
   /// Requests permission (if needed) and returns the FCM token
   /// Returns null if permission denied or error occurs
   Future<String?> requestPermissionAndGetToken() async {
-    if (!_initialized) return null;
-
     final hasExistingPermission = await hasPermission();
 
     if (!hasExistingPermission) {
@@ -234,10 +265,12 @@ class PushNotificationService {
   /// Returns the current FCM token, or null if not available
   /// Note: This requires permission to be granted first
   Future<String?> getToken() async {
-    if (!_initialized) return null;
+    await initialize();
+    final messaging = _messaging;
+    if (messaging == null) return null;
 
     try {
-      return _currentToken ??= await _messaging.getToken();
+      return _currentToken ??= await messaging.getToken();
     } catch (e) {
       _logger.e('Failed to get FCM token', error: e);
       return null;
@@ -248,10 +281,15 @@ class PushNotificationService {
   String get platform => Platform.isIOS ? 'ios' : 'android';
 
   /// Callback for when token is refreshed - allows external registration
-  Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
+  Stream<String> get onTokenRefresh async* {
+    await initialize();
+    final messaging = _messaging;
+    if (messaging != null) yield* messaging.onTokenRefresh;
+  }
 
   /// Clears the app badge count (iOS only, no-op on Android)
   Future<void> clearBadge() async {
+    await initialize();
     if (!_badgeSupported) return;
 
     try {
@@ -263,6 +301,7 @@ class PushNotificationService {
 
   /// Updates the app badge count (iOS only, no-op on Android)
   Future<void> updateBadge(int count) async {
+    await initialize();
     if (!_badgeSupported) return;
 
     try {
@@ -293,6 +332,8 @@ class _FirebasePushMessagingClient implements PushMessagingClient {
       FirebaseMessaging.onMessageOpenedApp;
 
   @override
+  // Spark's push API uses FCM tokens; onRegistered emits installation IDs.
+  // ignore: deprecated_member_use
   Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
 
   @override
@@ -311,6 +352,8 @@ class _FirebasePushMessagingClient implements PushMessagingClient {
   }
 
   @override
+  // Keep FCM tokens until Spark's push API supports installation IDs.
+  // ignore: deprecated_member_use
   Future<String?> getToken() => _messaging.getToken();
 
   PushAuthorizationStatus _authorizationStatus(

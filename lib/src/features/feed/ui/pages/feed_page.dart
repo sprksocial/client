@@ -128,16 +128,11 @@ class _FeedPageState extends ConsumerState<FeedPage>
     });
 
     // Initialize feed when it becomes active for the first time
-    if (!_hasInitialized &&
-        !state.loadingFirstLoad &&
-        state.length == 0 &&
-        !state.isEndOfNetworkFeed &&
-        !_isRefreshing &&
-        shouldBeActive) {
+    if (!_hasInitialized && shouldBeActive) {
       _hasInitialized = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          notifier.loadAndUpdateFirstLoad();
+          unawaited(notifier.ensureLoaded());
         }
       });
     }
@@ -162,8 +157,6 @@ class _FeedPageState extends ConsumerState<FeedPage>
           pageController.jumpToPage(0);
         }
 
-        // Only reset initialization flag, don't invalidate the entire provider
-        _hasInitialized = false;
         await notifier.loadAndUpdateFirstLoad();
       } finally {
         if (mounted) {

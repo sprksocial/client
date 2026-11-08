@@ -12,7 +12,7 @@ import 'package:spark/src/core/ui/theme/providers/theme_provider.dart'
     show themeModeProvider, themeProvider;
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
-import 'package:spark/src/features/feed/providers/feed_provider.dart';
+import 'package:spark/src/core/utils/startup/startup_timings.dart';
 import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 class SprkApp extends ConsumerStatefulWidget {
@@ -58,6 +58,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
     }
 
     _didReleaseFirstFrame = true;
+    StartupTimings.instance.mark(StartupMilestone.firstRouteReady);
     _appRouter.removeListener(_releaseFirstFrameWhenRouteIsReady);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onFirstRouteReady();
@@ -66,21 +67,20 @@ class _SprkAppState extends ConsumerState<SprkApp> {
 
   Future<void> _initializeApp() async {
     try {
-      _logger.d('Syncing user preferences from server...');
+      _logger.d('Loading user preferences...');
       final settingsNotifier = ref.read(settingsProvider.notifier);
-      // syncPreferencesFromServer already calls loadSettings internally
-      await settingsNotifier.syncPreferencesFromServer();
-      _logger.d('User preferences synced successfully');
-
+      await settingsNotifier.loadSettings();
       if (!mounted) return;
-
-      final activeFeed = ref.read(settingsProvider).activeFeed;
-      _logger.d('Active feed: ${activeFeed.config.value}');
-
-      ref.read(feedProvider(activeFeed).notifier).loadAndUpdateFirstLoad();
-      _logger.d('Feed loading started');
-    } catch (e) {
-      _logger.w('Error during app initialization', error: e);
+      StartupTimings.instance.mark(
+        StartupMilestone.settingsInitializationFinished,
+      );
+      _logger.d('User preferences loaded successfully');
+    } catch (e, stackTrace) {
+      _logger.w(
+        'Error during app initialization',
+        error: e,
+        stackTrace: stackTrace,
+      );
     }
   }
 

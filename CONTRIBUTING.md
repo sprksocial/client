@@ -27,6 +27,33 @@ dart run build_runner build --delete-conflicting-outputs # generated code
 flutter run
 ```
 
+### Startup timings
+
+Debug and profile builds emit `[StartupTimings]` logs and `startup.*` events in
+the DevTools timeline. Each milestone is recorded once per launch, in elapsed
+milliseconds from `runSparkApp`; native process/engine startup is not included.
+Use a cold launch on a physical device in profile mode for comparisons:
+
+```bash
+flutter run --profile -d <device-id>
+```
+
+- `firstFrameRasterized`: Flutter has rasterized its first frame, after the
+  deferred splash is released.
+- `firstFeedFrame`: the selected post's UI (including moderation UI) has built a
+  frame on the active feed. This does not wait for images to decode.
+- `firstVideoPlaying`: an active video's playback has advanced beyond zero with
+  a non-zero frame size and its thumbnail overlay has been removed. This is a
+  player/framework signal, not a measurement of GPU presentation.
+- Intermediate milestones cover environment/platform setup, service registration,
+  auth initialization and validation, onboarding checks, settings initialization,
+  and push initialization. `*Finished` means the operation completed, not that it
+  succeeded; inspect error logs separately.
+
+Feed/video milestones are absent when no post/video is reached. Compare fresh
+sessions, expired sessions, and slow networks separately. Release builds disable
+these diagnostics unless built with `--dart-define=SPARK_STARTUP_TIMINGS=true`.
+
 ### Before Submitting
 
 1. Format your code:

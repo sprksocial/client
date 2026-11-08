@@ -42,7 +42,7 @@ Future<void> initServiceLocator({
   LocalStorageInterface? preferencesStorage,
   LocalStorageInterface? secureStorage,
   Future<DownloadManagerInterface> Function()? initializeDownloadManager,
-  Future<PushNotificationService> Function()? initializePushNotifications,
+  PushNotificationService Function()? createPushNotifications,
 }) async {
   // Register LogService
   sl.registerSingleton<LogService>(LogService());
@@ -113,19 +113,13 @@ Future<void> initServiceLocator({
       NotificationRepositoryImpl(sl<SprkRepository>()),
     );
 
-  final pushService =
-      await (initializePushNotifications ?? _initializePushNotifications)();
-  sl.registerSingleton<PushNotificationService>(pushService);
+  sl.registerSingleton<PushNotificationService>(
+    (createPushNotifications ?? PushNotificationService.new)(),
+  );
 }
 
 Future<DownloadManagerInterface> _initializeDownloadManager() async {
   final downloadManager = DownloadManagerImpl();
   await downloadManager.init();
   return downloadManager;
-}
-
-Future<PushNotificationService> _initializePushNotifications() async {
-  final pushService = PushNotificationService();
-  await pushService.initialize();
-  return pushService;
 }

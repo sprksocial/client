@@ -52,7 +52,8 @@ final feedSettingsGatewayProvider = Provider<FeedSettingsGateway>((ref) {
 
 @Riverpod(keepAlive: true)
 class FeedNotifier extends _$FeedNotifier {
-  bool _isLoadingInProgress = false;
+  bool _hasLoaded = false;
+  Future<void>? _firstLoad;
   Future<void>? _inFlightFetch;
   DateTime? _lastErrorTime;
   static const _errorCooldown = Duration(seconds: 10);
@@ -139,21 +140,30 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 
-  Future<void> loadAndUpdateFirstLoad() async {
-    if (_isLoadingInProgress || state.loadingFirstLoad) {
-      return;
-    }
+  /// Loads this feed once, including feeds that successfully return no posts.
+  Future<void> ensureLoaded() {
+    if (_firstLoad case final inFlight?) return inFlight;
+    if (_hasLoaded) return Future.value();
+    return loadAndUpdateFirstLoad();
+  }
+
+  Future<void> loadAndUpdateFirstLoad() {
+    if (_firstLoad case final inFlight?) return inFlight;
 
     if (_lastErrorTime != null &&
         DateTime.now().difference(_lastErrorTime!) < _errorCooldown) {
-      return;
+      return Future.value();
     }
 
+    return _firstLoad = _loadFirstPage().whenComplete(() => _firstLoad = null);
+  }
+
+  Future<void> _loadFirstPage() async {
+    _hasLoaded = false;
     // Increment fetch generation to invalidate any in-flight fetches
     _fetchGeneration++;
     final currentGeneration = _fetchGeneration;
 
-    _isLoadingInProgress = true;
     try {
       state = state.copyWith(
         loadingFirstLoad: true,
@@ -167,6 +177,11 @@ class FeedNotifier extends _$FeedNotifier {
         replaceExisting: true,
         generation: currentGeneration,
       );
+      if (ref.mounted &&
+          _fetchGeneration == currentGeneration &&
+          !state.error) {
+        _hasLoaded = true;
+      }
     } catch (e, stackTrace) {
       // Only update state if this is still the current generation
       if (ref.mounted && _fetchGeneration == currentGeneration) {
@@ -178,7 +193,6 @@ class FeedNotifier extends _$FeedNotifier {
         state = state.copyWith(loadingFirstLoad: false, error: true);
       }
     } finally {
-      _isLoadingInProgress = false;
       if (ref.mounted &&
           _fetchGeneration == currentGeneration &&
           state.loadingFirstLoad) {

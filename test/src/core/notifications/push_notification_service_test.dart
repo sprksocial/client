@@ -57,7 +57,104 @@ void main() {
       expect(messaging.permissionStatusCalls, 0);
       expect(messaging.requestPermissionCalls, 0);
       expect(messaging.getTokenCalls, 0);
+      expect(await service.onTokenRefresh.toList(), isEmpty);
+      await service.updateBadge(1);
+      await service.clearBadge();
+      expect(initializationCalls, 1);
     });
+
+    test(
+      'concurrent callers share initialization and await readiness',
+      () async {
+        final ready = Completer<PushMessagingClient>();
+        final service = PushNotificationService(
+          initializeMessaging: () {
+            initializationCalls++;
+            return ready.future;
+          },
+          isBadgeSupported: () async => true,
+          updateBadge: (count) async => badgeUpdates.add(count),
+          logger: SparkLogger(name: 'PushNotificationServiceTest'),
+        );
+        messaging.permissionStatus = PushAuthorizationStatus.authorized;
+        messaging.requestedStatus = PushAuthorizationStatus.authorized;
+        messaging.token = 'token-ready';
+
+        final initialization = service.initialize();
+        expect(identical(service.initialize(), initialization), isTrue);
+        final permission = service.hasPermission();
+        final requested = service.requestPermissionAndGetToken();
+        final badge = service.updateBadge(3);
+        expect(messaging.permissionStatusCalls, 0);
+        expect(messaging.getTokenCalls, 0);
+        expect(badgeUpdates, isEmpty);
+
+        ready.complete(messaging);
+        await initialization;
+        expect(await permission, isTrue);
+        expect(await requested, 'token-ready');
+        await badge;
+        expect(badgeUpdates, [3]);
+        expect(initializationCalls, 1);
+      },
+    );
+
+    test(
+      'late cold-start message waits for initialization then routes once',
+      () async {
+        messaging.initialMessageCompleter = Completer<RemoteMessage?>();
+        final service = createService();
+        final initialized = service.initialize();
+        final mainPageReady = initialized.then((_) {
+          service.setNavigationReady(true);
+        });
+        await Future<void>.delayed(Duration.zero);
+        expect(pushedRoutes, isEmpty);
+
+        messaging.initialMessageCompleter!.complete(
+          const RemoteMessage(
+            data: {
+              'reason': 'follow',
+              'uri': 'at://did:plc:alice/app.bsky.graph.follow/123',
+            },
+          ),
+        );
+        await mainPageReady;
+        service.setNavigationReady(true);
+        await service.initialize();
+        service.setNavigationReady(true);
+
+        expect(pushedRoutes, hasLength(1));
+        expect(service.hasPendingNotification, isFalse);
+        expect(initializationCalls, 1);
+      },
+    );
+
+    test(
+      'notification taps wait for main page readiness and pause on exit',
+      () async {
+        final service = createService();
+        await service.initialize();
+        const message = RemoteMessage(
+          data: {
+            'reason': 'follow',
+            'uri': 'at://did:plc:alice/app.bsky.graph.follow/123',
+          },
+        );
+
+        messaging.messageOpenedController.add(message);
+        expect(pushedRoutes, isEmpty);
+        expect(service.hasPendingNotification, isTrue);
+        service.setNavigationReady(true);
+        expect(pushedRoutes, hasLength(1));
+
+        service.setNavigationReady(false);
+        messaging.messageOpenedController.add(message);
+        expect(pushedRoutes, hasLength(1));
+        service.setNavigationReady(true);
+        expect(pushedRoutes, hasLength(2));
+      },
+    );
 
     test('initialize queues and later routes a cold-start message', () async {
       messaging.initialMessage = const RemoteMessage(
@@ -76,7 +173,7 @@ void main() {
       expect(service.hasPendingNotification, isTrue);
       expect(pushedRoutes, isEmpty);
 
-      service.processPendingNotification();
+      service.setNavigationReady(true);
 
       expect(service.hasPendingNotification, isFalse);
       final route = pushedRoutes.single;
@@ -102,12 +199,12 @@ void main() {
         );
 
         expect(service.hasPendingNotification, isTrue);
-        service.processPendingNotification();
+        service.setNavigationReady(true);
         expect(service.hasPendingNotification, isTrue);
         expect(pushedRoutes, isEmpty);
 
         routerAvailable = true;
-        service.processPendingNotification();
+        service.setNavigationReady(true);
 
         expect(service.hasPendingNotification, isFalse);
         final route = pushedRoutes.single;
@@ -118,6 +215,44 @@ void main() {
           args.highlightedReplyUri,
           'at://did:plc:reply/so.sprk.feed.reply/123',
         );
+      },
+    );
+
+    test('initial message failure does not disable token operations', () async {
+      messaging.initialMessageError = StateError('initial message failed');
+      messaging.token = 'token-ready';
+      final service = createService();
+
+      await service.initialize();
+
+      expect(await service.getToken(), 'token-ready');
+      expect(service.hasPendingNotification, isFalse);
+    });
+
+    test(
+      'badge support failure does not prevent notification navigation',
+      () async {
+        messaging.initialMessage = const RemoteMessage(
+          data: {
+            'reason': 'follow',
+            'uri': 'at://did:plc:alice/app.bsky.graph.follow/123',
+          },
+        );
+        final service = PushNotificationService(
+          initializeMessaging: () async => messaging,
+          isBadgeSupported: () async => throw StateError('badge unavailable'),
+          updateBadge: (count) async => badgeUpdates.add(count),
+          isRouterAvailable: () => true,
+          pushRoute: pushedRoutes.add,
+          logger: SparkLogger(name: 'PushNotificationServiceTest'),
+        );
+
+        await service.initialize();
+        service.setNavigationReady(true);
+        await service.clearBadge();
+
+        expect(pushedRoutes, hasLength(1));
+        expect(badgeUpdates, isEmpty);
       },
     );
 
@@ -222,6 +357,7 @@ class _FakePushMessagingClient implements PushMessagingClient {
       StreamController<RemoteMessage>.broadcast(sync: true);
 
   RemoteMessage? initialMessage;
+  Completer<RemoteMessage?>? initialMessageCompleter;
   Object? initialMessageError;
   PushAuthorizationStatus permissionStatus = PushAuthorizationStatus.denied;
   Object? permissionStatusError;
@@ -247,6 +383,8 @@ class _FakePushMessagingClient implements PushMessagingClient {
   Future<RemoteMessage?> getInitialMessage() async {
     final error = initialMessageError;
     if (error != null) throw error;
+    final completer = initialMessageCompleter;
+    if (completer != null) return completer.future;
     return initialMessage;
   }
 

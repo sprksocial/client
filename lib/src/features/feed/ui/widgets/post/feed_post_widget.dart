@@ -8,6 +8,8 @@ import 'package:spark/src/core/moderation/moderation.dart';
 import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:spark/src/core/design_system/tokens/colors.dart';
 import 'package:spark/src/core/ui/widgets/heart_animation.dart';
+import 'package:spark/src/core/utils/startup/startup_timing_marker.dart';
+import 'package:spark/src/core/utils/startup/startup_timings.dart';
 import 'package:spark/src/features/feed/providers/feed_provider.dart';
 import 'package:spark/src/features/feed/providers/like_post.dart';
 import 'package:spark/src/features/feed/ui/widgets/post/post_media_viewer.dart';
@@ -212,20 +214,29 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             ),
           );
 
-          return ModeratedContent(
-            key: ValueKey(currentPost.uri.toString()),
-            subject: ModerationSubject.content(
-              labels: labels,
-              authorLabels: currentPost.author.labels ?? const [],
-              subjectDid: currentPost.author.did,
+          return StartupTimingMarker(
+            timings: StartupTimings.instance,
+            milestone: StartupMilestone.firstFeedFrame,
+            active:
+                feedState.active &&
+                isOnFeedsTab &&
+                feedState.index == widget.index &&
+                !feedSettingsVisible,
+            child: ModeratedContent(
+              key: ValueKey(currentPost.uri.toString()),
+              subject: ModerationSubject.content(
+                labels: labels,
+                authorLabels: currentPost.author.labels ?? const [],
+                subjectDid: currentPost.author.did,
+              ),
+              context: ModerationContext.contentList,
+              onConcealChanged: (concealed) {
+                if (mounted && _moderationConcealed != concealed) {
+                  setState(() => _moderationConcealed = concealed);
+                }
+              },
+              child: mainContent,
             ),
-            context: ModerationContext.contentList,
-            onConcealChanged: (concealed) {
-              if (mounted && _moderationConcealed != concealed) {
-                setState(() => _moderationConcealed = concealed);
-              }
-            },
-            child: mainContent,
           );
         }
         if (snapshot.hasError) {

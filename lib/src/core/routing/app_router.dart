@@ -12,6 +12,7 @@ import 'package:spark/src/core/network/atproto/data/models/moderated_story_view.
 import 'package:spark/src/core/routing/pages.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/utils/startup/startup_timings.dart';
 import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
 import 'package:sprk_poptart/so/sprk/actor/defs.dart';
 import 'package:sprk_poptart/so/sprk/embed/mention.dart' show EmbedMention;
@@ -36,6 +37,7 @@ class AuthGuard extends AutoRouteGuard {
       final savedHandle = authRepository.lastKnownHandle?.trim();
       final hadSavedSession = savedHandle != null && savedHandle.isNotEmpty;
       final isSessionValid = await authRepository.validateSession();
+      StartupTimings.instance.mark(StartupMilestone.sessionValidationFinished);
 
       if (!isSessionValid) {
         _logger.i(
@@ -52,6 +54,7 @@ class AuthGuard extends AutoRouteGuard {
       }
 
       final hasSpark = await onboardingRepository.hasSparkProfile();
+      StartupTimings.instance.mark(StartupMilestone.onboardingCheckFinished);
 
       if (!hasSpark) {
         _logger.i(

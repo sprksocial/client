@@ -43,9 +43,9 @@ class AuthenticationTestApp {
         downloadInitializations++;
         return _FakeDownloadManager();
       },
-      initializePushNotifications: () async {
+      createPushNotifications: () {
         pushInitializations++;
-        return _initializeFakePushNotifications();
+        return _createFakePushNotifications();
       },
     );
   }
@@ -123,13 +123,11 @@ class FakeAuthRepository implements AuthRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-Future<PushNotificationService> _initializeFakePushNotifications() async {
-  final service = PushNotificationService(
+PushNotificationService _createFakePushNotifications() {
+  return PushNotificationService(
     initializeMessaging: () async => _FakePushMessagingClient(),
     isBadgeSupported: () async => false,
   );
-  await service.initialize();
-  return service;
 }
 
 class _FakeDownloadManager implements DownloadManagerInterface {

@@ -114,15 +114,114 @@ void main() {
     final container = createContainer();
     final notifier = readNotifier(container);
 
-    final firstLoad = notifier.loadAndUpdateFirstLoad();
+    final firstLoad = notifier.ensureLoaded();
     await feedRepository.waitForCallCount(1);
-    final duplicateLoad = notifier.loadAndUpdateFirstLoad();
+    final duplicateLoad = notifier.ensureLoaded();
 
+    expect(identical(firstLoad, duplicateLoad), isTrue);
     expect(feedRepository.calls, hasLength(1));
     response.complete(_page([_post('only')], cursor: 'next'));
     await Future.wait([firstLoad, duplicateLoad]);
     expect(feedRepository.calls, hasLength(1));
   });
+
+  test('initial loading preserves completed posts and pagination', () async {
+    final post = _post('already-loaded');
+    feedRepository.enqueue(_page([post], cursor: 'next'));
+    final container = createContainer();
+    final notifier = readNotifier(container);
+
+    await notifier.ensureLoaded();
+    final loadedState = container.read(feedProvider(feed));
+    await notifier.ensureLoaded();
+
+    expect(feedRepository.calls, hasLength(1));
+    expect(container.read(feedProvider(feed)), loadedState);
+    expect(loadedState.loadedPosts.map((post) => post.uri), [post.uri]);
+    expect(container.read(feedProvider(feed)).cursor, 'next');
+
+    notifier.removePostAtIndex(0);
+    await notifier.ensureLoaded();
+    expect(feedRepository.calls, hasLength(1));
+    expect(container.read(feedProvider(feed)).loadedPosts, isEmpty);
+  });
+
+  test('empty initial results stay loaded until an explicit refresh', () async {
+    final freshPost = _post('new-post');
+    feedRepository
+      ..enqueue(_page(const []))
+      ..enqueue(_page([freshPost]));
+    final container = createContainer();
+    final notifier = readNotifier(container);
+
+    await notifier.ensureLoaded();
+    await notifier.ensureLoaded();
+    expect(feedRepository.calls, hasLength(1));
+    expect(container.read(feedProvider(feed)).isEndOfNetworkFeed, isTrue);
+
+    await notifier.loadAndUpdateFirstLoad();
+    await notifier.ensureLoaded();
+    expect(feedRepository.calls, hasLength(2));
+    expect(
+      container.read(feedProvider(feed)).loadedPosts.map((post) => post.uri),
+      [freshPost.uri],
+    );
+  });
+
+  test('initial loading retries a failed refresh after its cooldown', () async {
+    final recoveredPost = _post('recovered');
+    feedRepository
+      ..enqueue(_page([_post('initial')]))
+      ..enqueueError(StateError('refresh unavailable'))
+      ..enqueue(_page([recoveredPost]));
+    final container = createContainer();
+    final notifier = readNotifier(container);
+    await notifier.ensureLoaded();
+
+    await notifier.loadAndUpdateFirstLoad();
+    final failedState = container.read(feedProvider(feed));
+    expect(failedState.error, isTrue);
+    expect(failedState.loadedPosts, isEmpty);
+    await notifier.ensureLoaded();
+    expect(feedRepository.calls, hasLength(2));
+
+    // The provider's cooldown uses wall-clock time.
+    await Future<void>.delayed(const Duration(milliseconds: 10100));
+    await notifier.ensureLoaded();
+
+    final recoveredState = container.read(feedProvider(feed));
+    expect(recoveredState.error, isFalse);
+    expect(recoveredState.loadedPosts.map((post) => post.uri), [
+      recoveredPost.uri,
+    ]);
+    expect(feedRepository.calls, hasLength(3));
+  });
+
+  test(
+    'initial loading joins an explicit refresh already in progress',
+    () async {
+      feedRepository.enqueue(_page([_post('initial')]));
+      final response = Completer<FeedView>();
+      feedRepository.enqueueFuture(response.future);
+      final container = createContainer();
+      final notifier = readNotifier(container);
+      await notifier.ensureLoaded();
+
+      final refresh = notifier.loadAndUpdateFirstLoad();
+      await feedRepository.waitForCallCount(2);
+      final initialLoad = notifier.ensureLoaded();
+      expect(identical(refresh, initialLoad), isTrue);
+
+      final freshPost = _post('fresh');
+      response.complete(_page([freshPost]));
+      await Future.wait([refresh, initialLoad]);
+      expect(feedRepository.calls, hasLength(2));
+      expect(
+        container.read(feedProvider(feed)).loadedPosts.map((post) => post.uri),
+        [freshPost.uri],
+      );
+    },
+  );
 
   test(
     'refresh discards stale pagination and starts a fresh request',

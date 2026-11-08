@@ -6,6 +6,8 @@ import 'package:get_it/get_it.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/startup/startup_timing_marker.dart';
+import 'package:spark/src/core/utils/startup/startup_timings.dart';
 import 'package:spark/src/features/feed/data/video_availability_client.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/feed_video_better_player_layout.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_frame.dart';
@@ -333,61 +335,66 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
       ),
     );
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Positioned.fill(
-          child: FeedVideoFrame(
-            fit: fitMode,
-            frameSize: frameSize,
-            child: BetterPlayer(controller: videoController!),
+    return StartupTimingMarker(
+      timings: StartupTimings.instance,
+      milestone: StartupMilestone.firstVideoPlaying,
+      active: widget.isActive && !_showThumbnailOverlay && isPlaying,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: FeedVideoFrame(
+              fit: fitMode,
+              frameSize: frameSize,
+              child: BetterPlayer(controller: videoController!),
+            ),
           ),
-        ),
-        if (_showThumbnailOverlay) thumbnailOverlay,
-        Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              if (isPlaying) {
-                pauseVideo();
-              } else {
-                setState(() => _userPaused = false);
-                _syncPlaybackWithEligibility();
-              }
-            },
-            child: Container(color: Colors.transparent),
+          if (_showThumbnailOverlay) thumbnailOverlay,
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (isPlaying) {
+                  pauseVideo();
+                } else {
+                  setState(() => _userPaused = false);
+                  _syncPlaybackWithEligibility();
+                }
+              },
+              child: Container(color: Colors.transparent),
+            ),
           ),
-        ),
-        if (_userPaused)
-          Center(
-            child: IgnorePointer(
-              child: AnimatedBuilder(
-                animation: _bounceAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: isPlaying ? 0.0 : _bounceAnimation.value,
-                    child: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child: AppIcons.play(),
-                    ),
-                  );
-                },
+          if (_userPaused)
+            Center(
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: _bounceAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: isPlaying ? 0.0 : _bounceAnimation.value,
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: AppIcons.play(),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-        if (videoController != null)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: FeedVideoProgressBar(
-              controller: videoController!,
-              onSeekEnd: (d) =>
-                  videoController?.videoPlayerController?.seekTo(d),
+          if (videoController != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: FeedVideoProgressBar(
+                controller: videoController!,
+                onSeekEnd: (d) =>
+                    videoController?.videoPlayerController?.seekTo(d),
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

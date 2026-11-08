@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,6 +15,7 @@ import 'package:spark/src/core/storage/storage.dart';
 import 'package:spark/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:spark/src/core/utils/logging/logging.dart';
 import 'package:spark/src/core/utils/logging/riverpod_logger.dart';
+import 'package:spark/src/core/utils/startup/startup_timings.dart';
 import 'package:spark/src/sprk_app.dart';
 
 Future<void> main() => runSparkApp();
@@ -22,10 +25,16 @@ Future<void> runSparkApp({
   LocalStorageInterface? secureStorage,
   riverpod.ProviderContainer? providerContainer,
   Future<DownloadManagerInterface> Function()? initializeDownloadManager,
-  Future<PushNotificationService> Function()? initializePushNotifications,
+  PushNotificationService Function()? createPushNotifications,
 }) async {
+  final timings = StartupTimings.instance..start();
   final binding = WidgetsFlutterBinding.ensureInitialized();
   binding.deferFirstFrame();
+  unawaited(
+    binding.waitUntilFirstFrameRasterized.then((_) {
+      timings.mark(StartupMilestone.firstFrameRasterized);
+    }),
+  );
   var didAllowFirstFrame = false;
 
   void allowFirstFrame() {
@@ -38,6 +47,7 @@ Future<void> runSparkApp({
 
   try {
     await dotenv.load();
+    timings.mark(StartupMilestone.environmentLoaded);
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
@@ -47,19 +57,22 @@ Future<void> runSparkApp({
     SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
 
     fvp.registerWith();
+    timings.mark(StartupMilestone.platformConfigured);
 
     await initServiceLocator(
       preferencesStorage: preferencesStorage,
       secureStorage: secureStorage,
       initializeDownloadManager: initializeDownloadManager,
-      initializePushNotifications: initializePushNotifications,
+      createPushNotifications: createPushNotifications,
     );
+    timings.mark(StartupMilestone.servicesRegistered);
 
     // Setup logging for production/debug
     _setupLogging();
 
     // Initialize auth repository
     await _initializeAuth();
+    timings.mark(StartupMilestone.authInitializationFinished);
 
     // Create a ProviderContainer with the Riverpod logger
     final container =
@@ -71,10 +84,17 @@ Future<void> runSparkApp({
         child: SprkApp(onFirstRouteReady: allowFirstFrame),
       ),
     );
+    timings.mark(StartupMilestone.runAppCalled);
+    unawaited(_initializePushNotifications(timings));
   } catch (_) {
     allowFirstFrame();
     rethrow;
   }
+}
+
+Future<void> _initializePushNotifications(StartupTimings timings) async {
+  await sl<PushNotificationService>().initialize();
+  timings.mark(StartupMilestone.pushInitializationFinished);
 }
 
 /// Setup logging framework based on environment

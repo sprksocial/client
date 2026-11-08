@@ -17,7 +17,7 @@ dependencies:
     path: assets
   audioplayers: ^6.8.1
   auto_route: ^11.1.0
-  better_player_plus: ^1.4.1
+  better_player_plus: ^2.0.0
   bluesky_poptart: ^0.3.0
   ozone_poptart: ^0.3.0
   plyr_poptart: ^0.3.0
@@ -28,8 +28,8 @@ dependencies:
   camera: ^0.12.1
   collection: ^1.19.1
   crypto: ^3.0.7
-  firebase_core: ^4.14.0
-  firebase_messaging: ^16.6.0
+  firebase_core: ^5.0.0
+  firebase_messaging: ^17.0.0
   flutter:
     sdk: flutter
   flutter_cache_manager: ^3.4.2
@@ -45,9 +45,9 @@ dependencies:
     path: fonts
   freezed: ^4.0.1
   freezed_annotation: ^3.1.0
-  fvp: ^0.38.1
+  fvp: ^0.39.1
   get_it: ^9.2.1
-  google_fonts: ^8.2.1
+  google_fonts: ^9.0.0
   http: ^1.6.0
   image: ^4.9.2
   image_picker: ^1.2.3

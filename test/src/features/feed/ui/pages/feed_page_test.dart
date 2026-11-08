@@ -289,6 +289,9 @@ class _FakeFeedNotifier extends FeedNotifier {
   FeedState build(Feed feed) => initialState;
 
   @override
+  Future<void> ensureLoaded() async {}
+
+  @override
   Future<void> loadAndUpdateFirstLoad() async {
     loadCalls++;
   }
