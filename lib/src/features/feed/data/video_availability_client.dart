@@ -17,7 +17,10 @@ class VideoAvailabilityClient {
   Completer<void>? _retryCompletion;
   bool _started = false;
 
-  Future<void> waitUntilReady(String videoUrl) async {
+  Future<void> waitUntilReady(
+    String videoUrl, {
+    void Function()? onProcessing,
+  }) async {
     _checkOpen();
     if (_started) {
       throw StateError('Video availability check already started');
@@ -25,7 +28,7 @@ class VideoAvailabilityClient {
     _started = true;
     try {
       await Future.any<void>([
-        _poll(Uri.parse(videoUrl)),
+        _poll(Uri.parse(videoUrl), onProcessing),
         _closed.future.then<void>((_) => _checkOpen()),
       ]).timeout(timeout);
     } finally {
@@ -33,7 +36,7 @@ class VideoAvailabilityClient {
     }
   }
 
-  Future<void> _poll(Uri uri) async {
+  Future<void> _poll(Uri uri, void Function()? onProcessing) async {
     while (true) {
       _checkOpen();
       // The playlist request starts import; the thumbnail request does not.
@@ -41,6 +44,7 @@ class VideoAvailabilityClient {
       await response.stream.drain<void>();
       _checkOpen();
       if (response.statusCode == 200) return;
+      if (response.statusCode == 202) onProcessing?.call();
 
       switch (response.statusCode) {
         case 202:

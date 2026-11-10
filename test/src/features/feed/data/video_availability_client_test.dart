@@ -28,6 +28,25 @@ void main() {
       expect(httpClient.closed, isTrue);
     });
 
+    test('reports processing only for HTTP 202 responses', () async {
+      final statuses = [503, 202, 502, 202, 200].iterator;
+      final processingStatuses = <int>[];
+      final availability = VideoAvailabilityClient(
+        client: MockClient((_) async {
+          expect(statuses.moveNext(), isTrue);
+          return http.Response('', statuses.current);
+        }),
+        retryDelay: Duration.zero,
+      );
+
+      await availability.waitUntilReady(
+        _videoUrl,
+        onProcessing: () => processingStatuses.add(statuses.current),
+      );
+
+      expect(processingStatuses, [202, 202]);
+    });
+
     test('retries transient CDN failures', () async {
       final statuses = [500, 502, 503, 504, 200].iterator;
       final availability = VideoAvailabilityClient(

@@ -10,6 +10,7 @@ class FeedVideoLoadingFrame extends StatelessWidget {
     required this.thumbnail,
     required this.videoAspectRatio,
     required this.isActive,
+    required this.isProcessing,
     required this.hasError,
     required this.onRetry,
     super.key,
@@ -18,6 +19,7 @@ class FeedVideoLoadingFrame extends StatelessWidget {
   final String thumbnail;
   final double? videoAspectRatio;
   final bool isActive;
+  final bool isProcessing;
   final bool hasError;
   final VoidCallback onRetry;
 
@@ -32,7 +34,7 @@ class FeedVideoLoadingFrame extends StatelessWidget {
           thumbnail: thumbnail,
           videoAspectRatio: videoAspectRatio,
         ),
-        if (isActive)
+        if (isActive && (isProcessing || hasError))
           ColoredBox(
             color: AppColors.black.withValues(alpha: 0.55),
             child: Center(

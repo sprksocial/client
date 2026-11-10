@@ -36,6 +36,96 @@ void main() {
       await GetIt.I.reset();
     });
 
+    for (final status in [200, 202, 503]) {
+      testWidgets('only HTTP 202 shows processing (initial HTTP $status)', (
+        tester,
+      ) async {
+        const events = MethodChannel('better_player_channel/videoEvents4');
+        final messenger = tester.binding.defaultBinaryMessenger;
+        messenger.setMockMethodCallHandler(events, (_) async => null);
+        messenger.setMockMethodCallHandler(playerChannel, (call) async {
+          nativeCalls.add(call.method);
+          return call.method == 'create' ? {'textureId': 4} : null;
+        });
+        addTearDown(() => messenger.setMockMethodCallHandler(events, null));
+        final firstResponse = Completer<http.Response>();
+        var requests = 0;
+
+        await _withVideoClient(
+          () async {
+            await tester.pumpWidget(_videoApp());
+            await tester.pump();
+            expect(find.text('Preparing video…'), findsNothing);
+            expect(find.byType(CircularProgressIndicator), findsNothing);
+            expect(nativeCalls, isEmpty);
+
+            firstResponse.complete(http.Response('', status));
+            await tester.pump();
+            await tester.pump();
+            expect(
+              find.text('Preparing video…'),
+              status == 202 ? findsOneWidget : findsNothing,
+            );
+            expect(
+              find.byType(CircularProgressIndicator),
+              status == 202 ? findsOneWidget : findsNothing,
+            );
+
+            await tester.pump(const Duration(seconds: 2));
+            await tester.pump();
+            expect(nativeCalls, contains('setDataSource'));
+            expect(find.text('Preparing video…'), findsNothing);
+            expect(find.byType(CircularProgressIndicator), findsNothing);
+            expect(find.text('Video couldn’t load'), findsNothing);
+
+            await tester.pumpWidget(const SizedBox.shrink());
+            await tester.pump(const Duration(milliseconds: 100));
+            expect(tester.takeException(), isNull);
+          },
+          () => _VideoHttpClient((_) {
+            requests++;
+            return requests == 1
+                ? firstResponse.future
+                : Future.value(http.Response('', 200));
+          }),
+        );
+      });
+    }
+
+    testWidgets('ignores a stale processing response after replacing the URL', (
+      tester,
+    ) async {
+      final oldResponse = Completer<http.Response>();
+      final newResponse = Completer<http.Response>();
+      await _withVideoClient(
+        () async {
+          await tester.pumpWidget(_videoApp());
+          await tester.pump();
+          await tester.pumpWidget(_videoApp(videoUrl: '$_videoUrl?new'));
+          await tester.pump();
+
+          oldResponse.complete(http.Response('', 202));
+          await tester.pump();
+          await tester.pump();
+          expect(find.text('Preparing video…'), findsNothing);
+          expect(nativeCalls, isEmpty);
+
+          newResponse.complete(http.Response('', 202));
+          await tester.pump();
+          await tester.pump();
+          expect(find.text('Preparing video…'), findsOneWidget);
+          await tester.pumpWidget(const SizedBox.shrink());
+          await tester.pump();
+          expect(tester.takeException(), isNull);
+        },
+        () => _VideoHttpClient((request) {
+          return request.url.query.isEmpty
+              ? oldResponse.future
+              : newResponse.future;
+        }),
+      );
+    });
+
     testWidgets('shows preparing until ready and cancels on disposal', (
       tester,
     ) async {
@@ -330,7 +420,7 @@ void main() {
       await tester.pumpWidget(_videoApp());
       await tester.pump();
       expect(nativeCalls, contains('setDataSource'));
-      expect(find.text('Preparing video…'), findsOneWidget);
+      expect(find.text('Preparing video…'), findsNothing);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();

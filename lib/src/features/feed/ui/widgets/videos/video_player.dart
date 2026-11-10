@@ -46,6 +46,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     with TickerProviderStateMixin {
   BetterPlayerController? videoController;
   AsyncValue<void> _initialization = const AsyncLoading();
+  bool _isProcessing = false;
   VideoAvailabilityClient? _availabilityClient;
   Completer<void>? _loadCancelled;
   bool _userPaused = false;
@@ -143,6 +144,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
 
   void _resetPlayback() {
     _initialization = const AsyncLoading();
+    _isProcessing = false;
     _showThumbnailOverlay = true;
     _playerVideoSize = null;
     _lastAppliedPlayerAspectRatio = null;
@@ -186,8 +188,15 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     final availability = VideoAvailabilityClient();
     _availabilityClient = availability;
     try {
-      await availability.waitUntilReady(widget.videoUrl);
+      await availability.waitUntilReady(
+        widget.videoUrl,
+        onProcessing: () {
+          if (!mounted || cancellation.isCompleted || _isProcessing) return;
+          setState(() => _isProcessing = true);
+        },
+      );
       if (!mounted || cancellation.isCompleted) return;
+      if (_isProcessing) setState(() => _isProcessing = false);
       final dataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
         widget.videoUrl,
@@ -317,6 +326,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
         thumbnail: widget.thumbnail,
         videoAspectRatio: _knownVideoAspectRatio,
         isActive: widget.isActive,
+        isProcessing: _isProcessing,
         hasError: _initialization.hasError,
         onRetry: initVideoPlayer,
       );
