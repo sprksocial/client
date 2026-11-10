@@ -1,20 +1,15 @@
-import 'dart:async';
-
-import 'package:better_player_plus/better_player_plus.dart';
-// ignore: implementation_imports
-import 'package:better_player_plus/src/enum/aspect_enum.dart';
+import 'package:better_player/better_player.dart';
 import 'package:material_ui/material_ui.dart';
 
-BetterPlayerConfiguration feedVideoBetterPlayerConfiguration({
+PlayerConfiguration feedVideoBetterPlayerConfiguration({
   required double? aspectRatio,
   required BoxFit fit,
 }) {
-  return BetterPlayerConfiguration(
-    controlsConfiguration: const BetterPlayerControlsConfiguration(
+  return PlayerConfiguration(
+    controlsConfiguration: const PlayerControlsConfiguration(
       showControls: false,
     ),
     aspectRatio: aspectRatio,
-    aspectRatioIOS: _iosAspectRatioForFit(fit),
     looping: true,
     fit: fit,
     expandToFill: false,
@@ -33,16 +28,4 @@ void applyFeedVideoBetterPlayerLayout(
     controller.setOverriddenAspectRatio(aspectRatio);
   }
   controller.setOverriddenFit(fit);
-
-  final update = controller.updateAspectRatioIOS(_iosAspectRatioForFit(fit));
-  if (update != null) {
-    unawaited(update);
-  }
-}
-
-AspectRatioTypeIOS _iosAspectRatioForFit(BoxFit fit) {
-  return switch (fit) {
-    BoxFit.cover => AspectRatioTypeIOS.fill,
-    _ => AspectRatioTypeIOS.aspect,
-  };
 }

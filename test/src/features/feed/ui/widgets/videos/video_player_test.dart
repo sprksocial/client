@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:better_player_plus/better_player_plus.dart';
-import 'package:flutter/services.dart';
+import 'package:better_player/better_player.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -15,49 +13,38 @@ import 'package:spark/src/core/utils/logging/log_service.dart';
 import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
 
 void main() {
+  late _FakeVideoPlatform platform;
+  late BetterPlayerPlatform previousPlatform;
+
+  setUp(() async {
+    await GetIt.I.reset();
+    GetIt.I.registerSingleton<LogService>(LogService());
+    previousPlatform = BetterPlayerPlatform.instance;
+    platform = _FakeVideoPlatform();
+    BetterPlayerPlatform.instance = platform;
+  });
+
+  tearDown(() async {
+    await platform.close();
+    BetterPlayerPlatform.instance = previousPlatform;
+    await GetIt.I.reset();
+  });
+
   group('video availability UI', () {
-    final nativeCalls = <String>[];
-    const playerChannel = MethodChannel('better_player_channel');
-
-    setUp(() async {
-      await GetIt.I.reset();
-      GetIt.I.registerSingleton<LogService>(LogService());
-      nativeCalls.clear();
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(playerChannel, (call) async {
-            nativeCalls.add(call.method);
-            return null;
-          });
-    });
-
-    tearDown(() async {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(playerChannel, null);
-      await GetIt.I.reset();
-    });
-
     for (final status in [200, 202, 503]) {
       testWidgets('only HTTP 202 shows processing (initial HTTP $status)', (
         tester,
       ) async {
-        const events = MethodChannel('better_player_channel/videoEvents4');
-        final messenger = tester.binding.defaultBinaryMessenger;
-        messenger.setMockMethodCallHandler(events, (_) async => null);
-        messenger.setMockMethodCallHandler(playerChannel, (call) async {
-          nativeCalls.add(call.method);
-          return call.method == 'create' ? {'textureId': 4} : null;
-        });
-        addTearDown(() => messenger.setMockMethodCallHandler(events, null));
         final firstResponse = Completer<http.Response>();
         var requests = 0;
 
-        await _withVideoClient(
+        await http.runWithClient(
           () async {
             await tester.pumpWidget(_videoApp());
             await tester.pump();
             expect(find.text('Preparing video…'), findsNothing);
             expect(find.byType(CircularProgressIndicator), findsNothing);
-            expect(nativeCalls, isEmpty);
+            expect(platform.calls, isEmpty);
 
             firstResponse.complete(http.Response('', status));
             await tester.pump();
@@ -73,13 +60,13 @@ void main() {
 
             await tester.pump(const Duration(seconds: 2));
             await tester.pump();
-            expect(nativeCalls, contains('setDataSource'));
+            expect(platform.calls, contains('setDataSource'));
             expect(find.text('Preparing video…'), findsNothing);
             expect(find.byType(CircularProgressIndicator), findsNothing);
             expect(find.text('Video couldn’t load'), findsNothing);
 
             await tester.pumpWidget(const SizedBox.shrink());
-            await tester.pump(const Duration(milliseconds: 100));
+            await _flushPlayer(tester);
             expect(tester.takeException(), isNull);
           },
           () => _VideoHttpClient((_) {
@@ -97,7 +84,7 @@ void main() {
     ) async {
       final oldResponse = Completer<http.Response>();
       final newResponse = Completer<http.Response>();
-      await _withVideoClient(
+      await http.runWithClient(
         () async {
           await tester.pumpWidget(_videoApp());
           await tester.pump();
@@ -108,7 +95,7 @@ void main() {
           await tester.pump();
           await tester.pump();
           expect(find.text('Preparing video…'), findsNothing);
-          expect(nativeCalls, isEmpty);
+          expect(platform.calls, isEmpty);
 
           newResponse.complete(http.Response('', 202));
           await tester.pump();
@@ -131,14 +118,14 @@ void main() {
     ) async {
       var requests = 0;
       late _VideoHttpClient client;
-      await _withVideoClient(
+      await http.runWithClient(
         () async {
           await tester.pumpWidget(_videoApp());
           await tester.pump();
 
           expect(find.text('Preparing video…'), findsOneWidget);
           expect(find.byType(CircularProgressIndicator), findsOneWidget);
-          expect(nativeCalls, isEmpty);
+          expect(platform.calls, isEmpty);
           expect(requests, 1);
 
           await tester.pump(const Duration(seconds: 2));
@@ -148,7 +135,7 @@ void main() {
 
           expect(requests, 2);
           expect(client.closed, isTrue);
-          expect(nativeCalls, isEmpty);
+          expect(platform.calls, isEmpty);
           expect(tester.takeException(), isNull);
         },
         () {
@@ -165,7 +152,7 @@ void main() {
     ) async {
       var requests = 0;
       final clients = <_VideoHttpClient>[];
-      await _withVideoClient(
+      await http.runWithClient(
         () async {
           await tester.pumpWidget(_videoApp());
           await tester.pump();
@@ -182,7 +169,7 @@ void main() {
           expect(requests, 2);
           expect(clients, hasLength(2));
           expect(find.text('Preparing video…'), findsOneWidget);
-          expect(nativeCalls, isEmpty);
+          expect(platform.calls, isEmpty);
           await tester.pumpWidget(const SizedBox.shrink());
         },
         () {
@@ -201,7 +188,7 @@ void main() {
     ) async {
       final oldResponse = Completer<http.Response>();
       final requestedUrls = <Uri>[];
-      await _withVideoClient(
+      await http.runWithClient(
         () async {
           await tester.pumpWidget(_videoApp());
           await tester.pump();
@@ -215,7 +202,7 @@ void main() {
             Uri.parse('$_videoUrl?new'),
           ]);
           expect(find.text('Preparing video…'), findsOneWidget);
-          expect(nativeCalls, isEmpty);
+          expect(platform.calls, isEmpty);
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox.shrink());
         },
@@ -232,7 +219,7 @@ void main() {
       tester,
     ) async {
       var requests = 0;
-      await _withVideoClient(
+      await http.runWithClient(
         () async {
           await tester.pumpWidget(_videoApp());
           await tester.pump();
@@ -246,7 +233,7 @@ void main() {
           expect(requests, 2);
           expect(find.text('Preparing video…'), findsOneWidget);
           expect(find.text('Retry'), findsNothing);
-          expect(nativeCalls, isEmpty);
+          expect(platform.calls, isEmpty);
           await tester.pumpWidget(const SizedBox.shrink());
         },
         () => _VideoHttpClient((_) async {
@@ -260,31 +247,10 @@ void main() {
       testWidgets('preserves preparation pause through $transition', (
         tester,
       ) async {
-        const events = MethodChannel('better_player_channel/videoEvents3');
-        final messenger = tester.binding.defaultBinaryMessenger;
-        messenger.setMockMethodCallHandler(events, (_) async => null);
-        messenger.setMockMethodCallHandler(playerChannel, (call) async {
-          nativeCalls.add(call.method);
-          if (call.method == 'create') return {'textureId': 3};
-          if (call.method == 'position') return 0;
-          if (call.method == 'setDataSource') {
-            tester.binding.channelBuffers.push(
-              events.name,
-              const StandardMethodCodec().encodeSuccessEnvelope({
-                'event': 'initialized',
-                'duration': 10000,
-                'width': 1080,
-                'height': 1920,
-              }),
-              (_) {},
-            );
-          }
-          return null;
-        });
-        addTearDown(() => messenger.setMockMethodCallHandler(events, null));
+        platform.autoInitialize = true;
         var ready = false;
         var fail = false;
-        await _withVideoClient(
+        await http.runWithClient(
           () async {
             await tester.pumpWidget(_videoApp());
             await tester.pump();
@@ -292,7 +258,7 @@ void main() {
                 .state<PostVideoPlayerState>(find.byType(PostVideoPlayer))
                 .pauseVideo();
             await tester.pump();
-            expect(nativeCalls, isEmpty);
+            expect(platform.calls, isEmpty);
 
             switch (transition) {
               case 'reactivate':
@@ -313,21 +279,21 @@ void main() {
             ready = true;
             await tester.pump(const Duration(seconds: 2));
             await tester.pump();
+            await _flushPlayer(tester);
             expect(find.byType(BetterPlayer), findsOneWidget);
             expect(tester.takeException(), isNull);
             if (transition == 'new video') {
-              expect(nativeCalls, contains('play'));
+              expect(platform.calls, contains('play'));
             } else {
-              expect(nativeCalls, isNot(contains('play')));
+              expect(platform.calls, isNot(contains('play')));
               await tester.tapAt(
                 tester.getCenter(find.byType(PostVideoPlayer)),
               );
               await tester.pump();
-              expect(nativeCalls, contains('play'));
+              expect(platform.calls, contains('play'));
             }
             await tester.pumpWidget(const SizedBox.shrink());
-            await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-            await tester.pump();
+            await _flushPlayer(tester);
           },
           () => _VideoHttpClient((_) async {
             return http.Response(
@@ -346,45 +312,26 @@ void main() {
     testWidgets(
       'starts native playback once a pending playlist becomes ready',
       (tester) async {
-        const events = MethodChannel('better_player_channel/videoEvents1');
-        final messenger = tester.binding.defaultBinaryMessenger;
-        messenger.setMockMethodCallHandler(events, (_) async => null);
-        messenger.setMockMethodCallHandler(playerChannel, (call) async {
-          nativeCalls.add(call.method);
-          if (call.method == 'create') return {'textureId': 1};
-          if (call.method == 'position') return 0;
-          if (call.method == 'setDataSource') {
-            tester.binding.channelBuffers.push(
-              events.name,
-              const StandardMethodCodec().encodeSuccessEnvelope({
-                'event': 'initialized',
-                'duration': 10000,
-                'width': 1080,
-                'height': 1920,
-              }),
-              (_) {},
-            );
-          }
-          return null;
-        });
-        addTearDown(() => messenger.setMockMethodCallHandler(events, null));
+        platform.autoInitialize = true;
         var requests = 0;
-        await _withVideoClient(
+        await http.runWithClient(
           () async {
             await tester.pumpWidget(_videoApp());
             await tester.pump();
-            expect(nativeCalls, isEmpty);
+            expect(platform.calls, isEmpty);
 
             await tester.pump(const Duration(seconds: 2));
             await tester.pump();
 
-            expect(nativeCalls, contains('create'));
-            expect(nativeCalls, contains('setDataSource'));
-            expect(nativeCalls, contains('play'));
+            await _flushPlayer(tester);
+            expect(platform.calls, contains('create'));
+            expect(platform.calls, contains('setDataSource'));
+            expect(platform.calls, contains('play'));
             expect(find.byType(BetterPlayer), findsOneWidget);
             expect(find.text('Preparing video…'), findsNothing);
             expect(tester.takeException(), isNull);
             await tester.pumpWidget(const SizedBox.shrink());
+            await _flushPlayer(tester);
             await tester.pump(const Duration(seconds: 1));
           },
           () => _VideoHttpClient((_) async {
@@ -399,35 +346,92 @@ void main() {
   testWidgets('disposal cancels an unfinished native initialization', (
     tester,
   ) async {
-    const playerChannel = MethodChannel('better_player_channel');
-    const events = MethodChannel('better_player_channel/videoEvents2');
-    final messenger = tester.binding.defaultBinaryMessenger;
-    final nativeCalls = <String>[];
-    messenger.setMockMethodCallHandler(events, (call) async {
-      nativeCalls.add('event:${call.method}');
-      return null;
-    });
-    messenger.setMockMethodCallHandler(playerChannel, (call) async {
-      nativeCalls.add(call.method);
-      return call.method == 'create' ? {'textureId': 2} : null;
-    });
-    addTearDown(() {
-      messenger.setMockMethodCallHandler(events, null);
-      messenger.setMockMethodCallHandler(playerChannel, null);
-    });
-
-    await _withVideoClient(() async {
+    await http.runWithClient(() async {
       await tester.pumpWidget(_videoApp());
       await tester.pump();
-      expect(nativeCalls, contains('setDataSource'));
+      expect(platform.calls, contains('setDataSource'));
       expect(find.text('Preparing video…'), findsNothing);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
 
       await tester.pumpWidget(const SizedBox.shrink());
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await _flushPlayer(tester);
 
-      expect(nativeCalls, contains('event:cancel'));
-      expect(nativeCalls, isNot(contains('play')));
+      expect(platform.calls, contains('dispose'));
+      expect(platform.activePlayers, isEmpty);
+      expect(platform.calls, isNot(contains('play')));
+      expect(tester.takeException(), isNull);
+    }, () => _VideoHttpClient((_) async => http.Response('', 200)));
+  });
+
+  testWidgets('native setup failure offers retry and recovers playback', (
+    tester,
+  ) async {
+    platform
+      ..autoInitialize = true
+      ..setupFailuresRemaining = 1;
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_videoApp());
+      await _flushPlayer(tester);
+
+      expect(find.text('Video couldn’t load'), findsOneWidget);
+      expect(platform.calls, isNot(contains('play')));
+      await tester.tap(find.byType(AppButton));
+      await _flushPlayer(tester);
+
+      expect(find.byType(BetterPlayer), findsOneWidget);
+      expect(platform.calls, contains('play'));
+      expect(platform.calls.where((call) => call == 'create'), hasLength(2));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _flushPlayer(tester);
+      expect(tester.takeException(), isNull);
+    }, () => _VideoHttpClient((_) async => http.Response('', 200)));
+  });
+
+  testWidgets('pause during native initialization prevents delayed autoplay', (
+    tester,
+  ) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_videoApp());
+      await tester.pump();
+      expect(platform.calls, contains('setDataSource'));
+      tester
+          .state<PostVideoPlayerState>(find.byType(PostVideoPlayer))
+          .pauseVideo();
+
+      platform.initialize(platform.activePlayers.single);
+      await _flushPlayer(tester);
+
+      expect(find.byType(BetterPlayer), findsOneWidget);
+      expect(platform.calls, isNot(contains('play')));
+      await tester.tapAt(tester.getCenter(find.byType(PostVideoPlayer)));
+      await tester.pump();
+      expect(platform.calls, contains('play'));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _flushPlayer(tester);
+      expect(tester.takeException(), isNull);
+    }, () => _VideoHttpClient((_) async => http.Response('', 200)));
+  });
+
+  testWidgets('leaving during native initialization releases the player', (
+    tester,
+  ) async {
+    await http.runWithClient(() async {
+      await tester.pumpWidget(_videoApp());
+      await tester.pump();
+      expect(platform.calls, contains('setDataSource'));
+
+      await tester.pumpWidget(_videoApp(isActive: false));
+      await _flushPlayer(tester);
+      expect(platform.activePlayers, isEmpty);
+      expect(platform.calls, isNot(contains('play')));
+
+      platform.autoInitialize = true;
+      await tester.pumpWidget(_videoApp());
+      await _flushPlayer(tester);
+      expect(platform.calls.where((call) => call == 'create'), hasLength(2));
+      expect(platform.calls, contains('play'));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _flushPlayer(tester);
       expect(tester.takeException(), isNull);
     }, () => _VideoHttpClient((_) async => http.Response('', 200)));
   });
@@ -518,22 +522,115 @@ class _VideoHttpClient extends MockClient {
   }
 }
 
-Future<void> _withVideoClient(
-  Future<void> Function() body,
-  http.Client Function() createClient,
-) {
-  return HttpOverrides.runZoned(
-    () => http.runWithClient(body, createClient),
-    createHttpClient: (_) => _UnavailableMetadataClient(),
-  );
+Future<void> _flushPlayer(WidgetTester tester) async {
+  await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+  await tester.pump();
+  await tester.pump();
 }
 
-class _UnavailableMetadataClient extends Fake implements HttpClient {
-  @override
-  set connectionTimeout(Duration? value) {}
+class _FakeVideoPlatform extends BetterPlayerPlatform {
+  final calls = <String>[];
+  final _events = <int, StreamController<VideoEvent>>{};
+  final _sources = <int, DataSource>{};
+  var _nextId = 0;
+  bool autoInitialize = false;
+  int setupFailuresRemaining = 0;
+
+  Iterable<int> get activePlayers => _events.keys;
 
   @override
-  Future<HttpClientRequest> getUrl(Uri url) async {
-    throw const HttpException('Optional playlist metadata unavailable in test');
+  Future<int?> create({BufferingConfiguration? bufferingConfiguration}) async {
+    calls.add('create');
+    final id = ++_nextId;
+    _events[id] = StreamController<VideoEvent>.broadcast();
+    return id;
   }
+
+  @override
+  Stream<VideoEvent> videoEventsFor(int? textureId) =>
+      _events[textureId]!.stream;
+
+  @override
+  Future<void> setDataSource(int? textureId, DataSource dataSource) async {
+    calls.add('setDataSource');
+    if (setupFailuresRemaining > 0) {
+      setupFailuresRemaining--;
+      throw StateError('Native video setup failed');
+    }
+    _sources[textureId!] = dataSource;
+    if (autoInitialize) initialize(textureId);
+  }
+
+  void initialize(int textureId) {
+    _events[textureId]?.add(
+      VideoEvent(
+        eventType: VideoEventType.initialized,
+        duration: const Duration(seconds: 10),
+        size: const Size(1080, 1920),
+        key: _sources[textureId]!.key,
+      ),
+    );
+  }
+
+  @override
+  Future<void> dispose(int? textureId) async {
+    calls.add('dispose');
+    _sources.remove(textureId);
+    await _events.remove(textureId)?.close();
+  }
+
+  Future<void> close() async {
+    for (final id in activePlayers.toList()) {
+      await dispose(id);
+    }
+  }
+
+  @override
+  Future<void> play(int? textureId) async => calls.add('play');
+
+  @override
+  Future<void> pause(int? textureId) async => calls.add('pause');
+
+  @override
+  Future<void> setLooping(int? textureId, bool looping) async {}
+
+  @override
+  Future<void> setVolume(int? textureId, double volume) async {}
+
+  @override
+  Future<void> setSpeed(int? textureId, double speed) async {}
+
+  @override
+  Future<void> setTrackParameters(
+    int? textureId,
+    int? width,
+    int? height,
+    int? bitrate,
+  ) async {}
+
+  @override
+  Future<Duration> getPosition(int? textureId) async => Duration.zero;
+
+  @override
+  Future<DateTime?> getAbsolutePosition(int? textureId) async => null;
+
+  @override
+  Future<void> seekTo(int? textureId, Duration? position) async {}
+
+  @override
+  Future<void> setMixWithOthers(int? textureId, bool mixWithOthers) async {}
+
+  @override
+  Future<void> setTextTrack(int? textureId, String? name, int? index) async {}
+
+  @override
+  Future<void> setAudioTrack(int? textureId, String? name, int? index) async {}
+
+  @override
+  Future<void> setupLogCallback(
+    void Function({required int levelIndex, required String message})? callback,
+  ) async {}
+
+  @override
+  Widget buildView(int? textureId) => const SizedBox.expand();
 }

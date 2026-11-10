@@ -169,14 +169,70 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
-  better_player_plus:
+  better_player:
     dependency: "direct main"
     description:
-      name: better_player_plus
-      sha256: "6f2c00e923ecc8245a7a56bb9804d5f5d89aab1f52835328cb4adcfceeb1a790"
+      name: better_player
+      sha256: bde9cc4c35f8ccca5e75465934b51ac11db5cbfca7b221f2122d546bb5c5b324
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "1.36.0"
+  better_player_android:
+    dependency: transitive
+    description:
+      name: better_player_android
+      sha256: "2a1eb33ff1f67155f8840224836a6c90e95b335263986bcce78e89bf837be04e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.13.0"
+  better_player_ios:
+    dependency: transitive
+    description:
+      name: better_player_ios
+      sha256: d26bc4b7d6d8c8047772f498fcdfe7cd896aecf156842d0fca9072d13eb4864b
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.13.0"
+  better_player_linux:
+    dependency: transitive
+    description:
+      name: better_player_linux
+      sha256: "0e73f56852f7bb16b35b059f1ee40cc1b9cb84c9883dccd1e7766fcd26b3f40f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
+  better_player_macos:
+    dependency: transitive
+    description:
+      name: better_player_macos
+      sha256: "9e5154bc33c1b1af22da851829b658eab7d318a33c9037c4da98bc37091dc7b7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.0"
+  better_player_platform_interface:
+    dependency: transitive
+    description:
+      name: better_player_platform_interface
+      sha256: e5218199dd12ffe6f43c01d5cdeecad0b53125926f8da8c3f4b90136d8b55ec1
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.0"
+  better_player_web:
+    dependency: transitive
+    description:
+      name: better_player_web
+      sha256: "2faf05dc31ec9082dbd5f90cee7777887c282c2af17bb54efab4ebceae9c25f4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
+  better_player_windows:
+    dependency: transitive
+    description:
+      name: better_player_windows
+      sha256: "4bfdce8c0f9c55c362b2f931edfb2cd7cebdac757217ad09d4804ea21ec95f35"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.0"
   bluesky_poptart:
     dependency: "direct main"
     description:
@@ -409,6 +465,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  cupertino_icons:
+    dependency: transitive
+    description:
+      name: cupertino_icons
+      sha256: b7cc2390aac296c083bea762859413eb1cf5b630c70e0c7e4d831018f762a8b2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   cupertino_ui:
     dependency: transitive
     description:
@@ -730,14 +794,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_widget_from_html_core:
-    dependency: transitive
-    description:
-      name: flutter_widget_from_html_core
-      sha256: "530f2e3cc57be1a00f8bfae1b0000064e8a6df0cf1fb4d48a80f85afde9b39b7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.17.4"
   freezed:
     dependency: "direct main"
     description:
@@ -1865,6 +1921,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.0"
+  visibility_detector:
+    dependency: transitive
+    description:
+      name: visibility_detector
+      sha256: dd5cc11e13494f432d15939c3aa8ae76844c42b723398643ce9addb88a5ed420
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0+2"
   vm_service:
     dependency: transitive
     description:
@@ -1978,13 +2042,13 @@ packages:
     source: hosted
     version: "1.1.0"
   xml:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
       name: xml
-      sha256: "971043b3a0d3da28727e40ed3e0b5d18b742fa5a68665cca88e74b7876d5e025"
+      sha256: "67f0aff7be013d107995e9b75bf4e7f2c3ef2dfdb2c8e68024bba0a7fd5756a4"
       url: "https://pub.dev"
     source: hosted
-    version: "6.6.1"
+    version: "7.0.1"
   xxh3:
     dependency: transitive
     description:

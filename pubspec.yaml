@@ -17,7 +17,7 @@ dependencies:
     path: assets
   audioplayers: ^6.8.1
   auto_route: ^11.2.0
-  better_player_plus: ^2.0.1
+  better_player: ^1.36.0
   bluesky_poptart: ^0.3.0
   ozone_poptart: ^0.3.0
   plyr_poptart: ^0.3.0
@@ -70,6 +70,11 @@ dependencies:
   synchronized: ^3.6.1
   url_launcher: ^6.3.3
   video_player: ^2.14.1
+
+dependency_overrides:
+  # any_link_preview 3.0.3 still constrains XML 6; its SVG parser supports XML 7.
+  # vector_graphics_compiler caps its supported XML version at 7.0.1.
+  xml: 7.0.1
 
 dev_dependencies:
   auto_route_generator: ^10.6.0

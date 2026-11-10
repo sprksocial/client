@@ -1,4 +1,3 @@
-import 'package:better_player_plus/better_player_plus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
@@ -38,10 +37,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   late Feed _activeFeed;
   bool _isProcessing = false;
 
-  static final controller = BetterPlayerController(
-    const BetterPlayerConfiguration(),
-  ); // static controller for caching
-
   @override
   void setActiveFeed(Feed feed) {
     _activeFeed = feed;
@@ -71,6 +66,9 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
   @override
   void submitTask(DownloadTask task) {
+    // The player cannot pre-cache HLS segments; keep background downloads for images.
+    if (task.post.videoUrl.isNotEmpty) return;
+
     // Prevent duplicate tasks for the same post if one is already pending/active
     if (_tasks.contains(task)) {
       return;
@@ -160,29 +158,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
       task.status = DownloadTaskStatus.active;
       // Actual caching work - start downloading the media
-      if (task.post.videoUrl.isNotEmpty) {
-        await DownloadManagerImpl.controller.preCache(
-          BetterPlayerDataSource(
-            BetterPlayerDataSourceType.network,
-            task.post.videoUrl,
-            videoFormat: BetterPlayerVideoFormat.hls,
-            videoExtension: 'm3u8',
-            placeholder: task.post.thumbnailUrl.isNotEmpty
-                ? CachedNetworkImage(
-                    fadeInDuration: Duration.zero,
-                    fadeOutDuration: Duration.zero,
-                    imageUrl: task.post.thumbnailUrl,
-                  )
-                : null,
-            cacheConfiguration: BetterPlayerCacheConfiguration(
-              useCache: true,
-              preCacheSize: 10 * 1024 * 1024, // 10 MB
-              maxCacheSize: 500 * 1024 * 1024, // 500 MB
-              key: task.post.videoUrl,
-            ),
-          ),
-        );
-      } else if (task.post.imageUrls.isNotEmpty) {
+      if (task.post.imageUrls.isNotEmpty) {
         for (final url in task.post.imageUrls) {
           final fileInfo = await CachedNetworkImageProvider.defaultCacheManager
               .downloadFile(url, key: url);

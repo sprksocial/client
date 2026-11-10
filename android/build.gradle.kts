@@ -14,6 +14,14 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "androidx.lifecycle") {
+                useVersion("2.10.0")
+                because("better_player pulls Lifecycle 2.11, whose Compose artifact requires AGP 9.1 and compileSdk 37")
+            }
+        }
+    }
 }
 subprojects {
     // Some hosted Flutter plugins pin compileSdk lower than their AndroidX dependencies require.

@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:better_player_plus/better_player_plus.dart';
+import 'package:better_player/better_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:spark/src/core/design_system/components/atoms/video_progress_bar.dart'
     as ds;
@@ -32,10 +33,9 @@ class FeedVideoProgressBar extends StatefulWidget {
 }
 
 class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
-  dynamic _vp;
   Duration _total = Duration.zero;
   Duration _position = Duration.zero;
-  List<dynamic> _buffered = const [];
+  List<DurationRange> _buffered = const [];
   Timer? _ticker;
   bool _dragging = false;
   Duration? _pendingSeek;
@@ -50,26 +50,24 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
   void didUpdateWidget(covariant FeedVideoProgressBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
-      _detach();
+      _detach(oldWidget.controller);
       _attach();
     }
   }
 
   void _attach() {
-    final internal = widget.controller.videoPlayerController;
-    _vp = internal;
     _updateFromController();
-    _vp?.addListener(_listener);
+    widget.controller.addVideoListener(_listener);
     _ticker = Timer.periodic(widget.updateInterval, (_) => _throttledUpdate());
   }
 
-  void _detach() {
-    _vp?.removeListener(_listener);
+  void _detach(BetterPlayerController controller) {
+    controller.removeVideoListener(_listener);
     _ticker?.cancel();
   }
 
   void _listener() {
-    final v = _vp?.value;
+    final v = widget.controller.videoPlayerValue;
     if (v == null) return;
     if (v.duration != _total) {
       _updateFromController(force: true);
@@ -82,44 +80,34 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
   }
 
   void _updateFromController({bool force = false}) {
-    final v = _vp?.value;
+    final v = widget.controller.videoPlayerValue;
     if (v == null) return;
     final pos = v.position;
-    final dur = v.duration;
+    final dur = v.duration ?? Duration.zero;
     final buf = v.buffered;
 
     if (!force &&
         !_dragging &&
         pos == _position &&
         dur == _total &&
-        _listEquals(List<dynamic>.from(buf as List), _buffered)) {
+        listEquals(buf, _buffered)) {
       return;
     }
 
     if (!_dragging) {
       setState(() {
-        _position = pos as Duration;
-        _total = dur as Duration;
-        _buffered = List<dynamic>.from(buf as List);
+        _position = pos;
+        _total = dur;
+        _buffered = buf;
       });
     } else if (force) {
-      setState(() => _total = dur as Duration);
+      setState(() => _total = dur);
     }
-  }
-
-  bool _listEquals(List<dynamic> a, List<dynamic> b) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      final ai = a[i];
-      final bi = b[i];
-      if (ai.start != bi.start || ai.end != bi.end) return false;
-    }
-    return true;
   }
 
   @override
   void dispose() {
-    _detach();
+    _detach(widget.controller);
     super.dispose();
   }
 
@@ -173,10 +161,11 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
     _pendingSeek = finalPos;
     setState(() {});
     try {
-      await _vp?.seekTo(finalPos);
+      await widget.controller.seekTo(finalPos);
     } catch (_) {
       // Video controller may be disposed during seek, ignore error
     }
+    if (!mounted) return;
     widget.onSeekEnd?.call(finalPos);
     _dragging = false;
     _pendingSeek = null;

@@ -7,6 +7,7 @@ import Foundation
 
 import app_badge_plus
 import audioplayers_darwin
+import better_player_macos
 import desktop_webview_window
 import file_selector_macos
 import firebase_core
@@ -30,6 +31,7 @@ import window_to_front
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   AppBadgePlusPlugin.register(with: registry.registrar(forPlugin: "AppBadgePlusPlugin"))
   AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
+  BetterPlayerPlugin.register(with: registry.registrar(forPlugin: "BetterPlayerPlugin"))
   DesktopWebviewWindowPlugin.register(with: registry.registrar(forPlugin: "DesktopWebviewWindowPlugin"))
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
   FLTFirebaseCorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseCorePlugin"))

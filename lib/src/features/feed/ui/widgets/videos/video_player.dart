@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:better_player_plus/better_player_plus.dart';
+import 'package:better_player/better_player.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:material_ui/material_ui.dart';
@@ -137,7 +137,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     _availabilityClient?.close();
     _availabilityClient = null;
     videoController?.removeEventsListener(_videoListener);
-    videoController?.videoPlayerController?.removeListener(_videoValueListener);
+    videoController?.removeVideoListener(_videoValueListener);
     videoController?.dispose();
     videoController = null;
   }
@@ -151,9 +151,9 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     _lastAppliedPlayerFit = null;
   }
 
-  void _videoListener(BetterPlayerEvent event) {
+  void _videoListener(PlayerEvent event) {
     if (mounted) {
-      if (event.betterPlayerEventType == BetterPlayerEventType.exception) {
+      if (event.betterPlayerEventType == PlayerEventType.exception) {
         _showPlaybackError(
           StateError(
             event.parameters?['exception']?.toString() ??
@@ -163,7 +163,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
         );
         return;
       }
-      final paused = event.betterPlayerEventType == BetterPlayerEventType.pause;
+      final paused = event.betterPlayerEventType == PlayerEventType.pause;
 
       if (paused) {
         _bounceController
@@ -171,7 +171,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
           ..forward();
       }
 
-      final playing = event.betterPlayerEventType == BetterPlayerEventType.play;
+      final playing = event.betterPlayerEventType == PlayerEventType.play;
       if (playing) {
         _bounceController
           ..stop()
@@ -197,19 +197,18 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
       );
       if (!mounted || cancellation.isCompleted) return;
       if (_isProcessing) setState(() => _isProcessing = false);
-      final dataSource = BetterPlayerDataSource(
-        BetterPlayerDataSourceType.network,
+      final dataSource = PlayerDataSource(
+        DataSourceType.network,
         widget.videoUrl,
         // don't use placeholder because then the video straight up never loads
-        videoFormat: BetterPlayerVideoFormat.hls,
+        videoFormat: VideoFormat.hls,
         videoExtension: 'm3u8',
-        bufferingConfiguration: BetterPlayerBufferingConfiguration(
+        bufferingConfiguration: BufferingConfiguration(
           minBufferMs: const Duration(seconds: 10).inMilliseconds,
           maxBufferMs: const Duration(seconds: 60).inMilliseconds,
         ),
-        cacheConfiguration: BetterPlayerCacheConfiguration(
+        cacheConfiguration: CacheConfiguration(
           useCache: true,
-          preCacheSize: 20 * 1024 * 1024, // 20 MB
           maxCacheSize: 1024 * 1024 * 1024, // 1 GB
           key: widget.videoUrl,
         ),
@@ -226,9 +225,14 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
         cancellation.future,
       ]).timeout(const Duration(seconds: 30));
       if (!mounted || cancellation.isCompleted) return;
+      final playerValue = videoControllerTemp.videoPlayerValue;
+      if (playerValue?.hasError ?? false) {
+        throw StateError(
+          playerValue!.errorDescription ?? 'Video playback failed',
+        );
+      }
       videoControllerTemp.addEventsListener(_videoListener);
-      final playerVideoSize =
-          videoControllerTemp.videoPlayerController?.value.size;
+      final playerVideoSize = videoControllerTemp.videoPlayerValue?.size;
       _syncPlayerLayout(
         controller: videoControllerTemp,
         videoSize: playerVideoSize,
@@ -237,9 +241,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
         _initialization = const AsyncData(null);
         _playerVideoSize = playerVideoSize;
       });
-      videoControllerTemp.videoPlayerController?.addListener(
-        _videoValueListener,
-      );
+      videoControllerTemp.addVideoListener(_videoValueListener);
       _syncPlaybackWithEligibility();
     } catch (error, stackTrace) {
       if (!mounted || cancellation.isCompleted) return;
@@ -274,7 +276,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
     if (!mounted) return;
     final controller = videoController;
     if (controller == null) return;
-    final videoValue = controller.videoPlayerController?.value;
+    final videoValue = controller.videoPlayerValue;
     if (videoValue == null) return;
     final videoSize = videoValue.size;
     _syncPlayerLayout(controller: controller, videoSize: videoSize);
@@ -397,11 +399,7 @@ class PostVideoPlayerState extends State<PostVideoPlayer>
               bottom: 0,
               left: 0,
               right: 0,
-              child: FeedVideoProgressBar(
-                controller: videoController!,
-                onSeekEnd: (d) =>
-                    videoController?.videoPlayerController?.seekTo(d),
-              ),
+              child: FeedVideoProgressBar(controller: videoController!),
             ),
         ],
       ),
